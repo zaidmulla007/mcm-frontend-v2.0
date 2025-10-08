@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Influencer Profile - CryptoKing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0f0f23;
+            color: #ffffff;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        .header {
+            background: rgba(15, 15, 35, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #2a2a3a;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #00d4aa;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: #b8b8d1;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-links a:hover, .nav-links a.active {
+            color: #00d4aa;
+        }
+        
+        /* Profile Header */
+        .profile-header {
+            background: linear-gradient(135deg, rgba(0, 212, 170, 0.1), rgba(0, 124, 240, 0.1));
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .profile-info {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4aa, #007cf0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+        }
+        
+        .profile-details h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .profile-details .youtube-link {
+            color: #00d4aa;
+            text-decoration: none;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+        
+        .profile-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #00d4aa, #007cf0);
+            color: white;
+        }
+        
+        .btn-outline {
+            border: 1px solid #00d4aa;
+            color: #00d4aa;
+            background: transparent;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Key Stats */
+        .key-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: rgba(42, 42, 58, 0.5);
+            border: 1px solid #2a2a3a;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #b8b8d1;
+            font-size: 0.9rem;
+        }
+        
+        .positive { color: #00d4aa; }
+        .negative { color: #ff6b6b; }
+        .neutral { color: #ffd93d; }
+        
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #2a2a3a;
+            margin-bottom: 2rem;
+        }
+        
+        .tab {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            color: #b8b8d1;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        
+        .tab.active {
+            color: #00d4aa;
+            border-bottom-color: #00d4aa;
+        }
+        
+        .tab:hover {
+            color: #ffffff;
+        }
+        
+        /* Tab Content */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Overview Tab */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .chart-container {
+            background: rgba(42, 42, 58, 0.5);
+            border: 1px solid #2a2a3a;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .chart-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        
+        .chart-placeholder {
+            height: 200px;
+            background: linear-gradient(45deg, rgba(0, 212, 170, 0.1), rgba(0, 124, 240, 0.1));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #b8b8d1;
+            font-style: italic;
+        }
+        
+        .bio-section {
+            background: rgba(42, 42, 58, 0.5);
+            border: 1px solid #2a2a3a;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .bio-section h3 {
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        
+        .bio-section p {
+            color: #b8b8d1;
+            line-height: 1.6;
+        }
+        
+        .sentiment-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+        
+        .sentiment-item {
+            text-align: center;
+        }
+        
+        .sentiment-percentage {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        
+        .bullish { color: #00d4aa; }
+        .bearish { color: #ff6b6b; }
+        
+        /* Recommendations Table */
+        .table-container {
+            background: rgba(42, 42, 58, 0.5);
+            border: 1px solid #2a2a3a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #2a2a3a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .table-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+        
+        .table-filters {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .filter-select {
+            background: rgba(42, 42, 58, 0.8);
+            border: 1px solid #2a2a3a;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            color: #ffffff;
+            font-size: 0.9rem;
+        }
+        
+        .recommendations-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .recommendations-table th {
+            background: rgba(42, 42, 58, 0.8);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #b8b8d1;
+            border-bottom: 1px solid #2a2a3a;
+        }
+        
+        .recommendations-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(42, 42, 58, 0.5);
+        }
+        
+        .recommendations-table tbody tr:hover {
+            background: rgba(42, 42, 58, 0.3);
+        }
+        
+        .coin-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .coin-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4aa, #007cf0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .video-link {
+            color: #00d4aa;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .video-link:hover {
+            text-decoration: underline;
+        }
+        
+        .roi-cell {
+            font-weight: 600;
+        }
+        
+        /* Performance Charts Tab */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        
+        .large-chart {
+            background: rgba(42, 42, 58, 0.5);
+            border: 1px solid #2a2a3a;
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        
+        .large-chart-placeholder {
+            height: 400px;
+            background: linear-gradient(45deg, rgba(0, 212, 170, 0.1), rgba(0, 124, 240, 0.1));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #b8b8d1;
+            font-style: italic;
+        }
+        
+        /* Best/Worst Picks */
+        .picks-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .pick-card {
+            background: rgba(42, 42, 58, 0.5);
+            border: 1px solid #2a2a3a;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        
+        .pick-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .pick-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .best-pick .pick-icon {
+            background: rgba(0, 212, 170, 0.2);
+            color: #00d4aa;
+        }
+        
+        .worst-pick .pick-icon {
+            background: rgba(255, 107, 107, 0.2);
+            color: #ff6b6b;
+        }
+        
+        .pick-details h4 {
+            color: #ffffff;
+            margin-bottom: 0.25rem;
+        }
+        
+        .pick-details p {
+            color: #b8b8d1;
+            font-size: 0.9rem;
+        }
+        
+        .pick-roi {
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        /* Portfolio Simulator */
+        .simulator-section {
+            background: rgba(42, 42, 58, 0.5);
+            border: 1px solid #2a2a3a;
+            border-radius: 12px;
+            padding: 2rem;
+        }
+        
+        .simulator-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+        
+        .date-input {
+            background: rgba(42, 42, 58, 0.8);
+            border: 1px solid #2a2a3a;
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            color: #ffffff;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-info {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .overview-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .picks-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .key-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .tabs {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <nav class="nav container">
+            <div class="logo">CryptoTracker</div>
+            <ul class="nav-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="#" class="active">Influencers</a></li>
+                <li><a href="#">Cryptocurrencies</a></li>
+                <li><a href="#">Leaderboard</a></li>
+                <li><a href="#">Insights</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Profile Header -->
+    <section class="profile-header">
+        <div class="container">
+            <div class="profile-info">
+                <div class="profile-avatar">CK</div>
+                <div class="profile-details">
+                    <h1>CryptoKing</h1>
+                    <a href="#" class="youtube-link">📺 @CryptoKingYT - 2.3M Subscribers</a>
+                    <div class="profile-actions">
+                        <button class="btn btn-primary">Follow</button>
+                        <button class="btn btn-outline">Share Profile</button>
+                        <button class="btn btn-outline">Report Error</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Key Stats -->
+            <div class="key-stats">
+                <div class="stat-card">
+                    <div class="stat-number">234</div>
+                    <div class="stat-label">Total Recommendations</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number positive">+18.5%</div>
+                    <div class="stat-label">Avg ROI (30D)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">67%</div>
+                    <div class="stat-label">Win Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">7.3</div>
+                    <div class="stat-label">Avg Days to Peak</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number positive">+113%</div>
+                    <div class="stat-label">Best Pick ROI</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('overview')">Overview</button>
+            <button class="tab" onclick="showTab('recommendations')">Recommendations</button>
+            <button class="tab" onclick="showTab('charts')">Performance Charts</button>
+            <button class="tab" onclick="showTab('simulator')">Portfolio Simulator</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+            <!-- Bio Section -->
+            <div class="bio-section">
+                <h3>About CryptoKing</h3>
+                <p>Technical analysis focused crypto influencer known for detailed chart breakdowns and long-term investment strategies. Specializes in identifying early-stage altcoins with strong fundamentals.</p>
+                
+                <div class="sentiment-stats">
+                    <div class="sentiment-item">
+                        <div class="sentiment-percentage bullish">74%</div>
+                        <div class="stat-label">Bullish Calls</div>
+                    </div>
+                    <div class="sentiment-item">
+                        <div class="sentiment-percentage bearish">26%</div>
+                        <div class="stat-label">Bearish Calls</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="overview-grid">
+                <div class="chart-container">
+                    <h3 class="chart-title">Cumulative ROI Over Time</h3>
+                    <div class="chart-placeholder">ROI Line Chart</div>
+                </div>
+                
+                <div class="chart-container">
+                    <h3 class="chart-title">Win/Loss Ratio by Month</h3>
+                    <div class="chart-placeholder">Bar Chart</div>
+                </div>
+            </div>
+
+            <!-- Best/Worst Picks -->
+            <div class="picks-section">
+                <div class="pick-card best-pick">
+                    <div class="pick-header">
+                        <div class="pick-icon">🏆</div>
+                        <div class="pick-details">
+                            <h4>Best Pick</h4>
+                            <p>SOL - Jan 14, 2024</p>
+                        </div>
+                    </div>
+                    <div class="pick-roi positive">+113%</div>
+                </div>
+                
+                <div class="pick-card worst-pick">
+                    <div class="pick-header">
+                        <div class="pick-icon">📉</div>
+                        <div class="pick-details">
+                            <h4>Worst Pick</h4>
+                            <p>SAND - Oct 11, 2023</p>
+                        </div>
+                    </div>
+                    <div class="pick-roi negative">-38%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendations Tab -->
+        <div id="recommendations" class="tab-content">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 class="table-title">All Recommendations (234)</h3>
+                    <div class="table-filters">
+                        <select class="filter-select">
+                            <option>All Coins</option>
+                            <option>BTC</option>
+                            <option>ETH</option>
+                            <option>Altcoins</option>
+                        </select>
+                        <select class="filter-select">
+                            <option>All Time</option>
+                            <option>Last 30 Days</option>
+                            <option>Last 90 Days</option>
+                            <option>2024</option>
+                        </select>
+                        <select class="filter-select">
+                            <option>All Results</option>
+                            <option>Positive ROI</option>
+                            <option>Negative ROI</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <table class="recommendations-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Coin</th>
+                            <th>Entry Price</th>
+                            <th>Current Price</th>
+                            <th>1D ROI</th>
+                            <th>7D ROI</th>
+                            <th>30D ROI</th>
+                            <th>90D ROI</th>
+                            <th>Video</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Jun 22, 2025</td>
+                            <td>
+                                <div class="coin-cell">
+                                    <div class="coin-icon">A</div>
+                                    ARB
+                                </div>
+                            </td>
+                            <td>$0.87</td>
+                            <td>$1.04</td>
+                            <td class="roi-cell positive">+2.3%</td>
+                            <td class="roi-cell positive">+12.0%</td>
+                            <td class="roi-cell positive">+24.1%</td>
+                            <td class="roi-cell positive">+32.4%</td>
+                            <td><a href="#" class="video-link">Top 3 Coins for Summer</a></td>
+                        </tr>
+                        <tr>
+                            <td>May 14, 2025</td>
+                            <td>
+                                <div class="coin-cell">
+                                    <div class="coin-icon">E</div>
+                                    ETH
+                                </div>
+                            </td>
+                            <td>$2,520</td>
+                            <td>$2,410</td>
+                            <td class="roi-cell negative">-1.1%</td>
+                            <td class="roi-cell negative">-3.2%</td>
+                            <td class="roi-cell negative">-6.5%</td>
+                            <td class="roi-cell negative">-2.1%</td>
+                            <td><a href="#" class="video-link">Ethereum Before Upgrade</a></td>
+                        </tr>
+                        <tr>
+                            <td>Apr 28, 2025</td>
+                            <td>
+                                <div class="coin-cell">
+                                    <div class="coin-icon">S</div>
+                                    SOL
+                                </div>
+                            </td>
+                            <td>$145</td>
+                            <td>$178</td>
+                            <td class="roi-cell positive">+0.8%</td>
+                            <td class="roi-cell positive">+15.2%</td>
+                            <td class="roi-cell positive">+22.8%</td>
+                            <td class="roi-cell positive">+28.9%</td>
+                            <td><a href="#" class="video-link">Solana Breakout Analysis</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Performance Charts Tab -->
+        <div id="charts" class="tab-content">
+            <div class="charts-grid">
+                <div class="large-chart">
+                    <h3 class="chart-title">Cumulative ROI vs BTC/ETH Baseline</h3>
+                    <div class="large-chart-placeholder">Interactive Performance Comparison Chart</div>
+                </div>
+                
+                <div class="large-chart">
+                    <h3 class="chart-title">ROI Distribution & Volatility Analysis</h3>
+                    <div class="large-chart-placeholder">Volatility & Risk Metrics Visualization</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Portfolio Simulator Tab -->
+        <div id="simulator" class="tab-content">
+            <div class="simulator-section">
+                <h3 class="chart-title">Portfolio Simulator</h3>
+                <p style="color: #b8b8d1; margin-bottom: 2rem;">"What if I followed all their recommendations?"</p>
+                
+                <div class="simulator-controls">
+                    <label style="color: #b8b8d1;">Start Date:</label>
+                    <input type="date" class="date-input" value="2024-01-01">
+                    <label style="color: #b8b8d1;">Strategy:</label>
+                    <select class="filter-select">
+                        <option>Equal Weight</option>
+                        <option>Market Cap Weighted</option>
+                        <option>Confidence Weighted</option>
+                    </select>
+                    <button class="btn btn-primary">Run Simulation</button>
+                </div>
+                
+                <div class="large-chart-placeholder">Simulated Portfolio Performance vs Benchmarks</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

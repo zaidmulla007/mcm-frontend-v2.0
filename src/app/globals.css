@@ -1,0 +1,341 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Custom range slider styles */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: #3b82f6;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.slider::-webkit-slider-track {
+  background: #e5e7eb;
+  border-radius: 8px;
+  height: 8px;
+}
+
+.slider::-moz-range-track {
+  background: #e5e7eb;
+  border-radius: 8px;
+  height: 8px;
+  border: none;
+}
+
+/* Hide tick marks in GaugeComponent */
+.tick-line {
+  display: none;
+}
+
+.tick-value {
+  display: none;
+}
+
+/* Win/Loss Row */
+.win-loss-row {
+  border-bottom: 1px solid rgba(53, 49, 90, 0.5);
+}
+
+/* Header Cell */
+.win-loss-header {
+  padding: 1rem;
+  color: #d1d5db;
+  font-weight: 500;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.expand-button {
+  color: #9ca3af;
+  transition: color 0.2s;
+}
+
+.expand-button:hover {
+  color: white;
+}
+
+.expand-icon {
+  width: 1rem;
+  height: 1rem;
+  transition: transform 0.2s;
+}
+
+.expand-icon.expanded {
+  transform: rotate(180deg);
+}
+
+/* Data Cells */
+.win-loss-cell {
+  padding: 1rem;
+  text-align: center;
+}
+
+.win-loss-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Segmented Bar with Gradient */
+.segmented-bar-container {
+  width: 100px;
+  height: 6px;
+  background: linear-gradient(to right, #FF2121, #FF8C00, #FFD700, #ADFF2F, #00FF15);
+  border-radius: 999px;
+  position: relative;
+}
+
+/* Percentage Ball with Gradient */
+.percentage-ball {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  background-color: #fff;
+  border: "2px solid grey",
+}
+
+/* Text Elements */
+.percentage-text {
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+.empty-metric {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #9ca3af;
+}
+
+/* Expanded Rows */
+.hyper-activity-row,
+.without-hyper-row {
+  border-bottom: 1px solid rgba(53, 49, 90, 0.3);
+  background-color: rgba(26, 26, 46, 0.3);
+}
+
+/* Header Cells */
+.hyper-activity-header,
+.without-hyper-header {
+  padding: 0.75rem 1rem;
+  padding-left: 2rem;
+  color: #d1d5db;
+  font-weight: 500;
+}
+
+/* Data Cells */
+.hyper-activity-cell,
+.without-hyper-cell {
+  padding: 0.75rem 1rem;
+  text-align: center;
+}
+
+/* Containers */
+.hyper-activity-container,
+.without-hyper-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Percentage Texts */
+.hyper-win-text {
+  font-size: 0.75rem;
+  color: #fb923c;
+  /* orange-400 */
+}
+
+.without-hyper-win-text {
+  font-size: 0.75rem;
+  color: #60a5fa;
+  /* Tailwind's blue-400 */
+}
+
+/* Remove styling from all possible wrappers */
+span:has(img.logo-img),
+div:has(img.logo-img),
+a:has(img.logo-img) {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Remove styling from the image */
+.logo-img {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Additional Next.js Image component wrapper styling */
+.logo-img[data-nimg],
+img[data-nimg].logo-img {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Light Theme Styles for YearlyPerformanceTableLight */
+
+/* Light theme table container */
+.light-theme-table {
+  background-color: white !important;
+  color: black !important;
+}
+
+/* Light theme dropdowns */
+.light-dropdown {
+  background-color: #c4c5e14d !important;
+
+}
+
+.light-dropdown:focus {
+  background-color: #c4c5e14d !important;
+  outline: none !important;
+}
+
+.light-dropdown option {
+  background-color: white !important;
+  color: black !important;
+}
+
+/* Ensure select elements get the right background */
+select.light-dropdown {
+  background-color: #c4c5e14d !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+/* Recommendations number color */
+.recommendations-number {
+  color: #4e9fff !important;
+}
+
+/* Light Win/Loss Row */
+.light-win-loss-row {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Light Header Cell */
+.light-win-loss-header {
+  padding: 1rem;
+  color: black;
+  font-weight: 500;
+}
+
+.light-expand-button {
+  color: #6b7280;
+  transition: color 0.2s;
+}
+
+.light-expand-button:hover {
+  color: #374151;
+}
+
+/* Light Data Cells */
+.light-win-loss-cell {
+  padding: 1rem;
+  text-align: center;
+}
+
+.light-empty-metric {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #6b7280;
+}
+
+/* Light Expanded Rows */
+.light-hyper-activity-row,
+.light-without-hyper-row {
+  border-bottom: 1px solid #f3f4f6;
+  background-color: #f9fafb;
+}
+
+/* Light Header Cells */
+.light-hyper-activity-header,
+.light-without-hyper-header {
+  padding: 0.75rem 1rem;
+  padding-left: 2rem;
+  color: black;
+  font-weight: 500;
+}
+
+/* Light Data Cells */
+.light-hyper-activity-cell,
+.light-without-hyper-cell {
+  padding: 0.75rem 1rem;
+  text-align: center;
+}
+
+td.hover\:text-to-purple:hover,
+.hover\:text-to-purple:hover,
+.text-to-purple{
+  color:#0c0023 !important;
+}
+
+.text-to-red-recomendations{
+  color:#ff2121 !important;
+}
+
+.text-to-green-recomendations{
+  color:#00ff15 !important;
+}
+
+.text-to-green-recomendations1{
+  color:#13c636 !important;
+}
