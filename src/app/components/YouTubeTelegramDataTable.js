@@ -254,7 +254,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div>
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-gray-700">
@@ -272,6 +272,11 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     const sentimentData = getSentimentData(coin);
                                     const isBullish = sentimentData.bullish >= sentimentData.bearish;
                                     const dominantPercentage = isBullish ? sentimentData.bullish : sentimentData.bearish;
+
+                                    // Calculate ball position: 0% bearish = right (100px), 100% bearish = left (0px)
+                                    // If bullish >= bearish, ball moves towards right (green)
+                                    // If bearish > bullish, ball moves towards left (red)
+                                    const ballPosition = isBullish ? sentimentData.bullish : (100 - sentimentData.bearish);
 
                                     return (
                                         <tr key={index} className="border-b border-gray-800 hover:bg-gradient-to-br hover:from-purple-900/20 hover:to-blue-900/20 transition-all duration-300">
@@ -301,7 +306,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         {/* Ball */}
                                                         <div
                                                             className="percentage-ball"
-                                                            style={{ left: `${((dominantPercentage - 0) / (100 - 0)) * 86}px` }}
+                                                            style={{ left: `${(ballPosition / 100) * 100}%` }}
                                                         />
                                                     </div>
 
