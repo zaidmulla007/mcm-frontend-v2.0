@@ -1328,38 +1328,20 @@ export default function Login() {
     });
 
     try {
-      // Send email through API
+      // Format phone number with country code
       const fullPhoneNumber = `${contactCountry.dial_code}${contactForm.whatsappNumber}`;
 
-      const response = await fetch('/api/Email', {
+      // Call the new contact support API
+      const response = await fetch('/api/contact-support', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          to: 'admin@mcm.com',
-          from: contactForm.userEmail,
-          subject: `Contact Support - Message from ${contactForm.userEmail}`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <h2 style="color: #8b5cf6; margin-bottom: 20px;">New Support Request</h2>
-              <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-                <p style="margin: 10px 0;"><strong>Email:</strong> ${contactForm.userEmail}</p>
-                <p style="margin: 10px 0;"><strong>WhatsApp Number:</strong> ${fullPhoneNumber}</p>
-                ${contactForm.alternateEmail ? `<p style="margin: 10px 0;"><strong>Alternate Email:</strong> ${contactForm.alternateEmail}</p>` : ''}
-              </div>
-              <div style="background: #ffffff; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-                <h3 style="color: #374151; margin-top: 0;">Message:</h3>
-                <p style="color: #4b5563; line-height: 1.6; white-space: pre-wrap;">${contactForm.message}</p>
-              </div>
-              <div style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 8px;">
-                <p style="margin: 0; color: #92400e; font-size: 14px;">
-                  <strong>Reply to:</strong> ${contactForm.userEmail}
-                </p>
-              </div>
-            </div>
-          `,
-          text: `New Support Request\n\nEmail: ${contactForm.userEmail}\nWhatsApp Number: ${fullPhoneNumber}${contactForm.alternateEmail ? `\nAlternate Email: ${contactForm.alternateEmail}` : ''}\n\nMessage:\n${contactForm.message}\n\nReply to: ${contactForm.userEmail}`
+          email: contactForm.userEmail,
+          emailAlt: contactForm.alternateEmail || '',
+          whatsappNum: fullPhoneNumber,
+          message: contactForm.message
         })
       });
 
@@ -1367,8 +1349,8 @@ export default function Login() {
 
       if (response.ok && data.success) {
         Swal.fire({
-          title: 'Message Sent!',
-          text: 'Your message has been sent to support successfully. We will get back to you soon.',
+          title: 'Success!',
+          text: data.message || 'Submitted Successfully',
           icon: 'success',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',

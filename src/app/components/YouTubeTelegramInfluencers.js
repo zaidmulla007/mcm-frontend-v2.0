@@ -144,11 +144,11 @@ export default function YouTubeTelegramInfluencers() {
 
         for (let i = 0; i < 5; i++) {
             if (i < fullStars) {
-                stars.push(<FaStar key={i} className="text-yellow-400" />);
+                stars.push(<FaStar key={i} className="text-yellow-500" />);
             } else if (i === fullStars && hasHalfStar) {
-                stars.push(<FaStarHalfAlt key={i} className="text-yellow-400" />);
+                stars.push(<FaStarHalfAlt key={i} className="text-yellow-500" />);
             } else {
-                stars.push(<FaStar key={i} className="text-black" />);
+                stars.push(<FaStar key={i} className="text-gray-400" />);
             }
         }
 
@@ -392,14 +392,14 @@ export default function YouTubeTelegramInfluencers() {
 
                 {/* Platform Selection */}
                 <div className="flex justify-center mb-8">
-                    <div className="jsx-816192472cbeba0e bg-white rounded-xl border border-purple-500 p-4 w-full max-w-2xl">
-                        <div className="flex items-center justify-between">
+                    <div className="jsx-816192472cbeba0e bg-white rounded-xl border border-purple-500 p-4" style={{ width: '672px' }}>
+                        <div className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
                                 <label className="text-lg text-black font-semibold">Platform:</label>
                                 <select
                                     value={selectedPlatform}
                                     onChange={(e) => setSelectedPlatform(e.target.value)}
-                                    className="jsx-816192472cbeba0e bg-white border border-purple-500/30 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[150px]"
+                                    className="jsx-816192472cbeba0e bg-white border-2 border-purple-500 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[150px]"
                                 >
                                     <option value="Combined" className="bg-white text-black">Combined</option>
                                     <option value="YouTube" className="bg-white text-black">YouTube</option>
@@ -409,7 +409,7 @@ export default function YouTubeTelegramInfluencers() {
 
                             <div className="flex items-center gap-2">
                                 <span className="text-sm text-black font-medium">Source: </span>
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 min-w-[100px]">
                                     {selectedPlatform === "Combined" ? (
                                         <>
                                             <YouTubeIcon className="text-red-900" />
@@ -437,7 +437,12 @@ export default function YouTubeTelegramInfluencers() {
 
                 {/* Posts */}
                 <div className="flex gap-4 overflow-x-auto pb-6">
-                    {getDisplayData().map((post, index) => (
+                    {getDisplayData().length === 0 ? (
+                        <div className="w-full text-center py-12">
+                            <p className="text-xl text-gray-600 font-semibold">No posts available</p>
+                        </div>
+                    ) : (
+                        getDisplayData().map((post, index) => (
                         <div
                             key={post.id}
                             className="w-80 flex-shrink-0 bg-white rounded-xl overflow-hidden border border-purple-500"
@@ -773,7 +778,7 @@ export default function YouTubeTelegramInfluencers() {
                                 )}
                             </div>
                         </div>
-                    ))}
+                    )))}
                 </div>
             </div>
         </div>

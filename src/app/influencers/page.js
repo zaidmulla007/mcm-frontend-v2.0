@@ -10,7 +10,7 @@ const platforms = [
     label: "YouTube",
     value: "youtube",
     logo: (
-      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
         <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
       </svg>
     )
@@ -19,7 +19,7 @@ const platforms = [
     label: "Telegram",
     value: "telegram",
     logo: (
-      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
         <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
       </svg>
     )
@@ -312,46 +312,125 @@ export default function InfluencersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#19162b] text-white font-sans pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 text-gray-900 font-sans pb-16">
       {/* Hero Section */}
-      <section className="max-w-5xl mx-auto pt-16 pb-6 px-4 flex flex-col items-center gap-6">
-        <h1 className="text-4xl md:text-5xl font-bold leading-tight bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent text-center">
-          Top Crypto Influencers
-        </h1>
-        <p className="text-lg text-gray-300 max-w-2xl text-center">
-          Discover, analyze, and follow the most impactful voices in crypto.
-          Track their picks, ROI(Return On Investment), RRR(Risk to Reward Ratio) and performance over time.
-        </p>
+      <section className="max-w-5xl mx-auto px-4 py-8">
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 text-white rounded-2xl shadow-2xl">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div>
+              <h2 className="text-2xl font-bold mb-2 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chart-column w-6 h-6 mr-3" aria-hidden="true">
+                  <path d="M3 3v16a2 2 0 0 0 2 2h16"></path>
+                  <path d="M18 17V9"></path>
+                  <path d="M13 17V5"></path>
+                  <path d="M8 17v-3"></path>
+                </svg>
+                Advanced ROI Analytics Dashboard
+              </h2>
+              <p className="text-white/90 text-sm">Real-time performance tracking with historical data analysis</p>
+            </div>
+            <div className="flex items-center gap-4">
+              {/* Show Moonshots Toggle */}
+              <div className="flex items-center space-x-2">
+                <label className="text-sm font-medium text-white/90">Show Moonshots:</label>
+                <button
+                  onClick={() => setSelectedType(selectedType === "hyperactive" ? "overall" : "hyperactive")}
+                  className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors bg-white/20"
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${selectedType === "hyperactive" ? 'translate-x-6' : 'translate-x-1'}`}></span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="mt-6 flex flex-col sm:flex-row gap-4">
+            <div className="flex items-center space-x-2">
+              <label className="text-xs font-medium text-white/90">View:</label>
+              <select
+                value={selectedPlatform}
+                onChange={(e) => setSelectedPlatform(e.target.value)}
+                className="bg-white/10 border border-white/20 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-white/30 backdrop-blur-sm"
+              >
+                <option value="youtube" className="text-gray-900">All Influencers</option>
+                <option value="telegram" className="text-gray-900">Top 10</option>
+                <option value="specific" className="text-gray-900">Specific Influencer</option>
+                <option value="moonshots" className="text-gray-900">Moonshots 🔒</option>
+                <option value="backtest" className="text-gray-900">Full Portfolio Backtest 🔒</option>
+              </select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-xs font-medium text-white/90">Influencer:</label>
+              <select className="bg-white/10 border border-white/20 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-white/30 backdrop-blur-sm">
+                <option value="1" className="text-gray-900">#1 CryptoWhale</option>
+                <option value="2" className="text-gray-900">#2 DiamondHands</option>
+                <option value="3" className="text-gray-900">#3 BlockchainBear</option>
+              </select>
+            </div>
+            <div className="flex items-center space-x-2">
+              <label className="text-xs font-medium text-white/90 whitespace-nowrap">Timeframe:</label>
+              <div className="flex bg-white/10 rounded-lg p-1 backdrop-blur-sm overflow-x-auto">
+                {['1h', '24h', '7d', '30d', '60d', '90d', '180d', '1yr'].map((time) => {
+                  const timeMap = {
+                    '1h': '1_hour',
+                    '24h': '24_hours',
+                    '7d': '7_days',
+                    '30d': '30_days',
+                    '60d': '60_days',
+                    '90d': '90_days',
+                    '180d': '180_days',
+                    '1yr': '1_year'
+                  };
+                  const isActive = selectedTimeframe === timeMap[time];
+                  return (
+                    <button
+                      key={time}
+                      onClick={() => setSelectedTimeframe(timeMap[time])}
+                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
+                        isActive
+                          ? 'bg-white text-indigo-600 shadow-sm'
+                          : 'text-white/80 hover:text-white hover:bg-white/10'
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
-        {/* Platform Toggle */}
-        <div className="flex gap-2 mt-2">
+      {/* Platform Toggle - Between header and filters */}
+      <section className="max-w-5xl mx-auto px-4 py-4">
+        <div className="flex justify-center gap-3">
           {platforms.map((platform) => (
             <button
               key={platform.value}
               onClick={() => setSelectedPlatform(platform.value)}
-              className={`px-4 py-2 rounded-full font-semibold text-sm transition border-2 focus:outline-none flex items-center gap-2
-                ${selectedPlatform === platform.value
-                  ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white border-transparent shadow"
-                  : "bg-[#232042] text-gray-300 border-[#35315a] hover:bg-[#2d2950]"
-                }
-              `}
+              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${
+                selectedPlatform === platform.value
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
+              }`}
             >
               {platform.logo}
               <span>{platform.label}</span>
             </button>
           ))}
         </div>
+      </section>
 
+      <section>
         {/* Filter Controls - Show for both YouTube and Telegram */}
         {(selectedPlatform === "youtube" || selectedPlatform === "telegram") && (
           <div className="max-w-5xl mx-auto px-4 mb-6 w-full">
-            <div className="bg-[#232042] rounded-2xl p-6 border border-[#35315a]">
-              <h3 className="text-lg font-semibold text-purple-300 mb-4">Filters & Rankings</h3>
+            <div className="bg-white rounded-2xl p-6 border-2 border-purple-200 shadow-xl">
+              <h3 className="text-lg font-semibold text-purple-700 mb-4">Filters & Rankings</h3>
 
               {/* Search Row */}
               <div className="mb-4 relative">
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm text-gray-300 font-medium">Search Influencer:</label>
+                  <label className="text-sm text-gray-700 font-medium">Search Influencer:</label>
                   <div className="relative">
                     <input
                       type="text"
@@ -379,7 +458,7 @@ export default function InfluencersPage() {
                         }, 200);
                       }}
                       placeholder={selectedPlatform === "telegram" ? "Type influencer name" : "Type influencer name"}
-                      className="w-full bg-[#35315a] border border-[#4a456b] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
+                      className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
                     />
                     {searchQuery && (
                       <button
@@ -388,25 +467,25 @@ export default function InfluencersPage() {
                           setShowSearchResults(false);
                           setSearchResults([]);
                         }}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700"
                       >
                         ✕
                       </button>
                     )}
-                    
+
                     {/* Search Results Dropdown */}
                     {showSearchResults && searchResults.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-[#35315a] border border-[#4a456b] rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
                         {searchResults.map((result) => (
                           <button
                             key={result.channel_id}
                             onClick={() => {
                               // Navigate to influencer dashboard
-                              window.location.href = selectedPlatform === "youtube" 
+                              window.location.href = selectedPlatform === "youtube"
                                 ? `/influencers/${result.channel_id}`
                                 : `/telegram-influencer/${result.channel_id}`;
                             }}
-                            className="w-full text-left px-4 py-3 hover:bg-[#4a456b] transition-colors border-b border-[#4a456b] last:border-b-0 flex items-center gap-3"
+                            className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-200 last:border-b-0 flex items-center gap-3"
                           >
                             {result.channel_thumbnails?.high?.url ? (
                               <Image
@@ -419,7 +498,7 @@ export default function InfluencersPage() {
                             ) : (
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
                                 <span className="text-xs font-bold text-white">
-                                  {selectedPlatform === "telegram" 
+                                  {selectedPlatform === "telegram"
                                     ? (result.channel_id ? result.channel_id.match(/\b\w/g)?.join("") || "?" : "?")
                                     : (result.influencer_name ? result.influencer_name.match(/\b\w/g)?.join("") || "?" : "?")
                                   }
@@ -427,13 +506,13 @@ export default function InfluencersPage() {
                               </div>
                             )}
                             <div className="flex-1">
-                              <div className="text-white font-medium">
-                                {selectedPlatform === "telegram" 
+                              <div className="text-gray-900 font-medium">
+                                {selectedPlatform === "telegram"
                                   ? (result.channel_id ? result.channel_id.replace(/_/g, " ") : "Unknown")
                                   : (result.influencer_name ? result.influencer_name.replace(/_/g, " ") : "Unknown")
                                 }
                               </div>
-                              <div className="text-xs text-gray-400">
+                              <div className="text-xs text-gray-600">
                                 Rank {result.rank}
                               </div>
                             </div>
@@ -449,12 +528,12 @@ export default function InfluencersPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-300 font-medium">Sentiment:</label>
+                    <label className="text-sm text-gray-700 font-medium">Sentiment:</label>
                   </div>
                   <select
                     value={selectedSentiment}
                     onChange={(e) => setSelectedSentiment(e.target.value)}
-                    className="bg-[#35315a] border border-[#4a456b] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
                     {sentimentOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -465,11 +544,11 @@ export default function InfluencersPage() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm text-gray-300 font-medium">Holding Period:</label>
+                  <label className="text-sm text-gray-700 font-medium">Holding Period:</label>
                   <select
                     value={selectedTimeframe}
                     onChange={(e) => setSelectedTimeframe(e.target.value)}
-                    className="bg-[#35315a] border border-[#4a456b] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
                     {timeframeOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -480,11 +559,11 @@ export default function InfluencersPage() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm text-gray-300 font-medium">Type:</label>
+                  <label className="text-sm text-gray-700 font-medium">Type:</label>
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
-                    className="bg-[#35315a] border border-[#4a456b] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
                     {typeOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -498,11 +577,11 @@ export default function InfluencersPage() {
               {/* Second Row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm text-gray-300 font-medium">Year:</label>
+                  <label className="text-sm text-gray-700 font-medium">Year:</label>
                   <select
                     value={selectedYear}
                     onChange={(e) => handleYearChange(e.target.value)}
-                    className="bg-[#35315a] border border-[#4a456b] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
                     {yearOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -513,19 +592,19 @@ export default function InfluencersPage() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm text-gray-300 font-medium">
+                  <label className="text-sm text-gray-700 font-medium">
                     Quarter:
                     {selectedYear === "all" && (
-                      <span className="text-xs text-gray-400 ml-2"></span>
+                      <span className="text-xs text-gray-600 ml-2"></span>
                     )}
                   </label>
                   <select
                     value={selectedQuarter}
                     onChange={(e) => setSelectedQuarter(e.target.value)}
                     disabled={selectedYear === "all"}
-                    className={`border border-[#4a456b] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 ${selectedYear === "all"
-                      ? "bg-[#2a2547] text-gray-500 cursor-not-allowed"
-                      : "bg-[#35315a]"
+                    className={`border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${selectedYear === "all"
+                      ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                      : "bg-white text-gray-900"
                       }`}
                   >
                     {quarterOptions.map((option) => (
@@ -548,34 +627,34 @@ export default function InfluencersPage() {
             {Array.from({ length: 9 }).map((_, i) => (
               <div
                 key={`skeleton-${i}`}
-                className="bg-[#232042] rounded-2xl p-8 flex flex-col items-center shadow-lg animate-pulse relative min-h-[200px]"
+                className="bg-white rounded-2xl p-8 flex flex-col items-center shadow-lg animate-pulse relative min-h-[200px] border border-gray-200"
               >
                 {/* Placeholder rank badge */}
-                <div className="absolute top-4 right-4 w-16 h-6 bg-[#35315a] rounded-full" />
+                <div className="absolute top-4 right-4 w-16 h-6 bg-gray-200 rounded-full" />
                 {/* Placeholder avatar */}
                 <div className="w-28 h-28 rounded-full bg-gradient-to-br from-purple-400/50 to-blue-400/50 mb-6 shadow-lg" />
                 {/* Placeholder name */}
-                <div className="h-5 w-32 bg-[#35315a] rounded mb-4" />
+                <div className="h-5 w-32 bg-gray-200 rounded mb-4" />
                 {/* Placeholder stats */}
                 <div className="grid grid-cols-3 gap-3 w-full mt-auto">
-                  <div className="bg-[#35315a]/30 rounded-lg p-3">
-                    <div className="h-3 w-12 bg-[#35315a] rounded mb-1 mx-auto" />
-                    <div className="h-4 w-8 bg-[#35315a] rounded mx-auto" />
+                  <div className="bg-gray-100 rounded-lg p-3">
+                    <div className="h-3 w-12 bg-gray-200 rounded mb-1 mx-auto" />
+                    <div className="h-4 w-8 bg-gray-200 rounded mx-auto" />
                   </div>
-                  <div className="bg-[#35315a]/30 rounded-lg p-3">
-                    <div className="h-3 w-12 bg-[#35315a] rounded mb-1 mx-auto" />
-                    <div className="h-4 w-8 bg-[#35315a] rounded mx-auto" />
+                  <div className="bg-gray-100 rounded-lg p-3">
+                    <div className="h-3 w-12 bg-gray-200 rounded mb-1 mx-auto" />
+                    <div className="h-4 w-8 bg-gray-200 rounded mx-auto" />
                   </div>
-                  <div className="bg-[#35315a]/30 rounded-lg p-3">
-                    <div className="h-3 w-12 bg-[#35315a] rounded mb-1 mx-auto" />
-                    <div className="h-4 w-8 bg-[#35315a] rounded mx-auto" />
+                  <div className="bg-gray-100 rounded-lg p-3">
+                    <div className="h-3 w-12 bg-gray-200 rounded mb-1 mx-auto" />
+                    <div className="h-4 w-8 bg-gray-200 rounded mx-auto" />
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : error ? (
-          <div className="text-center text-red-400 py-8">{error}</div>
+          <div className="text-center text-red-600 py-8">{error}</div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -589,8 +668,8 @@ export default function InfluencersPage() {
                         : `/telegram-influencer/${inf.id}`
                     }
                     className={`rounded-2xl p-8 flex flex-col items-center shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group relative min-h-[200px] ${(selectedPlatform === "youtube" || selectedPlatform === "telegram") && inf.rank && inf.rank <= 3
-                        ? "bg-gradient-to-br from-yellow-900/20 via-[#232042] to-orange-900/20 border-2 border-yellow-400 shadow-2xl shadow-yellow-500/30"
-                        : "bg-[#232042]"
+                        ? "bg-gradient-to-br from-yellow-50 via-white to-orange-50 border-2 border-yellow-400 shadow-2xl shadow-yellow-500/30"
+                        : "bg-white border border-gray-200"
                       }`}
                   >
                     {/* Rank Badge - Top Right Corner */}
@@ -628,7 +707,7 @@ export default function InfluencersPage() {
                         </span>
                       </div>
                     )}
-                    <div className="text-base text-gray-200 font-semibold text-center mb-4 px-2 leading-tight">
+                    <div className="text-base text-gray-900 font-semibold text-center mb-4 px-2 leading-tight">
                       {inf.name ? inf.name.replace(/_/g, " ") : "Unknown"}
                     </div>
                     {(selectedPlatform === "youtube" || selectedPlatform === "telegram") && (
@@ -639,11 +718,11 @@ export default function InfluencersPage() {
                               ? `/influencers/${inf.id}`
                               : `/telegram-influencer/${inf.id}`
                           }
-                          className="text-xs text-gray-400 bg-[#35315a]/30 rounded-lg p-3 hover:bg-[#35315a]/50 hover:scale-105 transition-all duration-200"
+                          className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="font-semibold text-gray-300 mb-1">ROI</div>
-                          <div className="font-bold text-sm text-purple-300">
+                          <div className="font-semibold text-gray-700 mb-1">ROI</div>
+                          <div className="font-bold text-sm text-purple-600">
                             {inf.prob_weighted_returns !== undefined
                               ? `${inf.prob_weighted_returns.toFixed(1)}%`
                               : '0%'}
@@ -655,11 +734,11 @@ export default function InfluencersPage() {
                               ? `/influencers/${inf.id}`
                               : `/telegram-influencer/${inf.id}`
                           }
-                          className="text-xs text-gray-400 bg-[#35315a]/30 rounded-lg p-3 hover:bg-[#35315a]/50 hover:scale-105 transition-all duration-200"
+                          className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="font-semibold text-gray-300 mb-1">Win %</div>
-                          <div className="font-bold text-sm text-green-300">
+                          <div className="font-semibold text-gray-700 mb-1">Win %</div>
+                          <div className="font-bold text-sm text-green-600">
                             {typeof inf.win_percentage === 'number'
                               ? `${inf.win_percentage.toFixed(1)}%`
                               : 'N/A'}
@@ -671,11 +750,11 @@ export default function InfluencersPage() {
                               ? `/influencers/${inf.id}`
                               : `/telegram-influencer/${inf.id}`
                           }
-                          className="text-xs text-gray-400 bg-[#35315a]/30 rounded-lg p-3 hover:bg-[#35315a]/50 hover:scale-105 transition-all duration-200"
+                          className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="font-semibold text-gray-300 mb-1">Loss %</div>
-                          <div className="font-bold text-sm text-red-300">
+                          <div className="font-semibold text-gray-700 mb-1">Loss %</div>
+                          <div className="font-bold text-sm text-red-600">
                             {typeof inf.win_percentage === 'number'
                               ? `${(100 - inf.win_percentage).toFixed(1)}%`
                               : 'N/A'}
@@ -692,7 +771,7 @@ export default function InfluencersPage() {
             {totalPages > 1 && (
               <div className="flex flex-col items-center mt-8 space-y-4">
                 {/* Pagination Info */}
-                <div className="text-sm text-gray-400 text-center">
+                <div className="text-sm text-gray-700 text-center">
                   Showing {startIndex + 1} to {Math.min(endIndex, totalInfluencers)} of {totalInfluencers} influencers
                 </div>
 
@@ -703,8 +782,8 @@ export default function InfluencersPage() {
                     onClick={() => handlePageChange(1)}
                     disabled={currentPage === 1}
                     className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     ‹‹
@@ -715,8 +794,8 @@ export default function InfluencersPage() {
                     onClick={handlePrevious}
                     disabled={currentPage === 1}
                     className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     ‹
@@ -724,11 +803,11 @@ export default function InfluencersPage() {
 
                   {/* Current Page Info */}
                   <div className="flex items-center space-x-2 px-2">
-                    <span className="text-xs text-gray-400">Page</span>
+                    <span className="text-xs text-gray-600">Page</span>
                     <span className="px-2 py-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded text-xs font-medium">
                       {currentPage}
                     </span>
-                    <span className="text-xs text-gray-400">of {totalPages}</span>
+                    <span className="text-xs text-gray-600">of {totalPages}</span>
                   </div>
 
                   {/* Next Button - Mobile */}
@@ -736,8 +815,8 @@ export default function InfluencersPage() {
                     onClick={handleNext}
                     disabled={currentPage === totalPages}
                     className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     ›
@@ -748,8 +827,8 @@ export default function InfluencersPage() {
                     onClick={() => handlePageChange(totalPages)}
                     disabled={currentPage === totalPages}
                     className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     ››
@@ -763,8 +842,8 @@ export default function InfluencersPage() {
                     onClick={() => handlePageChange(1)}
                     disabled={currentPage === 1}
                     className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     &lt;&lt;
@@ -775,8 +854,8 @@ export default function InfluencersPage() {
                     onClick={handlePrevious}
                     disabled={currentPage === 1}
                     className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     &lt;
@@ -787,7 +866,7 @@ export default function InfluencersPage() {
                     <>
                       <button
                         onClick={() => handlePageChange(1)}
-                        className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500 transition-all duration-200"
+                        className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500 transition-all duration-200"
                       >
                         1
                       </button>
@@ -804,7 +883,7 @@ export default function InfluencersPage() {
                       onClick={() => handlePageChange(page)}
                       className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === page
                         ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                        : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
                         }`}
                     >
                       {page}
@@ -819,7 +898,7 @@ export default function InfluencersPage() {
                       )}
                       <button
                         onClick={() => handlePageChange(totalPages)}
-                        className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500 transition-all duration-200"
+                        className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500 transition-all duration-200"
                       >
                         {totalPages}
                       </button>
@@ -831,8 +910,8 @@ export default function InfluencersPage() {
                     onClick={handleNext}
                     disabled={currentPage === totalPages}
                     className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     &gt;
@@ -843,8 +922,8 @@ export default function InfluencersPage() {
                     onClick={() => handlePageChange(totalPages)}
                     disabled={currentPage === totalPages}
                     className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     &gt;&gt;

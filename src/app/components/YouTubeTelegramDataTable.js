@@ -275,15 +275,15 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
                                     return (
                                         <tr key={index} className="border-b border-gray-800 hover:bg-gradient-to-br hover:from-purple-900/20 hover:to-blue-900/20 transition-all duration-300">
-                                            <td className="py-3 px-2">
+                                            <td className="py-3 px-2 max-w-[120px]">
                                                 <div className="space-y-1">
-                                                    <div className="text-sm font-bold text-black">
+                                                    <div className="text-sm font-bold text-black break-words">
                                                         {coin.symbol?.toUpperCase()}
                                                     </div>
-                                                    <div className="text-xs text-black">
+                                                    <div className="text-xs text-black break-words overflow-hidden">
                                                         {coin.coin_name}
                                                     </div>
-                                                    <div className="text-xs text-black">
+                                                    <div className="text-xs text-black break-words">
                                                         {sentimentData.mentions} Posts
                                                     </div>
                                                 </div>
@@ -306,7 +306,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                     </div>
 
                                                     {/* Value Text */}
-                                                    <div className={`font-semibold text-sm ${isBullish ? 'text-to-green-recomendations' : 'text-to-red-recomendations'}`}>
+                                                    <div className={`font-semibold text-sm ${isBullish ? 'text-green-700' : 'text-red-700'}`}>
                                                         {dominantPercentage.toFixed(0)}% {isBullish ? 'Bullish' : 'Bearish'}
                                                     </div>
                                                 </div>

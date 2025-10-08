@@ -259,13 +259,13 @@ export default function InfluencerSearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#19162b] text-white font-sans pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 text-gray-900 font-sans pb-16">
       {/* Hero Section */}
       <section className="max-w-5xl mx-auto pt-16 pb-6 px-4 flex flex-col items-center gap-6">
-        <h1 className="text-4xl md:text-5xl font-bold leading-tight bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent text-center">
+        <h1 className="text-4xl md:text-5xl font-bold leading-tight bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent text-center">
           Influencer Search
         </h1>
-        <p className="text-lg text-gray-300 max-w-2xl text-center">
+        <p className="text-lg text-gray-700 max-w-2xl text-center">
           Search and discover crypto influencers alphabetically. Find your favorite voices in crypto quickly and easily.
         </p>
 
@@ -278,7 +278,7 @@ export default function InfluencerSearchPage() {
               className={`px-4 py-2 rounded-full font-semibold text-sm transition border-2 focus:outline-none flex items-center gap-2
                 ${selectedPlatform === platform.value
                   ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white border-transparent shadow"
-                  : "bg-[#232042] text-gray-300 border-[#35315a] hover:bg-[#2d2950]"
+                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                 }
               `}
             >
@@ -290,13 +290,13 @@ export default function InfluencerSearchPage() {
 
         {/* Search Section */}
         <div className="max-w-5xl mx-auto px-4 mb-6 w-full">
-          <div className="bg-[#232042] rounded-2xl p-6 border border-[#35315a]">
-            <h3 className="text-lg font-semibold text-purple-300 mb-4">Search Influencers</h3>
+          <div className="bg-white rounded-2xl p-6 border-2 border-purple-200">
+            <h3 className="text-lg font-semibold text-purple-600 mb-4">Search Influencers</h3>
 
             {/* Search and Dropdown Row */}
             <div className="mb-4 relative">
               <div className="flex flex-col gap-2">
-                <label className="text-sm text-gray-300 font-medium">Search by Name:</label>
+                <label className="text-sm text-gray-700 font-medium">Search by Name:</label>
                 <div className="flex gap-2">
                   {/* Search Input - 70% */}
                   <div className="relative flex-[0.7]">
@@ -328,7 +328,7 @@ export default function InfluencerSearchPage() {
                         }, 200);
                       }}
                       placeholder={selectedPlatform === "telegram" ? "Type influencer name" : "Type influencer name"}
-                      className="w-full bg-[#35315a] border border-[#4a456b] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
+                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
                     />
                     {searchQuery && (
                       <button
@@ -337,25 +337,25 @@ export default function InfluencerSearchPage() {
                           setShowSearchResults(false);
                           setSearchResults([]);
                         }}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-900"
                       >
                         ✕
                       </button>
                     )}
-                    
+
                     {/* Search Results Dropdown */}
                     {showSearchResults && searchResults.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-[#35315a] border border-[#4a456b] rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
                         {searchResults.map((result) => (
                           <button
                             key={result.channel_id}
                             onClick={() => {
                               // Navigate to influencer dashboard
-                              window.location.href = selectedPlatform === "youtube" 
+                              window.location.href = selectedPlatform === "youtube"
                                 ? `/influencers/${result.channel_id}`
                                 : `/telegram-influencer/${result.channel_id}`;
                             }}
-                            className="w-full text-left px-4 py-3 hover:bg-[#4a456b] transition-colors border-b border-[#4a456b] last:border-b-0 flex items-center gap-3"
+                            className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-200 last:border-b-0 flex items-center gap-3"
                           >
                             {result.channel_thumbnails?.high?.url ? (
                               <Image
@@ -376,13 +376,13 @@ export default function InfluencerSearchPage() {
                               </div>
                             )}
                             <div className="flex-1">
-                              <div className="text-white font-medium">
-                                {selectedPlatform === "telegram" 
+                              <div className="text-gray-900 font-medium">
+                                {selectedPlatform === "telegram"
                                   ? (result.channel_id ? result.channel_id.replace(/_/g, " ") : "Unknown")
                                   : (result.influencer_name ? result.influencer_name.replace(/_/g, " ") : "Unknown")
                                 }
                               </div>
-                              <div className="text-xs text-gray-400">
+                              <div className="text-xs text-gray-600">
                                 Rank {result.rank}
                               </div>
                             </div>
@@ -400,7 +400,7 @@ export default function InfluencerSearchPage() {
                         setShowSearchResults(false);
                         setSearchQuery("");
                       }}
-                      className="w-full bg-[#35315a] border border-[#4a456b] rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-purple-500 text-left flex items-center justify-between"
+                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 text-left flex items-center justify-between"
                     >
                       <span className="truncate">
                         {selectedInfluencer || "Select Influencer"}
@@ -417,7 +417,7 @@ export default function InfluencerSearchPage() {
 
                     {/* All Influencers Dropdown */}
                     {showDropdown && filteredInfluencers.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-[#35315a] border border-[#4a456b] rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
+                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
                         {filteredInfluencers.map((influencer) => (
                           <button
                             key={influencer.id}
@@ -425,11 +425,11 @@ export default function InfluencerSearchPage() {
                               setSelectedInfluencer(influencer.name);
                               setShowDropdown(false);
                               // Navigate to influencer dashboard
-                              window.location.href = selectedPlatform === "youtube" 
+                              window.location.href = selectedPlatform === "youtube"
                                 ? `/influencers/${influencer.id}`
                                 : `/telegram-influencer/${influencer.id}`;
                             }}
-                            className="w-full text-left px-4 py-3 hover:bg-[#4a456b] transition-colors border-b border-[#4a456b] last:border-b-0 flex items-center gap-3"
+                            className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-200 last:border-b-0 flex items-center gap-3"
                           >
                             {influencer.channel_thumbnails?.high?.url ? (
                               <Image
@@ -447,10 +447,10 @@ export default function InfluencerSearchPage() {
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <div className="text-white font-medium text-sm truncate">
+                              <div className="text-gray-900 font-medium text-sm truncate">
                                 {influencer.name ? influencer.name.replace(/_/g, " ") : "Unknown"}
                               </div>
-                              <div className="text-xs text-gray-400">
+                              <div className="text-xs text-gray-600">
                                 Rank {influencer.rank}
                               </div>
                             </div>
@@ -473,34 +473,34 @@ export default function InfluencerSearchPage() {
             {Array.from({ length: 9 }).map((_, i) => (
               <div
                 key={`skeleton-${i}`}
-                className="bg-[#232042] rounded-2xl p-8 flex flex-col items-center shadow-lg animate-pulse relative min-h-[200px]"
+                className="bg-white rounded-2xl p-8 flex flex-col items-center shadow-lg animate-pulse relative min-h-[200px] border border-gray-200"
               >
                 {/* Placeholder rank badge */}
-                <div className="absolute top-4 right-4 w-16 h-6 bg-[#35315a] rounded-full" />
+                <div className="absolute top-4 right-4 w-16 h-6 bg-gray-200 rounded-full" />
                 {/* Placeholder avatar */}
-                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-purple-400/50 to-blue-400/50 mb-6 shadow-lg" />
+                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-purple-200 to-blue-200 mb-6 shadow-lg" />
                 {/* Placeholder name */}
-                <div className="h-5 w-32 bg-[#35315a] rounded mb-4" />
+                <div className="h-5 w-32 bg-gray-200 rounded mb-4" />
                 {/* Placeholder stats */}
                 <div className="grid grid-cols-3 gap-3 w-full mt-auto">
-                  <div className="bg-[#35315a]/30 rounded-lg p-3">
-                    <div className="h-3 w-12 bg-[#35315a] rounded mb-1 mx-auto" />
-                    <div className="h-4 w-8 bg-[#35315a] rounded mx-auto" />
+                  <div className="bg-gray-100 rounded-lg p-3">
+                    <div className="h-3 w-12 bg-gray-200 rounded mb-1 mx-auto" />
+                    <div className="h-4 w-8 bg-gray-200 rounded mx-auto" />
                   </div>
-                  <div className="bg-[#35315a]/30 rounded-lg p-3">
-                    <div className="h-3 w-12 bg-[#35315a] rounded mb-1 mx-auto" />
-                    <div className="h-4 w-8 bg-[#35315a] rounded mx-auto" />
+                  <div className="bg-gray-100 rounded-lg p-3">
+                    <div className="h-3 w-12 bg-gray-200 rounded mb-1 mx-auto" />
+                    <div className="h-4 w-8 bg-gray-200 rounded mx-auto" />
                   </div>
-                  <div className="bg-[#35315a]/30 rounded-lg p-3">
-                    <div className="h-3 w-12 bg-[#35315a] rounded mb-1 mx-auto" />
-                    <div className="h-4 w-8 bg-[#35315a] rounded mx-auto" />
+                  <div className="bg-gray-100 rounded-lg p-3">
+                    <div className="h-3 w-12 bg-gray-200 rounded mb-1 mx-auto" />
+                    <div className="h-4 w-8 bg-gray-200 rounded mx-auto" />
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : error ? (
-          <div className="text-center text-red-400 py-8">{error}</div>
+          <div className="text-center text-red-600 py-8">{error}</div>
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
@@ -514,8 +514,8 @@ export default function InfluencerSearchPage() {
                         : `/telegram-influencer/${inf.id}`
                     }
                     className={`rounded-2xl p-8 flex flex-col items-center shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group relative min-h-[200px] ${(selectedPlatform === "youtube" || selectedPlatform === "telegram") && inf.rank && inf.rank <= 3
-                        ? "bg-gradient-to-br from-yellow-900/20 via-[#232042] to-orange-900/20 border-2 border-yellow-400 shadow-2xl shadow-yellow-500/30"
-                        : "bg-[#232042]"
+                        ? "bg-gradient-to-br from-yellow-50 via-white to-orange-50 border-2 border-yellow-400 shadow-2xl shadow-yellow-500/30"
+                        : "bg-white border border-gray-200"
                       }`}
                   >
                     {/* Rank Badge - Top Right Corner */}
@@ -550,7 +550,7 @@ export default function InfluencerSearchPage() {
                         </span>
                       </div>
                     )}
-                    <div className="text-base text-gray-200 font-semibold text-center mb-4 px-2 leading-tight">
+                    <div className="text-base text-gray-900 font-semibold text-center mb-4 px-2 leading-tight">
                       {inf.name ? inf.name.replace(/_/g, " ") : "Unknown"}
                     </div>
                     {(selectedPlatform === "youtube" || selectedPlatform === "telegram") && (
@@ -561,11 +561,11 @@ export default function InfluencerSearchPage() {
                               ? `/influencers/${inf.id}`
                               : `/telegram-influencer/${inf.id}`
                           }
-                          className="text-xs text-gray-400 bg-[#35315a]/30 rounded-lg p-3 hover:bg-[#35315a]/50 hover:scale-105 transition-all duration-200"
+                          className="text-xs text-gray-700 bg-gray-100 rounded-lg p-3 hover:bg-gray-200 hover:scale-105 transition-all duration-200"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="font-semibold text-gray-300 mb-1">ROI</div>
-                          <div className="font-bold text-sm text-purple-300">
+                          <div className="font-semibold text-gray-700 mb-1">ROI</div>
+                          <div className="font-bold text-sm text-purple-600">
                             {inf.prob_weighted_returns !== undefined
                               ? `${inf.prob_weighted_returns.toFixed(1)}%`
                               : '0%'}
@@ -577,11 +577,11 @@ export default function InfluencerSearchPage() {
                               ? `/influencers/${inf.id}`
                               : `/telegram-influencer/${inf.id}`
                           }
-                          className="text-xs text-gray-400 bg-[#35315a]/30 rounded-lg p-3 hover:bg-[#35315a]/50 hover:scale-105 transition-all duration-200"
+                          className="text-xs text-gray-700 bg-gray-100 rounded-lg p-3 hover:bg-gray-200 hover:scale-105 transition-all duration-200"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="font-semibold text-gray-300 mb-1">Win %</div>
-                          <div className="font-bold text-sm text-green-300">
+                          <div className="font-semibold text-gray-700 mb-1">Win %</div>
+                          <div className="font-bold text-sm text-green-600">
                             {typeof inf.win_percentage === 'number'
                               ? `${inf.win_percentage.toFixed(1)}%`
                               : 'N/A'}
@@ -593,11 +593,11 @@ export default function InfluencerSearchPage() {
                               ? `/influencers/${inf.id}`
                               : `/telegram-influencer/${inf.id}`
                           }
-                          className="text-xs text-gray-400 bg-[#35315a]/30 rounded-lg p-3 hover:bg-[#35315a]/50 hover:scale-105 transition-all duration-200"
+                          className="text-xs text-gray-700 bg-gray-100 rounded-lg p-3 hover:bg-gray-200 hover:scale-105 transition-all duration-200"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <div className="font-semibold text-gray-300 mb-1">Loss %</div>
-                          <div className="font-bold text-sm text-red-300">
+                          <div className="font-semibold text-gray-700 mb-1">Loss %</div>
+                          <div className="font-bold text-sm text-red-600">
                             {typeof inf.win_percentage === 'number'
                               ? `${(100 - inf.win_percentage).toFixed(1)}%`
                               : 'N/A'}
@@ -614,7 +614,7 @@ export default function InfluencerSearchPage() {
             {totalPages > 1 && (
               <div className="flex flex-col items-center mt-8 space-y-4">
                 {/* Pagination Info */}
-                <div className="text-sm text-gray-400 text-center">
+                <div className="text-sm text-gray-600 text-center">
                   Showing {startIndex + 1} to {Math.min(endIndex, totalInfluencers)} of {totalInfluencers} influencers
                 </div>
 
@@ -625,8 +625,8 @@ export default function InfluencerSearchPage() {
                     onClick={() => handlePageChange(1)}
                     disabled={currentPage === 1}
                     className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     ‹‹
@@ -637,8 +637,8 @@ export default function InfluencerSearchPage() {
                     onClick={handlePrevious}
                     disabled={currentPage === 1}
                     className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     ‹
@@ -646,11 +646,11 @@ export default function InfluencerSearchPage() {
 
                   {/* Current Page Info */}
                   <div className="flex items-center space-x-2 px-2">
-                    <span className="text-xs text-gray-400">Page</span>
+                    <span className="text-xs text-gray-600">Page</span>
                     <span className="px-2 py-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded text-xs font-medium">
                       {currentPage}
                     </span>
-                    <span className="text-xs text-gray-400">of {totalPages}</span>
+                    <span className="text-xs text-gray-600">of {totalPages}</span>
                   </div>
 
                   {/* Next Button - Mobile */}
@@ -658,8 +658,8 @@ export default function InfluencerSearchPage() {
                     onClick={handleNext}
                     disabled={currentPage === totalPages}
                     className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     ›
@@ -670,8 +670,8 @@ export default function InfluencerSearchPage() {
                     onClick={() => handlePageChange(totalPages)}
                     disabled={currentPage === totalPages}
                     className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     ››
@@ -685,8 +685,8 @@ export default function InfluencerSearchPage() {
                     onClick={() => handlePageChange(1)}
                     disabled={currentPage === 1}
                     className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     &lt;&lt;
@@ -697,8 +697,8 @@ export default function InfluencerSearchPage() {
                     onClick={handlePrevious}
                     disabled={currentPage === 1}
                     className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     &lt;
@@ -709,12 +709,12 @@ export default function InfluencerSearchPage() {
                     <>
                       <button
                         onClick={() => handlePageChange(1)}
-                        className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500 transition-all duration-200"
+                        className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500 transition-all duration-200"
                       >
                         1
                       </button>
                       {getPageNumbers()[0] > 2 && (
-                        <span className="text-gray-500 text-xs">...</span>
+                        <span className="text-gray-600 text-xs">...</span>
                       )}
                     </>
                   )}
@@ -726,7 +726,7 @@ export default function InfluencerSearchPage() {
                       onClick={() => handlePageChange(page)}
                       className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === page
                         ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                        : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
                         }`}
                     >
                       {page}
@@ -737,11 +737,11 @@ export default function InfluencerSearchPage() {
                   {getPageNumbers()[getPageNumbers().length - 1] < totalPages && (
                     <>
                       {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
-                        <span className="text-gray-500 text-xs">...</span>
+                        <span className="text-gray-600 text-xs">...</span>
                       )}
                       <button
                         onClick={() => handlePageChange(totalPages)}
-                        className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500 transition-all duration-200"
+                        className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500 transition-all duration-200"
                       >
                         {totalPages}
                       </button>
@@ -753,8 +753,8 @@ export default function InfluencerSearchPage() {
                     onClick={handleNext}
                     disabled={currentPage === totalPages}
                     className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     &gt;
@@ -765,8 +765,8 @@ export default function InfluencerSearchPage() {
                     onClick={() => handlePageChange(totalPages)}
                     disabled={currentPage === totalPages}
                     className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-[#35315a] text-gray-500 cursor-not-allowed'
-                      : 'bg-[#232042] text-gray-300 hover:bg-[#2d2950] border border-[#35315a] hover:border-purple-500'
+                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
                       }`}
                   >
                     &gt;&gt;

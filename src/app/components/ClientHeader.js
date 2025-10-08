@@ -7,8 +7,8 @@ import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaChartLine, 
 import { useTimezone } from "../contexts/TimezoneContext";
 
 const navLinks = [
-  { name: "Home", href: "/home", icon: FaHome },
-  { name: "Landing Page", href: "/landing-page", icon: FaGlobe },
+  { name: "Landing Page", href: "/home", icon: FaGlobe },
+  { name: "Home", href: "/landing-page", icon: FaHome },
   { name: "Influencers", href: "/influencers", icon: FaChartLine },
   { name: "Plans", href: "/plans", icon: FaTrophy },
   { name: "Blog", href: "/blog", icon: FaBlog },
@@ -114,8 +114,8 @@ export default function ClientHeader() {
                 key={link.name}
                 href={link.href}
                 className={`flex items-center gap-2 text-sm font-medium transition ${isActive
-                    ? 'text-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
+                  ? 'text-blue-600'
+                  : 'text-gray-700 hover:text-blue-600'
                   }`}
               >
                 <IconComponent className="text-base" />
