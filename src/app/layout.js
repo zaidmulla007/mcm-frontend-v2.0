@@ -23,10 +23,10 @@ export const metadata = {
 
 function Footer() {
   return (
-    <footer className="w-full bg-[#19162b] border-t border-[#232042] mt-12 py-8 px-4">
+    <footer className="w-full bg-white border-t border-gray-200 mt-12 py-8 px-4">
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
         {/* Links */}
-        <div className="flex flex-wrap gap-4 text-sm text-gray-300 mb-4 md:mb-0">
+        <div className="flex flex-wrap gap-4 text-sm text-gray-700 mb-4 md:mb-0">
           <a href="/about" className="hover:text-purple-400 transition">
             About
           </a>
@@ -99,17 +99,17 @@ function Footer() {
             type="email"
             required
             placeholder="Your email"
-            className="bg-[#232042] text-sm text-white rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-400 w-56"
+            className="bg-white text-sm text-black border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 placeholder-gray-500 w-56"
           />
           <button
             type="submit"
-            className="bg-gradient-to-r from-purple-500 to-blue-500 px-5 py-2 rounded-full font-semibold text-sm shadow hover:scale-105 transition"
+            className="bg-gradient-to-r from-purple-500 to-blue-500 px-5 py-2 rounded-full font-semibold text-sm text-white shadow hover:scale-105 transition"
           >
             Subscribe
           </button>
         </form>
       </div>
-      <div className="text-xs text-gray-500 text-center mt-6">
+      <div className="text-xs text-black-600 text-center mt-6">
         &copy; {new Date().getFullYear()} MCM. All rights reserved.
       </div>
     </footer>

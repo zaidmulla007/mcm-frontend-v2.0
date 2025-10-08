@@ -148,7 +148,7 @@ export default function YouTubeTelegramInfluencers() {
             } else if (i === fullStars && hasHalfStar) {
                 stars.push(<FaStarHalfAlt key={i} className="text-yellow-400" />);
             } else {
-                stars.push(<FaStar key={i} className="text-gray-600" />);
+                stars.push(<FaStar key={i} className="text-black" />);
             }
         }
 
@@ -273,9 +273,9 @@ export default function YouTubeTelegramInfluencers() {
 
     // Get sentiment color
     const getSentimentColor = (sentiment) => {
-        if (sentiment.toLowerCase().includes("bullish")) return "text-green-400";
-        if (sentiment.toLowerCase().includes("bearish")) return "text-red-400";
-        return "text-blue-400"; // neutral
+        if (sentiment.toLowerCase().includes("bullish")) return "text-green-700";
+        if (sentiment.toLowerCase().includes("bearish")) return "text-red-700";
+        return "text-blue-700"; // neutral
     };
 
     // Get column color - always blue-700 for all platforms
@@ -285,10 +285,10 @@ export default function YouTubeTelegramInfluencers() {
 
     // Get score color
     const getScoreColor = (score) => {
-        if (score >= 8) return "text-green-400";
-        if (score >= 6) return "text-blue-400";
-        if (score >= 4) return "text-yellow-400";
-        return "text-red-400";
+        if (score >= 8) return "text-green-700";
+        if (score >= 6) return "text-blue-700";
+        if (score >= 4) return "text-yellow-700";
+        return "text-red-700";
     };
 
     // Capitalize first letter of each word
@@ -371,11 +371,11 @@ export default function YouTubeTelegramInfluencers() {
 
     if (loading) {
         return (
-            <div className="bg-gradient-to-br from-purple-900 to-blue-900 min-h-screen text-white flex items-center justify-center">
+            <div className="bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-400 border-t-transparent mx-auto mb-4"></div>
-                    <div className="text-white text-lg font-semibold mb-2">Loading Latest Posts...</div>
-                    <div className="text-purple-300 text-sm">Fetching YouTube & Telegram data</div>
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent mx-auto mb-4"></div>
+                    <div className="text-gray-900 text-lg font-semibold mb-2">Loading Latest Posts...</div>
+                    <div className="text-purple-600 text-sm">Fetching YouTube & Telegram data</div>
                 </div>
             </div>
         );
@@ -385,47 +385,47 @@ export default function YouTubeTelegramInfluencers() {
         <div className="jsx-816192472cbeba0e flex justify-center">
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mt-2">
-                    <h1 className="text-3xl font-bold text-white mb-2">
+                    <h1 className="text-3xl font-bold text-black mb-2">
                         Latest Posts
                     </h1>
                 </div>
 
                 {/* Platform Selection */}
                 <div className="flex justify-center mb-8">
-                    <div className="jsx-816192472cbeba0e bg-gradient-to-br from-purple-900/30 to-blue-900/30 rounded-xl border  border border-purple-500/30 p-4 w-full max-w-2xl">
+                    <div className="jsx-816192472cbeba0e bg-white rounded-xl border border-purple-500 p-4 w-full max-w-2xl">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <label className="text-lg text-gray-300 font-semibold">Platform:</label>
+                                <label className="text-lg text-black font-semibold">Platform:</label>
                                 <select
                                     value={selectedPlatform}
                                     onChange={(e) => setSelectedPlatform(e.target.value)}
-                                    className="jsx-816192472cbeba0e bg-gradient-to-br from-purple-900/30 to-blue-900/30 border border-purple-500/30 rounded-lg px-4 py-2 text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[150px]"
+                                    className="jsx-816192472cbeba0e bg-white border border-purple-500/30 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[150px]"
                                 >
-                                    <option value="Combined" className="bg-gray-800">Combined</option>
-                                    <option value="YouTube" className="bg-gray-800">YouTube</option>
-                                    <option value="Telegram" className="bg-gray-800">Telegram</option>
+                                    <option value="Combined" className="bg-white text-black">Combined</option>
+                                    <option value="YouTube" className="bg-white text-black">YouTube</option>
+                                    <option value="Telegram" className="bg-white text-black">Telegram</option>
                                 </select>
                             </div>
 
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-gray-300 font-medium">Source: </span>
+                                <span className="text-sm text-black font-medium">Source: </span>
                                 <div className="flex items-center gap-2">
                                     {selectedPlatform === "Combined" ? (
                                         <>
-                                            <YouTubeIcon className="text-red-500" />
-                                            <span className="text-sm text-gray-300">YouTube</span>
-                                            <TelegramIcon className="text-blue-500" />
-                                            <span className="text-sm text-gray-300">Telegram</span>
+                                            <YouTubeIcon className="text-red-900" />
+                                            <span className="text-sm text-black">YouTube</span>
+                                            <TelegramIcon className="text-blue-900" />
+                                            <span className="text-sm text-black">Telegram</span>
                                         </>
                                     ) : selectedPlatform === "YouTube" ? (
                                         <>
-                                            <YouTubeIcon className="text-red-500" />
-                                            <span className="text-sm text-gray-300">YouTube</span>
+                                            <YouTubeIcon className="text-red-900" />
+                                            <span className="text-sm text-black">YouTube</span>
                                         </>
                                     ) : (
                                         <>
-                                            <TelegramIcon className="text-blue-500" />
-                                            <span className="text-sm text-gray-300">Telegram</span>
+                                            <TelegramIcon className="text-blue-900" />
+                                            <span className="text-sm text-black">Telegram</span>
                                         </>
                                     )}
                                 </div>
@@ -440,26 +440,26 @@ export default function YouTubeTelegramInfluencers() {
                     {getDisplayData().map((post, index) => (
                         <div
                             key={post.id}
-                            className="w-80 flex-shrink-0 bg-gradient-to-br from-purple-900/30 to-blue-900/30 rounded-xl overflow-hidden border border-purple-500/30"
+                            className="w-80 flex-shrink-0 bg-white rounded-xl overflow-hidden border border-purple-500"
                         >
                             {/* Post Header with Platform Icon in Top Right */}
                             <div className="border-b border-gray-700">
                                 <div
-                                    className={`${getColumnColor(index)} text-white p-3 text-center text-sm font-bold flex justify-between items-center`}
+                                    className={`${getColumnColor(index)} text-black p-3 text-center text-sm font-bold flex justify-between items-center`}
                                 >
                                     <span>POST {index + 1}</span>
                                     <div className="flex items-center">
-                                        <span className="text-xs mr-2">{formatDate(post.date)}</span>
+                                        <span className="text-xs text-black mr-2">{formatDate(post.date)}</span>
                                         {(selectedPlatform === "Combined") ? (
                                             post.platform === "YouTube" ? (
-                                                <YouTubeIcon className="text-red-500" />
+                                                <YouTubeIcon className="text-red-900" />
                                             ) : (
-                                                <TelegramIcon className="text-blue-500" />
+                                                <TelegramIcon className="text-blue-900" />
                                             )
                                         ) : selectedPlatform === "YouTube" ? (
-                                            <YouTubeIcon className="text-red-500" />
+                                            <YouTubeIcon className="text-red-900" />
                                         ) : (
-                                            <TelegramIcon className="text-blue-500" />
+                                            <TelegramIcon className="text-blue-900" />
                                         )}
                                     </div>
                                 </div>
@@ -468,7 +468,7 @@ export default function YouTubeTelegramInfluencers() {
                             {/* Post Header */}
                             <div className="p-3 border-b border-gray-700">
                                 {/* Influencer Name Link */}
-                                <div className="text-sm font-bold text-white-400 mb-2">
+                                <div className="text-sm font-bold text-black mb-2">
                                     Name :
                                     <a
                                         href={
@@ -478,14 +478,14 @@ export default function YouTubeTelegramInfluencers() {
                                         }
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="ml-1 text-white-400 hover:text-white hover:underline cursor-pointer transition-colors duration-200"
+                                        className="ml-1 text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
                                     >
                                         {post.channel_name}
                                     </a>
                                 </div>
 
                                 {/* Rank Link (simple) */}
-                                <div className="text-sm font-bold text-white-400 mb-2 flex items-center gap-2">
+                                <div className="text-sm font-bold text-black mb-2 flex items-center gap-2">
                                     Rank 
                                     <span className="sr-only">Rank (180 days / Overall)</span>
                                     <button
@@ -504,7 +504,7 @@ export default function YouTubeTelegramInfluencers() {
                                         href={post.platform === "YouTube" ? `/influencers/${post.channelID}` : `/telegram-influencer/${post.channelID}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="ml-1 text-white-400 hover:text-white hover:underline cursor-pointer transition-colors duration-200"
+                                        className="ml-1 text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
                                     >
                                         {post.rank}
                                     </a>
@@ -521,7 +521,7 @@ export default function YouTubeTelegramInfluencers() {
                                         }
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="block text-white-400 hover:text-white hover:underline cursor-pointer transition-colors duration-200"
+                                        className="block text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
                                     >
                                         <div className={`text-sm font-medium ${expandedTitles[post.id] ? '' : 'line-clamp-2'}`} title={post.title}>
                                             {post.title}
@@ -533,7 +533,7 @@ export default function YouTubeTelegramInfluencers() {
                                     {post.title.length > 80 && (
                                         <button
                                             onClick={() => toggleTitle(post.id)}
-                                            className="text-xs text-blue-400 hover:text-blue-300 cursor-pointer"
+                                            className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
                                         >
                                             {expandedTitles[post.id] ? '.....' : '......'}
                                         </button>
@@ -544,7 +544,7 @@ export default function YouTubeTelegramInfluencers() {
                                         href={post.videoUrl || post.telegramUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className={`flex items-center gap-1 ${post.platform === "YouTube" ? "text-red-400 hover:text-red-500" : "text-blue-400 hover:text-blue-500"}`}
+                                        className={`flex items-center gap-1 ${post.platform === "YouTube" ? "text-red-700 hover:text-red-800" : "text-blue-700 hover:text-blue-800"}`}
                                     >
                                         {post.platform === "YouTube" ? "Watch Video" : "View Post"}
                                     </a>
@@ -553,24 +553,24 @@ export default function YouTubeTelegramInfluencers() {
                             {/* MCM Scoring */}
                             <div className="p-3 border-b border-gray-700">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="font-bold text-xs text-gray-300">MCM Scoring</span>
+                                    <span className="font-bold text-xs text-black">MCM Scoring</span>
                                 </div>
                                 <ul className="text-xs space-y-2">
                                     <li className="flex items-center justify-between">
-                                        <span className="text-gray-300">Overall</span>
+                                        <span className="text-black">Overall</span>
                                         {renderStars(post.overallScore)}
                                     </li>
                                     <li className="flex items-center justify-between">
-                                        <span className="text-gray-300">Educational</span>
+                                        <span className="text-black">Educational</span>
                                         {renderStars(post.educationalPurpose)}
                                     </li>
                                     <li className="flex items-center justify-between">
-                                        <span className="text-gray-300">Actionable</span>
+                                        <span className="text-black">Actionable</span>
                                         {renderStars(post.actionableInsights)}
                                     </li>
                                     <li className="flex flex-col">
-                                        <span className="text-gray-300 mb-2">Marketing Content</span>
-                                        <div className={`text-xs text-gray-400 ${expandedMarketing[post.id] ? 'leading-tight' : 'truncate overflow-hidden whitespace-nowrap'}`}>
+                                        <span className="text-black mb-2">Marketing Content</span>
+                                        <div className={`text-xs text-black ${expandedMarketing[post.id] ? 'leading-tight' : 'truncate overflow-hidden whitespace-nowrap'}`}>
                                             {typeof post.marketingContent === "string"
                                                 ? expandedMarketing[post.id]
                                                     ? post.marketingContent
@@ -592,7 +592,7 @@ export default function YouTubeTelegramInfluencers() {
                                                 post.marketingContent.length > 50 && (
                                                     <button
                                                         onClick={() => toggleMarketing(post.id)}
-                                                        className="text-xs text-blue-400 hover:text-blue-300 cursor-pointer self-start"
+                                                        className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer self-start"
                                                     >
                                                         {expandedMarketing[post.id] ? "Read Less" : "Read More"}
                                                     </button>
@@ -605,10 +605,10 @@ export default function YouTubeTelegramInfluencers() {
                             {/* Post Summary */}
                             <div className="p-3 border-b border-gray-700">
                                 <div className="flex items-center justify-between mb-2">
-                                    <span className="font-bold text-xs text-gray-300">Post Summary</span>
+                                    <span className="font-bold text-xs text-black">Post Summary</span>
                                     <button
                                         onClick={() => toggleSummary(post.id)}
-                                        className="text-lg text-blue-400 hover:text-blue-300 cursor-pointer font-bold"
+                                        className="text-lg text-blue-700 hover:text-blue-800 cursor-pointer font-bold"
                                     >
                                         {expandedSummaries[post.id] ? '−' : '+'}
                                     </button>
@@ -616,7 +616,7 @@ export default function YouTubeTelegramInfluencers() {
 
                                 <div className="min-h-[96px] mb-2">
                                     <div
-                                        className={`text-xs text-gray-300 leading-tight transition-all duration-300 ${expandedSummaries[post.id] ? '' : 'line-clamp-4'
+                                        className={`text-xs text-black leading-tight transition-all duration-300 ${expandedSummaries[post.id] ? '' : 'line-clamp-4'
                                             }`}
                                     >
                                         {post.summary || "No summary available"}
@@ -626,7 +626,7 @@ export default function YouTubeTelegramInfluencers() {
                                     {post.summary && (
                                         <button
                                             onClick={() => toggleSummary(post.id)}
-                                            className="mt-1 text-blue-400 hover:text-blue-300 text-xs font-semibold"
+                                            className="mt-1 text-blue-700 hover:text-blue-800 text-xs font-semibold"
                                         >
                                             {expandedSummaries[post.id] ? 'Read less' : 'Read more'}
                                         </button>
@@ -643,7 +643,7 @@ export default function YouTubeTelegramInfluencers() {
                                 onMouseLeave={() => setHoveredPost(null)}
                             >
                                 <div className="flex items-center gap-2 mb-2">
-                                    <span className="font-bold text-xs text-gray-300">Coins Analysis</span>
+                                    <span className="font-bold text-xs text-black">Coins Analysis</span>
                                 </div>
 
                                 {/* Coins table */}
@@ -652,9 +652,9 @@ export default function YouTubeTelegramInfluencers() {
                                         <table className="w-full text-xs">
                                             <thead>
                                                 <tr className="border-b border-gray-600">
-                                                    <th className="text-center text-gray-300 pb-1 pr-2">Name</th>
-                                                    <th className="text-center text-gray-300 pb-1 pr-2">Sentiment</th>
-                                                    <th className="text-center text-gray-300 pb-1">Holding Period</th>
+                                                    <th className="text-center text-black pb-1 pr-2">Name</th>
+                                                    <th className="text-center text-black pb-1 pr-2">Sentiment</th>
+                                                    <th className="text-center text-black pb-1">Holding Period</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -669,7 +669,7 @@ export default function YouTubeTelegramInfluencers() {
                                                             <tr key={i} className="border-b border-gray-700/50">
                                                                 <td className="py-1 pr-2 text-center">
                                                                     {coin ? (
-                                                                        <span className="text-white" title={coin.symbol}>
+                                                                        <span className="text-black" title={coin.symbol}>
                                                                             {formatCoinName(coin.name || coin.symbol)}
                                                                         </span>
                                                                     ) : (
@@ -687,7 +687,7 @@ export default function YouTubeTelegramInfluencers() {
                                                                 </td>
                                                                 <td className="py-1 text-center">
                                                                     {coin ? (
-                                                                        <span className="text-gray-300">
+                                                                        <span className="text-black">
                                                                             {formatHoldingPeriod(coin.outlook)}
                                                                         </span>
                                                                     ) : (
@@ -707,7 +707,7 @@ export default function YouTubeTelegramInfluencers() {
                                     {post.mentionedCoins && post.mentionedCoins.length > 5 && (
                                         <button
                                             onClick={() => toggleCoins(post.id)}
-                                            className="text-xs text-blue-400 hover:text-blue-300 cursor-pointer"
+                                            className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
                                         >
                                             {expandedCoins[post.id]
                                                 ? 'Read Less'
@@ -721,10 +721,10 @@ export default function YouTubeTelegramInfluencers() {
                                 {hoveredPost === post.id && (
                                     <div className="absolute top-0 left-full ml-2 z-50 bg-gray-800 text-white p-4 rounded-lg shadow-xl border border-gray-700 max-w-md">
                                         <div className="text-xs">
-                                            <div className="font-bold mb-2 text-blue-400">Complete Post Analysis</div>
+                                            <div className="font-bold mb-2 text-blue-700">Complete Post Analysis</div>
 
                                             <div className="mb-3">
-                                                <span className="font-semibold text-blue-400">All Recommendations ({post.mentionedCoins.length}):</span>
+                                                <span className="font-semibold text-blue-700">All Recommendations ({post.mentionedCoins.length}):</span>
                                                 <div className="mt-1 max-h-32 overflow-y-auto">
                                                     {post.mentionedCoins.map((coin, i) => (
                                                         <div key={i} className={`${getSentimentColor(coin.sentiment)} mb-1 flex items-start`}>
