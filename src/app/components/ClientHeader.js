@@ -3,13 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaChartLine, FaTrophy, FaBlog, FaInfoCircle, FaGlobe } from "react-icons/fa";
+import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaChartLine, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaSearch } from "react-icons/fa";
 import { useTimezone } from "../contexts/TimezoneContext";
 
 const navLinks = [
   { name: "Landing Page", href: "/home", icon: FaGlobe },
   { name: "Home", href: "/landing-page", icon: FaHome },
-  { name: "Influencers", href: "/influencers", icon: FaChartLine },
+  { name: "Influencers Rank", href: "/influencers", icon: FaChartLine },
+  { name: "Influencer Search", href: "/influencer-search", icon: FaSearch },
   { name: "Plans", href: "/plans", icon: FaTrophy },
   { name: "Blog", href: "/blog", icon: FaBlog },
   { name: "About", href: "/about", icon: FaInfoCircle },
