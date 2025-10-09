@@ -1,5 +1,4 @@
 "use client";
-import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
@@ -35,14 +34,14 @@ export default function InfluencerSearchPage() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
+  const itemsPerPage = 15;
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [initialLoad, setInitialLoad] = useState(true);
-  
+
   // Dropdown state
   const [selectedInfluencer, setSelectedInfluencer] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -65,11 +64,11 @@ export default function InfluencerSearchPage() {
       const res = await fetch(`/api/youtube-data?${params.toString()}`);
       const data = await res.json();
       if (data.success && Array.isArray(data.results)) {
-        // Sort alphabetically by influencer name
+        // Sort by rank (ascending: 1, 2, 3, ...)
         const sortedResults = [...data.results].sort((a, b) => {
-          const nameA = (a.influencer_name || "").toLowerCase();
-          const nameB = (b.influencer_name || "").toLowerCase();
-          return nameA.localeCompare(nameB);
+          const rankA = a.rank || 999999;
+          const rankB = b.rank || 999999;
+          return rankA - rankB;
         });
         setYoutubeInfluencers(sortedResults);
       } else {
@@ -92,11 +91,11 @@ export default function InfluencerSearchPage() {
       const res = await fetch(`/api/telegram-data?${params.toString()}`);
       const data = await res.json();
       if (data.success && Array.isArray(data.results)) {
-        // Sort alphabetically by channel_id (since influencer_name is often "N/A")
+        // Sort by rank (ascending: 1, 2, 3, ...)
         const sortedResults = [...data.results].sort((a, b) => {
-          const nameA = (a.channel_id || "").toLowerCase();
-          const nameB = (b.channel_id || "").toLowerCase();
-          return nameA.localeCompare(nameB);
+          const rankA = a.rank || 999999;
+          const rankB = b.rank || 999999;
+          return rankA - rankB;
         });
         setTelegramInfluencers(sortedResults);
       } else {
@@ -148,7 +147,7 @@ export default function InfluencerSearchPage() {
     if (searchQuery.trim().length > 0) {
       const currentInfluencers = selectedPlatform === "youtube" ? youtubeInfluencers : telegramInfluencers;
       const searchTerm = searchQuery.toLowerCase().trim();
-      
+
       const filtered = currentInfluencers.filter((influencer) => {
         if (selectedPlatform === "telegram") {
           // For Telegram, search by channel_id since influencer_name is often "N/A"
@@ -160,14 +159,14 @@ export default function InfluencerSearchPage() {
           return influencerName.includes(searchTerm);
         }
       });
-      
-      // Sort results alphabetically
+
+      // Sort results by rank (already sorted in the main data, but ensure it here too)
       const sortedResults = filtered.sort((a, b) => {
-        const aText = selectedPlatform === "telegram" ? (a.channel_id || "").toLowerCase() : (a.influencer_name || "").toLowerCase();
-        const bText = selectedPlatform === "telegram" ? (b.channel_id || "").toLowerCase() : (b.influencer_name || "").toLowerCase();
-        return aText.localeCompare(bText);
+        const rankA = a.rank || 999999;
+        const rankB = b.rank || 999999;
+        return rankA - rankB;
       });
-      
+
       setSearchResults(sortedResults.slice(0, 10)); // Limit to 10 results for performance
     } else {
       setSearchResults([]);
@@ -177,7 +176,7 @@ export default function InfluencerSearchPage() {
   // Filter influencers by platform and sort alphabetically
   const getFilteredInfluencers = () => {
     let influencers;
-    
+
     if (selectedPlatform === "youtube") {
       influencers = youtubeInfluencers.map((ch) => ({
         id: ch.channel_id,
@@ -210,13 +209,6 @@ export default function InfluencerSearchPage() {
   };
 
   const filteredInfluencers = getFilteredInfluencers();
-
-  // Pagination calculations
-  const totalInfluencers = filteredInfluencers.length;
-  const totalPages = Math.ceil(totalInfluencers / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const visibleInfluencers = filteredInfluencers.slice(startIndex, endIndex);
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -258,38 +250,145 @@ export default function InfluencerSearchPage() {
     return pages;
   };
 
+  // Get top 3 influencers for podium
+  const topThreeInfluencers = filteredInfluencers.slice(0, 3);
+  const remainingInfluencers = filteredInfluencers.slice(3);
+
+  // Pagination for table (excluding top 3)
+  const totalRemainingInfluencers = remainingInfluencers.length;
+  const totalPages = Math.ceil(totalRemainingInfluencers / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedInfluencers = remainingInfluencers.slice(startIndex, endIndex);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 text-gray-900 font-sans pb-16">
       {/* Hero Section */}
-      <section className="max-w-5xl mx-auto pt-16 pb-6 px-4 flex flex-col items-center gap-6">
+      <section className="max-w-7xl mx-auto pt-16 pb-6 px-4 flex flex-col items-center gap-6">
         <h1 className="text-4xl md:text-5xl font-bold leading-tight bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent text-center">
-          Influencer Search
+          Influencer Leaderboard
         </h1>
         <p className="text-lg text-gray-700 max-w-2xl text-center">
-          Search and discover crypto influencers alphabetically. Find your favorite voices in crypto quickly and easily.
+          Discover top-performing crypto influencers ranked by their performance metrics.
         </p>
-
+        
         {/* Platform Toggle */}
-        <div className="flex gap-2 mt-2">
+        <div className="flex justify-center gap-3">
           {platforms.map((platform) => (
             <button
               key={platform.value}
               onClick={() => setSelectedPlatform(platform.value)}
-              className={`px-4 py-2 rounded-full font-semibold text-sm transition border-2 focus:outline-none flex items-center gap-2
-                ${selectedPlatform === platform.value
-                  ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white border-transparent shadow"
-                  : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                }
-              `}
+              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${selectedPlatform === platform.value
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
+                }`}
             >
               {platform.logo}
               <span>{platform.label}</span>
             </button>
           ))}
         </div>
+        {/* Top 3 Podium */}
+        {!loading && !initialLoad && topThreeInfluencers.length >= 3 && (
+          <div className="w-full max-w-4xl mt-8 mb-8">
+            <div className="flex items-end justify-center gap-4 md:gap-8">
+              {/* 2nd Place */}
+              <div className="flex flex-col items-center flex-1 max-w-[180px]">
+                <div className="relative mb-4">
+                  {topThreeInfluencers[1]?.channel_thumbnails?.high?.url ? (
+                    <Image
+                      src={topThreeInfluencers[1].channel_thumbnails.high.url}
+                      alt={topThreeInfluencers[1].name || "2nd Place"}
+                      width={80}
+                      height={80}
+                      className="w-20 h-20 rounded-full object-cover border-4 border-gray-300 shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center border-4 border-gray-300 shadow-lg">
+                      <span className="text-xl font-bold text-white">
+                        {topThreeInfluencers[1]?.name?.match(/\b\w/g)?.join("") || "2"}
+                      </span>
+                    </div>
+                  )}
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-lg">🥈</span>
+                  </div>
+                </div>
+                <h3 className="font-semibold text-sm text-center text-gray-800 mb-1 line-clamp-2 px-2">
+                  {topThreeInfluencers[1]?.name?.replace(/_/g, " ") || "Unknown"}
+                </h3>
+                <div className="bg-gradient-to-br from-gray-300 to-gray-400 rounded-t-2xl w-full h-32 flex items-center justify-center shadow-xl">
+                  <span className="text-5xl font-bold text-white">2</span>
+                </div>
+              </div>
+
+              {/* 1st Place */}
+              <div className="flex flex-col items-center flex-1 max-w-[200px]">
+                <div className="relative mb-4">
+                  {topThreeInfluencers[0]?.channel_thumbnails?.high?.url ? (
+                    <Image
+                      src={topThreeInfluencers[0].channel_thumbnails.high.url}
+                      alt={topThreeInfluencers[0].name || "1st Place"}
+                      width={100}
+                      height={100}
+                      className="w-25 h-25 rounded-full object-cover border-4 border-yellow-400 shadow-2xl"
+                    />
+                  ) : (
+                    <div className="w-25 h-25 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-500 flex items-center justify-center border-4 border-yellow-400 shadow-2xl">
+                      <span className="text-2xl font-bold text-white">
+                        {topThreeInfluencers[0]?.name?.match(/\b\w/g)?.join("") || "1"}
+                      </span>
+                    </div>
+                  )}
+                  <div className="absolute -top-2 -right-2 w-10 h-10 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full flex items-center justify-center shadow-xl animate-pulse">
+                    <span className="text-2xl">🥇</span>
+                  </div>
+                </div>
+                <h3 className="font-bold text-base text-center text-gray-900 mb-1 line-clamp-2 px-2">
+                  {topThreeInfluencers[0]?.name?.replace(/_/g, " ") || "Unknown"}
+                </h3>
+                <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 rounded-t-2xl w-full h-40 flex items-center justify-center shadow-2xl">
+                  <span className="text-6xl font-bold text-white">1</span>
+                </div>
+              </div>
+
+              {/* 3rd Place */}
+              <div className="flex flex-col items-center flex-1 max-w-[180px]">
+                <div className="relative mb-4">
+                  {topThreeInfluencers[2]?.channel_thumbnails?.high?.url ? (
+                    <Image
+                      src={topThreeInfluencers[2].channel_thumbnails.high.url}
+                      alt={topThreeInfluencers[2].name || "3rd Place"}
+                      width={80}
+                      height={80}
+                      className="w-20 h-20 rounded-full object-cover border-4 border-orange-300 shadow-lg"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center border-4 border-orange-300 shadow-lg">
+                      <span className="text-xl font-bold text-white">
+                        {topThreeInfluencers[2]?.name?.match(/\b\w/g)?.join("") || "3"}
+                      </span>
+                    </div>
+                  )}
+                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-orange-300 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
+                    <span className="text-lg">🥉</span>
+                  </div>
+                </div>
+                <h3 className="font-semibold text-sm text-center text-gray-800 mb-1 line-clamp-2 px-2">
+                  {topThreeInfluencers[2]?.name?.replace(/_/g, " ") || "Unknown"}
+                </h3>
+                <div className="bg-gradient-to-br from-orange-400 to-orange-600 rounded-t-2xl w-full h-24 flex items-center justify-center shadow-xl">
+                  <span className="text-4xl font-bold text-white">3</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+
 
         {/* Search Section */}
-        <div className="max-w-5xl mx-auto px-4 mb-6 w-full">
+        <div className="w-full px-4 mb-6">
           <div className="bg-white rounded-2xl p-6 border-2 border-purple-200">
             <h3 className="text-lg font-semibold text-purple-600 mb-4">Search Influencers</h3>
 
@@ -368,7 +467,7 @@ export default function InfluencerSearchPage() {
                             ) : (
                               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
                                 <span className="text-xs font-bold text-white">
-                                  {selectedPlatform === "telegram" 
+                                  {selectedPlatform === "telegram"
                                     ? (result.channel_id ? result.channel_id.match(/\b\w/g)?.join("") || "?" : "?")
                                     : (result.influencer_name ? result.influencer_name.match(/\b\w/g)?.join("") || "?" : "?")
                                   }
@@ -405,10 +504,10 @@ export default function InfluencerSearchPage() {
                       <span className="truncate">
                         {selectedInfluencer || "Select Influencer"}
                       </span>
-                      <svg 
-                        className={`w-4 h-4 transform transition-transform ${showDropdown ? 'rotate-180' : ''}`} 
-                        fill="none" 
-                        stroke="currentColor" 
+                      <svg
+                        className={`w-4 h-4 transform transition-transform ${showDropdown ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
                         viewBox="0 0 24 24"
                       >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -466,316 +565,321 @@ export default function InfluencerSearchPage() {
         </div>
       </section>
 
-      {/* Influencer Cards */}
-      <section className="max-w-5xl mx-auto px-4">
-        {(loading || initialLoad) ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <div
-                key={`skeleton-${i}`}
-                className="bg-white rounded-2xl p-8 flex flex-col items-center shadow-lg animate-pulse relative min-h-[200px] border border-gray-200"
-              >
-                {/* Placeholder rank badge */}
-                <div className="absolute top-4 right-4 w-16 h-6 bg-gray-200 rounded-full" />
-                {/* Placeholder avatar */}
-                <div className="w-28 h-28 rounded-full bg-gradient-to-br from-purple-200 to-blue-200 mb-6 shadow-lg" />
-                {/* Placeholder name */}
-                <div className="h-5 w-32 bg-gray-200 rounded mb-4" />
-                {/* Placeholder stats */}
-                <div className="grid grid-cols-3 gap-3 w-full mt-auto">
-                  <div className="bg-gray-100 rounded-lg p-3">
-                    <div className="h-3 w-12 bg-gray-200 rounded mb-1 mx-auto" />
-                    <div className="h-4 w-8 bg-gray-200 rounded mx-auto" />
-                  </div>
-                  <div className="bg-gray-100 rounded-lg p-3">
-                    <div className="h-3 w-12 bg-gray-200 rounded mb-1 mx-auto" />
-                    <div className="h-4 w-8 bg-gray-200 rounded mx-auto" />
-                  </div>
-                  <div className="bg-gray-100 rounded-lg p-3">
-                    <div className="h-3 w-12 bg-gray-200 rounded mb-1 mx-auto" />
-                    <div className="h-4 w-8 bg-gray-200 rounded mx-auto" />
-                  </div>
-                </div>
+      {/* Leaderboard Table */}
+      <section className="w-full px-4">
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-purple-100">
+          {(loading || initialLoad) ? (
+            <div className="animate-pulse">
+              {/* Table Header Skeleton */}
+              <div className="bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4">
+                <div className="h-6 bg-gray-200 rounded w-48" />
               </div>
-            ))}
-          </div>
-        ) : error ? (
-          <div className="text-center text-red-600 py-8">{error}</div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {visibleInfluencers.length > 0
-                ? visibleInfluencers.map((inf, i) => (
-                  <Link
-                    key={inf.id}
-                    href={
-                      selectedPlatform === "youtube"
-                        ? `/influencers/${inf.id}`
-                        : `/telegram-influencer/${inf.id}`
-                    }
-                    className={`rounded-2xl p-8 flex flex-col items-center shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer group relative min-h-[200px] ${(selectedPlatform === "youtube" || selectedPlatform === "telegram") && inf.rank && inf.rank <= 3
-                        ? "bg-gradient-to-br from-yellow-50 via-white to-orange-50 border-2 border-yellow-400 shadow-2xl shadow-yellow-500/30"
-                        : "bg-white border border-gray-200"
-                      }`}
-                  >
-                    {/* Rank Badge - Top Right Corner */}
-                    {(selectedPlatform === "youtube" || selectedPlatform === "telegram") && inf.rank && (
-                      <div className={`absolute top-4 right-4 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg ${inf.rank <= 3
-                          ? "bg-gradient-to-r from-yellow-400 to-yellow-600 animate-pulse shadow-yellow-400/50"
-                          : "bg-gradient-to-r from-purple-500 to-blue-500"
-                        }`}>
-                        {inf.rank <= 3 && (
-                          <span className="mr-1">
-                            {inf.rank === 1 ? "🥇" : inf.rank === 2 ? "🥈" : "🥉"}
-                          </span>
-                        )}
-                        Rank {inf.rank}
-                      </div>
-                    )}
-
-                    {inf.channel_thumbnails?.high?.url ? (
-                      <div className="w-28 h-28 rounded-full overflow-hidden shadow-lg mb-6">
-                        <Image
-                          src={inf.channel_thumbnails.high.url}
-                          alt={inf.name || "Channel"}
-                          width={112}
-                          height={112}
-                          className="rounded-full w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-28 h-28 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 mb-6 flex items-center justify-center shadow-lg">
-                        <span className="text-2xl font-bold text-white">
-                          {inf.name ? inf.name.match(/\b\w/g)?.join("") || "?" : "?"}
-                        </span>
-                      </div>
-                    )}
-                    <div className="text-base text-gray-900 font-semibold text-center mb-4 px-2 leading-tight">
-                      {inf.name ? inf.name.replace(/_/g, " ") : "Unknown"}
-                    </div>
-                    {(selectedPlatform === "youtube" || selectedPlatform === "telegram") && (
-                      <div className="grid grid-cols-3 gap-3 w-full text-center mt-auto">
-                        <Link
-                          href={
-                            selectedPlatform === "youtube"
-                              ? `/influencers/${inf.id}`
-                              : `/telegram-influencer/${inf.id}`
-                          }
-                          className="text-xs text-gray-700 bg-gray-100 rounded-lg p-3 hover:bg-gray-200 hover:scale-105 transition-all duration-200"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="font-semibold text-gray-700 mb-1">ROI</div>
-                          <div className="font-bold text-sm text-purple-600">
-                            {inf.prob_weighted_returns !== undefined
-                              ? `${inf.prob_weighted_returns.toFixed(1)}%`
-                              : '0%'}
-                          </div>
-                        </Link>
-                        <Link
-                          href={
-                            selectedPlatform === "youtube"
-                              ? `/influencers/${inf.id}`
-                              : `/telegram-influencer/${inf.id}`
-                          }
-                          className="text-xs text-gray-700 bg-gray-100 rounded-lg p-3 hover:bg-gray-200 hover:scale-105 transition-all duration-200"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="font-semibold text-gray-700 mb-1">Win %</div>
-                          <div className="font-bold text-sm text-green-600">
-                            {typeof inf.win_percentage === 'number'
-                              ? `${inf.win_percentage.toFixed(1)}%`
-                              : 'N/A'}
-                          </div>
-                        </Link>
-                        <Link
-                          href={
-                            selectedPlatform === "youtube"
-                              ? `/influencers/${inf.id}`
-                              : `/telegram-influencer/${inf.id}`
-                          }
-                          className="text-xs text-gray-700 bg-gray-100 rounded-lg p-3 hover:bg-gray-200 hover:scale-105 transition-all duration-200"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="font-semibold text-gray-700 mb-1">Loss %</div>
-                          <div className="font-bold text-sm text-red-600">
-                            {typeof inf.win_percentage === 'number'
-                              ? `${(100 - inf.win_percentage).toFixed(1)}%`
-                              : 'N/A'}
-                          </div>
-                        </Link>
-                      </div>
-                    )}
-                  </Link>
-                ))
-                : null}
-            </div>
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex flex-col items-center mt-8 space-y-4">
-                {/* Pagination Info */}
-                <div className="text-sm text-gray-600 text-center">
-                  Showing {startIndex + 1} to {Math.min(endIndex, totalInfluencers)} of {totalInfluencers} influencers
+              {/* Table Rows Skeleton */}
+              {Array.from({ length: 15 }).map((_, i) => (
+                <div key={`skeleton-${i}`} className="border-b border-gray-200 px-6 py-4 flex items-center gap-4">
+                  <div className="w-8 h-8 bg-gray-200 rounded" />
+                  <div className="w-12 h-12 bg-gray-200 rounded-full" />
+                  <div className="flex-1">
+                    <div className="h-5 bg-gray-200 rounded w-48 mb-2" />
+                    <div className="h-4 bg-gray-200 rounded w-32" />
+                  </div>
+                  <div className="h-5 bg-gray-200 rounded w-20" />
                 </div>
+              ))}
+            </div>
+          ) : error ? (
+            <div className="text-center text-red-600 py-8">{error}</div>
+          ) : (
+            <>
+              {/* Table Header */}
+              <div className="bg-gradient-to-r from-purple-500 to-blue-500 px-6 py-4">
+                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                    <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                  </svg>
+                  Leaderboard Rankings
+                </h2>
+              </div>
 
-                {/* Mobile Pagination - Show only on small screens */}
-                <div className="flex sm:hidden items-center justify-center space-x-1 w-full">
-                  {/* First Button - Mobile */}
-                  <button
-                    onClick={() => handlePageChange(1)}
-                    disabled={currentPage === 1}
-                    className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    ‹‹
-                  </button>
+              {/* Table Content */}
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b-2 border-gray-200">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Rank
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                        Influencer
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider hidden md:table-cell">
+                        ROI
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider hidden md:table-cell">
+                        Win %
+                      </th>
+                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider hidden lg:table-cell">
+                        Loss %
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {paginatedInfluencers.length > 0 ? (
+                      paginatedInfluencers.map((inf, index) => {
+                        const globalRank = startIndex + index + 4; // +4 because we skip top 3
+                        return (
+                          <tr
+                            key={inf.id}
+                            onClick={() => {
+                              window.location.href = selectedPlatform === "youtube"
+                                ? `/influencers/${inf.id}`
+                                : `/telegram-influencer/${inf.id}`;
+                            }}
+                            className="hover:bg-purple-50 transition-colors cursor-pointer group"
+                          >
+                            {/* Rank */}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <span className="text-2xl font-bold text-gray-400 group-hover:text-purple-600 transition-colors">
+                                  {globalRank}
+                                </span>
+                              </div>
+                            </td>
 
-                  {/* Previous Button - Mobile */}
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentPage === 1}
-                    className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    ‹
-                  </button>
+                            {/* Influencer Info */}
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center gap-3">
+                                {inf.channel_thumbnails?.high?.url ? (
+                                  <Image
+                                    src={inf.channel_thumbnails.high.url}
+                                    alt={inf.name || "Influencer"}
+                                    width={48}
+                                    height={48}
+                                    className="w-12 h-12 rounded-full object-cover border-2 border-purple-200 group-hover:border-purple-400 transition-colors"
+                                  />
+                                ) : (
+                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center border-2 border-purple-200 group-hover:border-purple-400 transition-colors">
+                                    <span className="text-sm font-bold text-white">
+                                      {inf.name?.match(/\b\w/g)?.join("") || "?"}
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="min-w-0">
+                                  <div className="text-sm font-semibold text-gray-900 group-hover:text-purple-600 transition-colors truncate">
+                                    {inf.name?.replace(/_/g, " ") || "Unknown"}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
 
-                  {/* Current Page Info */}
-                  <div className="flex items-center space-x-2 px-2">
-                    <span className="text-xs text-gray-600">Page</span>
-                    <span className="px-2 py-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded text-xs font-medium">
-                      {currentPage}
-                    </span>
-                    <span className="text-xs text-gray-600">of {totalPages}</span>
+                            {/* ROI */}
+                            <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800">
+                                {inf.prob_weighted_returns !== undefined
+                                  ? `${inf.prob_weighted_returns.toFixed(1)}%`
+                                  : '0%'}
+                              </span>
+                            </td>
+
+                            {/* Win % */}
+                            <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+                                {typeof inf.win_percentage === 'number'
+                                  ? `${inf.win_percentage.toFixed(1)}%`
+                                  : 'N/A'}
+                              </span>
+                            </td>
+
+                            {/* Loss % */}
+                            <td className="px-6 py-4 whitespace-nowrap text-center hidden lg:table-cell">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800">
+                                {typeof inf.win_percentage === 'number'
+                                  ? `${(100 - inf.win_percentage).toFixed(1)}%`
+                                  : 'N/A'}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                          No influencers found
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex flex-col items-center px-6 py-6 border-t-2 border-gray-200 space-y-4">
+                  {/* Pagination Info */}
+                  <div className="text-sm text-gray-600 text-center">
+                    Showing {startIndex + 1} to {Math.min(endIndex, totalRemainingInfluencers)} of {totalRemainingInfluencers} influencers
                   </div>
 
-                  {/* Next Button - Mobile */}
-                  <button
-                    onClick={handleNext}
-                    disabled={currentPage === totalPages}
-                    className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    ›
-                  </button>
-
-                  {/* Last Button - Mobile */}
-                  <button
-                    onClick={() => handlePageChange(totalPages)}
-                    disabled={currentPage === totalPages}
-                    className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    ››
-                  </button>
-                </div>
-
-                {/* Desktop/Tablet Pagination - Show on medium screens and up */}
-                <div className="hidden sm:flex items-center space-x-1 md:space-x-2 flex-wrap justify-center">
-                  {/* First Button - Desktop */}
-                  <button
-                    onClick={() => handlePageChange(1)}
-                    disabled={currentPage === 1}
-                    className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    &lt;&lt;
-                  </button>
-
-                  {/* Previous Button - Desktop */}
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentPage === 1}
-                    className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    &lt;
-                  </button>
-
-                  {/* First Page */}
-                  {getPageNumbers()[0] > 1 && (
-                    <>
-                      <button
-                        onClick={() => handlePageChange(1)}
-                        className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500 transition-all duration-200"
-                      >
-                        1
-                      </button>
-                      {getPageNumbers()[0] > 2 && (
-                        <span className="text-gray-600 text-xs">...</span>
-                      )}
-                    </>
-                  )}
-
-                  {/* Page Numbers */}
-                  {getPageNumbers().map((page) => (
+                  {/* Mobile Pagination - Show only on small screens */}
+                  <div className="flex sm:hidden items-center justify-center space-x-1 w-full">
+                    {/* First Button - Mobile */}
                     <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === page
-                        ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentPage === 1}
+                      className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
                         : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
                         }`}
                     >
-                      {page}
+                      ‹‹
                     </button>
-                  ))}
 
-                  {/* Last Page */}
-                  {getPageNumbers()[getPageNumbers().length - 1] < totalPages && (
-                    <>
-                      {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
-                        <span className="text-gray-600 text-xs">...</span>
-                      )}
+                    {/* Previous Button - Mobile */}
+                    <button
+                      onClick={handlePrevious}
+                      disabled={currentPage === 1}
+                      className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
+                        }`}
+                    >
+                      ‹
+                    </button>
+
+                    {/* Current Page Info */}
+                    <div className="flex items-center space-x-2 px-2">
+                      <span className="text-xs text-gray-600">Page</span>
+                      <span className="px-2 py-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded text-xs font-medium">
+                        {currentPage}
+                      </span>
+                      <span className="text-xs text-gray-600">of {totalPages}</span>
+                    </div>
+
+                    {/* Next Button - Mobile */}
+                    <button
+                      onClick={handleNext}
+                      disabled={currentPage === totalPages}
+                      className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
+                        }`}
+                    >
+                      ›
+                    </button>
+
+                    {/* Last Button - Mobile */}
+                    <button
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
+                        }`}
+                    >
+                      ››
+                    </button>
+                  </div>
+
+                  {/* Desktop/Tablet Pagination - Show on medium screens and up */}
+                  <div className="hidden sm:flex items-center space-x-1 md:space-x-2 flex-wrap justify-center">
+                    {/* First Button - Desktop */}
+                    <button
+                      onClick={() => handlePageChange(1)}
+                      disabled={currentPage === 1}
+                      className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
+                        }`}
+                    >
+                      &lt;&lt;
+                    </button>
+
+                    {/* Previous Button - Desktop */}
+                    <button
+                      onClick={handlePrevious}
+                      disabled={currentPage === 1}
+                      className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
+                        }`}
+                    >
+                      &lt;
+                    </button>
+
+                    {/* First Page */}
+                    {getPageNumbers()[0] > 1 && (
+                      <>
+                        <button
+                          onClick={() => handlePageChange(1)}
+                          className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500 transition-all duration-200"
+                        >
+                          1
+                        </button>
+                        {getPageNumbers()[0] > 2 && (
+                          <span className="text-gray-600 text-xs">...</span>
+                        )}
+                      </>
+                    )}
+
+                    {/* Page Numbers */}
+                    {getPageNumbers().map((page) => (
                       <button
-                        onClick={() => handlePageChange(totalPages)}
-                        className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500 transition-all duration-200"
+                        key={page}
+                        onClick={() => handlePageChange(page)}
+                        className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === page
+                          ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
+                          }`}
                       >
-                        {totalPages}
+                        {page}
                       </button>
-                    </>
-                  )}
+                    ))}
 
-                  {/* Next Button - Desktop */}
-                  <button
-                    onClick={handleNext}
-                    disabled={currentPage === totalPages}
-                    className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    &gt;
-                  </button>
+                    {/* Last Page */}
+                    {getPageNumbers()[getPageNumbers().length - 1] < totalPages && (
+                      <>
+                        {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
+                          <span className="text-gray-600 text-xs">...</span>
+                        )}
+                        <button
+                          onClick={() => handlePageChange(totalPages)}
+                          className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500 transition-all duration-200"
+                        >
+                          {totalPages}
+                        </button>
+                      </>
+                    )}
 
-                  {/* Last Button - Desktop */}
-                  <button
-                    onClick={() => handlePageChange(totalPages)}
-                    disabled={currentPage === totalPages}
-                    className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    &gt;&gt;
-                  </button>
+                    {/* Next Button - Desktop */}
+                    <button
+                      onClick={handleNext}
+                      disabled={currentPage === totalPages}
+                      className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
+                        }`}
+                    >
+                      &gt;
+                    </button>
+
+                    {/* Last Button - Desktop */}
+                    <button
+                      onClick={() => handlePageChange(totalPages)}
+                      disabled={currentPage === totalPages}
+                      className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
+                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
+                        }`}
+                    >
+                      &gt;&gt;
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-          </>
-        )}
+              )}
+            </>
+          )}
+        </div>
       </section>
     </div >
   );

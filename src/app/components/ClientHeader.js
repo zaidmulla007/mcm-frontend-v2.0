@@ -208,12 +208,15 @@ export default function ClientHeader() {
             </div>
           ) : (
             <>
-              <button className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition font-medium">
-                <FaGlobe className="text-base" />
-                <span className="text-sm">Sign In</span>
-              </button>
               <Link
                 href="/login"
+                className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition font-medium"
+              >
+                <FaGlobe className="text-base" />
+                <span className="text-sm">Sign In</span>
+              </Link>
+              <Link
+                href="/login?signup=true"
                 className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 transition"
               >
                 Start Free Trial

@@ -473,7 +473,7 @@ export default function YouTubeTelegramInfluencers() {
                                 {/* Post Header */}
                                 <div className="p-3 border-b border-gray-700">
                                     {/* Influencer Name Link */}
-                                    <div className="text-sm font-medium text-black mb-2">
+                                    <div className="text-xs text-black mb-2">
                                         Name :
                                         <a
                                             href={
@@ -490,7 +490,7 @@ export default function YouTubeTelegramInfluencers() {
                                     </div>
 
                                     {/* Rank Link (simple) */}
-                                    <div className="text-sm font-medium text-black mb-2 flex items-center gap-2">
+                                    <div className="text-xs text-black mb-2 flex items-center gap-2">
                                         Rank
                                         <span className="sr-only">Rank (180 days / Overall)</span>
                                         <button
@@ -528,7 +528,7 @@ export default function YouTubeTelegramInfluencers() {
                                             rel="noopener noreferrer"
                                             className="block text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
                                         >
-                                            <div className={`text-sm font-medium ${expandedTitles[post.id] ? '' : 'line-clamp-2'}`} title={post.title}>
+                                            <div className={`text-xs ${expandedTitles[post.id] ? '' : 'line-clamp-2'}`} title={post.title}>
                                                 {post.title}
                                             </div>
                                         </a>

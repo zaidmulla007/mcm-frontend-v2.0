@@ -1,70 +1,33 @@
 "use client";
 import Image from "next/image";
 import { FaTrophy, FaHeart, FaRegHeart, FaTelegram } from "react-icons/fa";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
-import { favoritesAPI } from "../../api/favorites/route";
+import { useFavorites } from "../../contexts/FavoritesContext";
 
 export default function TelegramInfluencerProfileHeader({ channelData }) {
-  const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [userId, setUserId] = useState(null);
+  const { isFavorite: checkIsFavorite, toggleFavorite } = useFavorites();
 
-  // Get userId from localStorage
-  useEffect(() => {
-    try {
-      const userDataString = localStorage.getItem('userData');
-      if (userDataString) {
-        const userData = JSON.parse(userDataString);
-        setUserId(userData._id || userData.user?._id);
-      }
-    } catch (error) {
-      console.error('Error parsing userData:', error);
-    }
-  }, []);
-
-  // Check if item is already in favorites on component mount
-  useEffect(() => {
-    const checkFavoriteStatus = async () => {
-      if (!userId) return;
-      
-      try {
-        const favorites = await favoritesAPI.getAllFavorites(userId);
-        if (favorites.success && favorites.results) {
-          const isCurrentlyFavorite = favorites.results.some(
-            fav => fav.favouriteId === channelData.results?._id && fav.medium === "TELEGRAM"
-          );
-          setIsFavorite(isCurrentlyFavorite);
-        }
-      } catch (error) {
-        console.error("Error checking favorite status:", error);
-      }
-    };
-
-    if (channelData?.results?._id && userId) {
-      checkFavoriteStatus();
-    }
-  }, [channelData?.results?._id, userId]);
+  // Check if current channel is favorite
+  const isFavorite = channelData?.results?.channel_id
+    ? checkIsFavorite(channelData.results.channel_id, "TELEGRAM")
+    : false;
 
   const handleFavoriteClick = async () => {
-    if (isLoading || !userId) return;
-    
+    if (isLoading || !channelData?.results?.channel_id) return;
+
     setIsLoading(true);
     const newFavoriteState = !isFavorite;
-    
-    try {
-      const requestData = {
-        op: newFavoriteState ? "ADD" : "DEL",
-        medium: "TELEGRAM",
-        userId: userId,
-        favouriteId: channelData.results._id,
-        favouriteType: "INFLUENCER"
-      };
 
-      const response = await favoritesAPI.toggleFavorite(requestData);
-      
+    try {
+      const response = await toggleFavorite(
+        channelData.results.channel_id,
+        "TELEGRAM",
+        "INFLUENCER"
+      );
+
       if (response.success) {
-        setIsFavorite(newFavoriteState);
         
         // Show SweetAlert with layout colors based on action
         Swal.fire({

@@ -2,13 +2,15 @@
 
 import { motion } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { FaWhatsapp, FaChevronDown, FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { countryCodes } from "../../data/countryCodes";
 
 export default function Login() {
-  const [isLogin, setIsLogin] = useState(true);
+  const searchParams = useSearchParams();
+  const showSignUp = searchParams.get('signup') === 'true';
+  const [isLogin, setIsLogin] = useState(!showSignUp); // If signup=true, show Sign Up form
   const [otpSentTo, setOtpSentTo] = useState(""); // tracks where OTP was sent: "whatsapp", "email", or "both"
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [otp, setOtp] = useState("");

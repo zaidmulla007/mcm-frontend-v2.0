@@ -1,70 +1,33 @@
-"use client"; // Add this at the top if using Next.js 13+ with app router
+"use client";
 import Image from "next/image";
 import { FaTrophy, FaHeart, FaRegHeart } from "react-icons/fa";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
-import { favoritesAPI } from "../../api/favorites/route";
+import { useFavorites } from "../../contexts/FavoritesContext";
 
 export default function InfluencerProfileHeader({ channelData }) {
-  const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [userId, setUserId] = useState(null);
+  const { isFavorite: checkIsFavorite, toggleFavorite } = useFavorites();
 
-  // Get userId from localStorage
-  useEffect(() => {
-    try {
-      const userDataString = localStorage.getItem('userData');
-      if (userDataString) {
-        const userData = JSON.parse(userDataString);
-        setUserId(userData._id || userData.user?._id);
-      }
-    } catch (error) {
-      console.error('Error parsing userData:', error);
-    }
-  }, []);
-
-  // Check if item is already in favorites on component mount
-  useEffect(() => {
-    const checkFavoriteStatus = async () => {
-      if (!userId) return;
-      
-      try {
-        const favorites = await favoritesAPI.getAllFavorites(userId);
-        if (favorites.success && favorites.results) {
-          const isCurrentlyFavorite = favorites.results.some(
-            fav => fav.favouriteId === channelData._id && fav.medium === "YOUTUBE"
-          );
-          setIsFavorite(isCurrentlyFavorite);
-        }
-      } catch (error) {
-        console.error("Error checking favorite status:", error);
-      }
-    };
-
-    if (channelData?._id && userId) {
-      checkFavoriteStatus();
-    }
-  }, [channelData?._id, userId]);
+  // Check if current channel is favorite
+  const isFavorite = channelData?.channel_id
+    ? checkIsFavorite(channelData.channel_id, "YOUTUBE")
+    : false;
 
   const handleFavoriteClick = async () => {
-    if (isLoading || !userId) return;
-    
+    if (isLoading || !channelData?.channel_id) return;
+
     setIsLoading(true);
     const newFavoriteState = !isFavorite;
-    
-    try {
-      const requestData = {
-        op: newFavoriteState ? "ADD" : "DEL",
-        medium: "YOUTUBE",
-        userId: userId,
-        favouriteId: channelData._id,
-        favouriteType: "INFLUENCER"
-      };
 
-      const response = await favoritesAPI.toggleFavorite(requestData);
-      
+    try {
+      const response = await toggleFavorite(
+        channelData.channel_id,
+        "YOUTUBE",
+        "INFLUENCER"
+      );
+
       if (response.success) {
-        setIsFavorite(newFavoriteState);
         
         // Show SweetAlert with layout colors based on action
         Swal.fire({
