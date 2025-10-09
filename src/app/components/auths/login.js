@@ -66,8 +66,8 @@ export default function Login() {
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#8b5cf6',
-        background: '#232042',
-        color: '#ffffff'
+        background: '#ffffff',
+        color: '#000000'
       });
     }
   };
@@ -88,8 +88,8 @@ export default function Login() {
           icon: 'warning',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
       }
       // Don't show any alert if the number is valid (within min and max range)
@@ -135,8 +135,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff',
+          background: '#ffffff',
+          color: '#000000',
           timer: 3000,
           timerProgressBar: true
         });
@@ -455,8 +455,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
         return;
       }
@@ -469,8 +469,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
         return;
       }
@@ -493,8 +493,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
         return;
       }
@@ -506,12 +506,12 @@ export default function Login() {
         title: 'Confirm Details',
         html: `
           <div style="text-align: left; padding: 20px;">
-            <p style="font-size: 16px; margin-bottom: 15px; color: #fff;">Please confirm your details:</p>
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+            <p style="font-size: 16px; margin-bottom: 15px; color: #000000;">Please confirm your details:</p>
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 15px; border-radius: 10px; margin-bottom: 15px; color: #ffffff;">
               <p style="margin: 5px 0; font-size: 14px;"><strong>Email:</strong> ${formData.email}</p>
               <p style="margin: 5px 0; font-size: 14px;"><strong>WhatsApp:</strong> ${fullPhoneNumber}</p>
             </div>
-            <p style="font-size: 14px; color: #ccc;">OTP will be sent to your WhatsApp number</p>
+            <p style="font-size: 14px; color: #6b7280;">OTP will be sent to your WhatsApp number</p>
           </div>
         `,
         icon: 'question',
@@ -520,8 +520,8 @@ export default function Login() {
         cancelButtonText: 'No! Edit Details',
         confirmButtonColor: '#8b5cf6',
         cancelButtonColor: '#6b7280',
-        background: '#232042',
-        color: '#ffffff'
+        background: '#ffffff',
+        color: '#000000'
       }).then(async (result) => {
         if (result.isConfirmed) {
           // User confirmed, proceed with API call
@@ -558,8 +558,8 @@ export default function Login() {
                   icon: 'success',
                   confirmButtonText: 'OK',
                   confirmButtonColor: '#8b5cf6',
-                  background: '#232042',
-                  color: '#ffffff'
+                  background: '#ffffff',
+                  color: '#000000'
                 });
               } else {
                 throw new Error(data.message || 'Signup failed');
@@ -581,8 +581,8 @@ export default function Login() {
               icon: 'error',
               confirmButtonText: 'OK',
               confirmButtonColor: '#8b5cf6',
-              background: '#232042',
-              color: '#ffffff'
+              background: '#ffffff',
+              color: '#000000'
             });
           }
         }
@@ -604,8 +604,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
         return;
       }
@@ -628,8 +628,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
         return;
       }
@@ -642,8 +642,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
         return;
       }
@@ -704,8 +704,8 @@ export default function Login() {
             icon: 'success',
             confirmButtonText: 'OK',
             confirmButtonColor: '#8b5cf6',
-            background: '#232042',
-            color: '#ffffff'
+            background: '#ffffff',
+            color: '#000000'
           });
         } else {
           // Show error message from API for unregistered users
@@ -715,8 +715,8 @@ export default function Login() {
             icon: 'error',
             confirmButtonText: 'OK',
             confirmButtonColor: '#8b5cf6',
-            background: '#232042',
-            color: '#ffffff'
+            background: '#ffffff',
+            color: '#000000'
           });
         }
       } catch (error) {
@@ -728,8 +728,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
       }
     }
@@ -745,8 +745,8 @@ export default function Login() {
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#8b5cf6',
-        background: '#232042',
-        color: '#ffffff'
+        background: '#ffffff',
+        color: '#000000'
       });
       return;
     }
@@ -800,8 +800,8 @@ export default function Login() {
             icon: 'success',
             confirmButtonText: 'Continue',
             confirmButtonColor: '#8b5cf6',
-            background: '#232042',
-            color: '#ffffff'
+            background: '#ffffff',
+            color: '#000000'
           }).then((result) => {
             if (result.isConfirmed) {
               router.push('/influencers');
@@ -863,14 +863,15 @@ export default function Login() {
             html: `
               <div style="text-align: center; padding: 20px;">
                 <h2 style="color: #8b5cf6; margin-bottom: 20px;">Welcome to MCM!</h2>
-                <p style="font-size: 18px; margin-bottom: 15px;">
+                <p style="font-size: 18px; margin-bottom: 15px; color: #000000;">
                   Thank you for joining us, <strong>${formData.firstName} ${formData.lastName}</strong>!
                 </p>
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                            padding: 20px; 
-                            border-radius: 15px; 
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            padding: 20px;
+                            border-radius: 15px;
                             margin: 20px 0;
-                            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);">
+                            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+                            color: #ffffff;">
                   <p style="font-size: 20px; font-weight: bold; margin-bottom: 10px;">
                     ✨ Your Subscription Starts Today ✨
                   </p>
@@ -878,7 +879,7 @@ export default function Login() {
                     ${dateString}
                   </p>
                 </div>
-                <p style="font-size: 16px; margin-top: 20px;">
+                <p style="font-size: 16px; margin-top: 20px; color: #000000;">
                   Get ready to explore amazing features!
                 </p>
               </div>
@@ -886,8 +887,8 @@ export default function Login() {
             icon: 'success',
             confirmButtonText: 'Start Exploring',
             confirmButtonColor: '#8b5cf6',
-            background: '#232042',
-            color: '#ffffff',
+            background: '#ffffff',
+            color: '#000000',
             showConfetti: true
           }).then((result) => {
             if (result.isConfirmed) {
@@ -909,8 +910,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
       } else {
         // For signup, show OTP error (not success!)
@@ -920,8 +921,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
       }
     }
@@ -960,8 +961,8 @@ export default function Login() {
             icon: 'success',
             confirmButtonText: 'OK',
             confirmButtonColor: '#8b5cf6',
-            background: '#232042',
-            color: '#ffffff'
+            background: '#ffffff',
+            color: '#000000'
           });
         } else {
           throw new Error(data.message || 'Failed to resend OTP');
@@ -974,8 +975,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
       }
     }
@@ -995,8 +996,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
         return;
       }
@@ -1026,8 +1027,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
         return;
       }
@@ -1040,8 +1041,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
         return;
       }
@@ -1104,8 +1105,8 @@ export default function Login() {
             icon: 'success',
             confirmButtonText: 'OK',
             confirmButtonColor: '#8b5cf6',
-            background: '#232042',
-            color: '#ffffff'
+            background: '#ffffff',
+            color: '#000000'
           });
         } else {
           // Get error message from API
@@ -1117,8 +1118,8 @@ export default function Login() {
             icon: 'error',
             confirmButtonText: 'OK',
             confirmButtonColor: '#8b5cf6',
-            background: '#232042',
-            color: '#ffffff'
+            background: '#ffffff',
+            color: '#000000'
           });
         }
       } catch (error) {
@@ -1130,8 +1131,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
       }
     } else {
@@ -1164,8 +1165,8 @@ export default function Login() {
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#8b5cf6',
-        background: '#232042',
-        color: '#ffffff'
+        background: '#ffffff',
+        color: '#000000'
       });
     }
   };
@@ -1194,8 +1195,8 @@ export default function Login() {
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#8b5cf6',
-        background: '#232042',
-        color: '#ffffff'
+        background: '#ffffff',
+        color: '#000000'
       });
     }
   };
@@ -1211,8 +1212,8 @@ export default function Login() {
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#8b5cf6',
-        background: '#232042',
-        color: '#ffffff',
+        background: '#ffffff',
+        color: '#000000',
         timer: 3000,
         timerProgressBar: true
       });
@@ -1236,8 +1237,8 @@ export default function Login() {
           icon: 'warning',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
       }
     }
@@ -1254,8 +1255,8 @@ export default function Login() {
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#8b5cf6',
-        background: '#232042',
-        color: '#ffffff'
+        background: '#ffffff',
+        color: '#000000'
       });
       return;
     }
@@ -1268,8 +1269,8 @@ export default function Login() {
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#8b5cf6',
-        background: '#232042',
-        color: '#ffffff'
+        background: '#ffffff',
+        color: '#000000'
       });
       return;
     }
@@ -1292,8 +1293,8 @@ export default function Login() {
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#8b5cf6',
-        background: '#232042',
-        color: '#ffffff'
+        background: '#ffffff',
+        color: '#000000'
       });
       return;
     }
@@ -1306,8 +1307,8 @@ export default function Login() {
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#8b5cf6',
-        background: '#232042',
-        color: '#ffffff'
+        background: '#ffffff',
+        color: '#000000'
       });
       return;
     }
@@ -1320,8 +1321,8 @@ export default function Login() {
       allowEscapeKey: false,
       allowEnterKey: false,
       showConfirmButton: false,
-      background: '#232042',
-      color: '#ffffff',
+      background: '#ffffff',
+      color: '#000000',
       didOpen: () => {
         Swal.showLoading();
       }
@@ -1354,8 +1355,8 @@ export default function Login() {
           icon: 'success',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
 
         // Close modal and reset form
@@ -1372,8 +1373,8 @@ export default function Login() {
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#8b5cf6',
-        background: '#232042',
-        color: '#ffffff'
+        background: '#ffffff',
+        color: '#000000'
       });
     }
   };
@@ -1390,8 +1391,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
         return;
       }
@@ -1416,8 +1417,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
         return;
       }
@@ -1450,8 +1451,8 @@ export default function Login() {
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
-          background: '#232042',
-          color: '#ffffff'
+          background: '#ffffff',
+          color: '#000000'
         });
         return;
       }
@@ -1464,8 +1465,8 @@ export default function Login() {
         icon: 'warning',
         confirmButtonText: 'OK',
         confirmButtonColor: '#8b5cf6',
-        background: '#232042',
-        color: '#ffffff'
+        background: '#ffffff',
+        color: '#000000'
       });
       return;
     }
@@ -1478,25 +1479,25 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#19162b] text-white font-sans flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 text-black font-sans flex items-center justify-center px-4">
       <motion.div
-        className="bg-[#232042] rounded-2xl p-8 shadow-lg w-full max-w-md"
+        className="bg-white rounded-2xl p-8 shadow-2xl border-2 border-purple-200 w-full max-w-md"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <h2 className="text-3xl font-bold text-center mb-6 bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+        <h2 className="text-3xl font-bold text-center mb-6 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
           {isLogin ? 'Login' : 'Sign Up'}
         </h2>
 
         {isLogin && (
-          <div className="text-center text-gray-400 text-sm mb-6 flex items-center justify-center gap-2">
+          <div className="text-center text-black text-sm mb-6 flex items-center justify-center gap-2">
             <span>Login by</span>
-            <svg className="w-4 h-4 fill-current text-purple-400" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 fill-current text-purple-600" viewBox="0 0 24 24">
               <path d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" />
             </svg>
             <span>Email or</span>
-            <svg className="w-4 h-4 fill-current text-green-500" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 fill-current text-green-600" viewBox="0 0 24 24">
               <path d="M17.472,14.382c-0.297-0.149-1.758-0.867-2.03-0.967c-0.273-0.099-0.471-0.148-0.67,0.15c-0.197,0.297-0.767,0.966-0.94,1.164c-0.173,0.199-0.347,0.223-0.644,0.075c-0.297-0.15-1.255-0.463-2.39-1.475c-0.883-0.788-1.48-1.761-1.653-2.059c-0.173-0.297-0.018-0.458,0.13-0.606c0.134-0.133,0.297-0.347,0.446-0.521C9.87,9.97,9.919,9.846,10.019,9.65c0.099-0.198,0.05-0.371-0.025-0.52C9.919,8.981,9.325,7.515,9.078,6.92c-0.241-0.58-0.487-0.5-0.669-0.51c-0.173-0.008-0.371-0.01-0.57-0.01c-0.198,0-0.52,0.074-0.792,0.372c-0.272,0.297-1.04,1.016-1.04,2.479c0,1.462,1.065,2.875,1.213,3.074c0.149,0.198,2.096,3.2,5.077,4.487c0.709,0.306,1.262,0.489,1.694,0.625c0.712,0.227,1.36,0.195,1.871,0.118c0.571-0.085,1.758-0.719,2.006-1.413c0.248-0.694,0.248-1.289,0.173-1.413C17.884,14.651,17.769,14.431,17.472,14.382z M12.057,21.785h-0.008c-1.784,0-3.525-0.481-5.052-1.389l-0.362-0.215l-3.754,0.984l1.005-3.671l-0.236-0.375c-0.99-1.575-1.511-3.393-1.511-5.26c0-5.445,4.43-9.875,9.88-9.875c2.64,0,5.124,1.03,6.988,2.898c1.865,1.867,2.893,4.352,2.892,6.993C21.899,17.354,17.469,21.785,12.057,21.785z M20.5,3.488C18.24,1.24,15.24,0.013,12.058,0C5.507,0,0.17,5.335,0.172,11.892c0,2.096,0.547,4.142,1.588,5.945L0,24l6.305-1.654c1.746,0.943,3.71,1.444,5.71,1.447h0.006c6.551,0,11.89-5.335,11.89-11.893C23.91,8.724,22.759,5.746,20.5,3.488z" />
             </svg>
             <span>WhatsApp Number</span>
@@ -1505,13 +1506,13 @@ export default function Login() {
 
         {!isLogin && (
           <div className="mb-6 text-center">
-            <div className="text-gray-400 text-sm mb-2 flex items-center justify-center gap-2">
+            <div className="text-black text-sm mb-2 flex items-center justify-center gap-2">
               <span>Sign Up by</span>
-              <svg className="w-4 h-4 fill-current text-purple-400" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 fill-current text-purple-600" viewBox="0 0 24 24">
                 <path d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" />
               </svg>
               <span>Email or</span>
-              <svg className="w-4 h-4 fill-current text-green-500" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 fill-current text-green-600" viewBox="0 0 24 24">
                 <path d="M17.472,14.382c-0.297-0.149-1.758-0.867-2.03-0.967c-0.273-0.099-0.471-0.148-0.67,0.15c-0.197,0.297-0.767,0.966-0.94,1.164c-0.173,0.199-0.347,0.223-0.644,0.075c-0.297-0.15-1.255-0.463-2.39-1.475c-0.883-0.788-1.48-1.761-1.653-2.059c-0.173-0.297-0.018-0.458,0.13-0.606c0.134-0.133,0.297-0.347,0.446-0.521C9.87,9.97,9.919,9.846,10.019,9.65c0.099-0.198,0.05-0.371-0.025-0.52C9.919,8.981,9.325,7.515,9.078,6.92c-0.241-0.58-0.487-0.5-0.669-0.51c-0.173-0.008-0.371-0.01-0.57-0.01c-0.198,0-0.52,0.074-0.792,0.372c-0.272,0.297-1.04,1.016-1.04,2.479c0,1.462,1.065,2.875,1.213,3.074c0.149,0.198,2.096,3.2,5.077,4.487c0.709,0.306,1.262,0.489,1.694,0.625c0.712,0.227,1.36,0.195,1.871,0.118c0.571-0.085,1.758-0.719,2.006-1.413c0.248-0.694,0.248-1.289,0.173-1.413C17.884,14.651,17.769,14.431,17.472,14.382z M12.057,21.785h-0.008c-1.784,0-3.525-0.481-5.052-1.389l-0.362-0.215l-3.754,0.984l1.005-3.671l-0.236-0.375c-0.99-1.575-1.511-3.393-1.511-5.26c0-5.445,4.43-9.875,9.88-9.875c2.64,0,5.124,1.03,6.988,2.898c1.865,1.867,2.893,4.352,2.892,6.993C21.899,17.354,17.469,21.785,12.057,21.785z M20.5,3.488C18.24,1.24,15.24,0.013,12.058,0C5.507,0,0.17,5.335,0.172,11.892c0,2.096,0.547,4.142,1.588,5.945L0,24l6.305-1.654c1.746,0.943,3.71,1.444,5.71,1.447h0.006c6.551,0,11.89-5.335,11.89-11.893C23.91,8.724,22.759,5.746,20.5,3.488z" />
               </svg>
               <span>WhatsApp</span>
@@ -1530,7 +1531,7 @@ export default function Login() {
                   value={formData.firstName}
                   onChange={handleInputChange}
                   readOnly={isOtpSent}
-                  className={`w-full px-4 py-3 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-400 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full px-4 py-3 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
                   required
                 />
               </div>
@@ -1542,7 +1543,7 @@ export default function Login() {
                   value={formData.lastName}
                   onChange={handleInputChange}
                   readOnly={isOtpSent}
-                  className={`w-full px-4 py-3 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-400 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full px-4 py-3 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
                   required
                 />
               </div>
@@ -1555,10 +1556,10 @@ export default function Login() {
                   onChange={handleInputChange}
                   onBlur={handleEmailBlur}
                   readOnly={isOtpSent}
-                  className={`w-full px-4 py-3 pl-12 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-400 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full px-4 py-3 pl-12 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
                   required
                 />
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400">
+                <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-600">
                   <FaEnvelope size={20} />
                 </div>
               </div>
@@ -1569,7 +1570,7 @@ export default function Login() {
                       type="button"
                       onClick={() => !isOtpSent && setShowCountryDropdown(!showCountryDropdown)}
                       disabled={isOtpSent}
-                      className={`flex items-center gap-2 px-3 py-3 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white ${isOtpSent ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-500/10'}`}
+                      className={`flex items-center gap-2 px-3 py-3 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black ${isOtpSent ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-50'}`}
                     >
                       <span className="text-xl">{selectedCountry.flag}</span>
                       <span>{selectedCountry.dial_code}</span>
@@ -1577,13 +1578,13 @@ export default function Login() {
                     </button>
 
                     {showCountryDropdown && !isOtpSent && (
-                      <div className="absolute top-full mt-1 left-0 w-64 max-h-60 overflow-y-auto bg-[#232042] border border-purple-500/30 rounded-lg shadow-lg z-50">
+                      <div className="absolute top-full mt-1 left-0 w-64 max-h-60 overflow-y-auto bg-white border border-purple-300 rounded-lg shadow-xl z-50">
                         <input
                           type="text"
                           placeholder="Search country..."
                           value={searchCountry}
                           onChange={(e) => setSearchCountry(e.target.value)}
-                          className="w-full px-3 py-2 bg-[#19162b] border-b border-purple-500/30 text-white placeholder-gray-400 focus:outline-none"
+                          className="w-full px-3 py-2 bg-gray-50 border-b border-purple-300 text-black placeholder-gray-500 focus:outline-none focus:bg-white"
                         />
                         {filteredCountries.map((country) => (
                           <button
@@ -1607,17 +1608,17 @@ export default function Login() {
                                     icon: 'info',
                                     confirmButtonText: 'OK',
                                     confirmButtonColor: '#8b5cf6',
-                                    background: '#232042',
-                                    color: '#ffffff'
+                                    background: '#ffffff',
+                                    color: '#000000'
                                   });
                                 }
                               }
                             }}
-                            className="w-full px-3 py-2 text-left hover:bg-purple-500/20 transition flex items-center gap-2"
+                            className="w-full px-3 py-2 text-left text-black hover:bg-purple-100 transition flex items-center gap-2"
                           >
                             <span className="text-xl">{country.flag}</span>
                             <span className="flex-1">{country.name}</span>
-                            <span className="text-gray-400">{country.dial_code}</span>
+                            <span className="text-black">{country.dial_code}</span>
                           </button>
                         ))}
                       </div>
@@ -1633,10 +1634,10 @@ export default function Login() {
                       onChange={handleInputChange}
                       onBlur={handlePhoneBlur}
                       readOnly={isOtpSent}
-                      className={`w-full px-4 py-3 pr-12 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-400 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`w-full px-4 py-3 pr-12 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
                       required
                     />
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500">
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600">
                       <FaWhatsapp size={20} />
                     </div>
                   </div>
@@ -1648,7 +1649,7 @@ export default function Login() {
           {isLogin && !isOtpSent && (
             <>
               <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-3 mb-4 text-center">
-                <p className="text-sm text-purple-300">
+                <p className="text-sm text-purple-600">
                   🔔 Enter Email ID OR WhatsApp Number to receive OTP
                 </p>
               </div>
@@ -1659,7 +1660,7 @@ export default function Login() {
                       type="button"
                       onClick={() => !(formData.email && formData.email.length > 0) && !isOtpSent && setShowCountryDropdown(!showCountryDropdown)}
                       disabled={formData.email && formData.email.length > 0 || isOtpSent}
-                      className={`flex items-center gap-2 px-3 py-3 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white ${formData.email && formData.email.length > 0 || isOtpSent ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-500/10'}`}
+                      className={`flex items-center gap-2 px-3 py-3 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black ${formData.email && formData.email.length > 0 || isOtpSent ? 'opacity-50 cursor-not-allowed' : 'hover:bg-purple-50'}`}
                     >
                       <span className="text-xl">{selectedCountry.flag}</span>
                       <span>{selectedCountry.dial_code}</span>
@@ -1667,13 +1668,13 @@ export default function Login() {
                     </button>
 
                     {showCountryDropdown && !(formData.email && formData.email.length > 0) && (
-                      <div className="absolute top-full mt-1 left-0 w-64 max-h-60 overflow-y-auto bg-[#232042] border border-purple-500/30 rounded-lg shadow-lg z-50">
+                      <div className="absolute top-full mt-1 left-0 w-64 max-h-60 overflow-y-auto bg-white border border-purple-300 rounded-lg shadow-xl z-50">
                         <input
                           type="text"
                           placeholder="Search country..."
                           value={searchCountry}
                           onChange={(e) => setSearchCountry(e.target.value)}
-                          className="w-full px-3 py-2 bg-[#19162b] border-b border-purple-500/30 text-white placeholder-gray-400 focus:outline-none"
+                          className="w-full px-3 py-2 bg-gray-50 border-b border-purple-300 text-black placeholder-gray-500 focus:outline-none focus:bg-white"
                         />
                         {filteredCountries.map((country) => (
                           <button
@@ -1697,17 +1698,17 @@ export default function Login() {
                                     icon: 'info',
                                     confirmButtonText: 'OK',
                                     confirmButtonColor: '#8b5cf6',
-                                    background: '#232042',
-                                    color: '#ffffff'
+                                    background: '#ffffff',
+                                    color: '#000000'
                                   });
                                 }
                               }
                             }}
-                            className="w-full px-3 py-2 text-left hover:bg-purple-500/20 transition flex items-center gap-2"
+                            className="w-full px-3 py-2 text-left text-black hover:bg-purple-100 transition flex items-center gap-2"
                           >
                             <span className="text-xl">{country.flag}</span>
                             <span className="flex-1">{country.name}</span>
-                            <span className="text-gray-400">{country.dial_code}</span>
+                            <span className="text-black">{country.dial_code}</span>
                           </button>
                         ))}
                       </div>
@@ -1723,10 +1724,10 @@ export default function Login() {
                       onChange={handleInputChange}
                       onBlur={handlePhoneBlur}
                       readOnly={isLogin && formData.email && formData.email.length > 0}
-                      className={`w-full px-4 py-3 pr-12 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-400 ${isLogin && formData.email && formData.email.length > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`w-full px-4 py-3 pr-12 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 ${isLogin && formData.email && formData.email.length > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                       required={!isLogin}
                     />
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500">
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600">
                       <FaWhatsapp size={20} />
                     </div>
                   </div>
@@ -1749,10 +1750,10 @@ export default function Login() {
                     onChange={handleInputChange}
                     onBlur={handleEmailBlur}
                     readOnly={isLogin && formData.phoneNumber && formData.phoneNumber.length > 0}
-                    className={`w-full px-4 py-3 pl-12 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-400 ${isLogin && formData.phoneNumber && formData.phoneNumber.length > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    className={`w-full px-4 py-3 pl-12 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 ${isLogin && formData.phoneNumber && formData.phoneNumber.length > 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
                     required={!isLogin}
                   />
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400">
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-600">
                     <FaEnvelope size={20} />
                   </div>
                 </div>
@@ -1762,14 +1763,14 @@ export default function Login() {
 
           {isOtpSent && (
             <div className="space-y-2">
-              <label className="text-sm text-gray-400 text-center block">
+              <label className="text-sm text-black text-center block">
                 Enter OTP from {
                   otpSentTo === 'whatsapp' ?
-                    <span className="text-green-400"><FaWhatsapp className="inline mr-1" />WhatsApp</span> :
+                    <span className="text-green-600"><FaWhatsapp className="inline mr-1" />WhatsApp</span> :
                     otpSentTo === 'email' ?
-                      <span className="text-purple-400"><FaEnvelope className="inline mr-1" />Email</span> :
+                      <span className="text-purple-600"><FaEnvelope className="inline mr-1" />Email</span> :
                       otpSentTo === 'whatsapp_email' ?
-                        <span>either <span className="text-green-400"><FaWhatsapp className="inline mr-1" />WhatsApp</span> or <span className="text-purple-400"><FaEnvelope className="inline mr-1" />Email</span></span> :
+                        <span>either <span className="text-green-600"><FaWhatsapp className="inline mr-1" />WhatsApp</span> or <span className="text-purple-600"><FaEnvelope className="inline mr-1" />Email</span></span> :
                         'your device'
                 }
               </label>
@@ -1778,7 +1779,7 @@ export default function Login() {
                 placeholder="Enter 6-digit OTP"
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                className="w-full px-4 py-3 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-400 text-center text-lg tracking-wider"
+                className="w-full px-4 py-3 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 text-center text-lg tracking-wider"
                 maxLength="6"
                 required
               />
@@ -1786,7 +1787,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={handleResendOtp}
-                  className="text-sm text-purple-400 hover:text-purple-300 transition"
+                  className="text-sm text-purple-600 hover:text-purple-700 transition"
                 >
                   Resend OTP
                 </button>
@@ -1795,14 +1796,14 @@ export default function Login() {
           )}
 
           {!isLogin && !isOtpSent && (
-            <div className="text-center text-gray-400 text-sm mb-2">
-              <div className="text-gray-400 text-sm mb-2 flex items-center justify-center gap-2">
+            <div className="text-center text-black text-sm mb-2">
+              <div className="text-black text-sm mb-2 flex items-center justify-center gap-2">
                 <span>OTP will be sent to</span>
-                <svg className="w-4 h-4 fill-current text-purple-400" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 fill-current text-purple-600" viewBox="0 0 24 24">
                   <path d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" />
                 </svg>
                 <span>Email &</span>
-                <svg className="w-4 h-4 fill-current text-green-500" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 fill-current text-green-600" viewBox="0 0 24 24">
                   <path d="M17.472,14.382c-0.297-0.149-1.758-0.867-2.03-0.967c-0.273-0.099-0.471-0.148-0.67,0.15c-0.197,0.297-0.767,0.966-0.94,1.164c-0.173,0.199-0.347,0.223-0.644,0.075c-0.297-0.15-1.255-0.463-2.39-1.475c-0.883-0.788-1.48-1.761-1.653-2.059c-0.173-0.297-0.018-0.458,0.13-0.606c0.134-0.133,0.297-0.347,0.446-0.521C9.87,9.97,9.919,9.846,10.019,9.65c0.099-0.198,0.05-0.371-0.025-0.52C9.919,8.981,9.325,7.515,9.078,6.92c-0.241-0.58-0.487-0.5-0.669-0.51c-0.173-0.008-0.371-0.01-0.57-0.01c-0.198,0-0.52,0.074-0.792,0.372c-0.272,0.297-1.04,1.016-1.04,2.479c0,1.462,1.065,2.875,1.213,3.074c0.149,0.198,2.096,3.2,5.077,4.487c0.709,0.306,1.262,0.489,1.694,0.625c0.712,0.227,1.36,0.195,1.871,0.118c0.571-0.085,1.758-0.719,2.006-1.413c0.248-0.694,0.248-1.289,0.173-1.413C17.884,14.651,17.769,14.431,17.472,14.382z M12.057,21.785h-0.008c-1.784,0-3.525-0.481-5.052-1.389l-0.362-0.215l-3.754,0.984l1.005-3.671l-0.236-0.375c-0.99-1.575-1.511-3.393-1.511-5.26c0-5.445,4.43-9.875,9.88-9.875c2.64,0,5.124,1.03,6.988,2.898c1.865,1.867,2.893,4.352,2.892,6.993C21.899,17.354,17.469,21.785,12.057,21.785z M20.5,3.488C18.24,1.24,15.24,0.013,12.058,0C5.507,0,0.17,5.335,0.172,11.892c0,2.096,0.547,4.142,1.588,5.945L0,24l6.305-1.654c1.746,0.943,3.71,1.444,5.71,1.447h0.006c6.551,0,11.89-5.335,11.89-11.893C23.91,8.724,22.759,5.746,20.5,3.488z" />
                 </svg>
                 <span>WhatsApp</span>
@@ -1813,9 +1814,9 @@ export default function Login() {
           <button
             type="submit"
             disabled={!isLogin && !canSendOtp && !isOtpSent}
-            className={`w-full px-6 py-3 rounded-lg font-semibold shadow-lg transition ${!isLogin && !canSendOtp && !isOtpSent
-              ? "bg-gray-600 cursor-not-allowed opacity-50"
-              : "bg-gradient-to-r from-purple-500 to-blue-500 hover:scale-105"
+            className={`w-full px-6 py-3 rounded-lg font-semibold shadow-lg transition text-white ${!isLogin && !canSendOtp && !isOtpSent
+              ? "bg-gray-400 cursor-not-allowed opacity-50"
+              : "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 hover:scale-105"
               }`}
           >
             {!isLogin && !isOtpSent ? 'Send OTP' :
@@ -1828,7 +1829,7 @@ export default function Login() {
 
 
         <div className="mt-6 text-center">
-          <p className="text-gray-400">
+          <p className="text-black">
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button
               type="button"
@@ -1838,7 +1839,7 @@ export default function Login() {
                 setOtp("");
                 setTimer(0);
               }}
-              className="text-purple-400 hover:text-purple-300 transition font-semibold"
+              className="text-purple-600 hover:text-purple-700 transition font-semibold"
             >
               {isLogin ? 'Sign Up' : 'Login'}
             </button>
@@ -1849,7 +1850,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={() => setShowContactModal(true)}
-                className="text-gray-400 hover:text-purple-400 transition inline-flex items-center gap-2"
+                className="text-black hover:text-purple-600 transition inline-flex items-center gap-2"
               >
                 <span>Contact Support</span>
                 <FaEnvelope size={16} />
@@ -1863,13 +1864,13 @@ export default function Login() {
       {showContactModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <motion.div
-            className="bg-[#232042] rounded-2xl p-6 shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-2xl p-6 shadow-2xl border-2 border-purple-200 w-full max-w-md max-h-[90vh] overflow-y-auto"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3 }}
           >
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                 Contact Support
               </h3>
               <button
@@ -1877,7 +1878,7 @@ export default function Login() {
                   setShowContactModal(false);
                   setContactForm({ userEmail: '', whatsappNumber: '', alternateEmail: '', message: '' });
                 }}
-                className="text-gray-400 hover:text-white transition text-xl"
+                className="text-black hover:text-black transition text-xl"
               >
                 ✕
               </button>
@@ -1885,7 +1886,7 @@ export default function Login() {
 
             <form onSubmit={handleContactSubmit} className="space-y-3">
               <div>
-                <label className="text-xs text-gray-400 block mb-1">Enter Email <span className="text-red-400">*</span></label>
+                <label className="text-xs text-black block mb-1">Enter Email <span className="text-red-400">*</span></label>
                 <div className="relative">
                   <input
                     type="email"
@@ -1893,23 +1894,23 @@ export default function Login() {
                     onChange={(e) => setContactForm({ ...contactForm, userEmail: e.target.value })}
                     onBlur={handleContactEmailBlur}
                     placeholder="your.email@example.com"
-                    className="w-full px-3 py-2 pl-10 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-400 text-sm"
+                    className="w-full px-3 py-2 pl-10 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 text-sm"
                     required
                   />
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400">
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-600">
                     <FaEnvelope size={16} />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-gray-400 block mb-1">Enter WhatsApp Number <span className="text-red-400">*</span></label>
+                <label className="text-xs text-black block mb-1">Enter WhatsApp Number <span className="text-red-400">*</span></label>
                 <div className="flex gap-2">
                   <div className="relative" ref={contactDropdownRef}>
                     <button
                       type="button"
                       onClick={() => setShowContactCountryDropdown(!showContactCountryDropdown)}
-                      className="flex items-center gap-1 px-2 py-2 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white hover:bg-purple-500/10 text-sm"
+                      className="flex items-center gap-1 px-2 py-2 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black hover:bg-purple-50 text-sm"
                     >
                       <span className="text-base">{contactCountry.flag}</span>
                       <span className="text-xs">{contactCountry.dial_code}</span>
@@ -1917,13 +1918,13 @@ export default function Login() {
                     </button>
 
                     {showContactCountryDropdown && (
-                      <div className="absolute top-full mt-1 left-0 w-64 max-h-60 overflow-y-auto bg-[#232042] border border-purple-500/30 rounded-lg shadow-lg z-50">
+                      <div className="absolute top-full mt-1 left-0 w-64 max-h-60 overflow-y-auto bg-white border border-purple-300 rounded-lg shadow-xl z-50">
                         <input
                           type="text"
                           placeholder="Search country..."
                           value={searchContactCountry}
                           onChange={(e) => setSearchContactCountry(e.target.value)}
-                          className="w-full px-3 py-2 bg-[#19162b] border-b border-purple-500/30 text-white placeholder-gray-400 focus:outline-none text-sm"
+                          className="w-full px-3 py-2 bg-gray-50 border-b border-purple-300 text-black placeholder-gray-500 focus:outline-none focus:bg-white text-sm"
                         />
                         {countryCodes.filter(country =>
                           country.name.toLowerCase().includes(searchContactCountry.toLowerCase()) ||
@@ -1937,11 +1938,11 @@ export default function Login() {
                               setShowContactCountryDropdown(false);
                               setSearchContactCountry("");
                             }}
-                            className="w-full px-3 py-2 text-left hover:bg-purple-500/20 transition flex items-center gap-2 text-sm"
+                            className="w-full px-3 py-2 text-left text-black hover:bg-purple-100 transition flex items-center gap-2 text-sm"
                           >
                             <span className="text-base">{country.flag}</span>
                             <span className="flex-1">{country.name}</span>
-                            <span className="text-gray-400 text-xs">{country.dial_code}</span>
+                            <span className="text-black text-xs">{country.dial_code}</span>
                           </button>
                         ))}
                       </div>
@@ -1955,10 +1956,10 @@ export default function Login() {
                       onChange={handleContactPhoneChange}
                       onBlur={handleContactPhoneBlur}
                       placeholder="1234567890"
-                      className="w-full px-3 py-2 pr-10 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-400 text-sm"
+                      className="w-full px-3 py-2 pr-10 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 text-sm"
                       required
                     />
-                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-500">
+                    <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600">
                       <FaWhatsapp size={16} />
                     </div>
                   </div>
@@ -1966,7 +1967,7 @@ export default function Login() {
               </div>
 
               <div>
-                <label className="text-xs text-gray-400 block mb-1">Alternate Email (Optional)</label>
+                <label className="text-xs text-black block mb-1">Alternate Email (Optional)</label>
                 <div className="relative">
                   <input
                     type="email"
@@ -1974,22 +1975,22 @@ export default function Login() {
                     onChange={(e) => setContactForm({ ...contactForm, alternateEmail: e.target.value })}
                     onBlur={handleContactAlternateEmailBlur}
                     placeholder="alternate.email@example.com"
-                    className="w-full px-3 py-2 pl-10 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-400 text-sm"
+                    className="w-full px-3 py-2 pl-10 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 text-sm"
                   />
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-400">
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-600">
                     <FaEnvelope size={16} />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="text-xs text-gray-400 block mb-1">Message <span className="text-red-400">*</span></label>
+                <label className="text-xs text-black block mb-1">Message <span className="text-red-400">*</span></label>
                 <textarea
                   value={contactForm.message}
                   onChange={(e) => setContactForm({ ...contactForm, message: e.target.value })}
                   placeholder="Write your message here..."
                   rows="3"
-                  className="w-full px-3 py-2 bg-[#19162b] border border-purple-500/30 rounded-lg focus:outline-none focus:border-purple-500 transition text-white placeholder-gray-400 resize-none text-sm"
+                  className="w-full px-3 py-2 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 resize-none text-sm"
                   required
                 />
               </div>
@@ -2001,13 +2002,13 @@ export default function Login() {
                     setShowContactModal(false);
                     setContactForm({ userEmail: '', whatsappNumber: '', registeredEmail: '', message: '' });
                   }}
-                  className="flex-1 px-4 py-2 rounded-lg font-semibold bg-gray-600 hover:bg-gray-700 transition text-sm"
+                  className="flex-1 px-4 py-2 rounded-lg font-semibold bg-gray-200 text-gray-700 hover:bg-gray-300 transition text-sm border border-gray-300"
                 >
                   Close
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-purple-500 to-blue-500 hover:scale-105 transition shadow-lg text-sm"
+                  className="flex-1 px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white hover:scale-105 transition shadow-lg text-sm"
                 >
                   Send
                 </button>

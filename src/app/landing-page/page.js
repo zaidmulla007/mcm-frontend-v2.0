@@ -1233,11 +1233,11 @@ export default function Home() {
             {/* Left: What's Trending Title */}
             <div>
               <h2 className="text-4xl md:text-5xl font-bold">
-                <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   What&apos;s Trending
                 </span>
               </h2>
-              <div className="w-24 h-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mt-5"></div>
+              <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mt-5"></div>
             </div>
 
             {/* Right: Timezone and Update Info */}
@@ -1245,7 +1245,7 @@ export default function Home() {
               {/* Timezone Toggle */}
               <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border border-blue-200 p-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-700 font-bold">Timezone:</span>
+                  <span className="text-xs text-black-700 font-medium">Timezone:</span>
                   <div className="flex items-center bg-gray-100/50 rounded-lg p-1">
                     <button
                       onClick={() => toggleTimezone()}
@@ -1273,15 +1273,15 @@ export default function Home() {
               <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border border-blue-200 p-3">
                 <div className="flex items-center gap-4 text-xs">
                   <div className="flex flex-col">
-                    <span className="text-gray-600 font-medium">Last Updated:</span>
-                    <span className="font-bold text-gray-900">
+                    <span className="text-black-600 font-medium">Last Updated:</span>
+                    <span className="font-medium text-gray-900">
                       {lastUpdated ? formatDate(lastUpdated) : "N/A"}
                     </span>
                   </div>
                   <div className="h-8 w-px bg-gray-400"></div>
                   <div className="flex flex-col">
-                    <span className="text-gray-600 font-medium">Next Update:</span>
-                    <span className="font-bold text-gray-900">
+                    <span className="text-black-600 font-medium">Next Update:</span>
+                    <span className="font-medium text-gray-900">
                       {nextUpdate ? formatDate(nextUpdate) : "N/A"}
                     </span>
                   </div>

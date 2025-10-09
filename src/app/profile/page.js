@@ -132,9 +132,9 @@ export default function ProfilePage() {
       text: 'Your subscription has been started successfully.',
       icon: 'success',
       confirmButtonText: 'OK',
-      background: '#232042',
-      color: '#ffffff',
-      confirmButtonColor: '#8b5cf6'
+      background: '#ffffff',
+      color: '#1f2937',
+      confirmButtonColor: '#7c3aed'
     });
   };
 
@@ -143,11 +143,11 @@ export default function ProfilePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#19162b] text-white p-4">
+    <div className="min-h-screen bg-white text-gray-900 p-4">
       <div className="max-w-4xl mx-auto">
         <Link
           href="/influencers"
-          className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 mb-6 transition"
+          className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 mb-6 transition"
         >
           <FaArrowLeft />
           <span>Back to Dashboard</span>
@@ -157,25 +157,25 @@ export default function ProfilePage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-[#232042] rounded-2xl p-8 shadow-xl"
+          className="bg-white border border-gray-200 rounded-2xl p-8 shadow-lg"
         >
-          <h1 className="text-3xl font-bold mb-8 text-white">
+          <h1 className="text-3xl font-bold mb-8 text-gray-900">
             My Profile
           </h1>
 
           <div className="grid md:grid-cols-2 gap-8">
             {/* Personal Information */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Personal Information</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Personal Information</h2>
 
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                    <FaUser className="text-purple-400" size={20} />
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <FaUser className="text-purple-600" size={20} />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Full Name</p>
-                    <p className="font-medium">
+                    <p className="text-sm text-gray-500">Full Name</p>
+                    <p className="font-medium text-gray-900">
                       {userInfo.firstName && userInfo.lastName
                         ? `${userInfo.firstName} ${userInfo.lastName}`
                         : 'Not provided'}
@@ -184,22 +184,22 @@ export default function ProfilePage() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                    <FaEnvelope className="text-purple-400" size={20} />
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <FaEnvelope className="text-purple-600" size={20} />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Email Address</p>
-                    <p className="font-medium">{userInfo.email || 'Not provided'}</p>
+                    <p className="text-sm text-gray-500">Email Address</p>
+                    <p className="font-medium text-gray-900">{userInfo.email || 'Not provided'}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center">
-                    <FaPhone className="text-purple-400" size={20} />
+                  <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <FaPhone className="text-purple-600" size={20} />
                   </div>
                   <div>
-                    <p className="text-sm text-gray-400">Mobile Number</p>
-                    <p className="font-medium">{userInfo.mobile || 'Not provided'}</p>
+                    <p className="text-sm text-gray-500">Mobile Number</p>
+                    <p className="font-medium text-gray-900">{userInfo.mobile || 'Not provided'}</p>
                   </div>
                 </div>
               </div>
@@ -207,38 +207,38 @@ export default function ProfilePage() {
 
             {/* Subscription Information */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold text-white mb-4">Subscription Details</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Subscription Details</h2>
 
               <div className="space-y-4">
-                <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg p-4">
+                <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <span className="text-sm text-gray-400">Subscription Status</span>
-                    <span className="px-3 py-1 bg-green-500/20 text-green-400 text-xs rounded-full">
+                    <span className="text-sm text-gray-600">Subscription Status</span>
+                    <span className="px-3 py-1 bg-green-100 text-green-700 text-xs rounded-full font-medium">
                       Active
                     </span>
                   </div>
 
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                      <FaCalendarAlt className="text-purple-400" size={16} />
+                      <FaCalendarAlt className="text-purple-600" size={16} />
                       <div>
-                        <p className="text-sm text-gray-400">Start Date</p>
-                        <p className="font-medium">{formatDate(userInfo.dateStart)}</p>
+                        <p className="text-sm text-gray-500">Start Date</p>
+                        <p className="font-medium text-gray-900">{formatDate(userInfo.dateStart)}</p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3">
-                      <FaCalendarAlt className="text-purple-400" size={16} />
+                      <FaCalendarAlt className="text-purple-600" size={16} />
                       <div>
-                        <p className="text-sm text-gray-400">End Date</p>
-                        <p className="font-medium">{formatDate(userInfo.dateEnd)}</p>
+                        <p className="text-sm text-gray-500">End Date</p>
+                        <p className="font-medium text-gray-900">{formatDate(userInfo.dateEnd)}</p>
                       </div>
                     </div>
                   </div>
 
                   {calculateDaysRemaining() && (
-                    <div className="mt-4 pt-4 border-t border-purple-500/30">
-                      <p className="text-center text-sm font-medium text-white">
+                    <div className="mt-4 pt-4 border-t border-purple-200">
+                      <p className="text-center text-sm font-medium text-gray-900">
                         {calculateDaysRemaining()}
                       </p>
                     </div>
@@ -247,7 +247,7 @@ export default function ProfilePage() {
 
                 <button
                   onClick={handleManageSubscription}
-                  className="block w-full text-center bg-gradient-to-r from-purple-500 to-blue-500 px-4 py-3 rounded-lg font-semibold shadow hover:scale-105 transition"
+                  className="block w-full text-center bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-3 rounded-lg font-semibold shadow hover:scale-105 transition"
                 >
                   Manage Subscription
                 </button>
@@ -256,30 +256,30 @@ export default function ProfilePage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="mt-8 pt-8 border-t border-purple-500/30">
-            <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
+          <div className="mt-8 pt-8 border-t border-gray-200">
+            <h3 className="text-lg font-semibold mb-4 text-gray-900">Quick Actions</h3>
             <div className="flex gap-4 flex-wrap">
               <Link
                 href="/"
-                className="px-6 py-2 bg-purple-500/20 rounded-lg hover:bg-purple-500/30 transition"
+                className="px-6 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition font-medium"
               >
                 Home
               </Link>
               <Link
                 href="/favorites"
-                className="px-6 py-2 bg-purple-500/20 rounded-lg hover:bg-purple-500/30 transition"
+                className="px-6 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition font-medium"
               >
                 My favorites
               </Link>
               {/* <Link
                 href="/leaderboard"
-                className="px-6 py-2 bg-purple-500/20 rounded-lg hover:bg-purple-500/30 transition"
+                className="px-6 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition font-medium"
               >
                 View Leaderboard
               </Link> */}
               <button
                 onClick={() => window.open('mailto:admin@mcm.com', '_self')}
-                className="px-6 py-2 bg-purple-500/20 rounded-lg hover:bg-purple-500/30 transition"
+                className="px-6 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition font-medium"
               >
                 Contact Support
               </button>
@@ -296,13 +296,13 @@ export default function ProfilePage() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="bg-[#232042] rounded-xl p-6 w-full max-w-md shadow-xl"
+            className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-white">Manage Subscription</h3>
+              <h3 className="text-xl font-bold text-gray-900">Manage Subscription</h3>
               <button
                 onClick={handleCancel}
-                className="text-gray-400 hover:text-white transition"
+                className="text-gray-500 hover:text-gray-700 transition"
               >
                 <FaTimes size={20} />
               </button>
@@ -311,14 +311,14 @@ export default function ProfilePage() {
             <div className="space-y-4">
               <button
                 onClick={handleStartSubscription}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-lg font-semibold hover:scale-105 transition"
+                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-lg font-semibold hover:scale-105 transition shadow-md"
               >
                 Start Subscription
               </button>
 
               <button
                 onClick={handleCancel}
-                className="w-full bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-700 transition"
+                className="w-full bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:bg-gray-300 transition"
               >
                 Cancel
               </button>

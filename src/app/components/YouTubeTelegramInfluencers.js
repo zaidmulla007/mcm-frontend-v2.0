@@ -413,19 +413,19 @@ export default function YouTubeTelegramInfluencers() {
                                     {selectedPlatform === "Combined" ? (
                                         <>
                                             <YouTubeIcon className="text-red-900" />
-                                            <span className="text-sm text-black">YouTube</span>
+                                            <span className="text-sm text-black font-medium">YouTube</span>
                                             <TelegramIcon className="text-blue-900" />
-                                            <span className="text-sm text-black">Telegram</span>
+                                            <span className="text-sm text-black font-medium">Telegram</span>
                                         </>
                                     ) : selectedPlatform === "YouTube" ? (
                                         <>
                                             <YouTubeIcon className="text-red-900" />
-                                            <span className="text-sm text-black">YouTube</span>
+                                            <span className="text-sm text-black font-medium">YouTube</span>
                                         </>
                                     ) : (
                                         <>
                                             <TelegramIcon className="text-blue-900" />
-                                            <span className="text-sm text-black">Telegram</span>
+                                            <span className="text-sm text-black font-medium">Telegram</span>
                                         </>
                                     )}
                                 </div>
@@ -443,342 +443,342 @@ export default function YouTubeTelegramInfluencers() {
                         </div>
                     ) : (
                         getDisplayData().map((post, index) => (
-                        <div
-                            key={post.id}
-                            className="w-80 flex-shrink-0 bg-white rounded-xl overflow-hidden border border-purple-500"
-                        >
-                            {/* Post Header with Platform Icon in Top Right */}
-                            <div className="border-b border-gray-700">
-                                <div
-                                    className={`${getColumnColor(index)} text-black p-3 text-center text-sm font-bold flex justify-between items-center`}
-                                >
-                                    <span>POST {index + 1}</span>
-                                    <div className="flex items-center">
-                                        <span className="text-xs text-black mr-2">{formatDate(post.date)}</span>
-                                        {(selectedPlatform === "Combined") ? (
-                                            post.platform === "YouTube" ? (
+                            <div
+                                key={post.id}
+                                className="w-80 flex-shrink-0 bg-white rounded-xl overflow-hidden border border-purple-500"
+                            >
+                                {/* Post Header with Platform Icon in Top Right */}
+                                <div className="border-b border-gray-700">
+                                    <div
+                                        className={`${getColumnColor(index)} text-black p-3 text-center text-sm font-medium flex justify-between items-center`}
+                                    >
+                                        <span>POST {index + 1}</span>
+                                        <div className="flex items-center">
+                                            <span className="text-xs text-black mr-2">{formatDate(post.date)}</span>
+                                            {(selectedPlatform === "Combined") ? (
+                                                post.platform === "YouTube" ? (
+                                                    <YouTubeIcon className="text-red-900" />
+                                                ) : (
+                                                    <TelegramIcon className="text-blue-900" />
+                                                )
+                                            ) : selectedPlatform === "YouTube" ? (
                                                 <YouTubeIcon className="text-red-900" />
                                             ) : (
                                                 <TelegramIcon className="text-blue-900" />
-                                            )
-                                        ) : selectedPlatform === "YouTube" ? (
-                                            <YouTubeIcon className="text-red-900" />
-                                        ) : (
-                                            <TelegramIcon className="text-blue-900" />
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Post Header */}
+                                <div className="p-3 border-b border-gray-700">
+                                    {/* Influencer Name Link */}
+                                    <div className="text-sm font-medium text-black mb-2">
+                                        Name :
+                                        <a
+                                            href={
+                                                post.platform === "YouTube"
+                                                    ? `/influencers/${post.channelID}`
+                                                    : `/telegram-influencer/${post.channelID}`
+                                            }
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="ml-1 text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
+                                        >
+                                            {post.channel_name}
+                                        </a>
+                                    </div>
+
+                                    {/* Rank Link (simple) */}
+                                    <div className="text-sm font-medium text-black mb-2 flex items-center gap-2">
+                                        Rank
+                                        <span className="sr-only">Rank (180 days / Overall)</span>
+                                        <button
+                                            type="button"
+                                            title="180 days / Overall"
+                                            className="inline-flex items-center gap-2 focus:outline-none"
+                                            aria-label="Rank info: 180 days / Overall"
+                                        >
+                                            {/* Eye icon */}
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.5 12s3.5-7.5 9.5-7.5S21.5 12 21.5 12s-3.5 7.5-9.5 7.5S2.5 12 2.5 12z" />
+                                                <circle cx="12" cy="12" r="3" />
+                                            </svg>
+                                        </button> :
+                                        <a
+                                            href={post.platform === "YouTube" ? `/influencers/${post.channelID}` : `/telegram-influencer/${post.channelID}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="ml-1 text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
+                                        >
+                                            {post.rank}
+                                        </a>
+                                    </div>
+
+
+                                    {/* Post Title Link */}
+                                    <div className="min-h-[40px] mb-2">
+                                        <a
+                                            href={
+                                                post.platform === "YouTube"
+                                                    ? `/influencers/${post.channelID}?tab=recentActivities`
+                                                    : `/telegram-influencer/${post.channelID}?tab=recentActivities`
+                                            }
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="block text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
+                                        >
+                                            <div className={`text-sm font-medium ${expandedTitles[post.id] ? '' : 'line-clamp-2'}`} title={post.title}>
+                                                {post.title}
+                                            </div>
+                                        </a>
+                                    </div>
+
+                                    <div className="h-6 mb-2">
+                                        {post.title.length > 80 && (
+                                            <button
+                                                onClick={() => toggleTitle(post.id)}
+                                                className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
+                                            >
+                                                {expandedTitles[post.id] ? '.....' : '......'}
+                                            </button>
+                                        )}
+                                    </div>
+                                    <div className="text-xs h-6">
+                                        <a
+                                            href={post.videoUrl || post.telegramUrl}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={`flex items-center gap-1 ${post.platform === "YouTube" ? "text-red-700 hover:text-red-800" : "text-blue-700 hover:text-blue-800"}`}
+                                        >
+                                            {post.platform === "YouTube" ? "Watch Video" : "View Post"}
+                                        </a>
+                                    </div>
+                                </div>
+                                {/* MCM Scoring */}
+                                <div className="p-3 border-b border-gray-700">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="font-bold text-xs text-black">MCM Scoring</span>
+                                    </div>
+                                    <ul className="text-xs space-y-2">
+                                        <li className="flex items-center justify-between">
+                                            <span className="text-black">Overall</span>
+                                            {renderStars(post.overallScore)}
+                                        </li>
+                                        <li className="flex items-center justify-between">
+                                            <span className="text-black">Educational</span>
+                                            {renderStars(post.educationalPurpose)}
+                                        </li>
+                                        <li className="flex items-center justify-between">
+                                            <span className="text-black">Actionable</span>
+                                            {renderStars(post.actionableInsights)}
+                                        </li>
+                                        <li className="flex flex-col">
+                                            <span className="text-black mb-2">Marketing Content</span>
+                                            <div className={`text-xs text-black ${expandedMarketing[post.id] ? 'leading-tight' : 'truncate overflow-hidden whitespace-nowrap'}`}>
+                                                {typeof post.marketingContent === "string"
+                                                    ? expandedMarketing[post.id]
+                                                        ? post.marketingContent
+                                                            .split(" ")
+                                                            .map((word, i) =>
+                                                                i < 2 ? word.charAt(0).toUpperCase() + word.slice(1) : word
+                                                            )
+                                                            .join(" ")
+                                                        : post.marketingContent
+                                                            .split(" ")
+                                                            .map((word, i) =>
+                                                                i < 2 ? word.charAt(0).toUpperCase() + word.slice(1) : word
+                                                            )
+                                                            .join(" ")
+                                                    : "N/A"}
+                                            </div>
+                                            <div className="h-6 mt-2">
+                                                {typeof post.marketingContent === "string" &&
+                                                    post.marketingContent.length > 50 && (
+                                                        <button
+                                                            onClick={() => toggleMarketing(post.id)}
+                                                            className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer self-start"
+                                                        >
+                                                            {expandedMarketing[post.id] ? "Read Less" : "Read More"}
+                                                        </button>
+                                                    )}
+                                            </div>
+                                        </li>
+                                    </ul>
+                                </div>
+
+                                {/* Post Summary */}
+                                <div className="p-3 border-b border-gray-700">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="font-bold text-xs text-black">Post Summary</span>
+                                        <button
+                                            onClick={() => toggleSummary(post.id)}
+                                            className="text-lg text-blue-700 hover:text-blue-800 cursor-pointer font-bold"
+                                        >
+                                            {expandedSummaries[post.id] ? '−' : '+'}
+                                        </button>
+                                    </div>
+
+                                    <div className="min-h-[96px] mb-2">
+                                        <div
+                                            className={`text-xs text-black leading-tight transition-all duration-300 ${expandedSummaries[post.id] ? '' : 'line-clamp-4'
+                                                }`}
+                                        >
+                                            {post.summary || "No summary available"}
+                                        </div>
+
+                                        {/* Read more / Read less */}
+                                        {post.summary && (
+                                            <button
+                                                onClick={() => toggleSummary(post.id)}
+                                                className="mt-1 text-blue-700 hover:text-blue-800 text-xs font-semibold"
+                                            >
+                                                {expandedSummaries[post.id] ? 'Read less' : 'Read more'}
+                                            </button>
                                         )}
                                     </div>
                                 </div>
-                            </div>
-
-                            {/* Post Header */}
-                            <div className="p-3 border-b border-gray-700">
-                                {/* Influencer Name Link */}
-                                <div className="text-sm font-bold text-black mb-2">
-                                    Name :
-                                    <a
-                                        href={
-                                            post.platform === "YouTube"
-                                                ? `/influencers/${post.channelID}`
-                                                : `/telegram-influencer/${post.channelID}`
-                                        }
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="ml-1 text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
-                                    >
-                                        {post.channel_name}
-                                    </a>
-                                </div>
-
-                                {/* Rank Link (simple) */}
-                                <div className="text-sm font-bold text-black mb-2 flex items-center gap-2">
-                                    Rank 
-                                    <span className="sr-only">Rank (180 days / Overall)</span>
-                                    <button
-                                        type="button"
-                                        title="180 days / Overall"
-                                        className="inline-flex items-center gap-2 focus:outline-none"
-                                        aria-label="Rank info: 180 days / Overall"
-                                    >
-                                        {/* Eye icon */}
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M2.5 12s3.5-7.5 9.5-7.5S21.5 12 21.5 12s-3.5 7.5-9.5 7.5S2.5 12 2.5 12z" />
-                                            <circle cx="12" cy="12" r="3" />
-                                        </svg>
-                                    </button> : 
-                                    <a
-                                        href={post.platform === "YouTube" ? `/influencers/${post.channelID}` : `/telegram-influencer/${post.channelID}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="ml-1 text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
-                                    >
-                                        {post.rank}
-                                    </a>
-                                </div>
 
 
-                                {/* Post Title Link */}
-                                <div className="min-h-[40px] mb-2">
-                                    <a
-                                        href={
-                                            post.platform === "YouTube"
-                                                ? `/influencers/${post.channelID}?tab=recentActivities`
-                                                : `/telegram-influencer/${post.channelID}?tab=recentActivities`
-                                        }
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="block text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
-                                    >
-                                        <div className={`text-sm font-medium ${expandedTitles[post.id] ? '' : 'line-clamp-2'}`} title={post.title}>
-                                            {post.title}
-                                        </div>
-                                    </a>
-                                </div>
 
-                                <div className="h-6 mb-2">
-                                    {post.title.length > 80 && (
-                                        <button
-                                            onClick={() => toggleTitle(post.id)}
-                                            className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
-                                        >
-                                            {expandedTitles[post.id] ? '.....' : '......'}
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="text-xs h-6">
-                                    <a
-                                        href={post.videoUrl || post.telegramUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className={`flex items-center gap-1 ${post.platform === "YouTube" ? "text-red-700 hover:text-red-800" : "text-blue-700 hover:text-blue-800"}`}
-                                    >
-                                        {post.platform === "YouTube" ? "Watch Video" : "View Post"}
-                                    </a>
-                                </div>
-                            </div>
-                            {/* MCM Scoring */}
-                            <div className="p-3 border-b border-gray-700">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="font-bold text-xs text-black">MCM Scoring</span>
-                                </div>
-                                <ul className="text-xs space-y-2">
-                                    <li className="flex items-center justify-between">
-                                        <span className="text-black">Overall</span>
-                                        {renderStars(post.overallScore)}
-                                    </li>
-                                    <li className="flex items-center justify-between">
-                                        <span className="text-black">Educational</span>
-                                        {renderStars(post.educationalPurpose)}
-                                    </li>
-                                    <li className="flex items-center justify-between">
-                                        <span className="text-black">Actionable</span>
-                                        {renderStars(post.actionableInsights)}
-                                    </li>
-                                    <li className="flex flex-col">
-                                        <span className="text-black mb-2">Marketing Content</span>
-                                        <div className={`text-xs text-black ${expandedMarketing[post.id] ? 'leading-tight' : 'truncate overflow-hidden whitespace-nowrap'}`}>
-                                            {typeof post.marketingContent === "string"
-                                                ? expandedMarketing[post.id]
-                                                    ? post.marketingContent
-                                                        .split(" ")
-                                                        .map((word, i) =>
-                                                            i < 2 ? word.charAt(0).toUpperCase() + word.slice(1) : word
-                                                        )
-                                                        .join(" ")
-                                                    : post.marketingContent
-                                                        .split(" ")
-                                                        .map((word, i) =>
-                                                            i < 2 ? word.charAt(0).toUpperCase() + word.slice(1) : word
-                                                        )
-                                                        .join(" ")
-                                                : "N/A"}
-                                        </div>
-                                        <div className="h-6 mt-2">
-                                            {typeof post.marketingContent === "string" &&
-                                                post.marketingContent.length > 50 && (
-                                                    <button
-                                                        onClick={() => toggleMarketing(post.id)}
-                                                        className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer self-start"
-                                                    >
-                                                        {expandedMarketing[post.id] ? "Read Less" : "Read More"}
-                                                    </button>
-                                                )}
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-
-                            {/* Post Summary */}
-                            <div className="p-3 border-b border-gray-700">
-                                <div className="flex items-center justify-between mb-2">
-                                    <span className="font-bold text-xs text-black">Post Summary</span>
-                                    <button
-                                        onClick={() => toggleSummary(post.id)}
-                                        className="text-lg text-blue-700 hover:text-blue-800 cursor-pointer font-bold"
-                                    >
-                                        {expandedSummaries[post.id] ? '−' : '+'}
-                                    </button>
-                                </div>
-
-                                <div className="min-h-[96px] mb-2">
-                                    <div
-                                        className={`text-xs text-black leading-tight transition-all duration-300 ${expandedSummaries[post.id] ? '' : 'line-clamp-4'
-                                            }`}
-                                    >
-                                        {post.summary || "No summary available"}
+                                {/* Coins Analysis */}
+                                <div
+                                    className="p-3 relative"
+                                    onMouseEnter={() => setHoveredPost(post.id)}
+                                    onMouseLeave={() => setHoveredPost(null)}
+                                >
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="font-bold text-xs text-black">Coins Analysis</span>
                                     </div>
 
-                                    {/* Read more / Read less */}
-                                    {post.summary && (
-                                        <button
-                                            onClick={() => toggleSummary(post.id)}
-                                            className="mt-1 text-blue-700 hover:text-blue-800 text-xs font-semibold"
-                                        >
-                                            {expandedSummaries[post.id] ? 'Read less' : 'Read more'}
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
+                                    {/* Coins table */}
+                                    <div className="flex justify-center">
+                                        <div className="overflow-x-auto w-full">
+                                            <table className="w-full text-xs">
+                                                <thead>
+                                                    <tr className="border-b border-gray-600">
+                                                        <th className="text-center text-black pb-1 pr-2">Name</th>
+                                                        <th className="text-center text-black pb-1 pr-2">Sentiment</th>
+                                                        <th className="text-center text-black pb-1">Holding Period</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {(() => {
+                                                        const coins = expandedCoins[post.id]
+                                                            ? post.mentionedCoins
+                                                            : post.mentionedCoins.slice(0, 5);
 
+                                                        return coins.map((coin, i) => {
 
-
-                            {/* Coins Analysis */}
-                            <div
-                                className="p-3 relative"
-                                onMouseEnter={() => setHoveredPost(post.id)}
-                                onMouseLeave={() => setHoveredPost(null)}
-                            >
-                                <div className="flex items-center gap-2 mb-2">
-                                    <span className="font-bold text-xs text-black">Coins Analysis</span>
-                                </div>
-
-                                {/* Coins table */}
-                                <div className="flex justify-center">
-                                    <div className="overflow-x-auto w-full">
-                                        <table className="w-full text-xs">
-                                            <thead>
-                                                <tr className="border-b border-gray-600">
-                                                    <th className="text-center text-black pb-1 pr-2">Name</th>
-                                                    <th className="text-center text-black pb-1 pr-2">Sentiment</th>
-                                                    <th className="text-center text-black pb-1">Holding Period</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {(() => {
-                                                    const coins = expandedCoins[post.id]
-                                                        ? post.mentionedCoins
-                                                        : post.mentionedCoins.slice(0, 5);
-
-                                                    return coins.map((coin, i) => {
-
-                                                        return (
-                                                            <tr key={i} className="border-b border-gray-700/50">
-                                                                <td className="py-1 pr-2 text-center">
-                                                                    {coin ? (
-                                                                        <span className="text-black" title={coin.symbol}>
-                                                                            {formatCoinName(coin.name || coin.symbol)}
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span className="text-transparent">-</span>
-                                                                    )}
-                                                                </td>
-                                                                <td className="py-1 pr-2 text-center">
-                                                                    {coin ? (
-                                                                        <span className={getSentimentColor(coin.sentiment)}>
-                                                                            {formatSentiment(coin.sentiment)}
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span className="text-transparent">-</span>
-                                                                    )}
-                                                                </td>
-                                                                <td className="py-1 text-center">
-                                                                    {coin ? (
-                                                                        <span className="text-black">
-                                                                            {formatHoldingPeriod(coin.outlook)}
-                                                                        </span>
-                                                                    ) : (
-                                                                        <span className="text-transparent">-</span>
-                                                                    )}
-                                                                </td>
-                                                            </tr>
-                                                        );
-                                                    });
-                                                })()}
-                                            </tbody>
-                                        </table>
+                                                            return (
+                                                                <tr key={i} className="border-b border-gray-700/50">
+                                                                    <td className="py-1 pr-2 text-center">
+                                                                        {coin ? (
+                                                                            <span className="text-black" title={coin.symbol}>
+                                                                                {formatCoinName(coin.name || coin.symbol)}
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span className="text-transparent">-</span>
+                                                                        )}
+                                                                    </td>
+                                                                    <td className="py-1 pr-2 text-center">
+                                                                        {coin ? (
+                                                                            <span className={getSentimentColor(coin.sentiment)}>
+                                                                                {formatSentiment(coin.sentiment)}
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span className="text-transparent">-</span>
+                                                                        )}
+                                                                    </td>
+                                                                    <td className="py-1 text-center">
+                                                                        {coin ? (
+                                                                            <span className="text-black">
+                                                                                {formatHoldingPeriod(coin.outlook)}
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span className="text-transparent">-</span>
+                                                                        )}
+                                                                    </td>
+                                                                </tr>
+                                                            );
+                                                        });
+                                                    })()}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div className="h-6 mt-2">
-                                    {post.mentionedCoins && post.mentionedCoins.length > 5 && (
-                                        <button
-                                            onClick={() => toggleCoins(post.id)}
-                                            className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
-                                        >
-                                            {expandedCoins[post.id]
-                                                ? 'Read Less'
-                                                : 'Read More'
-                                            }
-                                        </button>
-                                    )}
-                                </div>
+                                    <div className="h-6 mt-2">
+                                        {post.mentionedCoins && post.mentionedCoins.length > 5 && (
+                                            <button
+                                                onClick={() => toggleCoins(post.id)}
+                                                className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
+                                            >
+                                                {expandedCoins[post.id]
+                                                    ? 'Read Less'
+                                                    : 'Read More'
+                                                }
+                                            </button>
+                                        )}
+                                    </div>
 
-                                {/* Hover Tooltip */}
-                                {hoveredPost === post.id && (
-                                    <div className="absolute top-0 left-full ml-2 z-50 bg-gray-800 text-white p-4 rounded-lg shadow-xl border border-gray-700 max-w-md">
-                                        <div className="text-xs">
-                                            <div className="font-bold mb-2 text-blue-700">Complete Post Analysis</div>
+                                    {/* Hover Tooltip */}
+                                    {hoveredPost === post.id && (
+                                        <div className="absolute top-0 left-full ml-2 z-50 bg-gray-800 text-white p-4 rounded-lg shadow-xl border border-gray-700 max-w-md">
+                                            <div className="text-xs">
+                                                <div className="font-bold mb-2 text-blue-700">Complete Post Analysis</div>
 
-                                            <div className="mb-3">
-                                                <span className="font-semibold text-blue-700">All Recommendations ({post.mentionedCoins.length}):</span>
-                                                <div className="mt-1 max-h-32 overflow-y-auto">
-                                                    {post.mentionedCoins.map((coin, i) => (
-                                                        <div key={i} className={`${getSentimentColor(coin.sentiment)} mb-1 flex items-start`}>
-                                                            <span className="mr-1">•</span>
-                                                            <span>{formatCoinName(coin.name || coin.symbol)}: {formatSentiment(coin.sentiment)}, {formatHoldingPeriod(coin.outlook)}</span>
-                                                        </div>
-                                                    ))}
+                                                <div className="mb-3">
+                                                    <span className="font-semibold text-blue-700">All Recommendations ({post.mentionedCoins.length}):</span>
+                                                    <div className="mt-1 max-h-32 overflow-y-auto">
+                                                        {post.mentionedCoins.map((coin, i) => (
+                                                            <div key={i} className={`${getSentimentColor(coin.sentiment)} mb-1 flex items-start`}>
+                                                                <span className="mr-1">•</span>
+                                                                <span>{formatCoinName(coin.name || coin.symbol)}: {formatSentiment(coin.sentiment)}, {formatHoldingPeriod(coin.outlook)}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
                                                 </div>
-                                            </div>
 
-                                            <div className="grid grid-cols-2 gap-2 text-xs">
-                                                <div className="flex items-start">
-                                                    <span className="mr-1 text-gray-400">•</span>
-                                                    <span><span className="text-gray-400">Actionable:</span> <span className={getScoreColor(post.actionableInsights)}>{post.actionableInsights}/10</span></span>
+                                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                                    <div className="flex items-start">
+                                                        <span className="mr-1 text-gray-400">•</span>
+                                                        <span><span className="text-gray-400">Actionable:</span> <span className={getScoreColor(post.actionableInsights)}>{post.actionableInsights}/10</span></span>
+                                                    </div>
+                                                    <div className="flex items-start">
+                                                        <span className="mr-1 text-gray-400">•</span>
+                                                        <span><span className="text-gray-400">Buying Zone:</span> <span className={getScoreColor(post.buyingPriceZone)}>{post.buyingPriceZone}/10</span></span>
+                                                    </div>
+                                                    <div className="flex items-start">
+                                                        <span className="mr-1 text-gray-400">•</span>
+                                                        <span><span className="text-gray-400">Clarity:</span> <span className={getScoreColor(post.clarityOfAnalysis)}>{post.clarityOfAnalysis}/10</span></span>
+                                                    </div>
+                                                    <div className="flex items-start">
+                                                        <span className="mr-1 text-gray-400">•</span>
+                                                        <span><span className="text-gray-400">Credibility:</span> <span className={getScoreColor(post.credibilityScore)}>{post.credibilityScore}/10</span></span>
+                                                    </div>
+                                                    <div className="flex items-start">
+                                                        <span className="mr-1 text-gray-400">•</span>
+                                                        <span><span className="text-gray-400">Educational:</span> <span className={getScoreColor(post.educationalPurpose)}>{post.educationalPurpose}/10</span></span>
+                                                    </div>
+                                                    <div className="flex items-start">
+                                                        <span className="mr-1 text-gray-400">•</span>
+                                                        <span><span className="text-gray-400">Exit Strategy:</span> <span className={getScoreColor(post.exitStrategyScore)}>{post.exitStrategyScore}/10</span></span>
+                                                    </div>
                                                 </div>
-                                                <div className="flex items-start">
-                                                    <span className="mr-1 text-gray-400">•</span>
-                                                    <span><span className="text-gray-400">Buying Zone:</span> <span className={getScoreColor(post.buyingPriceZone)}>{post.buyingPriceZone}/10</span></span>
-                                                </div>
-                                                <div className="flex items-start">
-                                                    <span className="mr-1 text-gray-400">•</span>
-                                                    <span><span className="text-gray-400">Clarity:</span> <span className={getScoreColor(post.clarityOfAnalysis)}>{post.clarityOfAnalysis}/10</span></span>
-                                                </div>
-                                                <div className="flex items-start">
-                                                    <span className="mr-1 text-gray-400">•</span>
-                                                    <span><span className="text-gray-400">Credibility:</span> <span className={getScoreColor(post.credibilityScore)}>{post.credibilityScore}/10</span></span>
-                                                </div>
-                                                <div className="flex items-start">
-                                                    <span className="mr-1 text-gray-400">•</span>
-                                                    <span><span className="text-gray-400">Educational:</span> <span className={getScoreColor(post.educationalPurpose)}>{post.educationalPurpose}/10</span></span>
-                                                </div>
-                                                <div className="flex items-start">
-                                                    <span className="mr-1 text-gray-400">•</span>
-                                                    <span><span className="text-gray-400">Exit Strategy:</span> <span className={getScoreColor(post.exitStrategyScore)}>{post.exitStrategyScore}/10</span></span>
-                                                </div>
-                                            </div>
 
-                                            <div className="mt-3 pt-2 border-t border-gray-700">
-                                                <div className="text-gray-400 text-xs flex items-start">
-                                                    <span className="mr-1">•</span>
-                                                    <span><span className="font-semibold">Outlook:</span> {post.outlook}</span>
+                                                <div className="mt-3 pt-2 border-t border-gray-700">
+                                                    <div className="text-gray-400 text-xs flex items-start">
+                                                        <span className="mr-1">•</span>
+                                                        <span><span className="font-semibold">Outlook:</span> {post.outlook}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    )))}
+                        )))}
                 </div>
             </div>
         </div>

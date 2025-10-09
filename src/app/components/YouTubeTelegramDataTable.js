@@ -12,6 +12,14 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     const [nextUpdate, setNextUpdate] = useState(null);
     const useLocalTime = propUseLocalTime;
 
+    // State to track expanded/collapsed state for each timeframe
+    const [expandedTables, setExpandedTables] = useState({
+        "6hrs": false,
+        "24hrs": false,
+        "7days": false,
+        "30days": false
+    });
+
     // Fetch combined YouTube and Telegram data from API
     const fetchCombinedData = async () => {
         try {
@@ -52,6 +60,16 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         };
         fetchData();
     }, []);
+
+    // Reset expanded state when platform or coin type changes
+    useEffect(() => {
+        setExpandedTables({
+            "6hrs": false,
+            "24hrs": false,
+            "7days": false,
+            "30days": false
+        });
+    }, [selectedPlatform, selectedCoinType]);
 
     // Format date string to display string (for timeframe headers)
     const formatDateStringDisplay = (dateStr) => {
@@ -190,7 +208,15 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             return bMentions - aMentions;
         });
 
-        return coins.slice(0, 10); // Show top 10
+        return coins; // Return all coins
+    };
+
+    // Toggle expand/collapse for a specific timeframe
+    const toggleExpanded = (timeframe) => {
+        setExpandedTables(prev => ({
+            ...prev,
+            [timeframe]: !prev[timeframe]
+        }));
     };
 
     // Platform options
@@ -231,7 +257,10 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
     // Render individual table
     const renderTable = (timeframe, title) => {
-        const coins = getTimeframeData(timeframe, selectedCoinType);
+        const allCoins = getTimeframeData(timeframe, selectedCoinType).slice(0, 10); // Limit to max 10 records
+        const isExpanded = expandedTables[timeframe];
+        const coins = isExpanded ? allCoins : allCoins.slice(0, 5);
+        const hasMore = allCoins.length > 5;
 
         // Get the from date for this timeframe
         const getFromDateForTimeframe = () => {
@@ -247,19 +276,29 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
         return (
             <div className="bg-white rounded-2xl border border-purple-500 overflow-hidden shadow-2xl p-6">
-                <div className="text-center mb-4">
+                <div className="text-center mb-4 relative">
                     <h3 className="text-md font-bold text-black mb-2">{title}</h3>
                     <div className="text-xs text-black">
                         {getFromDateForTimeframe()}
                     </div>
+                    {/* Expand/Collapse Button */}
+                    {hasMore && (
+                        <button
+                            onClick={() => toggleExpanded(timeframe)}
+                            className="absolute top-0 right-0 text-lg text-blue-700 hover:text-blue-800 cursor-pointer font-bold"
+                            title={isExpanded ? "Show less" : "Show more"}
+                        >
+                            {isExpanded ? "−" : "+"}
+                        </button>
+                    )}
                 </div>
 
-                <div>
-                    <table className="w-full">
+                <div className="overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
+                    <table className="w-full table-fixed">
                         <thead>
                             <tr className="border-b border-gray-700">
-                                <th className="text-left py-2 px-2 text-black font-semibold text-sm">Coin</th>
-                                <th className="text-center py-2 px-2 text-black font-semibold text-sm">Sentiment</th>
+                                <th className="text-left py-2 px-2 text-black font-semibold text-md w-[45%]">Coin</th>
+                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-[55%]">Sentiment</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -280,20 +319,20 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
                                     return (
                                         <tr key={index} className="border-b border-gray-800 hover:bg-gradient-to-br hover:from-purple-900/20 hover:to-blue-900/20 transition-all duration-300">
-                                            <td className="py-3 px-2 max-w-[120px]">
+                                            <td className="py-3 px-2 w-[45%]">
                                                 <div className="space-y-1">
-                                                    <div className="text-sm font-bold text-black break-words">
+                                                    <div className="text-sm font-bold text-black truncate">
                                                         {coin.symbol?.toUpperCase()}
                                                     </div>
-                                                    <div className="text-xs text-black break-words overflow-hidden">
+                                                    <div className="text-xs text-black truncate">
                                                         {coin.coin_name}
                                                     </div>
-                                                    <div className="text-xs text-black break-words">
+                                                    <div className="text-xs text-black whitespace-nowrap">
                                                         {sentimentData.mentions} Posts
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="py-3 px-2 text-center">
+                                            <td className="py-3 px-2 text-center w-[55%]">
                                                 <div className="win-loss-container">
                                                     {/* Segmented Bar */}
                                                     <div className="segmented-bar-container">
@@ -396,13 +435,13 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-900">
                                             <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                                         </svg>
-                                        <span className="text-sm text-black">YouTube</span>
+                                        <span className="text-sm text-black font-medium">YouTube</span>
 
                                         {/* Telegram SVG Icon */}
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-blue-900">
                                             <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
                                         </svg>
-                                        <span className="text-sm text-black">Telegram</span>
+                                        <span className="text-sm text-black font-medium">Telegram</span>
                                     </>
                                 ) : selectedPlatform === "YouTube" ? (
                                     <>
@@ -410,7 +449,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-900">
                                             <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                                         </svg>
-                                        <span className="text-sm text-black">YouTube</span>
+                                        <span className="text-sm text-black font-medium">YouTube</span>
                                     </>
                                 ) : selectedPlatform === "Telegram" ? (
                                     <>
@@ -418,7 +457,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-blue-900">
                                             <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
                                         </svg>
-                                        <span className="text-sm text-black">Telegram</span>
+                                        <span className="text-sm text-black font-medium">Telegram</span>
                                     </>
                                 ) : null}
                             </div>
@@ -429,7 +468,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
 
             {/* Four Tables in One Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
                 {/* Last 6 Hours */}
                 {renderTable("6hrs", "Last 6 Hours")}
 

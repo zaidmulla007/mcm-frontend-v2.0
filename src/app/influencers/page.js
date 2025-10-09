@@ -346,9 +346,8 @@ export default function InfluencersPage() {
             <div className="flex items-center space-x-2">
               <label className="text-xs font-medium text-white/90">View:</label>
               <select
-                value={selectedPlatform}
-                onChange={(e) => setSelectedPlatform(e.target.value)}
-                className="bg-white/10 border border-white/20 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-white/30 backdrop-blur-sm"
+                className="bg-white/10 border border-white/20 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-white/30 backdrop-blur-sm cursor-not-allowed opacity-60"
+                disabled
               >
                 <option value="youtube" className="text-gray-900">All Influencers</option>
                 <option value="telegram" className="text-gray-900">Top 10</option>
@@ -359,7 +358,7 @@ export default function InfluencersPage() {
             </div>
             <div className="flex items-center space-x-2">
               <label className="text-xs font-medium text-white/90">Influencer:</label>
-              <select className="bg-white/10 border border-white/20 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-white/30 backdrop-blur-sm">
+              <select className="bg-white/10 border border-white/20 rounded-lg px-2 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-white/30 backdrop-blur-sm cursor-not-allowed opacity-60" disabled>
                 <option value="1" className="text-gray-900">#1 CryptoWhale</option>
                 <option value="2" className="text-gray-900">#2 DiamondHands</option>
                 <option value="3" className="text-gray-900">#3 BlockchainBear</option>
@@ -367,28 +366,13 @@ export default function InfluencersPage() {
             </div>
             <div className="flex items-center space-x-2">
               <label className="text-xs font-medium text-white/90 whitespace-nowrap">Timeframe:</label>
-              <div className="flex bg-white/10 rounded-lg p-1 backdrop-blur-sm overflow-x-auto">
+              <div className="flex bg-white/10 rounded-lg p-1 backdrop-blur-sm overflow-x-auto opacity-60">
                 {['1h', '24h', '7d', '30d', '60d', '90d', '180d', '1yr'].map((time) => {
-                  const timeMap = {
-                    '1h': '1_hour',
-                    '24h': '24_hours',
-                    '7d': '7_days',
-                    '30d': '30_days',
-                    '60d': '60_days',
-                    '90d': '90_days',
-                    '180d': '180_days',
-                    '1yr': '1_year'
-                  };
-                  const isActive = selectedTimeframe === timeMap[time];
                   return (
                     <button
                       key={time}
-                      onClick={() => setSelectedTimeframe(timeMap[time])}
-                      className={`px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 ${
-                        isActive
-                          ? 'bg-white text-indigo-600 shadow-sm'
-                          : 'text-white/80 hover:text-white hover:bg-white/10'
-                      }`}
+                      disabled
+                      className="px-2.5 py-1 rounded-md text-xs font-medium transition-colors whitespace-nowrap flex-shrink-0 text-white/80 cursor-not-allowed"
                     >
                       {time}
                     </button>
