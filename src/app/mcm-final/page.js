@@ -88,7 +88,6 @@ export default function MCMSignalPage() {
     };
 
     fetchInfluencers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Fetch initial data on page load
@@ -417,7 +416,7 @@ export default function MCMSignalPage() {
                       {/* No Results */}
                       {filteredInfluencers.youtube.length === 0 && filteredInfluencers.telegram.length === 0 && (
                         <div className="px-4 py-8 text-center text-gray-500 text-sm">
-                          No influencers found matching "{influencerSearchQuery}"
+                          No influencers found matching &quot;{influencerSearchQuery}&quot;
                         </div>
                       )}
                     </div>
