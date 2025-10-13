@@ -214,6 +214,9 @@ export default function InfluencersPage() {
         channel_thumbnails: ch.channel_thumbnails,
         prob_weighted_returns: ch.prob_weighted_returns || 0, // Add ROI data
         win_percentage: ch.win_percentage || 0, // Add Win Percentage data
+        price_counts: ch.price_counts || 0,
+        moonshots_price_count: ch.moonshots_price_count || 0,
+        moonshots_ratio: ch.moonshots_ratio || 0,
       }));
     } else if (selectedPlatform === "telegram") {
       influencers = telegramInfluencers.map((tg) => ({
@@ -226,6 +229,9 @@ export default function InfluencersPage() {
         channel_thumbnails: tg.channel_thumbnails,
         prob_weighted_returns: tg.prob_weighted_returns || 0,
         win_percentage: tg.win_percentage || 0,
+        price_counts: tg.price_counts || 0,
+        moonshots_price_count: tg.moonshots_price_count || 0,
+        moonshots_ratio: tg.moonshots_ratio || 0,
       }));
     } else {
       influencers = [];
@@ -314,7 +320,7 @@ export default function InfluencersPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 text-gray-900 font-sans pb-16">
       {/* Hero Section */}
-      <section className="max-w-5xl mx-auto px-4 py-8">
+      {/* <section className="max-w-5xl mx-auto px-4 py-8">
         <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 text-white rounded-2xl shadow-2xl">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
@@ -330,7 +336,6 @@ export default function InfluencersPage() {
               <p className="text-white/90 text-sm">Real-time performance tracking with historical data analysis</p>
             </div>
             <div className="flex items-center gap-4">
-              {/* Show Moonshots Toggle */}
               <div className="flex items-center space-x-2">
                 <label className="text-sm font-medium text-white/90">Show Moonshots:</label>
                 <button
@@ -382,7 +387,7 @@ export default function InfluencersPage() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Platform Toggle - Between header and filters */}
       <section className="max-w-5xl mx-auto px-4 py-4">
@@ -696,54 +701,105 @@ export default function InfluencersPage() {
                     </div>
                     {(selectedPlatform === "youtube" || selectedPlatform === "telegram") && (
                       <div className="grid grid-cols-3 gap-3 w-full text-center mt-auto">
-                        <Link
-                          href={
-                            selectedPlatform === "youtube"
-                              ? `/influencers/${inf.id}`
-                              : `/telegram-influencer/${inf.id}`
-                          }
-                          className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="font-semibold text-gray-700 mb-1">ROI</div>
-                          <div className="font-bold text-sm text-purple-600">
-                            {inf.prob_weighted_returns !== undefined
-                              ? `${inf.prob_weighted_returns.toFixed(1)}%`
-                              : '0%'}
-                          </div>
-                        </Link>
-                        <Link
-                          href={
-                            selectedPlatform === "youtube"
-                              ? `/influencers/${inf.id}`
-                              : `/telegram-influencer/${inf.id}`
-                          }
-                          className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="font-semibold text-gray-700 mb-1">Win %</div>
-                          <div className="font-bold text-sm text-green-600">
-                            {typeof inf.win_percentage === 'number'
-                              ? `${inf.win_percentage.toFixed(1)}%`
-                              : 'N/A'}
-                          </div>
-                        </Link>
-                        <Link
-                          href={
-                            selectedPlatform === "youtube"
-                              ? `/influencers/${inf.id}`
-                              : `/telegram-influencer/${inf.id}`
-                          }
-                          className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <div className="font-semibold text-gray-700 mb-1">Loss %</div>
-                          <div className="font-bold text-sm text-red-600">
-                            {typeof inf.win_percentage === 'number'
-                              ? `${(100 - inf.win_percentage).toFixed(1)}%`
-                              : 'N/A'}
-                          </div>
-                        </Link>
+                        {selectedType === 'hyperactive' ? (
+                          <>
+                            <Link
+                              href={
+                                selectedPlatform === "youtube"
+                                  ? `/influencers/${inf.id}`
+                                  : `/telegram-influencer/${inf.id}`
+                              }
+                              className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="font-semibold text-gray-700 mb-1 text-[10px] leading-tight">Price Counts</div>
+                              <div className="font-bold text-sm text-blue-600">
+                                {inf.price_counts || 0}
+                              </div>
+                            </Link>
+                            <Link
+                              href={
+                                selectedPlatform === "youtube"
+                                  ? `/influencers/${inf.id}`
+                                  : `/telegram-influencer/${inf.id}`
+                              }
+                              className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="font-semibold text-gray-700 mb-1 text-[10px] leading-tight">Moonshots Count</div>
+                              <div className="font-bold text-sm text-purple-600">
+                                {inf.moonshots_price_count || 0}
+                              </div>
+                            </Link>
+                            <Link
+                              href={
+                                selectedPlatform === "youtube"
+                                  ? `/influencers/${inf.id}`
+                                  : `/telegram-influencer/${inf.id}`
+                              }
+                              className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="font-semibold text-gray-700 mb-1 text-[10px] leading-tight">Moonshots Ratio</div>
+                              <div className="font-bold text-sm text-orange-600">
+                                {inf.moonshots_ratio
+                                  ? `${(inf.moonshots_ratio * 100).toFixed(2)}%`
+                                  : '0%'}
+                              </div>
+                            </Link>
+                          </>
+                        ) : (
+                          <>
+                            <Link
+                              href={
+                                selectedPlatform === "youtube"
+                                  ? `/influencers/${inf.id}`
+                                  : `/telegram-influencer/${inf.id}`
+                              }
+                              className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="font-semibold text-gray-700 mb-1">ROI</div>
+                              <div className="font-bold text-sm text-purple-600">
+                                {inf.prob_weighted_returns !== undefined
+                                  ? `${inf.prob_weighted_returns.toFixed(1)}%`
+                                  : '0%'}
+                              </div>
+                            </Link>
+                            <Link
+                              href={
+                                selectedPlatform === "youtube"
+                                  ? `/influencers/${inf.id}`
+                                  : `/telegram-influencer/${inf.id}`
+                              }
+                              className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="font-semibold text-gray-700 mb-1">Win %</div>
+                              <div className="font-bold text-sm text-green-600">
+                                {typeof inf.win_percentage === 'number'
+                                  ? `${inf.win_percentage.toFixed(1)}%`
+                                  : 'N/A'}
+                              </div>
+                            </Link>
+                            <Link
+                              href={
+                                selectedPlatform === "youtube"
+                                  ? `/influencers/${inf.id}`
+                                  : `/telegram-influencer/${inf.id}`
+                              }
+                              className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <div className="font-semibold text-gray-700 mb-1">Loss %</div>
+                              <div className="font-bold text-sm text-red-600">
+                                {typeof inf.win_percentage === 'number'
+                                  ? `${(100 - inf.win_percentage).toFixed(1)}%`
+                                  : 'N/A'}
+                              </div>
+                            </Link>
+                          </>
+                        )}
                       </div>
                     )}
                   </Link>

@@ -1,6 +1,7 @@
 "use client";
 
 import { FaChartLine } from "react-icons/fa";
+import YoutubeTelegramDataTableGuage from "../components/YoutubeTelegramDataTableGuage";
 
 export default function HomePage() {
   return (
@@ -307,6 +308,11 @@ export default function HomePage() {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* YouTube Telegram Data Table Guage Component */}
+        <div className="mt-16">
+          <YoutubeTelegramDataTableGuage />
         </div>
       </div>
     </div>

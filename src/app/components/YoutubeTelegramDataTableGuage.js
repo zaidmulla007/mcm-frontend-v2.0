@@ -1,9 +1,189 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaEye } from "react-icons/fa";
 import moment from "moment-timezone";
 
-export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTime = false }) {
+// Gradient Doughnut Gauge Component (Full Circle)
+const GradientDoughnutGauge = ({ shortValue, longValue, size = 28 }) => {
+    const canvasRef = useRef(null);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+        const outerRadius = size * 0.9;
+        const innerRadius = size * 0.58;
+
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Calculate percentages
+        const total = shortValue + longValue;
+        const shortPercent = total > 0 ? (shortValue / total) * 100 : 0;
+        const longPercent = total > 0 ? (longValue / total) * 100 : 0;
+
+        // Define color gradients for short (green) and long (blue)
+        const shortColors = ['#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', '#C8E6C9'];
+        const longColors = ['#1976D2', '#2196F3', '#42A5F5', '#64B5F6', '#90CAF9'];
+        const emptyColors = ['#9E9E9E', '#BDBDBD', '#E0E0E0', '#EEEEEE', '#F5F5F5']; // Gray gradient for 0/0
+
+        // Calculate angles
+        const startAngle = -Math.PI / 2; // Start from top (12 o'clock)
+        const segments = 20;
+
+        // If both values are 0, draw a full gray circle
+        if (total === 0) {
+            const fullAngle = 2 * Math.PI;
+            const segmentAngle = fullAngle / segments;
+
+            for (let i = 0; i < segments; i++) {
+                const segStart = startAngle + (i * segmentAngle);
+                const segEnd = segStart + segmentAngle;
+
+                // Darker to lighter (reverse ratio for darker at start)
+                const ratio = 1 - (i / segments);
+                const color = interpolateColor(emptyColors, ratio);
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, outerRadius, segStart, segEnd);
+                ctx.arc(centerX, centerY, innerRadius, segEnd, segStart, true);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+        } else {
+            // Draw Short segment (darker to lighter clockwise)
+            const shortAngle = (shortPercent / 100) * 2 * Math.PI;
+
+            // Short segment
+            const shortSegmentAngle = shortAngle / segments;
+            for (let i = 0; i < segments; i++) {
+                const segStart = startAngle + (i * shortSegmentAngle);
+                const segEnd = segStart + shortSegmentAngle;
+
+                // Darker to lighter (reverse ratio for darker at start)
+                const ratio = 1 - (i / segments);
+                const color = interpolateColor(shortColors, ratio);
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, outerRadius, segStart, segEnd);
+                ctx.arc(centerX, centerY, innerRadius, segEnd, segStart, true);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+
+            // Long segment
+            const longStartAngle = startAngle + shortAngle;
+            const longAngle = (longPercent / 100) * 2 * Math.PI;
+            const longSegmentAngle = longAngle / segments;
+
+            for (let i = 0; i < segments; i++) {
+                const segStart = longStartAngle + (i * longSegmentAngle);
+                const segEnd = segStart + longSegmentAngle;
+
+                // Darker to lighter
+                const ratio = 1 - (i / segments);
+                const color = interpolateColor(longColors, ratio);
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, outerRadius, segStart, segEnd);
+                ctx.arc(centerX, centerY, innerRadius, segEnd, segStart, true);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+        }
+
+        // Draw center text with actual values
+        // Dynamically adjust font size based on total digit count
+        const totalDigits = shortValue.toString().length + longValue.toString().length;
+        let fontSize, spacing;
+
+        if (totalDigits >= 8) {
+            fontSize = size * 0.15; // Extra small for 8+ total digits
+            spacing = size * 0.18;
+        } else if (totalDigits >= 6) {
+            fontSize = size * 0.18; // Very small for 6-7 total digits
+            spacing = size * 0.20;
+        } else if (totalDigits >= 5) {
+            fontSize = size * 0.22; // Small for 5 total digits
+            spacing = size * 0.22;
+        } else if (totalDigits >= 4) {
+            fontSize = size * 0.28; // Medium-small for 4 total digits
+            spacing = size * 0.24;
+        } else if (totalDigits >= 3) {
+            fontSize = size * 0.32; // For 3 total digits
+            spacing = size * 0.26;
+        } else {
+            fontSize = size * 0.38; // Normal for 2 or fewer total digits
+            spacing = size * 0.28;
+        }
+
+        ctx.fillStyle = '#666';
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        // Draw short value
+        ctx.fillText(`${shortValue}`, centerX - spacing, centerY);
+
+        // Draw separator
+        ctx.fillStyle = '#999';
+        ctx.font = `bold ${fontSize * 0.9}px Arial`; // Make separator slightly smaller
+        ctx.fillText('|', centerX, centerY);
+
+        // Draw long value
+        ctx.fillStyle = '#666';
+        ctx.font = `bold ${fontSize}px Arial`;
+        ctx.fillText(`${longValue}`, centerX + spacing, centerY);
+
+    }, [shortValue, longValue, size]);
+
+    const interpolateColor = (colors, ratio) => {
+        if (ratio <= 0) return colors[colors.length - 1];
+        if (ratio >= 1) return colors[0];
+
+        const scaledRatio = ratio * (colors.length - 1);
+        const index = Math.floor(scaledRatio);
+        const localRatio = scaledRatio - index;
+
+        if (index >= colors.length - 1) return colors[colors.length - 1];
+
+        const color1 = hexToRgb(colors[index]);
+        const color2 = hexToRgb(colors[index + 1]);
+
+        const r = Math.round(color1.r + (color2.r - color1.r) * localRatio);
+        const g = Math.round(color1.g + (color2.g - color1.g) * localRatio);
+        const b = Math.round(color1.b + (color2.b - color1.b) * localRatio);
+
+        return `rgb(${r}, ${g}, ${b})`;
+    };
+
+    const hexToRgb = (hex) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16)
+        } : null;
+    };
+
+    return (
+        <div style={{ width: size * 2, height: size * 2, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <canvas
+                ref={canvasRef}
+                width={size * 2}
+                height={size * 2}
+            />
+        </div>
+    );
+};
+
+export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLocalTime = false }) {
     const [selectedPlatform, setSelectedPlatform] = useState("Combined");
     const [selectedCoinType, setSelectedCoinType] = useState("top_coins");
     const [combinedData, setCombinedData] = useState(null);
@@ -238,22 +418,41 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             return {
                 bullish: coin.yt_bullish_percent || 0,
                 bearish: coin.yt_bearish_percent || 0,
-                mentions: coin.yt_total_mentions || 0
+                mentions: coin.yt_total_mentions || 0,
+                bullishCount: coin.yt_bullish_count || 0,
+                bearishCount: coin.yt_bearish_count || 0,
+                bullishShortTerm: coin.yt_bullish_short_term || 0,
+                bullishLongTerm: coin.yt_bullish_long_term || 0,
+                bearishShortTerm: coin.yt_bearish_short_term || 0,
+                bearishLongTerm: coin.yt_bearish_long_term || 0
             };
         } else if (selectedPlatform === "Telegram") {
             return {
                 bullish: coin.tg_bullish_percent || 0,
                 bearish: coin.tg_bearish_percent || 0,
-                mentions: coin.tg_total_mentions || 0
+                mentions: coin.tg_total_mentions || 0,
+                bullishCount: coin.tg_bullish_count || 0,
+                bearishCount: coin.tg_bearish_count || 0,
+                bullishShortTerm: coin.tg_bullish_short_term || 0,
+                bullishLongTerm: coin.tg_bullish_long_term || 0,
+                bearishShortTerm: coin.tg_bearish_short_term || 0,
+                bearishLongTerm: coin.tg_bearish_long_term || 0
             };
         } else {
             return {
                 bullish: coin.bullish_percent || 0,
                 bearish: coin.bearish_percent || 0,
-                mentions: coin.total_mentions || 0
+                mentions: coin.total_mentions || 0,
+                bullishCount: coin.bullish_count || 0,
+                bearishCount: coin.bearish_count || 0,
+                bullishShortTerm: coin.yt_tg_bullish_short_term || 0,
+                bullishLongTerm: coin.yt_tg_bullish_long_term || 0,
+                bearishShortTerm: coin.yt_tg_bearish_short_term || 0,
+                bearishLongTerm: coin.yt_tg_bearish_long_term || 0
             };
         }
     };
+
 
     // Render individual table
     const renderTable = (timeframe, title) => {
@@ -275,7 +474,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         };
 
         return (
-            <div className="bg-white rounded-2xl overflow-hidden shadow-2xl p-6">
+            <div className="bg-white rounded-2xl border border-purple-500 overflow-hidden shadow-2xl p-6">
                 <div className="text-center mb-4 relative">
                     <h3 className="text-md font-bold text-black mb-2">{title}</h3>
                     <div className="text-xs text-black">
@@ -293,12 +492,12 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     )}
                 </div>
 
-                <div className="overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
+                <div>
                     <table className="w-full table-fixed">
                         <thead>
                             <tr className="border-b border-gray-700">
-                                <th className="text-left py-2 px-2 text-black font-semibold text-md w-[45%]">Coin</th>
-                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-[55%]">Sentiment</th>
+                                <th className="text-left py-2 px-2 text-black font-semibold text-xs w-[25%]">Coin</th>
+                                <th className="text-center py-2 px-2 text-black font-semibold text-xs w-[75%]">Sentiment</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -309,49 +508,71 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                             ) : (
                                 coins.map((coin, index) => {
                                     const sentimentData = getSentimentData(coin);
-                                    const isBullish = sentimentData.bullish >= sentimentData.bearish;
-                                    const dominantPercentage = isBullish ? sentimentData.bullish : sentimentData.bearish;
-
-                                    // Calculate ball position: 0% bearish = right (100px), 100% bearish = left (0px)
-                                    // If bullish >= bearish, ball moves towards right (green)
-                                    // If bearish > bullish, ball moves towards left (red)
-                                    const ballPosition = isBullish ? sentimentData.bullish : (100 - sentimentData.bearish);
 
                                     return (
                                         <tr key={index} className="border-b border-gray-800 hover:bg-gradient-to-br hover:from-purple-900/20 hover:to-blue-900/20 transition-all duration-300">
-                                            <td className="py-3 px-2 w-[45%]">
-                                                <div className="space-y-1">
-                                                    <div className="text-sm font-bold text-black truncate">
+                                            <td className="py-2 px-2 w-[25%]">
+                                                <div className="space-y-0.5">
+                                                    <div className="text-[10px] font-bold text-black break-words">
                                                         {coin.symbol?.toUpperCase()}
                                                     </div>
-                                                    <div className="text-xs text-black truncate">
+                                                    <div className="text-[9px] text-black break-words leading-tight">
                                                         {coin.coin_name}
                                                     </div>
-                                                    <div className="text-xs text-black whitespace-nowrap">
+                                                    <div className="text-[9px] text-black">
                                                         {sentimentData.mentions} Posts
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="py-3 px-2 text-center w-[55%]">
-                                                <div className="win-loss-container">
-                                                    {/* Segmented Bar */}
-                                                    <div className="segmented-bar-container">
-                                                        <div className="segmented-bar-background">
-                                                            <div className="segment segment-red" />
-                                                            <div className="segment segment-yellow" />
-                                                            <div className="segment segment-green" />
+                                            <td className="py-2 px-1 w-[75%]">
+                                                <div className="flex flex-col items-center gap-1.5 py-1.5">
+                                                    {/* Bullish and Bearish Count Display */}
+                                                    <div className="flex gap-2 text-[9px] font-semibold">
+                                                        <div className="flex items-center gap-1 text-green-700 border border-green-500 px-1.5 py-0.5 rounded bg-green-50">
+                                                            <span>↑ Bullish:</span>
+                                                            <span>{sentimentData.bullishCount}</span>
                                                         </div>
-
-                                                        {/* Ball */}
-                                                        <div
-                                                            className="percentage-ball"
-                                                            style={{ left: `${(ballPosition / 100) * 100}%` }}
-                                                        />
+                                                        <div className="flex items-center gap-1 text-red-700 border border-red-500 px-1.5 py-0.5 rounded bg-red-50">
+                                                            <span>↓ Bearish:</span>
+                                                            <span>{sentimentData.bearishCount}</span>
+                                                        </div>
                                                     </div>
 
-                                                    {/* Value Text */}
-                                                    <div className={`font-semibold text-sm ${isBullish ? 'text-green-700' : 'text-red-700'}`}>
-                                                        {dominantPercentage.toFixed(0)}% {isBullish ? 'Bullish' : 'Bearish'}
+                                                    {/* Gauges Container */}
+                                                    <div className="flex gap-2 w-full justify-center">
+                                                        {/* Bullish Gauge */}
+                                                        <div className="flex flex-col items-center gap-0.5">
+                                                            <div className="flex gap-1 text-[7px]">
+                                                                <div className="font-semibold text-green-700 border border-green-500 px-0.5 py-0.5 rounded bg-green-50 whitespace-nowrap">
+                                                                    Short: {sentimentData.bullishShortTerm}
+                                                                </div>
+                                                                <div className="font-semibold text-green-700 border border-green-500 px-0.5 py-0.5 rounded bg-green-50 whitespace-nowrap">
+                                                                    Long: {sentimentData.bullishLongTerm}
+                                                                </div>
+                                                            </div>
+                                                            <GradientDoughnutGauge
+                                                                shortValue={sentimentData.bullishShortTerm}
+                                                                longValue={sentimentData.bullishLongTerm}
+                                                                size={28}
+                                                            />
+                                                        </div>
+
+                                                        {/* Bearish Gauge */}
+                                                        <div className="flex flex-col items-center gap-0.5">
+                                                            <div className="flex gap-1 text-[7px]">
+                                                                <div className="font-semibold text-red-700 border border-red-500 px-0.5 py-0.5 rounded bg-red-50 whitespace-nowrap">
+                                                                    Short: {sentimentData.bearishShortTerm}
+                                                                </div>
+                                                                <div className="font-semibold text-red-700 border border-red-500 px-0.5 py-0.5 rounded bg-red-50 whitespace-nowrap">
+                                                                    Long: {sentimentData.bearishLongTerm}
+                                                                </div>
+                                                            </div>
+                                                            <GradientDoughnutGauge
+                                                                shortValue={sentimentData.bearishShortTerm}
+                                                                longValue={sentimentData.bearishLongTerm}
+                                                                size={28}
+                                                            />
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -391,7 +612,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
             {/* Channel and Coin Type Dropdowns */}
             <div className="flex justify-center">
-                <div className="bg-white rounded-2xl overflow-hidden shadow-2xl p-6">
+                <div className="bg-white rounded-2xl border border-purple-500 overflow-hidden shadow-2xl p-6">
                     <div className="flex items-center gap-6">
                         {/* Channel Dropdown */}
                         <div className="flex items-center gap-3">
@@ -399,7 +620,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                             <select
                                 value={selectedPlatform}
                                 onChange={(e) => setSelectedPlatform(e.target.value)}
-                                className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
+                                className="bg-white border border-purple-500/30 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[150px]"
                             >
                                 {platformOptions.map((option) => (
                                     <option key={option.key} value={option.key} className="bg-white text-black">
@@ -415,7 +636,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                             <select
                                 value={selectedCoinType}
                                 onChange={(e) => setSelectedCoinType(e.target.value)}
-                                className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
+                                className="bg-white border border-purple-500/30 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[150px]"
                             >
                                 {coinTypeOptions.map((option) => (
                                     <option key={option.key} value={option.key} className="bg-white text-black">

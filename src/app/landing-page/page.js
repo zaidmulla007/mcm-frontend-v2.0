@@ -1189,7 +1189,7 @@ export default function Home() {
       // Use local time
       const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
       momentDate = moment(date).tz(userTimeZone);
-      
+
       // Extract city name only
       const cityName = userTimeZone.split('/').pop().replace(/_/g, ' ');
       locationDisplay = ` (${cityName})`;
@@ -1245,11 +1245,11 @@ export default function Home() {
               {/* Timezone Toggle */}
               <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border border-blue-200 p-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-black-700 font-medium">Timezone:</span>
+                  <span className="text-xs text-black-700">Timezone:</span>
                   <div className="flex items-center bg-gray-100/50 rounded-lg p-1">
                     <button
                       onClick={() => toggleTimezone()}
-                      className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${!useLocalTime
+                      className={`px-3 py-1.5 text-xs rounded-md transition-all duration-200 ${!useLocalTime
                         ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-xl font-bold text-white shadow-lg'
                         : 'text-gray-700 hover:text-gray-900'
                         }`}
@@ -1258,7 +1258,7 @@ export default function Home() {
                     </button>
                     <button
                       onClick={() => toggleTimezone()}
-                      className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all duration-200 ${useLocalTime
+                      className={`px-3 py-1.5 text-xs  rounded-md transition-all duration-200 ${useLocalTime
                         ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-xl font-bold text-white shadow-lg'
                         : 'text-gray-700 hover:text-gray-900'
                         }`}
@@ -1273,15 +1273,15 @@ export default function Home() {
               <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border border-blue-200 p-3">
                 <div className="flex items-center gap-4 text-xs">
                   <div className="flex flex-col">
-                    <span className="text-black-600 font-medium">Last Updated:</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-xs text-black-700">Last Updated:</span>
+                    <span className="text-xs text-black-700">
                       {lastUpdated ? formatDate(lastUpdated) : "N/A"}
                     </span>
                   </div>
                   <div className="h-8 w-px bg-gray-400"></div>
                   <div className="flex flex-col">
-                    <span className="text-black-600 font-medium">Next Update:</span>
-                    <span className="font-medium text-gray-900">
+                    <span className="text-xs text-black-700">Next Update:</span>
+                    <span className="text-xs text-black-700">
                       {nextUpdate ? formatDate(nextUpdate) : "N/A"}
                     </span>
                   </div>
@@ -1526,7 +1526,7 @@ export default function Home() {
                     }}
                   >
                     {/* Desktop Card */}
-                    <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-purple-500 p-6 w-72 h-80 overflow-hidden">
+                    <div className="relative bg-white rounded-2xl p-6 w-72 h-80 overflow-hidden shadow-lg">
                       {/* Blurred Background Content */}
                       <div className="absolute inset-0 p-6 filter blur-sm opacity-30">
                         <div className="flex flex-col items-center space-y-4">
@@ -1642,7 +1642,7 @@ export default function Home() {
                         }}
                       >
                         {/* Card Background with Blur Effect */}
-                        <div className="relative bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-sm rounded-2xl border border-purple-500 p-4 w-64 h-80 overflow-hidden">
+                        <div className="relative bg-white rounded-2xl p-4 w-64 h-80 overflow-hidden shadow-lg">
                           {/* Blurred Background Content */}
                           <div className="absolute inset-0 p-6 filter blur-sm opacity-30">
                             <div className="flex flex-col items-center space-y-4">

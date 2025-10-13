@@ -2,8 +2,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { FaArrowLeft, FaYoutube, FaGlobe } from "react-icons/fa";
+import { FaArrowLeft, FaYoutube, FaGlobe, FaHeart } from "react-icons/fa";
 import { FaTelegram } from "react-icons/fa";
+import Swal from "sweetalert2";
+import { useFavorites } from "../contexts/FavoritesContext";
 
 const platforms = [
   {
@@ -25,68 +27,99 @@ const platforms = [
 
 export default function FavoritesPage() {
   const [selectedPlatform, setSelectedPlatform] = useState("overall");
-  const [youtubeData, setYoutubeData] = useState([]);
+  const [favoritesData, setFavoritesData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 9;
+  const { removeFavorite } = useFavorites();
 
   useEffect(() => {
-    if (selectedPlatform === "youtube" || selectedPlatform === "overall") {
-      fetchYouTubeData();
-    }
-  }, [selectedPlatform]);
+    fetchFavoritesData();
+  }, []);
 
-  async function fetchYouTubeData() {
+  async function fetchFavoritesData() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/youtube-data?metric=ai_scoring");
+      // Get userId from localStorage
+      const userData = localStorage.getItem('userData');
+      if (!userData) {
+        setError("Please login to view favorites");
+        setFavoritesData([]);
+        setLoading(false);
+        return;
+      }
+
+      const user = JSON.parse(userData);
+      const userId = user._id;
+
+      if (!userId) {
+        setError("User ID not found");
+        setFavoritesData([]);
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(`/api/user/favorites?userId=${userId}`);
       const data = await res.json();
-      if (data.success && Array.isArray(data.results)) {
-        setYoutubeData(data.results);
+
+      if (data.success && Array.isArray(data.favorites)) {
+        setFavoritesData(data.favorites);
       } else {
-        setYoutubeData([]);
+        setFavoritesData([]);
       }
     } catch (err) {
-      setError("Failed to fetch YouTube data");
-      setYoutubeData([]);
+      console.error("Error fetching favorites:", err);
+      setError("Failed to fetch favorites data");
+      setFavoritesData([]);
     } finally {
       setLoading(false);
     }
   }
 
   const getFilteredData = () => {
-    switch (selectedPlatform) {
-      case "overall":
-        return youtubeData.map(ch => ({
-          id: ch.channel_id,
-          name: ch.influencer_name || ch.name,
-          platform: "YouTube",
-          subs: ch.subs,
-          avg_score: ch.ai_overall_score || ch.avg_score,
-          rank: ch.rank,
-          channel_thumbnails: ch.channel_thumbnails,
-          prob_weighted_returns: ch.prob_weighted_returns,
-          win_percentage: ch.win_percentage,
-        }));
-      case "youtube":
-        return youtubeData.map(ch => ({
-          id: ch.channel_id,
-          name: ch.influencer_name || ch.name,
-          platform: "YouTube",
-          subs: ch.subs,
-          avg_score: ch.ai_overall_score || ch.avg_score,
-          rank: ch.rank,
-          channel_thumbnails: ch.channel_thumbnails,
-          prob_weighted_returns: ch.prob_weighted_returns,
-          win_percentage: ch.win_percentage,
-        }));
-      case "telegram":
-        return [];
-      default:
-        return [];
+    // Filter favorites based on selected platform
+    let filtered = favoritesData;
+
+    if (selectedPlatform === "youtube") {
+      filtered = favoritesData.filter(fav => fav.medium === "YOUTUBE");
+    } else if (selectedPlatform === "telegram") {
+      filtered = favoritesData.filter(fav => fav.medium === "TELEGRAM");
     }
+    // "overall" shows all favorites (no filtering)
+
+    // Filter out favorites without channel data and transform
+    return filtered
+      .filter(fav => fav.channel && fav.channel.length > 0) // Only include favorites with channel data
+      .map(fav => {
+        const channelData = fav.channel[0];
+        const isTelegram = fav.medium === "TELEGRAM";
+
+        // For Telegram, use channel_id as name if influencer_name is not available or is "N/A"
+        let displayName = channelData?.influencer_name || channelData?.name || fav.name;
+
+        if (isTelegram && (!displayName || displayName === "N/A")) {
+          displayName = channelData?.channel_id || fav.favouriteId || "Unknown";
+        }
+
+        if (!displayName) {
+          displayName = channelData?.channel_id || fav.favouriteId || "Unknown";
+        }
+
+        return {
+          id: fav.favouriteId || fav.channel_id,
+          name: displayName,
+          platform: isTelegram ? "Telegram" : "YouTube",
+          subs: channelData?.subs || 0,
+          avg_score: channelData?.avg_score?.$numberDecimal ? parseFloat(channelData.avg_score.$numberDecimal) : 0,
+          rank: null, // Favorites don't have ranks
+          channel_thumbnails: channelData?.channel_thumbnails || null,
+          prob_weighted_returns: 0, // Not available in favorites
+          win_percentage: 0, // Not available in favorites
+          channel_id: channelData?.channel_id || fav.favouriteId,
+        };
+      });
   };
 
   const filteredData = getFilteredData();
@@ -135,6 +168,68 @@ export default function FavoritesPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedPlatform]);
+
+  // Handle remove from favorites
+  const handleRemoveFavorite = async (channelId, medium) => {
+    // Show confirmation dialog
+    const result = await Swal.fire({
+      title: 'Remove from Favorites?',
+      text: 'Do you want to remove this influencer from your favorites?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, remove it',
+      cancelButtonText: 'No, keep it',
+      background: '#ffffff',
+      color: '#1f2937',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#8b5cf6',
+    });
+
+    // If user clicks "No" or closes the dialog, don't proceed
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    try {
+      const response = await removeFavorite(channelId, medium);
+
+      if (response.success) {
+        // Show success message
+        Swal.fire({
+          title: 'Removed from favorites!',
+          icon: 'success',
+          background: '#ffffff',
+          color: '#1f2937',
+          confirmButtonColor: '#8b5cf6',
+          timer: 2000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end',
+        });
+
+        // Refresh the favorites list
+        await fetchFavoritesData();
+      } else {
+        throw new Error('Failed to remove favorite');
+      }
+    } catch (error) {
+      console.error("Error removing favorite:", error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to remove from favorites. Please try again.',
+        icon: 'error',
+        background: '#ffffff',
+        color: '#1f2937',
+        confirmButtonColor: '#8b5cf6',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end',
+      });
+    }
+  };
 
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans pb-16">
@@ -185,72 +280,115 @@ export default function FavoritesPage() {
             <div className="text-center text-red-600 py-8">{error}</div>
           ) : filteredData.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {visibleInfluencers.map((inf) => (
-                <Link
-                  key={inf.id}
-                  href={`/influencers/${inf.id}`}
-                  className="rounded-2xl p-6 flex flex-col items-center shadow-md hover:shadow-lg hover:scale-105 transition cursor-pointer group relative bg-white border border-gray-200"
-                >
-                  {/* Rank Badge */}
-                  {inf.rank && (
-                    <div className="absolute top-4 right-4 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg bg-gradient-to-r from-purple-500 to-blue-500">
-                      Rank {inf.rank}
-                    </div>
-                  )}
+              {/* Table View */}
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Logo</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Name</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Platform</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Channel URL</th>
+                        <th className="px-6 py-4 text-center text-sm font-semibold">Details</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {visibleInfluencers.map((inf, index) => (
+                        <tr
+                          key={inf.id}
+                          className={`hover:bg-gray-50 transition-colors ${
+                            index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                          }`}
+                        >
+                          {/* Profile Image */}
+                          <td className="px-6 py-4">
+                            {inf.channel_thumbnails?.high?.url ? (
+                              <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
+                                <Image
+                                  src={inf.channel_thumbnails.high.url}
+                                  alt={inf.name || "Channel"}
+                                  width={48}
+                                  height={48}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold shadow-md">
+                                {inf.channel_id?.match(/\b\w/g)?.join("") || "?"}
+                              </div>
+                            )}
+                          </td>
 
-                  {/* Thumbnail or Avatar */}
-                  {inf.channel_thumbnails?.high?.url ? (
-                    <div className="w-20 h-20 rounded-full overflow-hidden shadow-lg mb-4">
-                      <Image
-                        src={inf.channel_thumbnails.high.url}
-                        alt={inf.name || "Channel"}
-                        width={80}
-                        height={80}
-                        className="rounded-full w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 mb-4 flex items-center justify-center text-2xl font-bold text-white shadow-lg">
-                      {inf.name?.match(/\b\w/g)?.join("") || "?"}
-                    </div>
-                  )}
+                          {/* Name */}
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-semibold text-gray-900">
+                              {inf.name?.replace(/_/g, " ") || "Unknown"}
+                            </div>
+                          </td>
 
-                  <div className="mt-3 text-sm text-gray-800 font-semibold text-center">
-                    {inf.name?.replace(/_/g, " ") || "Unknown"}
-                  </div>
-                  <div className="text-xs text-gray-500 mb-4">{inf.platform}</div>
+                          {/* Platform */}
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                              inf.platform === "YouTube"
+                                ? "bg-red-100 text-red-700"
+                                : "bg-blue-100 text-blue-700"
+                            }`}>
+                              {inf.platform === "YouTube" ? (
+                                <FaYoutube className="mr-1" />
+                              ) : (
+                                <FaTelegram className="mr-1" />
+                              )}
+                              {inf.platform}
+                            </span>
+                          </td>
 
-                  {/* Metric Cards Grid */}
-                  <div className="grid grid-cols-3 gap-3 w-full mt-auto">
-                    <div className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200">
-                      <div className="font-semibold text-gray-700 mb-1">ROI</div>
-                      <div className="font-bold text-sm text-purple-600">
-                        {inf.prob_weighted_returns !== undefined
-                          ? `${inf.prob_weighted_returns.toFixed(1)}%`
-                          : '0%'}
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200">
-                      <div className="font-semibold text-gray-700 mb-1">Win %</div>
-                      <div className="font-bold text-sm text-green-600">
-                        {typeof inf.win_percentage === 'number'
-                          ? `${inf.win_percentage.toFixed(1)}%`
-                          : 'N/A'}
-                      </div>
-                    </div>
-                    <div className="text-xs text-gray-600 bg-gray-50 rounded-lg p-3 hover:bg-gray-100 hover:scale-105 transition-all duration-200 border border-gray-200">
-                      <div className="font-semibold text-gray-700 mb-1">Loss %</div>
-                      <div className="font-bold text-sm text-red-600">
-                        {typeof inf.win_percentage === 'number'
-                          ? `${(100 - inf.win_percentage).toFixed(1)}%`
-                          : 'N/A'}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+                          {/* Channel URL */}
+                          <td className="px-6 py-4">
+                            <a
+                              href={
+                                inf.platform === "YouTube"
+                                  ? `https://www.youtube.com/channel/${inf.channel_id}`
+                                  : `https://t.me/${inf.channel_id}`
+                              }
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm text-purple-600 hover:text-purple-800 hover:underline flex items-center gap-1"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <FaGlobe className="text-xs" />
+                              View Channel
+                            </a>
+                          </td>
+
+                          {/* Action Link and Heart Icon */}
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-center gap-3">
+                              <Link
+                                href={
+                                  inf.platform === "YouTube"
+                                    ? `/influencers/${inf.channel_id}`
+                                    : `/telegram-influencer/${inf.channel_id}`
+                                }
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                              >
+                                View Details
+                              </Link>
+                              <button
+                                onClick={() => handleRemoveFavorite(inf.channel_id, inf.platform === "YouTube" ? "YOUTUBE" : "TELEGRAM")}
+                                className="p-2 rounded-lg hover:bg-red-50 transition-all duration-200 group"
+                                aria-label="Remove from favorites"
+                              >
+                                <FaHeart className="text-red-500 text-xl group-hover:scale-110 transition-transform" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
@@ -420,7 +558,7 @@ export default function FavoritesPage() {
           ) : (
             <div className="text-center text-gray-500 py-16">
               {selectedPlatform === "telegram"
-                ? "Telegram favorites coming soon..."
+                ? "Telegram favorites"
                 : "No favorites found"}
             </div>
           )}

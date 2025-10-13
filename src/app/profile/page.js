@@ -110,7 +110,7 @@ export default function ProfilePage() {
       endDate.setHours(0, 0, 0, 0); // Reset time to start of day
 
       const diffTime = endDate - today;
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end dates
 
       if (diffDays < 0) return 'Expired';
       if (diffDays === 0) return 'Expires today';

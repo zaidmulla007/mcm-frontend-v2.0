@@ -2,6 +2,7 @@
 import Image from "next/image";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import { getYearOptions, getQuarterOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
 const platforms = [
   {
@@ -46,14 +47,21 @@ export default function InfluencerSearchPage() {
   const [selectedInfluencer, setSelectedInfluencer] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // Default API parameters for fetching data
+  // Filter states
+  const [selectedSentiment, setSelectedSentiment] = useState("all");
+  const [selectedTimeframe, setSelectedTimeframe] = useState("1_hour");
+  const [selectedType, setSelectedType] = useState("overall");
+  const [selectedYear, setSelectedYear] = useState("all");
+  const [selectedQuarter, setSelectedQuarter] = useState("all");
+
+  // API parameters using filter states
   const apiParams = useMemo(() => ({
-    sentiment: "all",
-    timeframe: "1_hour",
-    type: "overall",
-    year: "all",
-    quarter: "all"
-  }), []);
+    sentiment: selectedSentiment,
+    timeframe: selectedTimeframe,
+    type: selectedType,
+    year: selectedYear,
+    quarter: selectedQuarter
+  }), [selectedSentiment, selectedTimeframe, selectedType, selectedYear, selectedQuarter]);
 
   // Memoized API call functions
   const fetchYouTubeData = useCallback(async () => {
@@ -137,10 +145,10 @@ export default function InfluencerSearchPage() {
     };
   }, [showDropdown]);
 
-  // Reset current page when platform changes
+  // Reset current page when platform or filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedPlatform]);
+  }, [selectedPlatform, selectedSentiment, selectedTimeframe, selectedType, selectedYear, selectedQuarter]);
 
   // Search functionality
   useEffect(() => {
@@ -250,6 +258,50 @@ export default function InfluencerSearchPage() {
     return pages;
   };
 
+  // Filter options
+  const sentimentOptions = [
+    { value: "all", label: "All Sentiment" },
+    { value: "bullish", label: "Bullish" },
+    { value: "bearish", label: "Bearish" },
+    { value: "mild_bullish", label: "Mild Bullish" },
+    { value: "mild_bearish", label: "Mild Bearish" },
+    { value: "strong_bearish", label: "Strong Bearish" },
+    { value: "strong_sentiment", label: "Strong Sentiment" },
+  ];
+
+  const timeframeOptions = getDynamicTimeframeOptions(selectedYear);
+
+  const typeOptions = [
+    { value: "overall", label: "Overall" },
+    { value: "hyperactive", label: "Moonshots" },
+    { value: "normal", label: "Normal" },
+    { value: "pre_ico", label: "Pre ICO" },
+  ];
+
+  const yearOptions = selectedPlatform === "telegram"
+    ? getYearOptions(2024, false)
+    : getYearOptions(2022);
+  const quarterOptions = getQuarterOptions(selectedYear);
+
+  // Handle year change
+  const handleYearChange = (year) => {
+    setSelectedYear(year);
+    if (year === "all") {
+      setSelectedQuarter("all");
+      return;
+    }
+    const newQuarterOptions = getQuarterOptions(year);
+    const isCurrentQuarterValid = newQuarterOptions.some(q => q.value === selectedQuarter);
+    if (!isCurrentQuarterValid) {
+      setSelectedQuarter("all");
+    }
+    const newTimeframeOptions = getDynamicTimeframeOptions(year);
+    const isCurrentTimeframeValid = newTimeframeOptions.some(t => t.value === selectedTimeframe);
+    if (!isCurrentTimeframeValid) {
+      setSelectedTimeframe("30_days");
+    }
+  };
+
   // Get top 3 influencers for podium
   const topThreeInfluencers = filteredInfluencers.slice(0, 3);
   const remainingInfluencers = filteredInfluencers.slice(3);
@@ -271,7 +323,7 @@ export default function InfluencerSearchPage() {
         <p className="text-lg text-gray-700 max-w-2xl text-center">
           Discover top-performing crypto influencers ranked by their performance metrics.
         </p>
-        
+
         {/* Platform Toggle */}
         <div className="flex justify-center gap-3">
           {platforms.map((platform) => (
@@ -279,8 +331,8 @@ export default function InfluencerSearchPage() {
               key={platform.value}
               onClick={() => setSelectedPlatform(platform.value)}
               className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${selectedPlatform === platform.value
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
+                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
                 }`}
             >
               {platform.logo}
@@ -288,12 +340,114 @@ export default function InfluencerSearchPage() {
             </button>
           ))}
         </div>
+      </section>
+
+      {/* Filter Section */}
+      <section className="max-w-7xl mx-auto px-4 mb-6">
+        <div className="bg-white rounded-2xl p-6 border-2 border-purple-200 shadow-xl">
+          <h3 className="text-lg font-semibold text-purple-700 mb-4">Ranking Filters</h3>
+
+          {/* First Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-gray-700 font-medium">Sentiment:</label>
+              <select
+                value={selectedSentiment}
+                onChange={(e) => setSelectedSentiment(e.target.value)}
+                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                {sentimentOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-gray-700 font-medium">Holding Period:</label>
+              <select
+                value={selectedTimeframe}
+                onChange={(e) => setSelectedTimeframe(e.target.value)}
+                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                {timeframeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-gray-700 font-medium">Type:</label>
+              <select
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                {typeOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Second Row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-gray-700 font-medium">Year:</label>
+              <select
+                value={selectedYear}
+                onChange={(e) => handleYearChange(e.target.value)}
+                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                {yearOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-gray-700 font-medium">Quarter:</label>
+              <select
+                value={selectedQuarter}
+                onChange={(e) => setSelectedQuarter(e.target.value)}
+                disabled={selectedYear === "all"}
+                className={`border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${selectedYear === "all"
+                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                    : "bg-white text-gray-900"
+                  }`}
+              >
+                {quarterOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="max-w-7xl mx-auto px-4 flex justify-center">
         {/* Top 3 Podium */}
         {!loading && !initialLoad && topThreeInfluencers.length >= 3 && (
-          <div className="w-full max-w-4xl mt-8 mb-8">
+          <div className="w-full max-w-4xl mt-8 mb-8 mx-auto">
             <div className="flex items-end justify-center gap-4 md:gap-8">
               {/* 2nd Place */}
-              <div className="flex flex-col items-center flex-1 max-w-[180px]">
+              <div
+                className="flex flex-col items-center flex-1 max-w-[180px] cursor-pointer hover:scale-105 transition-transform duration-200"
+                onClick={() => {
+                  window.location.href = selectedPlatform === "youtube"
+                    ? `/influencers/${topThreeInfluencers[1]?.id}`
+                    : `/telegram-influencer/${topThreeInfluencers[1]?.id}`;
+                }}
+              >
                 <div className="relative mb-4">
                   {topThreeInfluencers[1]?.channel_thumbnails?.high?.url ? (
                     <Image
@@ -323,7 +477,14 @@ export default function InfluencerSearchPage() {
               </div>
 
               {/* 1st Place */}
-              <div className="flex flex-col items-center flex-1 max-w-[200px]">
+              <div
+                className="flex flex-col items-center flex-1 max-w-[200px] cursor-pointer hover:scale-105 transition-transform duration-200"
+                onClick={() => {
+                  window.location.href = selectedPlatform === "youtube"
+                    ? `/influencers/${topThreeInfluencers[0]?.id}`
+                    : `/telegram-influencer/${topThreeInfluencers[0]?.id}`;
+                }}
+              >
                 <div className="relative mb-4">
                   {topThreeInfluencers[0]?.channel_thumbnails?.high?.url ? (
                     <Image
@@ -353,7 +514,14 @@ export default function InfluencerSearchPage() {
               </div>
 
               {/* 3rd Place */}
-              <div className="flex flex-col items-center flex-1 max-w-[180px]">
+              <div
+                className="flex flex-col items-center flex-1 max-w-[180px] cursor-pointer hover:scale-105 transition-transform duration-200"
+                onClick={() => {
+                  window.location.href = selectedPlatform === "youtube"
+                    ? `/influencers/${topThreeInfluencers[2]?.id}`
+                    : `/telegram-influencer/${topThreeInfluencers[2]?.id}`;
+                }}
+              >
                 <div className="relative mb-4">
                   {topThreeInfluencers[2]?.channel_thumbnails?.high?.url ? (
                     <Image
@@ -384,185 +552,6 @@ export default function InfluencerSearchPage() {
             </div>
           </div>
         )}
-
-
-
-        {/* Search Section */}
-        <div className="w-full px-4 mb-6">
-          <div className="bg-white rounded-2xl p-6 border-2 border-purple-200">
-            <h3 className="text-lg font-semibold text-purple-600 mb-4">Search Influencers</h3>
-
-            {/* Search and Dropdown Row */}
-            <div className="mb-4 relative">
-              <div className="flex flex-col gap-2">
-                <label className="text-sm text-gray-700 font-medium">Search by Name:</label>
-                <div className="flex gap-2">
-                  {/* Search Input - 70% */}
-                  <div className="relative flex-[0.7]">
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        if (e.target.value.trim()) {
-                          setShowSearchResults(true);
-                        } else {
-                          setShowSearchResults(false);
-                          setSearchResults([]);
-                        }
-                        setSelectedInfluencer("");
-                      }}
-                      onFocus={() => {
-                        if (searchQuery.trim()) {
-                          setShowSearchResults(true);
-                        }
-                        setShowDropdown(false);
-                      }}
-                      onBlur={(e) => {
-                        // Delay hiding to allow for clicks on results
-                        setTimeout(() => {
-                          if (!e.currentTarget.contains(document.activeElement)) {
-                            setShowSearchResults(false);
-                          }
-                        }, 200);
-                      }}
-                      placeholder={selectedPlatform === "telegram" ? "Type influencer name" : "Type influencer name"}
-                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 pr-10"
-                    />
-                    {searchQuery && (
-                      <button
-                        onClick={() => {
-                          setSearchQuery("");
-                          setShowSearchResults(false);
-                          setSearchResults([]);
-                        }}
-                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-900"
-                      >
-                        ✕
-                      </button>
-                    )}
-
-                    {/* Search Results Dropdown */}
-                    {showSearchResults && searchResults.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
-                        {searchResults.map((result) => (
-                          <button
-                            key={result.channel_id}
-                            onClick={() => {
-                              // Navigate to influencer dashboard
-                              window.location.href = selectedPlatform === "youtube"
-                                ? `/influencers/${result.channel_id}`
-                                : `/telegram-influencer/${result.channel_id}`;
-                            }}
-                            className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-200 last:border-b-0 flex items-center gap-3"
-                          >
-                            {result.channel_thumbnails?.high?.url ? (
-                              <Image
-                                src={result.channel_thumbnails.high.url}
-                                alt={result.influencer_name || "Channel"}
-                                width={32}
-                                height={32}
-                                className="w-8 h-8 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center">
-                                <span className="text-xs font-bold text-white">
-                                  {selectedPlatform === "telegram"
-                                    ? (result.channel_id ? result.channel_id.match(/\b\w/g)?.join("") || "?" : "?")
-                                    : (result.influencer_name ? result.influencer_name.match(/\b\w/g)?.join("") || "?" : "?")
-                                  }
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex-1">
-                              <div className="text-gray-900 font-medium">
-                                {selectedPlatform === "telegram"
-                                  ? (result.channel_id ? result.channel_id.replace(/_/g, " ") : "Unknown")
-                                  : (result.influencer_name ? result.influencer_name.replace(/_/g, " ") : "Unknown")
-                                }
-                              </div>
-                              <div className="text-xs text-gray-600">
-                                Rank {result.rank}
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* All Influencers Dropdown - 30% */}
-                  <div className="relative flex-[0.3] dropdown-container">
-                    <button
-                      onClick={() => {
-                        setShowDropdown(!showDropdown);
-                        setShowSearchResults(false);
-                        setSearchQuery("");
-                      }}
-                      className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 text-left flex items-center justify-between"
-                    >
-                      <span className="truncate">
-                        {selectedInfluencer || "Select Influencer"}
-                      </span>
-                      <svg
-                        className={`w-4 h-4 transform transition-transform ${showDropdown ? 'rotate-180' : ''}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </button>
-
-                    {/* All Influencers Dropdown */}
-                    {showDropdown && filteredInfluencers.length > 0 && (
-                      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto">
-                        {filteredInfluencers.map((influencer) => (
-                          <button
-                            key={influencer.id}
-                            onClick={() => {
-                              setSelectedInfluencer(influencer.name);
-                              setShowDropdown(false);
-                              // Navigate to influencer dashboard
-                              window.location.href = selectedPlatform === "youtube"
-                                ? `/influencers/${influencer.id}`
-                                : `/telegram-influencer/${influencer.id}`;
-                            }}
-                            className="w-full text-left px-4 py-3 hover:bg-gray-100 transition-colors border-b border-gray-200 last:border-b-0 flex items-center gap-3"
-                          >
-                            {influencer.channel_thumbnails?.high?.url ? (
-                              <Image
-                                src={influencer.channel_thumbnails.high.url}
-                                alt={influencer.name || "Channel"}
-                                width={24}
-                                height={24}
-                                className="w-6 h-6 rounded-full object-cover flex-shrink-0"
-                              />
-                            ) : (
-                              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center flex-shrink-0">
-                                <span className="text-xs font-bold text-white">
-                                  {influencer.name ? influencer.name.match(/\b\w/g)?.join("") || "?" : "?"}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex-1 min-w-0">
-                              <div className="text-gray-900 font-medium text-sm truncate">
-                                {influencer.name ? influencer.name.replace(/_/g, " ") : "Unknown"}
-                              </div>
-                              <div className="text-xs text-gray-600">
-                                Rank {influencer.rank}
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
 
       {/* Leaderboard Table */}

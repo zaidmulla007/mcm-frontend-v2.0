@@ -11,6 +11,7 @@ const navLinks = [
   { name: "Home", href: "/landing-page", icon: FaHome },
   { name: "Influencers Rank", href: "/influencers", icon: FaChartLine },
   { name: "Influencer Search", href: "/influencer-search", icon: FaSearch },
+  { name: "MCM Signal", href: "/mcm-final", icon: FaChartLine },
   { name: "Plans", href: "/plans", icon: FaTrophy },
   { name: "Blog", href: "/blog", icon: FaBlog },
   { name: "About", href: "/about", icon: FaInfoCircle },

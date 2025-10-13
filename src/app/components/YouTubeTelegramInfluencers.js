@@ -392,14 +392,14 @@ export default function YouTubeTelegramInfluencers() {
 
                 {/* Platform Selection */}
                 <div className="flex justify-center mb-8">
-                    <div className="jsx-816192472cbeba0e bg-white rounded-xl border border-purple-500 p-4" style={{ width: '672px' }}>
+                    <div className="jsx-816192472cbeba0e bg-white rounded-xl p-4" style={{ width: '672px' }}>
                         <div className="flex items-center justify-between gap-4">
                             <div className="flex items-center gap-3">
                                 <label className="text-lg text-black font-semibold">Platform:</label>
                                 <select
                                     value={selectedPlatform}
                                     onChange={(e) => setSelectedPlatform(e.target.value)}
-                                    className="jsx-816192472cbeba0e bg-white border-2 border-purple-500 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[150px]"
+                                    className="jsx-816192472cbeba0e bg-white border-2 border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
                                 >
                                     <option value="Combined" className="bg-white text-black">Combined</option>
                                     <option value="YouTube" className="bg-white text-black">YouTube</option>
@@ -445,7 +445,7 @@ export default function YouTubeTelegramInfluencers() {
                         getDisplayData().map((post, index) => (
                             <div
                                 key={post.id}
-                                className="w-80 flex-shrink-0 bg-white rounded-xl overflow-hidden border border-purple-500"
+                                className="w-80 flex-shrink-0 bg-white rounded-xl overflow-hidden"
                             >
                                 {/* Post Header with Platform Icon in Top Right */}
                                 <div className="border-b border-gray-700">
