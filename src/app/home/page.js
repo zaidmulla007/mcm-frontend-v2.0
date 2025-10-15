@@ -2,6 +2,8 @@
 
 import YoutubeTelegramDataTableGuage from "../components/YoutubeTelegramDataTableGuage";
 import InfluencerFlashCard from "../components/InfluencerFlashCard";
+import TestimonialsSection from "../components/TestimonialsSection";
+import CTASection from "../components/CTASection";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -70,9 +72,6 @@ export default function HomePage() {
         Promise.all(moonshotDataPromises)
       ]);
 
-      console.log('Detailed Influencer Data (raw):', detailedData);
-      console.log('Moonshot Data (raw):', moonshotData);
-
       // Extract results from API response and merge with moonshot data
       const extractedData = detailedData.map((response, index) => {
         let channelData;
@@ -93,8 +92,6 @@ export default function HomePage() {
 
         return channelData;
       }).filter(Boolean);
-
-      console.log('Extracted Influencer Data with Moonshot:', extractedData);
       setInfluencerData(extractedData);
     } catch (error) {
       console.error('Error fetching influencer data:', error);
@@ -168,7 +165,7 @@ export default function HomePage() {
                 <circle cx="9" cy="7" r="4"></circle>
               </svg>
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">100</div>
+            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">100+</div>
             <div className="text-sm text-gray-600 text-center font-semibold">Total Influencers</div>
           </div>
 
@@ -178,9 +175,9 @@ export default function HomePage() {
                 <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
               </svg>
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">18,492</div>
+            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">1,97,993+</div>
             <div className="text-sm text-gray-600 text-center font-semibold">Calls Tracked & Tested</div>
-            <div className="text-xs text-gray-500 text-center mt-1">(+3 years)</div>
+            <div className="text-sm text-gray-600 text-center font-semibold">(3+ years)</div>
           </div>
 
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
@@ -206,7 +203,7 @@ export default function HomePage() {
                 <path d="m16.71 13.88.7.71-2.82 2.82"></path>
               </svg>
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">17,000</div>
+            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">17,000+</div>
             <div className="text-sm text-gray-600 text-center font-semibold">Coins Covered</div>
           </div>
         </div>
@@ -229,15 +226,20 @@ export default function HomePage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
             {influencerData.length > 0 ? (
-              influencerData.map((influencer, index) => (
-                <InfluencerFlashCard
-                  key={index}
-                  data={influencer}
-                  rank={index + 1}
-                  isLoggedIn={isLoggedIn}
-                  onViewFull={handleViewFullClick}
-                />
-              ))
+              influencerData.map((influencer, index) => {
+                // Define rank labels for each card
+                const rankLabels = ['Rank #1hr', 'Rank #24hrs', 'Rank #7days'];
+                return (
+                  <InfluencerFlashCard
+                    key={index}
+                    data={influencer}
+                    rank={index + 1}
+                    rankLabel={rankLabels[index]}
+                    isLoggedIn={isLoggedIn}
+                    onViewFull={handleViewFullClick}
+                  />
+                );
+              })
             ) : (
               <div className="col-span-3 text-center text-gray-600">No influencer data available</div>
             )}
@@ -247,6 +249,16 @@ export default function HomePage() {
         {/* YouTube Telegram Data Table Guage Component */}
         <div className="mt-16">
           <YoutubeTelegramDataTableGuage />
+        </div>
+
+        {/* Testimonials Section */}
+        <div className="mt-16">
+          <TestimonialsSection />
+        </div>
+
+        {/* CTA Section */}
+        <div className="mt-16">
+          <CTASection />
         </div>
       </div>
     </div>

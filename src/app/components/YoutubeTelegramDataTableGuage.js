@@ -4,7 +4,7 @@ import { FaEye } from "react-icons/fa";
 import moment from "moment-timezone";
 
 // Gradient Doughnut Gauge Component (Full Circle)
-const GradientDoughnutGauge = ({ shortValue, longValue, size = 28 }) => {
+const GradientDoughnutGauge = ({ shortValue, longValue, size = 28, label = null }) => {
     const canvasRef = useRef(null);
 
     useEffect(() => {
@@ -14,8 +14,8 @@ const GradientDoughnutGauge = ({ shortValue, longValue, size = 28 }) => {
         const ctx = canvas.getContext('2d');
         const centerX = canvas.width / 2;
         const centerY = canvas.height / 2;
-        const outerRadius = size * 0.9;
-        const innerRadius = size * 0.58;
+        const outerRadius = size * 1.0;
+        const innerRadius = size * 0.69;
 
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -98,50 +98,79 @@ const GradientDoughnutGauge = ({ shortValue, longValue, size = 28 }) => {
             }
         }
 
-        // Draw center text with actual values
-        // Dynamically adjust font size based on total digit count
-        const totalDigits = shortValue.toString().length + longValue.toString().length;
-        let fontSize, spacing;
-
-        if (totalDigits >= 8) {
-            fontSize = size * 0.15; // Extra small for 8+ total digits
-            spacing = size * 0.18;
-        } else if (totalDigits >= 6) {
-            fontSize = size * 0.18; // Very small for 6-7 total digits
-            spacing = size * 0.20;
-        } else if (totalDigits >= 5) {
-            fontSize = size * 0.22; // Small for 5 total digits
-            spacing = size * 0.22;
-        } else if (totalDigits >= 4) {
-            fontSize = size * 0.28; // Medium-small for 4 total digits
-            spacing = size * 0.24;
-        } else if (totalDigits >= 3) {
-            fontSize = size * 0.32; // For 3 total digits
-            spacing = size * 0.26;
-        } else {
-            fontSize = size * 0.38; // Normal for 2 or fewer total digits
-            spacing = size * 0.28;
-        }
-
-        ctx.fillStyle = '#666';
-        ctx.font = `bold ${fontSize}px Arial`;
+        // Draw center text
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        // Draw short value
-        ctx.fillText(`${shortValue}`, centerX - spacing, centerY);
+        if (label) {
+            // Font sizes - larger label
+            const numberFontSize = size * 0.28;
+            const labelFontSize = size * 0.18;
+            const spacing = size * 0.30;
 
-        // Draw separator
-        ctx.fillStyle = '#999';
-        ctx.font = `bold ${fontSize * 0.9}px Arial`; // Make separator slightly smaller
-        ctx.fillText('|', centerX, centerY);
+            ctx.fillStyle = '#000';
+            ctx.font = `${numberFontSize}px Arial, sans-serif`;
 
-        // Draw long value
-        ctx.fillStyle = '#666';
-        ctx.font = `bold ${fontSize}px Arial`;
-        ctx.fillText(`${longValue}`, centerX + spacing, centerY);
+            // Draw short value
+            ctx.fillText(`${shortValue}`, centerX - spacing, centerY - size * 0.12);
 
-    }, [shortValue, longValue, size]);
+            // Draw separator with space
+            ctx.fillStyle = '#000';
+            ctx.font = `${numberFontSize}px Arial, sans-serif`;
+            ctx.fillText(' | ', centerX, centerY - size * 0.12);
+
+            // Draw long value
+            ctx.fillStyle = '#000';
+            ctx.font = `${numberFontSize}px Arial, sans-serif`;
+            ctx.fillText(`${longValue}`, centerX + spacing, centerY - size * 0.12);
+
+            // Draw label text below numbers - larger
+            ctx.fillStyle = '#000';
+            ctx.font = `${labelFontSize}px Arial, sans-serif`;
+            ctx.fillText(label, centerX, centerY + size * 0.18);
+        } else {
+            // Draw values with separator
+            const totalDigits = shortValue.toString().length + longValue.toString().length;
+            let fontSize, spacing;
+
+            if (totalDigits >= 8) {
+                fontSize = size * 0.15;
+                spacing = size * 0.18;
+            } else if (totalDigits >= 6) {
+                fontSize = size * 0.18;
+                spacing = size * 0.20;
+            } else if (totalDigits >= 5) {
+                fontSize = size * 0.22;
+                spacing = size * 0.22;
+            } else if (totalDigits >= 4) {
+                fontSize = size * 0.28;
+                spacing = size * 0.24;
+            } else if (totalDigits >= 3) {
+                fontSize = size * 0.32;
+                spacing = size * 0.26;
+            } else {
+                fontSize = size * 0.38;
+                spacing = size * 0.28;
+            }
+
+            ctx.fillStyle = '#666';
+            ctx.font = `bold ${fontSize}px Arial`;
+
+            // Draw short value
+            ctx.fillText(`${shortValue}`, centerX - spacing, centerY);
+
+            // Draw separator
+            ctx.fillStyle = '#999';
+            ctx.font = `bold ${fontSize * 0.9}px Arial`;
+            ctx.fillText('|', centerX, centerY);
+
+            // Draw long value
+            ctx.fillStyle = '#666';
+            ctx.font = `bold ${fontSize}px Arial`;
+            ctx.fillText(`${longValue}`, centerX + spacing, centerY);
+        }
+
+    }, [shortValue, longValue, size, label]);
 
     const interpolateColor = (colors, ratio) => {
         if (ratio <= 0) return colors[colors.length - 1];
@@ -198,6 +227,14 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
         "24hrs": false,
         "7days": false,
         "30days": false
+    });
+
+    // State to track selected term for each timeframe
+    const [selectedTerms, setSelectedTerms] = useState({
+        "6hrs": "short_term",
+        "24hrs": "short_term",
+        "7days": "short_term",
+        "30days": "short_term"
     });
 
     // Fetch combined YouTube and Telegram data from API
@@ -422,8 +459,10 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
                 bullishCount: coin.yt_bullish_count || 0,
                 bearishCount: coin.yt_bearish_count || 0,
                 bullishShortTerm: coin.yt_bullish_short_term || 0,
+                bullishMidTerm: coin.yt_bullish_mid_term || 0,
                 bullishLongTerm: coin.yt_bullish_long_term || 0,
                 bearishShortTerm: coin.yt_bearish_short_term || 0,
+                bearishMidTerm: coin.yt_bearish_mid_term || 0,
                 bearishLongTerm: coin.yt_bearish_long_term || 0
             };
         } else if (selectedPlatform === "Telegram") {
@@ -434,8 +473,10 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
                 bullishCount: coin.tg_bullish_count || 0,
                 bearishCount: coin.tg_bearish_count || 0,
                 bullishShortTerm: coin.tg_bullish_short_term || 0,
+                bullishMidTerm: coin.tg_bullish_mid_term || 0,
                 bullishLongTerm: coin.tg_bullish_long_term || 0,
                 bearishShortTerm: coin.tg_bearish_short_term || 0,
+                bearishMidTerm: coin.tg_bearish_mid_term || 0,
                 bearishLongTerm: coin.tg_bearish_long_term || 0
             };
         } else {
@@ -446,8 +487,10 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
                 bullishCount: coin.bullish_count || 0,
                 bearishCount: coin.bearish_count || 0,
                 bullishShortTerm: coin.yt_tg_bullish_short_term || 0,
+                bullishMidTerm: coin.yt_tg_bullish_mid_term || 0,
                 bullishLongTerm: coin.yt_tg_bullish_long_term || 0,
                 bearishShortTerm: coin.yt_tg_bearish_short_term || 0,
+                bearishMidTerm: coin.yt_tg_bearish_mid_term || 0,
                 bearishLongTerm: coin.yt_tg_bearish_long_term || 0
             };
         }
@@ -460,6 +503,7 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
         const isExpanded = expandedTables[timeframe];
         const coins = isExpanded ? allCoins : allCoins.slice(0, 5);
         const hasMore = allCoins.length > 5;
+        const selectedTerm = selectedTerms[timeframe] || "short_term";
 
         // Get the from date for this timeframe
         const getFromDateForTimeframe = () => {
@@ -474,7 +518,7 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
         };
 
         return (
-            <div className="bg-white rounded-2xl border border-purple-500 overflow-hidden shadow-2xl p-6">
+            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-2xl p-6">
                 <div className="text-center mb-4 relative">
                     <h3 className="text-md font-bold text-black mb-2">{title}</h3>
                     <div className="text-xs text-black">
@@ -527,51 +571,41 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
                                             <td className="py-2 px-1 w-[75%]">
                                                 <div className="flex flex-col items-center gap-1.5 py-1.5">
                                                     {/* Bullish and Bearish Count Display */}
-                                                    <div className="flex gap-2 text-[9px] font-semibold">
-                                                        <div className="flex items-center gap-1 text-green-700 border border-green-500 px-1.5 py-0.5 rounded bg-green-50">
-                                                            <span>↑ Bullish:</span>
-                                                            <span>{sentimentData.bullishCount}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-1 text-red-700 border border-red-500 px-1.5 py-0.5 rounded bg-red-50">
-                                                            <span>↓ Bearish:</span>
-                                                            <span>{sentimentData.bearishCount}</span>
-                                                        </div>
-                                                    </div>
 
-                                                    {/* Gauges Container */}
-                                                    <div className="flex gap-2 w-full justify-center">
-                                                        {/* Bullish Gauge */}
-                                                        <div className="flex flex-col items-center gap-0.5">
-                                                            <div className="flex gap-1 text-[7px]">
-                                                                <div className="font-semibold text-green-700 border border-green-500 px-0.5 py-0.5 rounded bg-green-50 whitespace-nowrap">
-                                                                    Short: {sentimentData.bullishShortTerm}
-                                                                </div>
-                                                                <div className="font-semibold text-green-700 border border-green-500 px-0.5 py-0.5 rounded bg-green-50 whitespace-nowrap">
-                                                                    Long: {sentimentData.bullishLongTerm}
-                                                                </div>
+                                                    {/* Two Gauges - Short Term and Long Term */}
+                                                    <div className="flex gap-4 items-start justify-center">
+                                                        {/* First Gauge - Short Term with Bullish badge */}
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <div className="px-2 py-0.5 rounded bg-white text-black font-semibold border border-gray-400 text-[8px]">
+                                                                Short Term
                                                             </div>
                                                             <GradientDoughnutGauge
                                                                 shortValue={sentimentData.bullishShortTerm}
-                                                                longValue={sentimentData.bullishLongTerm}
-                                                                size={28}
+                                                                longValue={sentimentData.bearishShortTerm}
+                                                                size={40}
+                                                                label="BULL | BEAR"
                                                             />
+                                                            <div className="flex items-center gap-1 text-green-700 border border-green-500 px-1.5 py-0.5 rounded bg-green-50 text-[9px] font-semibold">
+                                                                <span>↑ Bullish:</span>
+                                                                <span>{sentimentData.bullishCount}</span>
+                                                            </div>
                                                         </div>
 
-                                                        {/* Bearish Gauge */}
-                                                        <div className="flex flex-col items-center gap-0.5">
-                                                            <div className="flex gap-1 text-[7px]">
-                                                                <div className="font-semibold text-red-700 border border-red-500 px-0.5 py-0.5 rounded bg-red-50 whitespace-nowrap">
-                                                                    Short: {sentimentData.bearishShortTerm}
-                                                                </div>
-                                                                <div className="font-semibold text-red-700 border border-red-500 px-0.5 py-0.5 rounded bg-red-50 whitespace-nowrap">
-                                                                    Long: {sentimentData.bearishLongTerm}
-                                                                </div>
+                                                        {/* Second Gauge - Long Term with Bearish badge */}
+                                                        <div className="flex flex-col items-center gap-1">
+                                                            <div className="px-2 py-0.5 rounded bg-white text-black font-semibold border border-gray-400 text-[8px]">
+                                                                Long Term
                                                             </div>
                                                             <GradientDoughnutGauge
-                                                                shortValue={sentimentData.bearishShortTerm}
+                                                                shortValue={sentimentData.bullishLongTerm}
                                                                 longValue={sentimentData.bearishLongTerm}
-                                                                size={28}
+                                                                size={40}
+                                                                label="BULL | BEAR"
                                                             />
+                                                            <div className="flex items-center gap-1 text-red-700 border border-red-500 px-1.5 py-0.5 rounded bg-red-50 text-[9px] font-semibold">
+                                                                <span>↓ Bearish:</span>
+                                                                <span>{sentimentData.bearishCount}</span>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -591,7 +625,7 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
         return (
             <div className="bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-600 border-t-transparent mx-auto mb-4"></div>
                     <div className="text-gray-900 text-lg font-semibold mb-2">Loading Data Table...</div>
                     <div className="text-purple-600 text-sm">Fetching YouTube & Telegram analytics</div>
                 </div>
@@ -612,7 +646,7 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
 
             {/* Channel and Coin Type Dropdowns */}
             <div className="flex justify-center">
-                <div className="bg-white rounded-2xl border border-purple-500 overflow-hidden shadow-2xl p-6">
+                <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-2xl p-6">
                     <div className="flex items-center gap-6">
                         {/* Channel Dropdown */}
                         <div className="flex items-center gap-3">
@@ -620,7 +654,7 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
                             <select
                                 value={selectedPlatform}
                                 onChange={(e) => setSelectedPlatform(e.target.value)}
-                                className="bg-white border border-purple-500/30 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[150px]"
+                                className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[150px]"
                             >
                                 {platformOptions.map((option) => (
                                     <option key={option.key} value={option.key} className="bg-white text-black">
@@ -636,7 +670,7 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
                             <select
                                 value={selectedCoinType}
                                 onChange={(e) => setSelectedCoinType(e.target.value)}
-                                className="bg-white border border-purple-500/30 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-purple-500 min-w-[150px]"
+                                className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[150px]"
                             >
                                 {coinTypeOptions.map((option) => (
                                     <option key={option.key} value={option.key} className="bg-white text-black">

@@ -8,7 +8,7 @@ export async function GET(request) {
         headers: {
           'Content-Type': 'application/json',
         },
-        signal: AbortSignal.timeout(15000),
+        signal: AbortSignal.timeout(45000),
       }
     );
 
@@ -43,7 +43,7 @@ export async function GET(request) {
     let statusCode = 500;
 
     if (error.name === 'AbortError') {
-      errorMessage = 'Request timeout';
+      errorMessage = 'Request timeout - API took longer than 45 seconds';
       statusCode = 408;
     } else if (error.message.includes('fetch')) {
       errorMessage = 'Network error - external API not accessible';
