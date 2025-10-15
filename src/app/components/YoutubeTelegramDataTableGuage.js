@@ -586,7 +586,7 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
                                                                 label="BULL | BEAR"
                                                             />
                                                             <div className="flex items-center gap-1 text-green-700 border border-green-500 px-1.5 py-0.5 rounded bg-green-50 text-[9px] font-semibold">
-                                                                <span>↑ Bullish:</span>
+                                                                <span>Bullish:</span>
                                                                 <span>{sentimentData.bullishCount}</span>
                                                             </div>
                                                         </div>
@@ -603,7 +603,7 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
                                                                 label="BULL | BEAR"
                                                             />
                                                             <div className="flex items-center gap-1 text-red-700 border border-red-500 px-1.5 py-0.5 rounded bg-red-50 text-[9px] font-semibold">
-                                                                <span>↓ Bearish:</span>
+                                                                <span>Bearish:</span>
                                                                 <span>{sentimentData.bearishCount}</span>
                                                             </div>
                                                         </div>
