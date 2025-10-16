@@ -96,7 +96,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
   const platformType = channelType === "Telegram" ? "telegram" : "youtube";
 
   // Extract moonshot count from moonshotData (180_days moonshots_price_count)
-  const extractMoonshotProb = (channelData) => {
+  const extractMoonshotProb = (channelData, platform) => {
     const moonshotProb = {};
 
     // Handle both API structures:
@@ -108,6 +108,23 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
 
     if (moonshotData && Object.keys(moonshotData).length > 0) {
       Object.entries(moonshotData).forEach(([year, yearData]) => {
+        // Filter based on platform and year
+        // For YouTube: only show data from 2022 onwards
+        // For Telegram: only show data from 2024 onwards
+        const yearNum = parseInt(year);
+
+        if (platform === "Telegram") {
+          // Telegram: remove all data before 2024
+          if (yearNum < 2024) {
+            return; // Skip this year
+          }
+        } else {
+          // YouTube: remove all data before 2022
+          if (yearNum < 2022) {
+            return; // Skip this year
+          }
+        }
+
         // Get moonshots_price_count from 180_days timeframe
         const count = yearData?.["180_days"]?.moonshots_price_count || 0;
 
@@ -119,7 +136,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
     return moonshotProb;
   };
 
-  const moonshotProb = extractMoonshotProb(data);
+  const moonshotProb = extractMoonshotProb(data, channelType);
 
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">

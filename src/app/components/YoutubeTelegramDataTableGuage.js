@@ -77,8 +77,14 @@ const GradientDoughnutGauge = ({ shortValue, longValue, size = 28, label = null 
             const shortPercentDisplay = Math.round(shortPercent);
             const longPercentDisplay = Math.round(longPercent);
 
+            // If both are 0, display in gray
+            if (total === 0) {
+                ctx.fillStyle = '#9E9E9E'; // Gray for 0/0
+                ctx.font = `bold ${numberFontSize}px Arial, sans-serif`;
+                ctx.fillText('0%', centerX, centerY);
+            }
             // Determine which percentage is greater and display only that
-            if (shortPercentDisplay >= longPercentDisplay) {
+            else if (shortPercentDisplay >= longPercentDisplay) {
                 // Draw bullish percentage in green
                 ctx.fillStyle = '#00a63e'; // Green for bullish
                 ctx.font = `bold ${numberFontSize}px Arial, sans-serif`;
