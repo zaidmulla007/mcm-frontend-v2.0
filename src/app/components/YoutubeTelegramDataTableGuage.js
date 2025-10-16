@@ -25,10 +25,10 @@ const GradientDoughnutGauge = ({ shortValue, longValue, size = 28, label = null 
         const shortPercent = total > 0 ? (shortValue / total) * 100 : 0;
         const longPercent = total > 0 ? (longValue / total) * 100 : 0;
 
-        // Define color gradients for short (green) and long (blue)
-        const shortColors = ['#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', '#C8E6C9'];
-        const longColors = ['#1976D2', '#2196F3', '#42A5F5', '#64B5F6', '#90CAF9'];
-        const emptyColors = ['#9E9E9E', '#BDBDBD', '#E0E0E0', '#EEEEEE', '#F5F5F5']; // Gray gradient for 0/0
+        // Define solid colors for bullish (green) and bearish (red)
+        const shortColor = '#00a63e'; // Solid green for bullish
+        const longColor = '#ff2121'; // Solid red for bearish
+        const emptyColor = '#9E9E9E'; // Gray for 0/0
 
         // Calculate angles
         const startAngle = -Math.PI / 2; // Start from top (12 o'clock)
@@ -36,66 +36,33 @@ const GradientDoughnutGauge = ({ shortValue, longValue, size = 28, label = null 
 
         // If both values are 0, draw a full gray circle
         if (total === 0) {
-            const fullAngle = 2 * Math.PI;
-            const segmentAngle = fullAngle / segments;
-
-            for (let i = 0; i < segments; i++) {
-                const segStart = startAngle + (i * segmentAngle);
-                const segEnd = segStart + segmentAngle;
-
-                // Darker to lighter (reverse ratio for darker at start)
-                const ratio = 1 - (i / segments);
-                const color = interpolateColor(emptyColors, ratio);
-
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, outerRadius, segStart, segEnd);
-                ctx.arc(centerX, centerY, innerRadius, segEnd, segStart, true);
-                ctx.closePath();
-                ctx.fillStyle = color;
-                ctx.fill();
-            }
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, outerRadius, 0, 2 * Math.PI);
+            ctx.arc(centerX, centerY, innerRadius, 2 * Math.PI, 0, true);
+            ctx.closePath();
+            ctx.fillStyle = emptyColor;
+            ctx.fill();
         } else {
-            // Draw Short segment (darker to lighter clockwise)
+            // Draw bullish segment (solid green)
             const shortAngle = (shortPercent / 100) * 2 * Math.PI;
 
-            // Short segment
-            const shortSegmentAngle = shortAngle / segments;
-            for (let i = 0; i < segments; i++) {
-                const segStart = startAngle + (i * shortSegmentAngle);
-                const segEnd = segStart + shortSegmentAngle;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, outerRadius, startAngle, startAngle + shortAngle);
+            ctx.arc(centerX, centerY, innerRadius, startAngle + shortAngle, startAngle, true);
+            ctx.closePath();
+            ctx.fillStyle = shortColor;
+            ctx.fill();
 
-                // Darker to lighter (reverse ratio for darker at start)
-                const ratio = 1 - (i / segments);
-                const color = interpolateColor(shortColors, ratio);
-
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, outerRadius, segStart, segEnd);
-                ctx.arc(centerX, centerY, innerRadius, segEnd, segStart, true);
-                ctx.closePath();
-                ctx.fillStyle = color;
-                ctx.fill();
-            }
-
-            // Long segment
+            // Draw bearish segment (solid red)
             const longStartAngle = startAngle + shortAngle;
             const longAngle = (longPercent / 100) * 2 * Math.PI;
-            const longSegmentAngle = longAngle / segments;
 
-            for (let i = 0; i < segments; i++) {
-                const segStart = longStartAngle + (i * longSegmentAngle);
-                const segEnd = segStart + longSegmentAngle;
-
-                // Darker to lighter
-                const ratio = 1 - (i / segments);
-                const color = interpolateColor(longColors, ratio);
-
-                ctx.beginPath();
-                ctx.arc(centerX, centerY, outerRadius, segStart, segEnd);
-                ctx.arc(centerX, centerY, innerRadius, segEnd, segStart, true);
-                ctx.closePath();
-                ctx.fillStyle = color;
-                ctx.fill();
-            }
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, outerRadius, longStartAngle, longStartAngle + longAngle);
+            ctx.arc(centerX, centerY, innerRadius, longStartAngle + longAngle, longStartAngle, true);
+            ctx.closePath();
+            ctx.fillStyle = longColor;
+            ctx.fill();
         }
 
         // Draw center text
@@ -103,31 +70,25 @@ const GradientDoughnutGauge = ({ shortValue, longValue, size = 28, label = null 
         ctx.textBaseline = 'middle';
 
         if (label) {
-            // Font sizes - larger label
-            const numberFontSize = size * 0.28;
-            const labelFontSize = size * 0.18;
-            const spacing = size * 0.30;
+            // Font sizes - larger for single percentage
+            const numberFontSize = size * 0.45;
 
-            ctx.fillStyle = '#000';
-            ctx.font = `${numberFontSize}px Arial, sans-serif`;
+            // Display percentages with color
+            const shortPercentDisplay = Math.round(shortPercent);
+            const longPercentDisplay = Math.round(longPercent);
 
-            // Draw short value
-            ctx.fillText(`${shortValue}`, centerX - spacing, centerY - size * 0.12);
-
-            // Draw separator with space
-            ctx.fillStyle = '#000';
-            ctx.font = `${numberFontSize}px Arial, sans-serif`;
-            ctx.fillText(' | ', centerX, centerY - size * 0.12);
-
-            // Draw long value
-            ctx.fillStyle = '#000';
-            ctx.font = `${numberFontSize}px Arial, sans-serif`;
-            ctx.fillText(`${longValue}`, centerX + spacing, centerY - size * 0.12);
-
-            // Draw label text below numbers - larger
-            ctx.fillStyle = '#000';
-            ctx.font = `${labelFontSize}px Arial, sans-serif`;
-            ctx.fillText(label, centerX, centerY + size * 0.18);
+            // Determine which percentage is greater and display only that
+            if (shortPercentDisplay >= longPercentDisplay) {
+                // Draw bullish percentage in green
+                ctx.fillStyle = '#00a63e'; // Green for bullish
+                ctx.font = `bold ${numberFontSize}px Arial, sans-serif`;
+                ctx.fillText(`${shortPercentDisplay}%`, centerX, centerY);
+            } else {
+                // Draw bearish percentage in red
+                ctx.fillStyle = '#ff2121'; // Red for bearish
+                ctx.font = `bold ${numberFontSize}px Arial, sans-serif`;
+                ctx.fillText(`${longPercentDisplay}%`, centerX, centerY);
+            }
         } else {
             // Draw values with separator
             const totalDigits = shortValue.toString().length + longValue.toString().length;
@@ -553,60 +514,72 @@ export default function YoutubeTelegramDataTableGuage({ useLocalTime: propUseLoc
                                 coins.map((coin, index) => {
                                     const sentimentData = getSentimentData(coin);
 
+                                    const shortTermTotal = sentimentData.bullishShortTerm + sentimentData.bearishShortTerm;
+                                    const longTermTotal = sentimentData.bullishLongTerm + sentimentData.bearishLongTerm;
+
                                     return (
-                                        <tr key={index} className="border-b border-gray-800 hover:bg-gradient-to-br hover:from-purple-900/20 hover:to-blue-900/20 transition-all duration-300">
-                                            <td className="py-2 px-2 w-[25%]">
-                                                <div className="space-y-0.5">
-                                                    <div className="text-[10px] font-bold text-black break-words">
-                                                        {coin.symbol?.toUpperCase()}
-                                                    </div>
-                                                    <div className="text-[9px] text-black break-words leading-tight">
-                                                        {coin.coin_name}
-                                                    </div>
-                                                    <div className="text-[9px] text-black">
-                                                        {sentimentData.mentions} Posts
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-2 px-1 w-[75%]">
-                                                <div className="flex flex-col items-center gap-1.5 py-1.5">
-                                                    {/* Bullish and Bearish Count Display */}
-
-                                                    {/* Two Gauges - Short Term and Long Term */}
-                                                    <div className="flex gap-4 items-start justify-center">
-                                                        {/* First Gauge - Short Term with Bullish badge */}
-                                                        <div className="flex flex-col items-center gap-1">
-                                                            <div className="px-2 py-0.5 rounded bg-white text-black font-semibold border border-gray-400 text-[8px]">
-                                                                Short Term
-                                                            </div>
-                                                            <GradientDoughnutGauge
-                                                                shortValue={sentimentData.bullishShortTerm}
-                                                                longValue={sentimentData.bearishShortTerm}
-                                                                size={40}
-                                                                label="BULL | BEAR"
-                                                            />
-                                                            <div className="flex items-center gap-1 text-green-700 border border-green-500 px-1.5 py-0.5 rounded bg-green-50 text-[9px] font-semibold">
-                                                                <span>Bullish:</span>
-                                                                <span>{sentimentData.bullishCount}</span>
+                                        <tr key={index} className="border-b border-gray-200 hover:bg-gradient-to-br hover:from-purple-900/10 hover:to-blue-900/10 transition-all duration-300">
+                                            <td colSpan="2" className="py-3 px-2">
+                                                {/* New 3-column layout matching buy.png */}
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    {/* Left Column - Coin Info */}
+                                                    <div className="space-y-0.5">
+                                                        <div className="text-[11px] font-bold text-black break-words">
+                                                            {coin.symbol?.toUpperCase()}
+                                                        </div>
+                                                        <div className="text-[8px] font-bold text-black">
+                                                            Outlook
+                                                        </div>
+                                                        <div className="text-[8px] font-bold text-black">
+                                                            {sentimentData.mentions} POSTS
+                                                        </div>
+                                                        <div className="text-xs text-black">
+                                                            Sentiment
+                                                        </div>
+                                                        <div className="flex items-center gap-1">
+                                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#00a63e' }}></div>
+                                                            <div className="text-xs" style={{ color: '#00a63e' }}>
+                                                                Bullish
                                                             </div>
                                                         </div>
-
-                                                        {/* Second Gauge - Long Term with Bearish badge */}
-                                                        <div className="flex flex-col items-center gap-1">
-                                                            <div className="px-2 py-0.5 rounded bg-white text-black font-semibold border border-gray-400 text-[8px]">
-                                                                Long Term
-                                                            </div>
-                                                            <GradientDoughnutGauge
-                                                                shortValue={sentimentData.bullishLongTerm}
-                                                                longValue={sentimentData.bearishLongTerm}
-                                                                size={40}
-                                                                label="BULL | BEAR"
-                                                            />
-                                                            <div className="flex items-center gap-1 text-red-700 border border-red-500 px-1.5 py-0.5 rounded bg-red-50 text-[9px] font-semibold">
-                                                                <span>Bearish:</span>
-                                                                <span>{sentimentData.bearishCount}</span>
+                                                        <div className="flex items-center gap-1">
+                                                            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#ff2121' }}></div>
+                                                            <div className="text-xs" style={{ color: '#ff2121' }}>
+                                                                Bearish
                                                             </div>
                                                         </div>
+                                                    </div>
+
+                                                    {/* Center Column - SHORT TERM */}
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <div className="text-[8px] font-bold text-black">
+                                                            SHORT TERM
+                                                        </div>
+                                                        <div className="text-[8px] font-bold text-black">
+                                                            {shortTermTotal} POSTS
+                                                        </div>
+                                                        <GradientDoughnutGauge
+                                                            shortValue={sentimentData.bullishShortTerm}
+                                                            longValue={sentimentData.bearishShortTerm}
+                                                            size={38}
+                                                            label="BULL | BEAR"
+                                                        />
+                                                    </div>
+
+                                                    {/* Right Column - LONG TERM */}
+                                                    <div className="flex flex-col items-center gap-1">
+                                                        <div className="text-[8px] font-bold text-black">
+                                                            LONG TERM
+                                                        </div>
+                                                        <div className="text-[8px] font-bold text-black">
+                                                            {longTermTotal} POSTS
+                                                        </div>
+                                                        <GradientDoughnutGauge
+                                                            shortValue={sentimentData.bullishLongTerm}
+                                                            longValue={sentimentData.bearishLongTerm}
+                                                            size={38}
+                                                            label="BULL | BEAR"
+                                                        />
                                                     </div>
                                                 </div>
                                             </td>

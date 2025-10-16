@@ -7,6 +7,30 @@ import Swal from "sweetalert2";
 import { FaWhatsapp, FaChevronDown, FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { countryCodes } from "../../data/countryCodes";
 
+// List of valid email domains
+const VALID_EMAIL_DOMAINS = [
+  // Major providers
+  'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com', 'live.com',
+  'icloud.com', 'me.com', 'aol.com', 'protonmail.com', 'proton.me', 'mail.com',
+  // Other popular providers
+  'zoho.com', 'yandex.com', 'gmx.com', 'tutanota.com', 'fastmail.com',
+  'hushmail.com', 'inbox.com', 'msn.com', 'yahoo.co.uk', 'yahoo.co.in',
+  // Regional providers
+  'mail.ru', 'yandex.ru', 'rambler.ru', '163.com', 'qq.com', '126.com',
+  'sina.com', 'sohu.com', 'rediffmail.com', 'yahoo.co.jp', 'naver.com',
+  'daum.net', 'web.de', 'gmx.de', 't-online.de', 'orange.fr', 'laposte.net',
+  'free.fr', 'libero.it', 'tiscali.it', 'terra.com.br', 'uol.com.br',
+  'bol.com.br', 'telstra.com', 'bigpond.com',
+  // ISP providers
+  'comcast.net', 'verizon.net', 'att.net', 'sbcglobal.net', 'bellsouth.net',
+  'charter.net', 'cox.net', 'earthlink.net', 'btinternet.com', 'virginmedia.com',
+  'sky.com', 'ntlworld.com',
+  // Privacy-focused
+  'mailfence.com', 'posteo.de', 'runbox.com', 'countermail.com',
+  // Legacy providers
+  'juno.com', 'netscape.net', 'lycos.com', 'excite.com', 'rocketmail.com'
+];
+
 export default function Login() {
   const searchParams = useSearchParams();
   const showSignUp = searchParams.get('signup') === 'true';
@@ -30,6 +54,14 @@ export default function Login() {
     email: '',
     password: '',
     confirmPassword: ''
+  });
+  const [fieldErrors, setFieldErrors] = useState({
+    firstName: false,
+    lastName: false,
+    phoneNumber: false,
+    email: false,
+    password: false,
+    confirmPassword: false
   });
   const [canSendOtp, setCanSendOtp] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
@@ -60,6 +92,9 @@ export default function Login() {
         errorMessage = 'Email cannot contain consecutive dots';
       } else if (formData.email.includes('@.')) {
         errorMessage = 'Email cannot have a dot immediately after @';
+      } else if (!isValidEmailDomain(formData.email)) {
+        const domain = formData.email.split('@')[1];
+        errorMessage = `Invalid email domain "${domain}". Please use a valid email.`;
       }
 
       Swal.fire({
@@ -97,6 +132,34 @@ export default function Login() {
       // Don't show any alert if the number is valid (within min and max range)
     }
   };
+
+  // Watch for URL parameter changes and update form type
+  useEffect(() => {
+    const showSignUp = searchParams.get('signup') === 'true';
+    setIsLogin(!showSignUp);
+    // Reset form state when switching between login and signup
+    setIsOtpSent(false);
+    setOtp("");
+    setTimer(0);
+    // Clear all form data when switching between login and signup
+    setFormData({
+      firstName: '',
+      lastName: '',
+      phoneNumber: '',
+      email: '',
+      password: '',
+      confirmPassword: ''
+    });
+    // Reset field errors
+    setFieldErrors({
+      firstName: false,
+      lastName: false,
+      phoneNumber: false,
+      email: false,
+      password: false,
+      confirmPassword: false
+    });
+  }, [searchParams]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -180,6 +243,14 @@ export default function Login() {
     }
 
     setFormData(newFormData);
+
+    // Clear error for the field being edited
+    if (fieldErrors[name]) {
+      setFieldErrors({
+        ...fieldErrors,
+        [name]: false
+      });
+    }
 
     // Check if all required fields are filled for signup
     if (!isLogin) {
@@ -420,6 +491,16 @@ export default function Login() {
     return phoneLength >= lengths.min && phoneLength <= lengths.max;
   };
 
+  // Function to validate if email domain is in the allowed list
+  const isValidEmailDomain = (email) => {
+    if (!email || !email.includes('@')) return false;
+
+    const domain = email.split('@')[1]?.toLowerCase();
+    if (!domain) return false;
+
+    return VALID_EMAIL_DOMAINS.includes(domain);
+  };
+
   const validateEmail = (email) => {
     // More comprehensive email validation
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
@@ -438,7 +519,11 @@ export default function Login() {
     if (localPart.length > 64) return false; // Max local part length
     if (domain.length > 253) return false; // Max domain length
 
-    return emailRegex.test(email);
+    // Check basic email format
+    if (!emailRegex.test(email)) return false;
+
+    // Check if domain is in the allowed list
+    return isValidEmailDomain(email);
   };
 
   const validatePassword = (password) => {
@@ -449,12 +534,83 @@ export default function Login() {
   const handleSendOtp = async () => {
     // For signup, validate form and show OTP input
     if (!isLogin) {
-      // Validate all required fields
-      if (!formData.firstName || !formData.lastName || !formData.phoneNumber) {
+      // Check each field individually and show specific error
+      if (!formData.firstName) {
+        setFieldErrors({
+          firstName: true,
+          lastName: false,
+          phoneNumber: false,
+          email: false,
+          password: false,
+          confirmPassword: false
+        });
         Swal.fire({
-          title: 'Error!',
-          text: 'Please fill all required fields',
-          icon: 'error',
+          title: 'First Name Missing!',
+          text: 'Please enter your First Name',
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#8b5cf6',
+          background: '#ffffff',
+          color: '#000000'
+        });
+        return;
+      }
+
+      if (!formData.lastName) {
+        setFieldErrors({
+          firstName: false,
+          lastName: true,
+          phoneNumber: false,
+          email: false,
+          password: false,
+          confirmPassword: false
+        });
+        Swal.fire({
+          title: 'Last Name Missing!',
+          text: 'Please enter your Last Name',
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#8b5cf6',
+          background: '#ffffff',
+          color: '#000000'
+        });
+        return;
+      }
+
+      if (!formData.email) {
+        setFieldErrors({
+          firstName: false,
+          lastName: false,
+          phoneNumber: false,
+          email: true,
+          password: false,
+          confirmPassword: false
+        });
+        Swal.fire({
+          title: 'Email Missing!',
+          text: 'Please enter your Email address',
+          icon: 'warning',
+          confirmButtonText: 'OK',
+          confirmButtonColor: '#8b5cf6',
+          background: '#ffffff',
+          color: '#000000'
+        });
+        return;
+      }
+
+      if (!formData.phoneNumber) {
+        setFieldErrors({
+          firstName: false,
+          lastName: false,
+          phoneNumber: true,
+          email: false,
+          password: false,
+          confirmPassword: false
+        });
+        Swal.fire({
+          title: 'Phone Number Missing!',
+          text: 'Please enter your WhatsApp Phone Number',
+          icon: 'warning',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
           background: '#ffffff',
@@ -513,7 +669,7 @@ export default function Login() {
               <p style="margin: 5px 0; font-size: 14px;"><strong>Email:</strong> ${formData.email}</p>
               <p style="margin: 5px 0; font-size: 14px;"><strong>WhatsApp:</strong> ${fullPhoneNumber}</p>
             </div>
-            <p style="font-size: 14px; color: #6b7280;">OTP will be sent to your WhatsApp number</p>
+            <p style="font-size: 14px; color: #6b7280;">OTP will be sent to your WhatsApp number and Email</p>
           </div>
         `,
         icon: 'question',
@@ -556,7 +712,7 @@ export default function Login() {
 
                 Swal.fire({
                   title: 'OTP Sent!',
-                  text: `Please enter the OTP sent to your WhatsApp number ${selectedCountry.dial_code}${formData.phoneNumber} and email ${formData.email}`,
+                  text: `Please enter the OTP sent to your WhatsApp number ${selectedCountry.dial_code}${formData.phoneNumber} and Email ${formData.email}`,
                   icon: 'success',
                   confirmButtonText: 'OK',
                   confirmButtonColor: '#8b5cf6',
@@ -640,7 +796,7 @@ export default function Login() {
       if (formData.email && !hasValidEmail) {
         Swal.fire({
           title: 'Invalid Email!',
-          text: 'Please enter a valid email address.',
+          text: 'Please enter a valid Email address.',
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
@@ -932,7 +1088,11 @@ export default function Login() {
 
 
   const handleResendOtp = async () => {
-    // Remove timer check - allow resend anytime
+    // Check if timer is still running
+    if (timer > 0) {
+      return;
+    }
+
     if (isLogin) {
       // For login, call fetchOTP API
       handleSendOtpForLogin();
@@ -959,7 +1119,7 @@ export default function Login() {
 
           Swal.fire({
             title: 'OTP Resent!',
-            text: `A new OTP has been sent to your WhatsApp number ${selectedCountry.dial_code}${formData.phoneNumber} and email ${formData.email}`,
+            text: `A new OTP has been sent to your WhatsApp number ${selectedCountry.dial_code}${formData.phoneNumber} and Email ${formData.email}`,
             icon: 'success',
             confirmButtonText: 'OK',
             confirmButtonColor: '#8b5cf6',
@@ -994,7 +1154,7 @@ export default function Login() {
       if (!formData.phoneNumber && !formData.email) {
         Swal.fire({
           title: 'Input Required!',
-          text: 'Please enter your phone number or email to proceed with login.',
+          text: 'Please enter your phone number or Email to proceed with login.',
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
@@ -1039,7 +1199,7 @@ export default function Login() {
       if (formData.email && !hasValidEmail) {
         Swal.fire({
           title: 'Invalid Email!',
-          text: 'Please enter a valid email address.',
+          text: 'Please enter a valid Email address.',
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
@@ -1145,20 +1305,23 @@ export default function Login() {
 
   const handleContactEmailBlur = () => {
     if (contactForm.userEmail && contactForm.userEmail.length > 0 && !validateEmail(contactForm.userEmail)) {
-      let errorMessage = 'Please enter a valid email address';
+      let errorMessage = 'Please enter a valid Email address';
 
       if (!contactForm.userEmail.includes('@')) {
         errorMessage = 'Email address must contain @ symbol';
       } else if (!contactForm.userEmail.includes('.')) {
         errorMessage = 'Email must include a domain extension (e.g., .com, .org)';
       } else if (contactForm.userEmail.endsWith('@')) {
-        errorMessage = 'Please complete the email address after @';
+        errorMessage = 'Please complete the Email address after @';
       } else if (contactForm.userEmail.endsWith('.')) {
         errorMessage = 'Please complete the domain extension';
       } else if (contactForm.userEmail.includes('..')) {
         errorMessage = 'Email cannot contain consecutive dots';
       } else if (contactForm.userEmail.includes('@.')) {
         errorMessage = 'Email cannot have a dot immediately after @';
+      } else if (!isValidEmailDomain(contactForm.userEmail)) {
+        const domain = contactForm.userEmail.split('@')[1];
+        errorMessage = `Invalid Email domain "${domain}". Please use a valid Email provider like Gmail, Yahoo, Outlook, etc.`;
       }
 
       Swal.fire({
@@ -1175,20 +1338,23 @@ export default function Login() {
 
   const handleContactAlternateEmailBlur = () => {
     if (contactForm.alternateEmail && contactForm.alternateEmail.length > 0 && !validateEmail(contactForm.alternateEmail)) {
-      let errorMessage = 'Please enter a valid alternate email address';
+      let errorMessage = 'Please enter a valid alternate Email address';
 
       if (!contactForm.alternateEmail.includes('@')) {
-        errorMessage = 'Alternate email must contain @ symbol';
+        errorMessage = 'Alternate Email must contain @ symbol';
       } else if (!contactForm.alternateEmail.includes('.')) {
-        errorMessage = 'Alternate email must include a domain extension (e.g., .com, .org)';
+        errorMessage = 'Alternate Email must include a domain extension (e.g., .com, .org)';
       } else if (contactForm.alternateEmail.endsWith('@')) {
         errorMessage = 'Please complete the alternate email after @';
       } else if (contactForm.alternateEmail.endsWith('.')) {
         errorMessage = 'Please complete the domain extension';
       } else if (contactForm.alternateEmail.includes('..')) {
-        errorMessage = 'Alternate email cannot contain consecutive dots';
+        errorMessage = 'Alternate Email cannot contain consecutive dots';
       } else if (contactForm.alternateEmail.includes('@.')) {
-        errorMessage = 'Alternate email cannot have a dot immediately after @';
+        errorMessage = 'Alternate Email cannot have a dot immediately after @';
+      } else if (!isValidEmailDomain(contactForm.alternateEmail)) {
+        const domain = contactForm.alternateEmail.split('@')[1];
+        errorMessage = `Invalid Email domain "${domain}". Please use a valid Email provider like Gmail, Yahoo, Outlook, etc.`;
       }
 
       Swal.fire({
@@ -1305,7 +1471,7 @@ export default function Login() {
     if (contactForm.alternateEmail && !validateEmail(contactForm.alternateEmail)) {
       Swal.fire({
         title: 'Invalid Alternate Email!',
-        text: 'Please enter a valid alternate email address',
+        text: 'Please enter a valid alternate Email address',
         icon: 'error',
         confirmButtonText: 'OK',
         confirmButtonColor: '#8b5cf6',
@@ -1401,16 +1567,19 @@ export default function Login() {
 
       // Validate email for signup only if provided
       if (formData.email && !validateEmail(formData.email)) {
-        let errorMessage = 'Please enter a valid email address';
+        let errorMessage = 'Please enter a valid Email address';
 
         if (!formData.email.includes('@')) {
           errorMessage = 'Email address must contain @ symbol';
         } else if (!formData.email.includes('.')) {
           errorMessage = 'Email must include a domain extension (e.g., .com, .org)';
         } else if (formData.email.endsWith('@')) {
-          errorMessage = 'Please complete the email address after @';
+          errorMessage = 'Please complete the Email address after @';
         } else if (formData.email.endsWith('.')) {
           errorMessage = 'Please complete the domain extension';
+        } else if (!isValidEmailDomain(formData.email)) {
+          const domain = formData.email.split('@')[1];
+          errorMessage = `Invalid Email domain "${domain}". Please use a valid Email provider like Gmail, Yahoo, Outlook, etc.`;
         }
 
         Swal.fire({
@@ -1489,12 +1658,12 @@ export default function Login() {
         transition={{ duration: 0.5 }}
       >
         <h2 className="text-3xl font-bold text-center mb-6 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-          {isLogin ? 'Login' : 'Sign Up'}
+          {isLogin ? 'Sign In' : 'Sign Up'}
         </h2>
 
         {isLogin && (
           <div className="text-center text-black text-sm mb-6 flex items-center justify-center gap-2">
-            <span>Login by</span>
+            <span>Sign In by</span>
             <svg className="w-4 h-4 fill-current text-purple-600" viewBox="0 0 24 24">
               <path d="M20,8L12,13L4,8V6L12,11L20,6M20,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V6C22,4.89 21.1,4 20,4Z" />
             </svg>
@@ -1533,9 +1702,12 @@ export default function Login() {
                   value={formData.firstName}
                   onChange={handleInputChange}
                   readOnly={isOtpSent}
-                  className={`w-full px-4 py-3 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full px-4 py-3 bg-white border ${fieldErrors.firstName ? 'border-red-500' : 'border-purple-300'} rounded-lg focus:outline-none ${fieldErrors.firstName ? 'focus:border-red-500 focus:ring-red-200' : 'focus:border-purple-500 focus:ring-purple-200'} focus:ring-2 transition text-black placeholder-gray-500 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
                   required
                 />
+                {fieldErrors.firstName && (
+                  <p className="text-red-500 text-sm mt-1">Required</p>
+                )}
               </div>
               <div>
                 <input
@@ -1545,9 +1717,12 @@ export default function Login() {
                   value={formData.lastName}
                   onChange={handleInputChange}
                   readOnly={isOtpSent}
-                  className={`w-full px-4 py-3 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full px-4 py-3 bg-white border ${fieldErrors.lastName ? 'border-red-500' : 'border-purple-300'} rounded-lg focus:outline-none ${fieldErrors.lastName ? 'focus:border-red-500 focus:ring-red-200' : 'focus:border-purple-500 focus:ring-purple-200'} focus:ring-2 transition text-black placeholder-gray-500 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
                   required
                 />
+                {fieldErrors.lastName && (
+                  <p className="text-red-500 text-sm mt-1">Required</p>
+                )}
               </div>
               <div className="relative">
                 <input
@@ -1558,12 +1733,15 @@ export default function Login() {
                   onChange={handleInputChange}
                   onBlur={handleEmailBlur}
                   readOnly={isOtpSent}
-                  className={`w-full px-4 py-3 pl-12 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full px-4 py-3 pl-12 bg-white border ${fieldErrors.email ? 'border-red-500' : 'border-purple-300'} rounded-lg focus:outline-none ${fieldErrors.email ? 'focus:border-red-500 focus:ring-red-200' : 'focus:border-purple-500 focus:ring-purple-200'} focus:ring-2 transition text-black placeholder-gray-500 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
                   required
                 />
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-purple-600">
                   <FaEnvelope size={20} />
                 </div>
+                {fieldErrors.email && (
+                  <p className="text-red-500 text-sm mt-1 ml-12">Required</p>
+                )}
               </div>
               <div className="space-y-2">
                 <div className="flex gap-2">
@@ -1636,7 +1814,7 @@ export default function Login() {
                       onChange={handleInputChange}
                       onBlur={handlePhoneBlur}
                       readOnly={isOtpSent}
-                      className={`w-full px-4 py-3 pr-12 bg-white border border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition text-black placeholder-gray-500 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`w-full px-4 py-3 pr-12 bg-white border ${fieldErrors.phoneNumber ? 'border-red-500' : 'border-purple-300'} rounded-lg focus:outline-none ${fieldErrors.phoneNumber ? 'focus:border-red-500 focus:ring-red-200' : 'focus:border-purple-500 focus:ring-purple-200'} focus:ring-2 transition text-black placeholder-gray-500 ${isOtpSent ? 'opacity-50 cursor-not-allowed' : ''}`}
                       required
                     />
                     <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600">
@@ -1644,6 +1822,9 @@ export default function Login() {
                     </div>
                   </div>
                 </div>
+                {fieldErrors.phoneNumber && (
+                  <p className="text-red-500 text-sm mt-1">Required</p>
+                )}
               </div>
             </>
           )}
@@ -1737,7 +1918,7 @@ export default function Login() {
               </div>
 
               {isLogin && (
-                <div className="text-center text-xl text-white my-2">
+                <div className="text-center text-xl text-purple-500 font-bold my-2">
                   <span>OR</span>
                 </div>
               )}
@@ -1786,13 +1967,19 @@ export default function Login() {
                 required
               />
               <div className="text-center">
-                <button
-                  type="button"
-                  onClick={handleResendOtp}
-                  className="text-sm text-purple-600 hover:text-purple-700 transition"
-                >
-                  Resend OTP
-                </button>
+                {timer > 0 ? (
+                  <p className="text-sm text-gray-600">
+                    Resend OTP in <span className="font-semibold text-purple-600">{timer}</span> seconds
+                  </p>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResendOtp}
+                    className="text-sm text-purple-600 hover:text-purple-700 font-semibold transition underline"
+                  >
+                    Resend OTP
+                  </button>
+                )}
               </div>
             </div>
           )}
@@ -1836,14 +2023,16 @@ export default function Login() {
             <button
               type="button"
               onClick={() => {
-                setIsLogin(!isLogin);
-                setIsOtpSent(false);
-                setOtp("");
-                setTimer(0);
+                // Use router to navigate and trigger URL change
+                if (isLogin) {
+                  router.push('/login?signup=true');
+                } else {
+                  router.push('/login');
+                }
               }}
               className="text-purple-600 hover:text-purple-700 transition font-semibold"
             >
-              {isLogin ? 'Sign Up' : 'Login'}
+              {isLogin ? 'Sign Up' : 'Sign In'}
             </button>
           </p>
 

@@ -1,8 +1,8 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaChartLine, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaSearch } from "react-icons/fa";
 import { useTimezone } from "../contexts/TimezoneContext";
 
@@ -16,6 +16,45 @@ const navLinks = [
   // { name: "Blog", href: "/blog", icon: FaBlog },
   // { name: "About", href: "/about", icon: FaInfoCircle },
 ];
+
+function AuthButtons() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  return (
+    <>
+      <button
+        onClick={() => {
+          const isSignupPage = searchParams.get('signup') === 'true';
+          if (pathname === '/login') {
+            // If on login page, toggle between login and signup
+            if (isSignupPage) {
+              router.push('/login');
+            } else {
+              router.push('/login?signup=true');
+            }
+          } else {
+            // If not on login page, go to login
+            router.push('/login');
+          }
+        }}
+        className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition font-medium"
+      >
+        <FaGlobe className="text-base" />
+        <span className="text-sm">
+          {pathname === '/login' && searchParams.get('signup') === 'true' ? 'Sign In' : 'Sign Up'}
+        </span>
+      </button>
+      <Link
+        href="/login?signup=true"
+        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 transition"
+      >
+        Start Free Trial
+      </Link>
+    </>
+  );
+}
 
 export default function ClientHeader() {
   const pathname = usePathname();
@@ -101,7 +140,7 @@ export default function ClientHeader() {
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo */}
         <Link href="/home" className="flex items-center gap-2">
-          <Image src="/images/mycryptomonitor.jpg" alt="Logo" width={80} height={80} className="logo-img" />
+          <Image src="/images/mycryptomonitor.jpg" alt="Logo" width={80} height={90} className="logo-img" />
         </Link>
 
         {/* Navigation */}
@@ -208,21 +247,25 @@ export default function ClientHeader() {
               )}
             </div>
           ) : (
-            <>
-              <Link
-                href="/login"
-                className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition font-medium"
-              >
-                <FaGlobe className="text-base" />
-                <span className="text-sm">Sign In</span>
-              </Link>
-              <Link
-                href="/login?signup=true"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 transition"
-              >
-                Start Free Trial
-              </Link>
-            </>
+            <Suspense fallback={
+              <>
+                <Link
+                  href="/login"
+                  className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition font-medium"
+                >
+                  <FaGlobe className="text-base" />
+                  <span className="text-sm">Sign Up</span>
+                </Link>
+                <Link
+                  href="/login?signup=true"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2.5 rounded-lg font-semibold text-sm shadow-md hover:shadow-lg hover:scale-105 transition"
+                >
+                  Start Free Trial
+                </Link>
+              </>
+            }>
+              <AuthButtons />
+            </Suspense>
           )}
         </div>
       </div>

@@ -124,17 +124,15 @@ export default function HomePage() {
               Backtested. Verified. Trusted.
             </span>
           </h1>
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6">
-            World&apos;s only trust engine to navigate crypto investors through the noise of social media.
-          </h2>
-          <div className="text-base md:text-lg text-gray-700 max-w-4xl mx-auto mb-8 space-y-4">
-            <p>
-              <strong>Social Media moves markets</strong>, we create accountability by turning social buzz into measurable trust.
+          <h2 className="text-2xl md:text-3xl lg:text-2xl font-bold text-gray-900 mb-6 md:whitespace-nowrap">World&apos;s only trust engine to navigate crypto investors through the noise of social media</h2>
+          <div className="text-base md:text-lg text-gray-700 mx-auto mb-8 space-y-4">
+            <p className="md:whitespace-nowrap">
+              <strong>Social Media moves markets</strong>, we create accountability by turning social buzz into measurable trust
             </p>
-            <p>
-              We back test every recommendation to give a real trust rating, ROI & win rate of individual social media influencers.
+            <p className="md:whitespace-nowrap">
+              We back test every recommendation to give a real trust rating, ROI & win rate of individual social media influencers
             </p>
-            <p className="text-base md:text-lg text-gray-700 max-w-4xl mx-auto mb-8 space-y-4">
+            <p className="md:whitespace-nowrap">
               With Transparent methodology and audit trail
             </p>
           </div>
@@ -165,7 +163,7 @@ export default function HomePage() {
                 <circle cx="9" cy="7" r="4"></circle>
               </svg>
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">100+</div>
+            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">225+</div>
             <div className="text-sm text-gray-600 text-center font-semibold">Total Influencers</div>
           </div>
 
@@ -175,7 +173,7 @@ export default function HomePage() {
                 <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
               </svg>
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">197,993+</div>
+            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">200,000+</div>
             <div className="text-sm text-gray-600 text-center font-semibold">Calls Tracked & Tested</div>
             <div className="text-sm text-gray-600 text-center font-semibold">(3+ years)</div>
           </div>
