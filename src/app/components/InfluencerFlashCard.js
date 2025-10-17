@@ -3,6 +3,7 @@
 import { FaInfoCircle, FaStar } from "react-icons/fa";
 import { useState } from "react";
 import Image from "next/image";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LabelList } from "recharts";
 
 export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn, onViewFull }) {
   const [showTooltip, setShowTooltip] = useState(null);
@@ -103,8 +104,8 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
     // 1. data.moonshotData.yearly (old structure)
     // 2. data["score.moonshots.yearly"] (new API structure)
     const moonshotData = channelData?.moonshotData?.yearly ||
-                        channelData?.["score.moonshots.yearly"] ||
-                        {};
+      channelData?.["score.moonshots.yearly"] ||
+      {};
 
     if (moonshotData && Object.keys(moonshotData).length > 0) {
       Object.entries(moonshotData).forEach(([year, yearData]) => {
@@ -208,85 +209,134 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
         {/* Total Calls */}
         <div className="bg-gray-50 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
-            <h4 className="text-sm font-bold text-gray-900">Total Calls</h4>
+            <h4 className="text-sm font-bold text-gray-900">Total Recommendations</h4>
             <button
               className="relative"
-              onMouseEnter={() => setShowTooltip('totalCalls')}
+              onMouseEnter={() => setShowTooltip('totalRecommendations')}
               onMouseLeave={() => setShowTooltip(null)}
             >
               <FaInfoCircle className="text-gray-400 text-xs" />
-              {showTooltip === 'totalCalls' && (
+              {showTooltip === 'totalRecommendations' && (
                 <div className="absolute z-10 w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg -top-2 left-6">
-                  Total recommendations given by the influencer during the period
+                  Total bullish and bearish recommendations given by the influencer each year.
                 </div>
               )}
             </button>
           </div>
-          <div className="mt-3 bg-gray-50 rounded-lg p-3 border border-gray-200 overflow-x-auto">
+
+          {/* Chart Container */}
+          <div className="mt-3 bg-white rounded-lg p-3 border border-gray-200 overflow-x-auto">
             {data?.Yearly ? (
               (() => {
-                // Get yearly win rate data only
-                const yearlyData = {};
+                const currentYear = new Date().getFullYear().toString();
+                const overallData = data?.Yearly || {};
 
-                Object.entries(data.Yearly).forEach(([year, yearData]) => {
-                  const yearlyWinRate = yearData?.["180_days"]?.price_probablity_of_winning_percentage || 0;
-                  yearlyData[year] = yearlyWinRate;
-                });
+                const transformYearlyData = (yearlyData) => {
+                  if (!yearlyData) return [];
+                  return Object.keys(yearlyData)
+                    .map((year) => ({
+                      year,
+                      bullish: yearlyData[year]?.bullish_count || 0,
+                      bearish: yearlyData[year]?.bearish_count || 0,
+                    }))
+                    .sort((a, b) => b.year.localeCompare(a.year));
+                };
 
-                // Calculate max for scaling
-                const maxWinRate = Math.max(...Object.values(yearlyData), 1);
+                const chartData = transformYearlyData(overallData).map((item) => ({
+                  year: item.year === currentYear ? item.year + '*' : item.year,
+                  bullish: item.bullish,
+                  bearish: item.bearish,
+                }));
+
+                if (chartData.length === 0) {
+                  return (
+                    <div className="h-24 flex items-center justify-center text-gray-400 text-xs">
+                      No recommendation data available
+                    </div>
+                  );
+                }
 
                 return (
-                  <div className="flex items-end gap-6 h-24 min-w-max overflow-x-auto justify-center">
-                    {Object.entries(yearlyData).sort(([a], [b]) => b.localeCompare(a)).map(([year, winRate]) => {
-                      let height = 0;
-                      if (maxWinRate > 0 && winRate > 0) {
-                        height = (winRate / maxWinRate) * 100;
-                        if (height < 15) height = 15;
-                      }
+                  <div className="flex flex-col items-center">
+                    <ResponsiveContainer width="100%" height={180}>
+                      <BarChart
+                        data={chartData}
+                        margin={{ top: 25, right: 5, left: 0, bottom: 25 }}
+                      >
+                        <XAxis dataKey="year" tick={{ fontSize: 10 }} stroke="#666" />
+                        <YAxis hide />
+                        <Bar
+                          dataKey="bullish"
+                          fill="#1e3a8a"
+                          radius={[4, 4, 0, 0]}
+                          barSize={15}
+                        >
+                          <LabelList
+                            dataKey="bullish"
+                            position="top"
+                            style={{ fontSize: '10px', fill: '#333' }}
+                          />
+                        </Bar>
+                        <Bar
+                          dataKey="bearish"
+                          fill="#dbeafe"
+                          radius={[4, 4, 0, 0]}
+                          barSize={15}
+                        >
+                          <LabelList
+                            dataKey="bearish"
+                            position="top"
+                            style={{ fontSize: '10px', fill: '#333' }}
+                          />
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
 
-                      return (
-                        <div key={year} className="flex flex-col items-center min-w-[50px]">
-                          <div className="text-[10px] font-bold mb-1 whitespace-nowrap text-green-700">
-                            {winRate.toFixed(0)}%
-                          </div>
-                          <div className="w-full flex items-end" style={{ height: '60px' }}>
-                            <div
-                              className="w-full bg-gradient-to-t from-green-700 to-green-600 rounded-t-sm cursor-pointer hover:from-green-800 hover:to-green-700 transition-colors"
-                              style={{ height: height > 0 ? `${height}%` : '0px', minHeight: winRate > 0 ? '5px' : '0px' }}
-                              title={`${year}: ${winRate.toFixed(0)}%`}
-                            ></div>
-                          </div>
-                          <div className="text-[10px] text-gray-900 font-bold mt-1 text-center whitespace-nowrap">
-                            {year}
-                          </div>
-                        </div>
-                      );
-                    })}
+                    {/* Legend */}
+                    <div className="flex items-center justify-center gap-4 mt-2">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded" style={{ backgroundColor: "#1e3a8a" }}></div>
+                        <span className="text-[10px] text-gray-700">Bullish</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 rounded" style={{ backgroundColor: "#dbeafe" }}></div>
+                        <span className="text-[10px] text-gray-700">Bearish</span>
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-gray-500 text-right w-full mt-1">
+                      Current year {currentYear}*
+                    </p>
                   </div>
                 );
               })()
             ) : (
-              <div className="h-24 flex items-center justify-center text-gray-400 text-xs">No data available</div>
+              <div className="h-24 flex items-center justify-center text-gray-400 text-xs">
+                No data available
+              </div>
             )}
           </div>
+
+          {/* View Dashboard Button */}
           <button
             onClick={(e) => {
               e.stopPropagation();
               const userData = localStorage.getItem('UserData');
               if (userData) {
-                window.location.href = platformType === "youtube"
-                  ? `/influencers/${channelId}`
-                  : `/telegram-influencer/${channelId}`;
+                window.location.href =
+                  platformType === 'youtube'
+                    ? `/influencers/${channelId}`
+                    : `/telegram-influencer/${channelId}`;
               } else {
                 window.location.href = '/login?signup=true';
               }
             }}
             className="text-blue-600 text-xs font-semibold mt-2 hover:text-blue-700"
           >
-            View Total Calls Dashboard →
+            View Total Recommendations Dashboard →
           </button>
         </div>
+
 
         {/* ROI % - Win Rate Percentage */}
         <div className="bg-gray-50 rounded-lg p-3">
@@ -300,7 +350,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
               <FaInfoCircle className="text-gray-400 text-xs" />
               {showTooltip === 'roi' && (
                 <div className="absolute z-10 w-72 p-2 bg-gray-900 text-white text-xs rounded shadow-lg -top-2 left-6">
-                  % of calls that generated positive returns (that is, where the price of the coin moved in the direction of the influencer’s sentiment), for a 180 day holding period                </div>
+                  % of calls that generated positive returns (that is, where the price of the coin moved in the direction of the influencer&apos;s sentiment), for a 180 day holding period                </div>
               )}
             </button>
           </div>
@@ -500,7 +550,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
         {/* Moonshot Probability */}
         <div className="bg-gray-50 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
-            <h4 className="text-sm font-bold text-gray-900">Moonshot %</h4>
+            <h4 className="text-sm font-bold text-gray-900">Moonshots</h4>
             <button
               className="relative"
               onMouseEnter={() => setShowTooltip('moonshot')}
@@ -532,6 +582,12 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                       <div className="text-xs text-gray-600 mb-1">{year}</div>
                       <div className="relative w-16 h-16">
                         <svg className="w-16 h-16 transform -rotate-90">
+                          <defs>
+                            <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor="#2563eb" />
+                              <stop offset="100%" stopColor="#60a5fa" />
+                            </linearGradient>
+                          </defs>
                           <circle
                             cx="32"
                             cy="32"
@@ -544,10 +600,11 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                             cx="32"
                             cy="32"
                             r="28"
-                            stroke="#16a34a"
+                            stroke="url(#blueGradient)"
                             strokeWidth="4"
                             fill="none"
                             strokeDasharray={strokeDasharray}
+                            className="transition-all duration-300 hover:opacity-80 cursor-pointer"
                           />
                         </svg>
                         <div className="absolute inset-0 flex items-center justify-center">
@@ -573,7 +630,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                 window.location.href = '/login?signup=true';
               }
             }}
-            className="text-blue-600 text-xs font-semibold mt-2 hover:text-blue-700"
+            className="text-blue-600 text-xs font-semibold mt-2 hover:text-blue-700 transition-colors"
           >
             View Moonshot Dashboard →
           </button>

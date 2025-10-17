@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { FaEye } from "react-icons/fa";
 import moment from "moment-timezone";
 
 export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTime = false }) {
@@ -12,7 +11,6 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     const [nextUpdate, setNextUpdate] = useState(null);
     const useLocalTime = propUseLocalTime;
 
-    // State to track expanded/collapsed state for each timeframe
     const [expandedTables, setExpandedTables] = useState({
         "6hrs": false,
         "24hrs": false,
@@ -20,27 +18,21 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         "30days": false
     });
 
-    // Fetch combined YouTube and Telegram data from API
     const fetchCombinedData = async () => {
         try {
             const response = await fetch(`/api/admin/strategyyoutubedata/ytandtg`);
-            //https://mcmapi.showmyui.com:3035/api/admin/youtubedata/ytandtg
             const data = await response.json();
             setCombinedData(data);
 
-            // Extract and set the last updated time from the API response
             if (data && data.resultsByTimeframe && data.resultsByTimeframe["6hrs"] && data.resultsByTimeframe["6hrs"].dateRange) {
-                // Parse the "to" date string directly as UTC
                 const toTimeStr = data.resultsByTimeframe["6hrs"].dateRange.to;
                 const [datePart, timePart] = toTimeStr.split(' ');
                 const [year, month, day] = datePart.split('-').map(Number);
                 const [hours, minutes, seconds] = timePart.split(':').map(Number);
 
-                // Create Date object using UTC values
                 const lastUpdatedTime = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
                 setLastUpdated(lastUpdatedTime);
 
-                // Calculate next update time by adding 6 hours in UTC
                 const nextUpdateTime = new Date(lastUpdatedTime);
                 nextUpdateTime.setUTCHours(nextUpdateTime.getUTCHours() + 6);
                 setNextUpdate(nextUpdateTime);
@@ -61,7 +53,6 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         fetchData();
     }, []);
 
-    // Reset expanded state when platform or coin type changes
     useEffect(() => {
         setExpandedTables({
             "6hrs": false,
@@ -71,25 +62,19 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         });
     }, [selectedPlatform, selectedCoinType]);
 
-    // Format date string to display string (for timeframe headers)
     const formatDateStringDisplay = (dateStr) => {
         if (!dateStr) return "N/A";
 
-        // Parse the date string and create moment object
         const date = moment(dateStr).utc();
         let momentDate;
         let locationDisplay = '';
 
         if (useLocalTime) {
-            // Use local time
             const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             momentDate = date.tz(userTimeZone);
-
-            // Extract city name only
             const cityName = userTimeZone.split('/').pop().replace(/_/g, ' ');
             locationDisplay = ` (${cityName})`;
         } else {
-            // Use UTC time
             momentDate = date.utc();
             locationDisplay = ' UTC';
         }
@@ -97,72 +82,6 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         return `${momentDate.format('ddd DD MMM hh:mm A')}${locationDisplay}`;
     };
 
-    // Format date to display string for header display (UTC or local time)
-    const formatDisplayDate = (date, showTimezone = true) => {
-        if (!date) return "N/A";
-
-        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-        let dayName, day, month, year, hours, minutes, displayHours, ampm, timezone;
-
-        if (useLocalTime) {
-            // Use local time
-            dayName = days[date.getDay()];
-            day = date.getDate();
-            month = months[date.getMonth()];
-            year = date.getFullYear();
-            hours = date.getHours();
-            minutes = date.getMinutes();
-            ampm = hours >= 12 ? 'PM' : 'AM';
-            displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-
-            // Get timezone abbreviation (e.g., IST, PST, EST)
-            const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-            if (userTimezone === 'Asia/Kolkata' || userTimezone === 'Asia/Calcutta') {
-                timezone = 'IST';
-            } else {
-                const formatter = new Intl.DateTimeFormat('en', {
-                    timeZoneName: 'short',
-                    timeZone: userTimezone
-                });
-                const parts = formatter.formatToParts(date);
-                let rawTimezone = parts.find(part => part.type === 'timeZoneName')?.value;
-
-                // Replace GMT+XX:XX format with proper abbreviations
-                if (rawTimezone && rawTimezone.includes('GMT+05:30')) {
-                    timezone = 'IST';
-                } else {
-                    timezone = rawTimezone || userTimezone;
-                }
-            }
-        } else {
-            // Use UTC time
-            dayName = days[date.getUTCDay()];
-            day = date.getUTCDate();
-            month = months[date.getUTCMonth()];
-            year = date.getUTCFullYear();
-            hours = date.getUTCHours();
-            minutes = date.getUTCMinutes();
-            ampm = hours >= 12 ? 'PM' : 'AM';
-            displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
-            timezone = 'UTC';
-        }
-
-        const formattedHours = displayHours.toString().padStart(2, '0');
-        const formattedMinutes = minutes.toString().padStart(2, '0');
-        const timezoneDisplay = showTimezone ? ` ${timezone}` : '';
-
-        return `${dayName} ${day} ${month} ${year} ${formattedHours}:${formattedMinutes} ${ampm}${timezoneDisplay}`;
-    };
-
-    // Legacy function for backward compatibility
-    const formatUTCDate = (date) => {
-        return formatDisplayDate(date, true);
-    };
-
-    // Get data for specific timeframe and coin type
     const getTimeframeData = (timeframe, coinType) => {
         if (!combinedData || !combinedData.resultsByTimeframe || !combinedData.resultsByTimeframe[timeframe]) {
             return [];
@@ -171,24 +90,20 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         const timeframeData = combinedData.resultsByTimeframe[timeframe];
         let coins = [];
 
-        // Get all coins data
         if (timeframeData.all_coins) {
             coins = [...timeframeData.all_coins];
         }
 
-        // If meme coins are available separately, add them
         if (timeframeData.mem_coins) {
             coins = [...coins, ...timeframeData.mem_coins];
         }
 
-        // Filter by coin type
         if (coinType === "meme_coins") {
             coins = coins.filter(coin => coin.mem_coin === true);
         } else {
             coins = coins.filter(coin => coin.mem_coin !== true);
         }
 
-        // Filter out coins with zero mentions for the selected platform
         if (selectedPlatform === "YouTube") {
             coins = coins.filter(coin => (coin.yt_total_mentions || 0) > 0);
         } else if (selectedPlatform === "Telegram") {
@@ -197,7 +112,6 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             coins = coins.filter(coin => (coin.total_mentions || 0) > 0);
         }
 
-        // Sort by total mentions in descending order
         coins.sort((a, b) => {
             const aMentions = selectedPlatform === "YouTube" ? (a.yt_total_mentions || 0) :
                 selectedPlatform === "Telegram" ? (a.tg_total_mentions || 0) :
@@ -208,10 +122,9 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             return bMentions - aMentions;
         });
 
-        return coins; // Return all coins
+        return coins;
     };
 
-    // Toggle expand/collapse for a specific timeframe
     const toggleExpanded = (timeframe) => {
         setExpandedTables(prev => ({
             ...prev,
@@ -219,56 +132,74 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         }));
     };
 
-    // Platform options
     const platformOptions = [
         { key: "Combined", label: "Combined" },
         { key: "YouTube", label: "YouTube" },
         { key: "Telegram", label: "Telegram" }
     ];
 
-    // Coin type options
     const coinTypeOptions = [
         { key: "top_coins", label: "All Coins" },
         { key: "meme_coins", label: "Meme Coins" }
     ];
 
-    // Get sentiment data based on selected platform
     const getSentimentData = (coin) => {
         if (selectedPlatform === "YouTube") {
             return {
                 bullish: coin.yt_bullish_percent || 0,
                 bearish: coin.yt_bearish_percent || 0,
-                mentions: coin.yt_total_mentions || 0
+                mentions: coin.yt_total_mentions || 0,
+                bullish_short_term: coin.yt_bullish_short_term_percent || 0,
+                bullish_long_term: coin.yt_bullish_long_term_percent || 0,
+                bearish_short_term: coin.yt_bearish_short_term_percent || 0,
+                bearish_long_term: coin.yt_bearish_long_term_percent || 0,
+                bullish_short_term_count: coin.yt_bullish_short_term || 0,
+                bullish_long_term_count: coin.yt_bullish_long_term || 0,
+                bearish_short_term_count: coin.yt_bearish_short_term || 0,
+                bearish_long_term_count: coin.yt_bearish_long_term || 0,
             };
         } else if (selectedPlatform === "Telegram") {
             return {
                 bullish: coin.tg_bullish_percent || 0,
                 bearish: coin.tg_bearish_percent || 0,
-                mentions: coin.tg_total_mentions || 0
+                mentions: coin.tg_total_mentions || 0,
+                bullish_short_term: coin.tg_bullish_short_term_percent || 0,
+                bullish_long_term: coin.tg_bullish_long_term_percent || 0,
+                bearish_short_term: coin.tg_bearish_short_term_percent || 0,
+                bearish_long_term: coin.tg_bearish_long_term_percent || 0,
+                bullish_short_term_count: coin.tg_bullish_short_term || 0,
+                bullish_long_term_count: coin.tg_bullish_long_term || 0,
+                bearish_short_term_count: coin.tg_bearish_short_term || 0,
+                bearish_long_term_count: coin.tg_bearish_long_term || 0,
             };
         } else {
             return {
                 bullish: coin.bullish_percent || 0,
                 bearish: coin.bearish_percent || 0,
-                mentions: coin.total_mentions || 0
+                mentions: coin.total_mentions || 0,
+                bullish_short_term: coin.yt_tg_bullish_short_term_percent || 0,
+                bullish_long_term: coin.yt_tg_bullish_long_term_percent || 0,
+                bearish_short_term: coin.yt_tg_bearish_short_term_percent || 0,
+                bearish_long_term: coin.yt_tg_bearish_long_term_percent || 0,
+                bullish_short_term_count: coin.yt_tg_bullish_short_term || 0,
+                bullish_long_term_count: coin.yt_tg_bullish_long_term || 0,
+                bearish_short_term_count: coin.yt_tg_bearish_short_term || 0,
+                bearish_long_term_count: coin.yt_tg_bearish_long_term || 0,
             };
         }
     };
 
-    // Render individual table
     const renderTable = (timeframe, title) => {
-        const allCoins = getTimeframeData(timeframe, selectedCoinType).slice(0, 10); // Limit to max 10 records
+        const allCoins = getTimeframeData(timeframe, selectedCoinType).slice(0, 10);
         const isExpanded = expandedTables[timeframe];
         const coins = isExpanded ? allCoins : allCoins.slice(0, 5);
         const hasMore = allCoins.length > 5;
 
-        // Get the from date for this timeframe
         const getFromDateForTimeframe = () => {
             if (combinedData && combinedData.resultsByTimeframe &&
                 combinedData.resultsByTimeframe[timeframe] &&
                 combinedData.resultsByTimeframe[timeframe].dateRange) {
-                const fromTimeStr = combinedData.resultsByTimeframe[timeframe].dateRange.from;
-                // Use the formatDateStringDisplay function to respect useLocalTime setting
+                const fromTimeStr = combinedData.resultsByTimeframe[timeframe].dateRange.to;
                 return formatDateStringDisplay(fromTimeStr);
             }
             return "N/A";
@@ -276,29 +207,19 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
         return (
             <div className="bg-white rounded-2xl overflow-hidden shadow-2xl p-6">
-                <div className="text-center mb-4 relative">
+                <div className="text-center mb-4">
                     <h3 className="text-md font-bold text-black mb-2">{title}</h3>
                     <div className="text-xs text-black">
                         {getFromDateForTimeframe()}
                     </div>
-                    {/* Expand/Collapse Button */}
-                    {hasMore && (
-                        <button
-                            onClick={() => toggleExpanded(timeframe)}
-                            className="absolute top-0 right-0 text-lg text-blue-700 hover:text-blue-800 cursor-pointer font-bold"
-                            title={isExpanded ? "Show less" : "Show more"}
-                        >
-                            {isExpanded ? "−" : "+"}
-                        </button>
-                    )}
                 </div>
 
                 <div className="overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
                     <table className="w-full table-fixed">
                         <thead>
                             <tr className="border-b border-gray-700">
-                                <th className="text-left py-2 px-2 text-black font-semibold text-md w-[45%]">Coin</th>
-                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-[55%]">Sentiment</th>
+                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-[45%]">Coin</th>
+                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-[55%]">Outlook</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -309,49 +230,84 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                             ) : (
                                 coins.map((coin, index) => {
                                     const sentimentData = getSentimentData(coin);
-                                    const isBullish = sentimentData.bullish >= sentimentData.bearish;
-                                    const dominantPercentage = isBullish ? sentimentData.bullish : sentimentData.bearish;
 
-                                    // Calculate ball position: 0% bearish = right (100px), 100% bearish = left (0px)
-                                    // If bullish >= bearish, ball moves towards right (green)
-                                    // If bearish > bullish, ball moves towards left (red)
-                                    const ballPosition = isBullish ? sentimentData.bullish : (100 - sentimentData.bearish);
+                                    const shortTermBullish = sentimentData.bullish_short_term;
+                                    const shortTermBearish = sentimentData.bearish_short_term;
+                                    const shortTermPosts = sentimentData.bullish_short_term_count + sentimentData.bearish_short_term_count;
+
+                                    const longTermBullish = sentimentData.bullish_long_term;
+                                    const longTermBearish = sentimentData.bearish_long_term;
+                                    const longTermPosts = sentimentData.bullish_long_term_count + sentimentData.bearish_long_term_count;
+
+                                    const shortTermBallPosition = shortTermBullish >= shortTermBearish ? shortTermBullish : (100 - shortTermBearish);
+                                    const longTermBallPosition = longTermBullish >= longTermBearish ? longTermBullish : (100 - longTermBearish);
 
                                     return (
                                         <tr key={index} className="border-b border-gray-800 hover:bg-gradient-to-br hover:from-purple-900/20 hover:to-blue-900/20 transition-all duration-300">
                                             <td className="py-3 px-2 w-[45%]">
-                                                <div className="space-y-1">
-                                                    <div className="text-sm font-bold text-black truncate">
+                                                <div className="flex flex-col items-center text-center space-y-1">
+                                                    <img
+                                                        src={coin.image_small || coin.image_thumb}
+                                                        alt={coin.symbol}
+                                                        className="w-12 h-12 rounded-full mb-1"
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=48`;
+                                                        }}
+                                                    />
+                                                    <div className="text-sm text-black font-bold">
                                                         {coin.symbol?.toUpperCase()}
                                                     </div>
-                                                    <div className="text-xs text-black truncate">
+                                                    <div className="text-xs text-black">
                                                         {coin.coin_name}
                                                     </div>
-                                                    <div className="text-xs text-black whitespace-nowrap">
+                                                    <div className="text-xs text-black font-medium">
                                                         {sentimentData.mentions} Posts
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="py-3 px-2 text-center w-[55%]">
-                                                <div className="win-loss-container">
-                                                    {/* Segmented Bar */}
-                                                    <div className="segmented-bar-container">
-                                                        <div className="segmented-bar-background">
-                                                            <div className="segment segment-red" />
-                                                            <div className="segment segment-yellow" />
-                                                            <div className="segment segment-green" />
+                                            <td className="py-3 px-2 w-[55%]">
+                                                <div className="space-y-3">
+                                                    {/* Short Term */}
+                                                    <div>
+                                                        <div className="text-xs text-black font-medium mb-2 text-center">Short Term {shortTermPosts} Posts</div>
+                                                        <div className="win-loss-container">
+                                                            <div className="segmented-bar-container">
+                                                                <div className="segmented-bar-background">
+                                                                    <div className="segment segment-red" />
+                                                                    <div className="segment segment-yellow" />
+                                                                    <div className="segment segment-green" />
+                                                                </div>
+                                                                <div
+                                                                    className="percentage-ball"
+                                                                    style={{ left: `${(shortTermBallPosition / 100) * 100}%` }}
+                                                                />
+                                                            </div>
+                                                            <div className={`font-semibold text-sm ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                                {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
+                                                            </div>
                                                         </div>
-
-                                                        {/* Ball */}
-                                                        <div
-                                                            className="percentage-ball"
-                                                            style={{ left: `${(ballPosition / 100) * 100}%` }}
-                                                        />
                                                     </div>
 
-                                                    {/* Value Text */}
-                                                    <div className={`font-semibold text-sm ${isBullish ? 'text-green-700' : 'text-red-700'}`}>
-                                                        {dominantPercentage.toFixed(0)}% {isBullish ? 'Bullish' : 'Bearish'}
+                                                    {/* Long Term */}
+                                                    <div>
+                                                        <div className="text-xs text-black font-medium mb-2 text-center">Long Term {longTermPosts} Posts</div>
+                                                        <div className="win-loss-container">
+                                                            <div className="segmented-bar-container">
+                                                                <div className="segmented-bar-background">
+                                                                    <div className="segment segment-red" />
+                                                                    <div className="segment segment-yellow" />
+                                                                    <div className="segment segment-green" />
+                                                                </div>
+                                                                <div
+                                                                    className="percentage-ball"
+                                                                    style={{ left: `${(longTermBallPosition / 100) * 100}%` }}
+                                                                />
+                                                            </div>
+                                                            <div className={`font-semibold text-sm ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                                {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
@@ -362,6 +318,17 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                         </tbody>
                     </table>
                 </div>
+
+                {hasMore && (
+                    <div className="text-center mt-4">
+                        <button
+                            onClick={() => toggleExpanded(timeframe)}
+                            className="text-blue-700 hover:text-blue-800 font-semibold text-sm cursor-pointer underline"
+                        >
+                            {isExpanded ? "Show Less" : "Read More"}
+                        </button>
+                    </div>
+                )}
             </div>
         );
     };
@@ -431,13 +398,11 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                             <div className="flex items-center gap-2">
                                 {selectedPlatform === "Combined" ? (
                                     <>
-                                        {/* YouTube SVG Icon */}
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-900">
                                             <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                                         </svg>
                                         <span className="text-sm text-black font-medium">YouTube</span>
 
-                                        {/* Telegram SVG Icon */}
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-blue-900">
                                             <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
                                         </svg>
@@ -445,7 +410,6 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     </>
                                 ) : selectedPlatform === "YouTube" ? (
                                     <>
-                                        {/* YouTube SVG Icon */}
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-900">
                                             <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                                         </svg>
@@ -453,7 +417,6 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     </>
                                 ) : selectedPlatform === "Telegram" ? (
                                     <>
-                                        {/* Telegram SVG Icon */}
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-blue-900">
                                             <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
                                         </svg>
@@ -466,19 +429,11 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                 </div>
             </div>
 
-
             {/* Four Tables in One Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
-                {/* Last 6 Hours */}
                 {renderTable("6hrs", "Last 6 Hours")}
-
-                {/* Last 24 Hours */}
                 {renderTable("24hrs", "Last 24 Hours")}
-
-                {/* Last 7 Days */}
                 {renderTable("7days", "Last 7 Days")}
-
-                {/* Last 30 Days */}
                 {renderTable("30days", "Last 30 Days")}
             </div>
 
