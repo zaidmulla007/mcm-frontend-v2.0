@@ -206,20 +206,20 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         };
 
         return (
-            <div className="bg-white rounded-2xl overflow-hidden shadow-2xl p-6">
-                <div className="text-center mb-4">
-                    <h3 className="text-md font-bold text-black mb-2">{title}</h3>
-                    <div className="text-xs text-black">
+            <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
+                <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-4">
+                    <h3 className="text-xl font-bold text-white text-center mb-1">{title}</h3>
+                    <div className="text-xs text-white text-center">
                         {getFromDateForTimeframe()}
                     </div>
                 </div>
 
-                <div className="overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
+                <div className="p-6 overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
                     <table className="w-full table-fixed">
                         <thead>
                             <tr className="border-b border-gray-700">
-                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-[45%]">Coin</th>
-                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-[55%]">Outlook</th>
+                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-1/2">Coin</th>
+                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-1/2">Outlook</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -244,7 +244,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
                                     return (
                                         <tr key={index} className="border-b border-gray-800 hover:bg-gradient-to-br hover:from-purple-900/20 hover:to-blue-900/20 transition-all duration-300">
-                                            <td className="py-3 px-2 w-[45%]">
+                                            <td className="py-3 px-2 w-1/2">
                                                 <div className="flex flex-col items-center text-center space-y-1">
                                                     <img
                                                         src={coin.image_small || coin.image_thumb}
@@ -261,16 +261,17 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                     <div className="text-xs text-black">
                                                         {coin.coin_name}
                                                     </div>
-                                                    <div className="text-xs text-black font-medium">
+                                                    <div className="text-xs text-black">
                                                         {sentimentData.mentions} Posts
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="py-3 px-2 w-[55%]">
+                                            <td className="py-3 px-2 w-1/2">
                                                 <div className="space-y-3">
                                                     {/* Short Term */}
                                                     <div>
-                                                        <div className="text-xs text-black font-medium mb-2 text-center">Short Term {shortTermPosts} Posts</div>
+                                                        <div className="text-xs text-black font-bold text-center">Short Term</div>
+                                                        <div className="text-xs text-black mb-2 text-center">{shortTermPosts} Posts</div>
                                                         <div className="win-loss-container">
                                                             <div className="segmented-bar-container">
                                                                 <div className="segmented-bar-background">
@@ -291,7 +292,8 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
                                                     {/* Long Term */}
                                                     <div>
-                                                        <div className="text-xs text-black font-medium mb-2 text-center">Long Term {longTermPosts} Posts</div>
+                                                        <div className="text-xs text-black font-bold text-center">Long Term</div>
+                                                        <div className="text-xs text-black mb-2 text-center">{longTermPosts} Posts</div>
                                                         <div className="win-loss-container">
                                                             <div className="segmented-bar-container">
                                                                 <div className="segmented-bar-background">
@@ -320,10 +322,10 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                 </div>
 
                 {hasMore && (
-                    <div className="text-center mt-4">
+                    <div className="flex justify-center items-center mt-4 mb-3">
                         <button
                             onClick={() => toggleExpanded(timeframe)}
-                            className="text-blue-700 hover:text-blue-800 font-semibold text-sm cursor-pointer underline"
+                            className="bg-gradient-to-r from-purple-600 to-blue-600 p-4 text-white font-semibold text-sm cursor-pointer rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
                         >
                             {isExpanded ? "Show Less" : "Read More"}
                         </button>
@@ -487,6 +489,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     border-radius: 50%;
                     transform: translateX(-50%);
                     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                    left: clamp(6px, var(--ball-position), calc(100% - 6px)) !important;
                 }
             `}</style>
         </div>

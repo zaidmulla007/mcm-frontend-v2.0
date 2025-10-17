@@ -209,7 +209,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
         {/* Total Calls */}
         <div className="bg-gray-50 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
-            <h4 className="text-sm font-bold text-gray-900">Total Recommendations</h4>
+            <h4 className="text-sm font-bold text-gray-900">Total Calls</h4>
             <button
               className="relative"
               onMouseEnter={() => setShowTooltip('totalRecommendations')}
@@ -217,8 +217,8 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
             >
               <FaInfoCircle className="text-gray-400 text-xs" />
               {showTooltip === 'totalRecommendations' && (
-                <div className="absolute z-10 w-64 p-2 bg-gray-900 text-white text-xs rounded shadow-lg -top-2 left-6">
-                  Total bullish and bearish recommendations given by the influencer each year.
+                <div className="absolute z-10 w-64 p-3 bg-gray-900 text-white text-xs rounded shadow-lg -top-2 left-6">
+                  <p className="text-left leading-relaxed">Total bullish and bearish recommendations given by the influencer each year.</p>
                 </div>
               )}
             </button>
@@ -239,7 +239,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                       bullish: yearlyData[year]?.bullish_count || 0,
                       bearish: yearlyData[year]?.bearish_count || 0,
                     }))
-                    .sort((a, b) => b.year.localeCompare(a.year));
+                    .sort((a, b) => a.year.localeCompare(b.year));
                 };
 
                 const chartData = transformYearlyData(overallData).map((item) => ({
@@ -349,8 +349,9 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
             >
               <FaInfoCircle className="text-gray-400 text-xs" />
               {showTooltip === 'roi' && (
-                <div className="absolute z-10 w-72 p-2 bg-gray-900 text-white text-xs rounded shadow-lg -top-2 left-6">
-                  % of calls that generated positive returns (that is, where the price of the coin moved in the direction of the influencer&apos;s sentiment), for a 180 day holding period                </div>
+                <div className="absolute z-10 w-72 p-3 bg-gray-900 text-white text-xs rounded shadow-lg -top-2 left-6">
+                  <p className="text-left leading-relaxed">% of calls that generated positive returns (that is, where the price of the coin moved in the direction of the influencer&apos;s sentiment), for a 180 day holding period</p>
+                </div>
               )}
             </button>
           </div>
@@ -370,8 +371,25 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                   years.add(quarter.substring(0, 4));
                 });
 
-                // Sort years from newest to oldest
-                const sortedYears = Array.from(years).sort((a, b) => b.localeCompare(a));
+                // Sort years from oldest to newest (2021 to 2025)
+                const sortedYears = Array.from(years).sort((a, b) => a.localeCompare(b));
+
+                // Get current year and month for dynamic quarter filtering
+                const currentDate = new Date();
+                const currentYear = currentDate.getFullYear().toString();
+                const currentMonth = currentDate.getMonth() + 1; // 1-12
+
+                // Calculate which quarters should be displayed based on current month
+                // Q1: Jan-Mar (months 1-3), Q2: Apr-Jun (months 4-6), Q3: Jul-Sep (months 7-9), Q4: Oct-Dec (months 10-12)
+                // Show quarters that have been completed (previous quarter)
+                const getCurrentQuarterLimit = (month) => {
+                  if (month <= 3) return 0; // Jan-Mar: No complete quarters yet
+                  if (month <= 6) return 1; // Apr-Jun: Q1 complete
+                  if (month <= 9) return 2; // Jul-Sep: Q1, Q2 complete
+                  return 3; // Oct-Dec: Q1, Q2, Q3 complete
+                };
+
+                const maxQuarterToShow = getCurrentQuarterLimit(currentMonth);
 
                 // For each year, add year data first, then its quarters
                 sortedYears.forEach(year => {
@@ -382,12 +400,23 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                     dataPoints.push({ label: year, value: clampedRoi, actualValue: roi, isYearly: true });
                   }
 
-                  // Add quarterly data points for this year (Q4, Q3, Q2, Q1)
+                  // Add quarterly data points for this year (Q1, Q2, Q3, Q4)
                   const quarters = Object.keys(totalCalls)
                     .filter(q => q.startsWith(year))
-                    .sort((a, b) => b.localeCompare(a)); // Q4 to Q1
+                    .sort((a, b) => a.localeCompare(b)); // Q1 to Q4
 
                   quarters.forEach(quarter => {
+                    // For current year, only show quarters that have been analyzed
+                    if (year === currentYear) {
+                      const quarterNum = quarter.substring(4); // Extract Q1, Q2, Q3, Q4 (e.g., "2025Q1" -> "Q1")
+                      const quarterIndex = parseInt(quarterNum.substring(1)); // Get 1, 2, 3, or 4
+
+                      // Skip quarters that haven't been analyzed yet
+                      if (quarterIndex > maxQuarterToShow) {
+                        return;
+                      }
+                    }
+
                     const roi = data?.Quarterly?.[quarter]?.["180_days"]?.probablity_weighted_returns_percentage || 0;
                     const clampedRoi = Math.max(-100, Math.min(100, roi));
                     dataPoints.push({ label: quarter, value: clampedRoi, actualValue: roi, isYearly: false });
@@ -405,9 +434,15 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                 const graphHeight = 120;
                 const padding = { left: 35, right: 20, top: 20, bottom: 30 };
 
-                // Calculate Y-axis ticks
-                const yTicks = 5;
-                const yStep = range / (yTicks - 1);
+                // Custom Y-axis labels: 100+, 100, 50, 0, -50, -100
+                const yLabels = [
+                  { value: 100, display: '100+' },
+                  { value: 100, display: '100' },
+                  { value: 50, display: '50' },
+                  { value: 0, display: '0' },
+                  { value: -50, display: '-50' },
+                  { value: -100, display: '-100' }
+                ];
 
                 return (
                   <div className="relative" style={{ height: `${graphHeight + padding.top + padding.bottom}px`, minWidth: `${graphWidth + padding.left + padding.right}px` }}>
@@ -433,9 +468,8 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                       />
 
                       {/* Y-axis labels and grid lines */}
-                      {Array.from({ length: yTicks }).map((_, i) => {
-                        const value = yMax - (i * yStep);
-                        const y = padding.top + (i * graphHeight / (yTicks - 1));
+                      {yLabels.map((label, i) => {
+                        const y = padding.top + (i * graphHeight / (yLabels.length - 1));
                         return (
                           <g key={i}>
                             <text
@@ -446,9 +480,9 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                               fill="#374151"
                               fontWeight="bold"
                             >
-                              {value.toFixed(0)}
+                              {label.display}
                             </text>
-                            {i < yTicks - 1 && (
+                            {i < yLabels.length - 1 && (
                               <line
                                 x1={padding.left}
                                 y1={y}
@@ -471,7 +505,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                         const y2 = graphHeight + padding.top - ((point.value - yMin) / range * graphHeight);
 
                         // Use green if current point is positive, red if negative or zero
-                        const strokeColor = point.value > 0 ? "#00a63e" : "#ef4444";
+                        const strokeColor = point.value > 0 ? "#1e3a8a" : "#dbeafe";
 
                         return (
                           <line
@@ -494,7 +528,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                         const y = graphHeight + padding.top - (normalizedValue * graphHeight);
 
                         // Use green for positive values, red for negative or zero
-                        const fillColor = point.value > 0 ? "#00a63e" : "#ef4444";
+                        const fillColor = point.value > 0 ? "#1e3a8a" : "#dbeafe";
 
                         return (
                           <g key={point.label}>
@@ -559,7 +593,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
               <FaInfoCircle className="text-gray-400 text-xs" />
               {showTooltip === 'moonshot' && (
                 <div className="absolute z-50 w-64 p-3 bg-gray-900 text-white text-xs rounded shadow-xl -top-32 left-0 right-0 mx-auto">
-                  Moonshot is defined by hyperactivity in a coin recommended by the influencer within a short period of time. A recommendation was considered as a moonshot if the price of the coin moved by 50% within 1 hour, or by 100% within 7 days, or by 200% within 30 days, or by 300% within 180 days or by 400% within 1 year. The display on the screen is filtered for those recommendations where the coin moved by +300% within 180 days.
+                  <p className="text-left leading-relaxed">Moonshot is defined by hyperactivity in a coin recommended by the influencer within a short period of time. A recommendation was considered as a moonshot if the price of the coin moved by 50% within 1 hour, or by 100% within 7 days, or by 200% within 30 days, or by 300% within 180 days or by 400% within 1 year. The display on the screen is filtered for those recommendations where the coin moved by +300% within 180 days.</p>
                 </div>
               )}
             </button>
@@ -567,7 +601,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
           <div className={`grid gap-2 ${Object.keys(moonshotProb).length === 5 ? 'grid-cols-5' : Object.keys(moonshotProb).length === 4 ? 'grid-cols-4' : Object.keys(moonshotProb).length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
             {Object.keys(moonshotProb).length > 0 ? (
               Object.entries(moonshotProb)
-                .sort(([a], [b]) => b.localeCompare(a)) // Sort years in reverse (latest first: 2025, 2024, ...)
+                .sort(([a], [b]) => a.localeCompare(b)) // Sort years chronologically (2021, 2022, 2023, 2024, 2025)
                 .map(([year, count]) => {
                   // Treat count as percentage (0-100)
                   // Cap at 100 if count exceeds 100
@@ -583,9 +617,9 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                       <div className="relative w-16 h-16">
                         <svg className="w-16 h-16 transform -rotate-90">
                           <defs>
-                            <linearGradient id="blueGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="0%" stopColor="#2563eb" />
-                              <stop offset="100%" stopColor="#60a5fa" />
+                            <linearGradient id={`blueGradient-${year}`} x1="0%" y1="0%" x2="0%" y2="100%">
+                              <stop offset="0%" stopColor="#1e3a8a" />
+                              <stop offset="100%" stopColor="#1e3a8a" />
                             </linearGradient>
                           </defs>
                           <circle
@@ -600,7 +634,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                             cx="32"
                             cy="32"
                             r="28"
-                            stroke="url(#blueGradient)"
+                            stroke={`url(#blueGradient-${year})`}
                             strokeWidth="4"
                             fill="none"
                             strokeDasharray={strokeDasharray}
