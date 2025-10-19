@@ -5,6 +5,81 @@ import { useState } from "react";
 import Image from "next/image";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LabelList } from "recharts";
 
+// Moon Phase Component
+const MoonPhase = ({ percentage, year }) => {
+  const getShadowPath = (percent) => {
+    const radius = 28;
+    const centerX = 32;
+    const centerY = 32;
+
+    // Convert percentage to phase (0 to 1)
+    const phase = percent / 100;
+
+    // Calculate the shadow offset
+    const offset = (phase * 2 - 1) * radius;
+
+    // Create ellipse for shadow based on phase
+    const shadowWidth = Math.abs(offset);
+
+    if (phase < 0.5) {
+      // Waxing phase (shadow on right)
+      return `M ${centerX},${centerY - radius}
+              A ${radius},${radius} 0 0,1 ${centerX},${centerY + radius}
+              A ${shadowWidth},${radius} 0 0,0 ${centerX},${centerY - radius}`;
+    } else {
+      // Waning phase (shadow on left)
+      return `M ${centerX},${centerY - radius}
+              A ${radius},${radius} 0 0,1 ${centerX},${centerY + radius}
+              A ${shadowWidth},${radius} 0 0,1 ${centerX},${centerY - radius}`;
+    }
+  };
+
+  return (
+    <svg width="64" height="64" viewBox="0 0 64 64">
+      <defs>
+        <radialGradient id={`moonGlow-${year}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#FFF4A3" stopOpacity="0.2" />
+          <stop offset="100%" stopColor="#FFF4A3" stopOpacity="0" />
+        </radialGradient>
+
+        <radialGradient id={`moonSurface-${year}`} cx="35%" cy="35%">
+          <stop offset="0%" stopColor="#FFF9C4" />
+          <stop offset="50%" stopColor="#FFD54F" />
+          <stop offset="100%" stopColor="#FFC107" />
+        </radialGradient>
+      </defs>
+
+      {/* Outer glow */}
+      <circle cx="32" cy="32" r="30" fill={`url(#moonGlow-${year})`} />
+
+      {/* Main moon body */}
+      <circle cx="32" cy="32" r="28" fill={`url(#moonSurface-${year})`} />
+
+      {/* Craters */}
+      <circle cx="24" cy="24" r="4" fill="#F9A825" opacity="0.4" />
+      <circle cx="38" cy="28" r="5" fill="#F9A825" opacity="0.3" />
+      <circle cx="28" cy="38" r="3" fill="#F9A825" opacity="0.35" />
+      <circle cx="40" cy="22" r="2.5" fill="#F9A825" opacity="0.4" />
+      <circle cx="35" cy="40" r="2" fill="#F9A825" opacity="0.3" />
+
+      {/* Shadow overlay */}
+      <path
+        d={getShadowPath(percentage)}
+        fill="rgba(30, 30, 50, 0.75)"
+        opacity="0.9"
+      />
+
+      {/* Subtle shadow edge highlight */}
+      <path
+        d={getShadowPath(percentage)}
+        fill="none"
+        stroke="rgba(30, 30, 50, 0.3)"
+        strokeWidth="1"
+      />
+    </svg>
+  );
+};
+
 export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn, onViewFull }) {
   const [showTooltip, setShowTooltip] = useState(null);
 
@@ -236,16 +311,14 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                   return Object.keys(yearlyData)
                     .map((year) => ({
                       year,
-                      bullish: yearlyData[year]?.bullish_count || 0,
-                      bearish: yearlyData[year]?.bearish_count || 0,
+                      total: (yearlyData[year]?.bullish_count || 0) + (yearlyData[year]?.bearish_count || 0),
                     }))
                     .sort((a, b) => a.year.localeCompare(b.year));
                 };
 
                 const chartData = transformYearlyData(overallData).map((item) => ({
                   year: item.year === currentYear ? item.year + '*' : item.year,
-                  bullish: item.bullish,
-                  bearish: item.bearish,
+                  total: item.total,
                 }));
 
                 if (chartData.length === 0) {
@@ -266,47 +339,19 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                         <XAxis dataKey="year" tick={{ fontSize: 10 }} stroke="#666" />
                         <YAxis hide />
                         <Bar
-                          dataKey="bullish"
+                          dataKey="total"
                           fill="#1e3a8a"
                           radius={[4, 4, 0, 0]}
-                          barSize={15}
+                          barSize={30}
                         >
                           <LabelList
-                            dataKey="bullish"
-                            position="top"
-                            style={{ fontSize: '10px', fill: '#333' }}
-                          />
-                        </Bar>
-                        <Bar
-                          dataKey="bearish"
-                          fill="#dbeafe"
-                          radius={[4, 4, 0, 0]}
-                          barSize={15}
-                        >
-                          <LabelList
-                            dataKey="bearish"
+                            dataKey="total"
                             position="top"
                             style={{ fontSize: '10px', fill: '#333' }}
                           />
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
-
-                    {/* Legend */}
-                    <div className="flex items-center justify-center gap-4 mt-2">
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 rounded" style={{ backgroundColor: "#1e3a8a" }}></div>
-                        <span className="text-[10px] text-gray-700">Bullish</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 rounded" style={{ backgroundColor: "#dbeafe" }}></div>
-                        <span className="text-[10px] text-gray-700">Bearish</span>
-                      </div>
-                    </div>
-
-                    <p className="text-[10px] text-gray-500 text-right w-full mt-1">
-                      Current year {currentYear}*
-                    </p>
                   </div>
                 );
               })()
@@ -321,7 +366,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
           <button
             onClick={(e) => {
               e.stopPropagation();
-              const userData = localStorage.getItem('UserData');
+              const userData = localStorage.getItem('userData');
               if (userData) {
                 window.location.href =
                   platformType === 'youtube'
@@ -333,7 +378,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
             }}
             className="text-blue-600 text-xs font-semibold mt-2 hover:text-blue-700"
           >
-            View Total Recommendations Dashboard →
+            View Total Calls Dashboard →
           </button>
         </div>
 
@@ -397,7 +442,8 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                   if (data?.Yearly?.[year]) {
                     const roi = data.Yearly[year]?.["180_days"]?.probablity_weighted_returns_percentage || 0;
                     const clampedRoi = Math.max(-100, Math.min(100, roi));
-                    dataPoints.push({ label: year, value: clampedRoi, actualValue: roi, isYearly: true });
+                    const yearLabel = year === currentYear ? year + '*' : year;
+                    dataPoints.push({ label: yearLabel, value: clampedRoi, actualValue: roi, isYearly: true });
                   }
 
                   // Add quarterly data points for this year (Q1, Q2, Q3, Q4)
@@ -504,8 +550,8 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                         const x2 = padding.left + (index / (dataPoints.length - 1)) * graphWidth;
                         const y2 = graphHeight + padding.top - ((point.value - yMin) / range * graphHeight);
 
-                        // Use green if current point is positive, red if negative or zero
-                        const strokeColor = point.value > 0 ? "#1e3a8a" : "#dbeafe";
+                        // Use #1e3a8a for positive values (>= 0), #dbeafe for negative values (< 0)
+                        const strokeColor = point.value >= 0 ? "#1e3a8a" : "#dbeafe";
 
                         return (
                           <line
@@ -527,8 +573,8 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
                         const normalizedValue = (point.value - yMin) / range;
                         const y = graphHeight + padding.top - (normalizedValue * graphHeight);
 
-                        // Use green for positive values, red for negative or zero
-                        const fillColor = point.value > 0 ? "#1e3a8a" : "#dbeafe";
+                        // Use #1e3a8a for positive values (>= 0), #dbeafe for negative values (< 0)
+                        const fillColor = point.value >= 0 ? "#1e3a8a" : "#dbeafe";
 
                         return (
                           <g key={point.label}>
@@ -566,7 +612,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
           <button
             onClick={(e) => {
               e.stopPropagation();
-              const userData = localStorage.getItem('UserData');
+              const userData = localStorage.getItem('userData');
               if (userData) {
                 window.location.href = platformType === "youtube"
                   ? `/influencers/${channelId}`
@@ -600,54 +646,31 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
           </div>
           <div className={`grid gap-2 ${Object.keys(moonshotProb).length === 5 ? 'grid-cols-5' : Object.keys(moonshotProb).length === 4 ? 'grid-cols-4' : Object.keys(moonshotProb).length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
             {Object.keys(moonshotProb).length > 0 ? (
-              Object.entries(moonshotProb)
-                .sort(([a], [b]) => a.localeCompare(b)) // Sort years chronologically (2021, 2022, 2023, 2024, 2025)
-                .map(([year, count]) => {
-                  // Treat count as percentage (0-100)
-                  // Cap at 100 if count exceeds 100
-                  const percentage = Math.min(count, 100);
-                  const circumference = 175.93; // 2 * PI * radius (28)
+              (() => {
+                const currentYear = new Date().getFullYear().toString();
+                return Object.entries(moonshotProb)
+                  .sort(([a], [b]) => a.localeCompare(b)) // Sort years chronologically (2021, 2022, 2023, 2024, 2025)
+                  .map(([year, count]) => {
+                    // Treat count as percentage (0-100)
+                    // Cap at 100 if count exceeds 100
+                    const percentage =100 - Math.min(count, 100);
 
-                  // Calculate stroke dasharray based on percentage (0-100)
-                  const strokeDasharray = `${(percentage / 100) * circumference} ${circumference}`;
+                    // Mark current year with asterisk
+                    const displayYear = year === currentYear ? year + '*' : year;
 
-                  return (
-                    <div key={year} className="flex flex-col items-center">
-                      <div className="text-xs text-gray-600 mb-1">{year}</div>
-                      <div className="relative w-16 h-16">
-                        <svg className="w-16 h-16 transform -rotate-90">
-                          <defs>
-                            <linearGradient id={`blueGradient-${year}`} x1="0%" y1="0%" x2="0%" y2="100%">
-                              <stop offset="0%" stopColor="#1e3a8a" />
-                              <stop offset="100%" stopColor="#1e3a8a" />
-                            </linearGradient>
-                          </defs>
-                          <circle
-                            cx="32"
-                            cy="32"
-                            r="28"
-                            stroke="#e5e7eb"
-                            strokeWidth="4"
-                            fill="none"
-                          />
-                          <circle
-                            cx="32"
-                            cy="32"
-                            r="28"
-                            stroke={`url(#blueGradient-${year})`}
-                            strokeWidth="4"
-                            fill="none"
-                            strokeDasharray={strokeDasharray}
-                            className="transition-all duration-300 hover:opacity-80 cursor-pointer"
-                          />
-                        </svg>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-xs font-bold text-gray-900">{count}</span>
+                    return (
+                      <div key={year} className="flex flex-col items-center">
+                        <div className="text-xs text-gray-600 mb-1">{displayYear}</div>
+                        <div className="relative w-16 h-16">
+                          <MoonPhase percentage={percentage} year={year} />
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <span className="text-xs font-bold text-white" style={{ textShadow: '0 0 3px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.6)' }}>{count}</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })
+                    );
+                  });
+              })()
             ) : (
               <div className="col-span-full text-center text-gray-400 text-xs py-4">No moonshot data available</div>
             )}
@@ -655,7 +678,7 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
           <button
             onClick={(e) => {
               e.stopPropagation();
-              const userData = localStorage.getItem('UserData');
+              const userData = localStorage.getItem('userData');
               if (userData) {
                 window.location.href = platformType === "youtube"
                   ? `/influencers/${channelId}`

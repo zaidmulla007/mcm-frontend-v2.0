@@ -65,7 +65,8 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     const formatDateStringDisplay = (dateStr) => {
         if (!dateStr) return "N/A";
 
-        const date = moment(dateStr).utc();
+        // Parse the date string as UTC explicitly
+        const date = moment.utc(dateStr);
         let momentDate;
         let locationDisplay = '';
 
@@ -75,7 +76,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             const cityName = userTimeZone.split('/').pop().replace(/_/g, ' ');
             locationDisplay = ` (${cityName})`;
         } else {
-            momentDate = date.utc();
+            momentDate = date;
             locationDisplay = ' UTC';
         }
 
@@ -199,7 +200,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             if (combinedData && combinedData.resultsByTimeframe &&
                 combinedData.resultsByTimeframe[timeframe] &&
                 combinedData.resultsByTimeframe[timeframe].dateRange) {
-                const fromTimeStr = combinedData.resultsByTimeframe[timeframe].dateRange.to;
+                const fromTimeStr = combinedData.resultsByTimeframe[timeframe].dateRange.from;
                 return formatDateStringDisplay(fromTimeStr);
             }
             return "N/A";
@@ -214,8 +215,8 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     </div>
                 </div>
 
-                <div className="p-6 overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
-                    <table className="w-full table-fixed">
+                <div className="p-6 overflow-x-auto overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
+                    <table className="w-full min-w-full table-fixed">
                         <thead>
                             <tr className="border-b border-gray-700">
                                 <th className="text-center py-2 px-2 text-black font-semibold text-md w-1/2">Coin</th>
@@ -243,37 +244,36 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     const longTermBallPosition = longTermBullish >= longTermBearish ? longTermBullish : (100 - longTermBearish);
 
                                     return (
-                                        <tr key={index} className="border-b border-gray-800 hover:bg-gradient-to-br hover:from-purple-900/20 hover:to-blue-900/20 transition-all duration-300">
-                                            <td className="py-3 px-2 w-1/2">
-                                                <div className="flex flex-col items-center text-center space-y-1">
-                                                    <img
-                                                        src={coin.image_small || coin.image_thumb}
-                                                        alt={coin.symbol}
-                                                        className="w-12 h-12 rounded-full mb-1"
-                                                        onError={(e) => {
-                                                            e.target.onerror = null;
-                                                            e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=48`;
-                                                        }}
-                                                    />
-                                                    <div className="text-sm text-black font-bold">
-                                                        {coin.symbol?.toUpperCase()}
+                                        <tr key={index} className="border-b border-gray-800">
+                                            <td colSpan="2" className="py-4 px-4">
+                                                <div className="flex items-start gap-6">
+                                                    {/* Left - Coin Info */}
+                                                    <div className="flex flex-col items-center text-center min-w-[80px]">
+                                                        <img
+                                                            src={coin.image_small || coin.image_thumb}
+                                                            alt={coin.symbol}
+                                                            className="w-14 h-14 rounded-full mb-2"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
+                                                            }}
+                                                        />
+                                                        <div className="text-sm text-black font-bold mb-1">
+                                                            {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
+                                                        </div>
+                                                        <div className="text-xs text-black">
+                                                            {sentimentData.mentions} posts
+                                                        </div>
                                                     </div>
-                                                    <div className="text-xs text-black">
-                                                        {coin.coin_name}
-                                                    </div>
-                                                    <div className="text-xs text-black">
-                                                        {sentimentData.mentions} Posts
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-3 px-2 w-1/2">
-                                                <div className="space-y-3">
-                                                    {/* Short Term */}
-                                                    <div>
-                                                        <div className="text-xs text-black font-bold text-center">Short Term</div>
-                                                        <div className="text-xs text-black mb-2 text-center">{shortTermPosts} Posts</div>
-                                                        <div className="win-loss-container">
-                                                            <div className="segmented-bar-container">
+
+                                                    {/* Right - Sentiment Data */}
+                                                    <div className="flex-1 space-y-3">
+                                                        {/* Short Term */}
+                                                        <div>
+                                                            <div className="mb-1 text-xs whitespace-nowrap">
+                                                                <span className="font-semibold text-black">Short Term : {shortTermPosts} posts</span>
+                                                            </div>
+                                                            <div className="segmented-bar-container mb-1">
                                                                 <div className="segmented-bar-background">
                                                                     <div className="segment segment-red" />
                                                                     <div className="segment segment-yellow" />
@@ -284,18 +284,17 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                     style={{ left: `${(shortTermBallPosition / 100) * 100}%` }}
                                                                 />
                                                             </div>
-                                                            <div className={`font-semibold text-sm ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                            <div className={`font-semibold text-xs text-center ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
                                                                 {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
                                                             </div>
                                                         </div>
-                                                    </div>
 
-                                                    {/* Long Term */}
-                                                    <div>
-                                                        <div className="text-xs text-black font-bold text-center">Long Term</div>
-                                                        <div className="text-xs text-black mb-2 text-center">{longTermPosts} Posts</div>
-                                                        <div className="win-loss-container">
-                                                            <div className="segmented-bar-container">
+                                                        {/* Long Term */}
+                                                        <div>
+                                                            <div className="mb-1 text-xs whitespace-nowrap">
+                                                                <span className="font-semibold text-black">Long Term : {longTermPosts} posts</span>
+                                                            </div>
+                                                            <div className="segmented-bar-container mb-1">
                                                                 <div className="segmented-bar-background">
                                                                     <div className="segment segment-red" />
                                                                     <div className="segment segment-yellow" />
@@ -306,7 +305,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                     style={{ left: `${(longTermBallPosition / 100) * 100}%` }}
                                                                 />
                                                             </div>
-                                                            <div className={`font-semibold text-sm ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                            <div className={`font-semibold text-xs text-center ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
                                                                 {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
                                                             </div>
                                                         </div>
@@ -321,8 +320,312 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     </table>
                 </div>
 
+                <div
+                    className="p-6 overflow-x-auto overflow-y-auto"
+                    style={{ scrollbarGutter: "stable" }}
+                >
+                    <table className="w-full min-w-full table-fixed">
+                        <thead>
+                            <tr className="border-b border-gray-700">
+                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-1/2">
+                                    Coin
+                                </th>
+                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-1/2">
+                                    Outlook
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {coins.length === 0 ? (
+                                <tr>
+                                    <td colSpan="2" className="text-center py-8 text-black">
+                                        No data available
+                                    </td>
+                                </tr>
+                            ) : (
+                                coins.map((coin, index) => {
+                                    const sentimentData = getSentimentData(coin);
+
+                                    const shortTermBullish = sentimentData.bullish_short_term;
+                                    const shortTermBearish = sentimentData.bearish_short_term;
+                                    const shortTermPosts =
+                                        sentimentData.bullish_short_term_count +
+                                        sentimentData.bearish_short_term_count;
+
+                                    const longTermBullish = sentimentData.bullish_long_term;
+                                    const longTermBearish = sentimentData.bearish_long_term;
+                                    const longTermPosts =
+                                        sentimentData.bullish_long_term_count +
+                                        sentimentData.bearish_long_term_count;
+
+                                    const shortTermBallPosition =
+                                        shortTermBullish >= shortTermBearish
+                                            ? shortTermBullish
+                                            : 100 - shortTermBearish;
+                                    const longTermBallPosition =
+                                        longTermBullish >= longTermBearish
+                                            ? longTermBullish
+                                            : 100 - longTermBearish;
+                                    const isShortTermBullish = shortTermBullish >= shortTermBearish;
+                                    const isLongTermBullish = longTermBullish >= longTermBearish;
+                                    return (
+                                        <tr
+                                            key={index}
+                                            className="border-b border-gray-800  "
+                                        >
+                                            <td colSpan="2" className="py-4  ">
+                                                <div className="flex items-center gap-6">
+                                                    {/* Left - Coin Info */}
+                                                    <div className="bg-gradient-to-r from-purple-600 to-blue-600 flex flex-col items-center text-center min-w-[80px] py-2 px-4 rounded-lg">
+                                                        {/* <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border border-blue-200 flex flex-col items-center text-center min-w-[80px] py-2 px-4 rounded-lg"> */}
+                                                        <img
+                                                            src={coin.image_small || coin.image_thumb}
+                                                            alt={coin.symbol}
+                                                            className="w-14 h-14 rounded-full mb-2"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
+                                                            }}
+                                                        />
+                                                        <div className="text-sm text-white font-bold mb-1">
+                                                            {coin.symbol?.toUpperCase()}
+                                                        </div>
+                                                        <div className="text-xs text-white">
+                                                            {sentimentData.mentions} posts
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Right - Sentiment Data */}
+                                                    <div className="flex-1 space-y-3">
+                                                        {/* Short Term */}
+                                                        <div>
+                                                            <div className="mb-1 text-xs whitespace-nowrap flex flex-row justify-between items-stretch">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span
+                                                                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${isShortTermBullish
+                                                                                ? "bg-emerald-100 text-emerald-700"
+                                                                                : "bg-rose-100 text-rose-700"
+                                                                            }`}
+                                                                    >
+                                                                        {isShortTermBullish ? "↗ Bullish" : "↘ Bearish"}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="text-[8px] text-gray-500  text-center self-center justify-self-center">
+                                                                    Short Term
+                                                                </div>
+                                                                <div className="text-[8px] text-black  text-center self-center justify-self-center">
+                                                                    {shortTermPosts} posts
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex flex-row justify-start items-center">
+                                                                <div className="segmented-bar-container mb-1 min-w-[9vw]">
+                                                                    <div className="segmented-bar-background">
+                                                                        <div className="segment segment-red" />
+                                                                        <div className="segment segment-yellow" />
+                                                                        <div className="segment segment-green" />
+                                                                    </div>
+                                                                    <div
+                                                                        className="percentage-ball"
+                                                                        style={{
+                                                                            left: `${(longTermBallPosition / 100) * 100}%`,
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <div
+                                                                    className={`font-semibold text-xs text-center ${shortTermBullish >= shortTermBearish
+                                                                        ? "text-green-700"
+                                                                        : "text-red-700"
+                                                                        } ml-1`}
+                                                                >
+                                                                    {(longTermBullish >= longTermBearish
+                                                                        ? longTermBullish
+                                                                        : longTermBearish
+                                                                    ).toFixed(0)}
+                                                                    %
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Long Term */}
+                                                        <div>
+                                                            <div className="flex flex-row justify-start items-center">
+                                                                <div className="segmented-bar-container mb-1 min-w-[9vw]">
+                                                                    <div className="segmented-bar-background">
+                                                                        <div className="segment segment-red" />
+                                                                        <div className="segment segment-yellow" />
+                                                                        <div className="segment segment-green" />
+                                                                    </div>
+                                                                    <div
+                                                                        className="percentage-ball"
+                                                                        style={{
+                                                                            left: `${(longTermBallPosition / 100) * 100}%`,
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <div
+                                                                    className={`font-semibold text-xs text-center ${shortTermBullish >= shortTermBearish
+                                                                        ? "text-green-700"
+                                                                        : "text-red-700"
+                                                                        } ml-1`}
+                                                                >
+                                                                    {(longTermBullish >= longTermBearish
+                                                                        ? longTermBullish
+                                                                        : longTermBearish
+                                                                    ).toFixed(0)}
+                                                                    %
+                                                                </div>
+                                                            </div>
+                                                            <div className="mt-1 text-xs whitespace-nowrap flex flex-row justify-between items-stretch">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span
+                                                                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${isLongTermBullish
+                                                                                ? "bg-emerald-100 text-emerald-700"
+                                                                                : "bg-rose-100 text-rose-700"
+                                                                            }`}
+                                                                    >
+                                                                        {isLongTermBullish ? "↗ Bullish" : "↘ Bearish"}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="text-[8px] text-gray-500  text-center self-center justify-self-center">
+                                                                    Long Term
+                                                                </div>
+                                                                <div className="text-[8px] text-black text-center self-center justify-self-center">
+                                                                    {longTermPosts} posts
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div>;
+
+                {/* <div className="p-6 overflow-x-auto overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
+                    <table className="w-full min-w-full table-fixed">
+                        <thead>
+                            <tr className="border-b border-gray-700">
+                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-1/2">Coin</th>
+                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-1/2">Outlook</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {coins.length === 0 ? (
+                                <tr>
+                                    <td colSpan="2" className="text-center py-8 text-black">No data available</td>
+                                </tr>
+                            ) : (
+                                coins.map((coin, index) => {
+                                    const sentimentData = getSentimentData(coin);
+
+                                    const shortTermBullish = sentimentData.bullish_short_term;
+                                    const shortTermBearish = sentimentData.bearish_short_term;
+                                    const shortTermPosts = sentimentData.bullish_short_term_count + sentimentData.bearish_short_term_count;
+
+                                    const longTermBullish = sentimentData.bullish_long_term;
+                                    const longTermBearish = sentimentData.bearish_long_term;
+                                    const longTermPosts = sentimentData.bullish_long_term_count + sentimentData.bearish_long_term_count;
+
+                                    const shortTermBallPosition = shortTermBullish >= shortTermBearish ? shortTermBullish : (100 - shortTermBearish);
+                                    const longTermBallPosition = longTermBullish >= longTermBearish ? longTermBullish : (100 - longTermBearish);
+
+                                    return (
+                                        <tr key={index} className="border-b border-gray-800">
+                                            <td colSpan="2" className="py-4 px-4 ">
+                                                <div className="flex items-start gap-6">
+                                                    <div className="bg-gradient-to-r from-purple-600 to-blue-600 flex flex-col items-center text-center min-w-[60px]">
+                                                        <img
+                                                            src={coin.image_small || coin.image_thumb}
+                                                            alt={coin.symbol}
+                                                            className="w-14 h-14 rounded-full mb-2"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
+                                                            }}
+                                                        />
+                                                        <div className="text-sm text-black font-bold mb-1">
+                                                            {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
+                                                        </div>
+                                                        <div className="text-xs text-black">
+                                                            {sentimentData.mentions} posts
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex-1 space-y-3">
+                                                        <div>
+
+                                                            <div className="mt-2 text-xs whitespace-nowrap flex flex-row justify-between items-stretch">
+                                                                <div className={`font-semibold text-xs text-center ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                                    {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
+                                                                    [ <span className="text-[10px] text-gray-500">Short Term</span>]
+                                                                </div>
+                                                                <div className="text-[10px] text-black">{shortTermPosts} posts</div>
+                                                            </div>
+                                                            <div className="flex flex-row justify-start items-center">
+                                                                <div className="segmented-bar-container mb-1 w-max">
+                                                                    <div className="segmented-bar-background">
+                                                                        <div className="segment segment-red" />
+                                                                        <div className="segment segment-yellow" />
+                                                                        <div className="segment segment-green" />
+                                                                    </div>
+                                                                    <div
+                                                                        className="percentage-ball"
+                                                                        style={{ left: `${(shortTermBallPosition / 100) * 100}%` }}
+                                                                    />
+                                                                    <div className={`font-semibold text-xs text-center ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                                        {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}%
+                                                                    </div>
+                                                                </div>
+
+                                                            </div>
+                                                            <div className="mb-1 text-xs whitespace-nowrap flex flex-row justify-center items-center">
+                                                                <div className="text-[10px] text-gray-500">Short Term</div>
+                                                            </div>
+
+                                                        </div>
+                                                        <div>
+                                                            <div className="flex flex-row justify-start items-center">
+                                                                <div className="segmented-bar-container mb-1 min-w-[10vw]">
+                                                                    <div className="segmented-bar-background">
+                                                                        <div className="segment segment-red" />
+                                                                        <div className="segment segment-yellow" />
+                                                                        <div className="segment segment-green" />
+                                                                    </div>
+                                                                    <div
+                                                                        className="percentage-ball"
+                                                                        style={{ left: `${(longTermBallPosition / 100) * 100}%` }}
+                                                                    />
+                                                                </div>
+                                                                <div className={`font-semibold text-xs text-center ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                                    {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}%
+                                                                </div>
+
+                                                            </div>
+                                                            <div className="mt-2 text-xs whitespace-nowrap flex flex-row justify-between items-stretch">
+                                                                <div className={`font-semibold text-xs text-center ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                                    {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
+                                                                    [ <span className="text-[10px] text-gray-500">Long Term</span>]
+                                                                </div>
+                                                                <div className="text-[10px] text-black">{longTermPosts} posts</div>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            )}
+                        </tbody>
+                    </table>
+                </div> */}
+
                 {hasMore && (
-                    <div className="flex justify-center items-center mt-4 mb-3">
+                    <div className="flex justify-center items-center mb-2">
                         <button
                             onClick={() => toggleExpanded(timeframe)}
                             className="bg-gradient-to-r from-purple-600 to-blue-600 p-4 text-white font-semibold text-sm cursor-pointer rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"

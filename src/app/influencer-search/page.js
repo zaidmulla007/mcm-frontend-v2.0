@@ -35,7 +35,7 @@ export default function InfluencerSearchPage() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+  const itemsPerPage = 10;
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -302,38 +302,52 @@ export default function InfluencerSearchPage() {
     }
   };
 
-  // Get top 3 influencers for podium
-  const topThreeInfluencers = filteredInfluencers.slice(0, 3);
-  const remainingInfluencers = filteredInfluencers.slice(3);
+  // Get top 5 influencers for top sellers section
+  const topFiveInfluencers = filteredInfluencers.slice(0, 5);
+  const remainingInfluencers = filteredInfluencers.slice(5);
 
-  // Pagination for table (excluding top 3)
+  // Pagination for table (excluding top 5)
   const totalRemainingInfluencers = remainingInfluencers.length;
   const totalPages = Math.ceil(totalRemainingInfluencers / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedInfluencers = remainingInfluencers.slice(startIndex, endIndex);
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 text-gray-900 font-sans pb-16">
-      {/* Hero Section */}
-      <section className="max-w-7xl mx-auto pt-16 pb-6 px-4 flex flex-col items-center gap-6">
-        <h1 className="text-4xl md:text-5xl font-bold leading-tight bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600 bg-clip-text text-transparent text-center">
-          Influencer Leaderboard
-        </h1>
-        <p className="text-lg text-gray-700 max-w-2xl text-center">
-          Discover top-performing crypto influencers ranked by their performance metrics.
-        </p>
+  // Hardcoded data for the right sidebar
+  const monthlyTarget = 1000000;
+  const currentEarnings = filteredInfluencers.reduce((sum, inf) => sum + (inf.prob_weighted_returns * 1000 || 0), 0);
+  const topInfluencer = filteredInfluencers[0];
+  const bestDealInfluencer = filteredInfluencers[0];
 
-        {/* Platform Toggle */}
+  // Helper function to get progress bar color based on win percentage
+  const getProgressBarColor = (winPercentage) => {
+    if (winPercentage >= 80) return 'bg-green-500';
+    if (winPercentage >= 60) return 'bg-blue-500';
+    if (winPercentage >= 40) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 text-gray-900 font-sans">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <h1 className="text-2xl font-bold text-gray-900 text-center">Influencer Performance Dashboard</h1>
+        </div>
+      </header>
+
+      {/* Platform Toggle - Between header and filters */}
+      <section className="max-w-5xl mx-auto px-4 py-4">
         <div className="flex justify-center gap-3">
           {platforms.map((platform) => (
             <button
               key={platform.value}
               onClick={() => setSelectedPlatform(platform.value)}
-              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${selectedPlatform === platform.value
-                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
-                }`}
+              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${
+                selectedPlatform === platform.value
+                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
+                  : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
+              }`}
             >
               {platform.logo}
               <span>{platform.label}</span>
@@ -343,18 +357,15 @@ export default function InfluencerSearchPage() {
       </section>
 
       {/* Filter Section */}
-      <section className="max-w-7xl mx-auto px-4 mb-6">
-        <div className="bg-white rounded-2xl p-6 border-2 border-purple-200 shadow-xl">
-          <h3 className="text-lg font-semibold text-purple-700 mb-4">Ranking Filters</h3>
-
-          {/* First Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm text-gray-700 font-medium">Sentiment:</label>
+      <section className="max-w-7xl mx-auto px-4 py-4">
+        <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Sentiment</label>
               <select
                 value={selectedSentiment}
                 onChange={(e) => setSelectedSentiment(e.target.value)}
-                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {sentimentOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -364,12 +375,12 @@ export default function InfluencerSearchPage() {
               </select>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-sm text-gray-700 font-medium">Holding Period:</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Timeframe</label>
               <select
                 value={selectedTimeframe}
                 onChange={(e) => setSelectedTimeframe(e.target.value)}
-                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {timeframeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -379,12 +390,12 @@ export default function InfluencerSearchPage() {
               </select>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-sm text-gray-700 font-medium">Type:</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
               <select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
-                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {typeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -393,16 +404,13 @@ export default function InfluencerSearchPage() {
                 ))}
               </select>
             </div>
-          </div>
 
-          {/* Second Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm text-gray-700 font-medium">Year:</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
               <select
                 value={selectedYear}
                 onChange={(e) => handleYearChange(e.target.value)}
-                className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 {yearOptions.map((option) => (
                   <option key={option.value} value={option.value}>
@@ -412,15 +420,15 @@ export default function InfluencerSearchPage() {
               </select>
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-sm text-gray-700 font-medium">Quarter:</label>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Quarter</label>
               <select
                 value={selectedQuarter}
                 onChange={(e) => setSelectedQuarter(e.target.value)}
                 disabled={selectedYear === "all"}
-                className={`border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 ${selectedYear === "all"
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-white text-gray-900"
+                className={`w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedYear === "all"
+                  ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                  : ""
                   }`}
               >
                 {quarterOptions.map((option) => (
@@ -434,442 +442,420 @@ export default function InfluencerSearchPage() {
         </div>
       </section>
 
-      <section className="max-w-7xl mx-auto px-4 flex justify-center">
-        {/* Top 3 Podium */}
-        {!loading && !initialLoad && topThreeInfluencers.length >= 3 && (
-          <div className="w-full max-w-4xl mt-8 mb-8 mx-auto">
-            <div className="flex items-end justify-center gap-4 md:gap-8">
-              {/* 2nd Place */}
-              <div
-                className="flex flex-col items-center flex-1 max-w-[180px] cursor-pointer hover:scale-105 transition-transform duration-200"
-                onClick={() => {
-                  window.location.href = selectedPlatform === "youtube"
-                    ? `/influencers/${topThreeInfluencers[1]?.id}`
-                    : `/telegram-influencer/${topThreeInfluencers[1]?.id}`;
-                }}
-              >
-                <div className="relative mb-4">
-                  {topThreeInfluencers[1]?.channel_thumbnails?.high?.url ? (
-                    <Image
-                      src={topThreeInfluencers[1].channel_thumbnails.high.url}
-                      alt={topThreeInfluencers[1].name || "2nd Place"}
-                      width={80}
-                      height={80}
-                      className="w-20 h-20 rounded-full object-cover border-4 border-gray-300 shadow-lg"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center border-4 border-gray-300 shadow-lg">
-                      <span className="text-xl font-bold text-white">
-                        {topThreeInfluencers[1]?.name?.match(/\b\w/g)?.join("") || "2"}
-                      </span>
-                    </div>
-                  )}
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-500 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-lg">🥈</span>
-                  </div>
-                </div>
-                <h3 className="font-semibold text-sm text-center text-gray-800 mb-1 line-clamp-2 px-2">
-                  {topThreeInfluencers[1]?.name?.replace(/_/g, " ") || "Unknown"}
-                </h3>
-                <div className="bg-gradient-to-br from-gray-300 to-gray-400 rounded-t-2xl w-full h-32 flex items-center justify-center shadow-xl">
-                  <span className="text-5xl font-bold text-white">2</span>
-                </div>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 pb-8">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left Content - Top Sellers and Leaderboard */}
+          <div className="flex-1">
+            {/* Top Sellers Section */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Top Sellers</h2>
               </div>
-
-              {/* 1st Place */}
-              <div
-                className="flex flex-col items-center flex-1 max-w-[200px] cursor-pointer hover:scale-105 transition-transform duration-200"
-                onClick={() => {
-                  window.location.href = selectedPlatform === "youtube"
-                    ? `/influencers/${topThreeInfluencers[0]?.id}`
-                    : `/telegram-influencer/${topThreeInfluencers[0]?.id}`;
-                }}
-              >
-                <div className="relative mb-4">
-                  {topThreeInfluencers[0]?.channel_thumbnails?.high?.url ? (
-                    <Image
-                      src={topThreeInfluencers[0].channel_thumbnails.high.url}
-                      alt={topThreeInfluencers[0].name || "1st Place"}
-                      width={100}
-                      height={100}
-                      className="w-25 h-25 rounded-full object-cover border-4 border-yellow-400 shadow-2xl"
-                    />
-                  ) : (
-                    <div className="w-25 h-25 rounded-full bg-gradient-to-br from-yellow-300 to-yellow-500 flex items-center justify-center border-4 border-yellow-400 shadow-2xl">
-                      <span className="text-2xl font-bold text-white">
-                        {topThreeInfluencers[0]?.name?.match(/\b\w/g)?.join("") || "1"}
-                      </span>
-                    </div>
-                  )}
-                  <div className="absolute -top-2 -right-2 w-10 h-10 bg-gradient-to-br from-yellow-300 to-yellow-500 rounded-full flex items-center justify-center shadow-xl animate-pulse">
-                    <span className="text-2xl">🥇</span>
+              <div className="p-6">
+                {loading || initialLoad ? (
+                  <div className="animate-pulse">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={`skeleton-${i}`} className="mb-4 last:mb-0">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                            <div className="h-4 bg-gray-200 rounded w-32"></div>
+                          </div>
+                          <div className="h-4 bg-gray-200 rounded w-24"></div>
+                        </div>
+                        <div className="h-2 bg-gray-200 rounded-full w-full"></div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-                <h3 className="font-bold text-base text-center text-gray-900 mb-1 line-clamp-2 px-2">
-                  {topThreeInfluencers[0]?.name?.replace(/_/g, " ") || "Unknown"}
-                </h3>
-                <div className="bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 rounded-t-2xl w-full h-40 flex items-center justify-center shadow-2xl">
-                  <span className="text-6xl font-bold text-white">1</span>
-                </div>
-              </div>
-
-              {/* 3rd Place */}
-              <div
-                className="flex flex-col items-center flex-1 max-w-[180px] cursor-pointer hover:scale-105 transition-transform duration-200"
-                onClick={() => {
-                  window.location.href = selectedPlatform === "youtube"
-                    ? `/influencers/${topThreeInfluencers[2]?.id}`
-                    : `/telegram-influencer/${topThreeInfluencers[2]?.id}`;
-                }}
-              >
-                <div className="relative mb-4">
-                  {topThreeInfluencers[2]?.channel_thumbnails?.high?.url ? (
-                    <Image
-                      src={topThreeInfluencers[2].channel_thumbnails.high.url}
-                      alt={topThreeInfluencers[2].name || "3rd Place"}
-                      width={80}
-                      height={80}
-                      className="w-20 h-20 rounded-full object-cover border-4 border-orange-300 shadow-lg"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center border-4 border-orange-300 shadow-lg">
-                      <span className="text-xl font-bold text-white">
-                        {topThreeInfluencers[2]?.name?.match(/\b\w/g)?.join("") || "3"}
-                      </span>
-                    </div>
-                  )}
-                  <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-orange-300 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                    <span className="text-lg">🥉</span>
+                ) : topFiveInfluencers.length > 0 ? (
+                  <div className="space-y-4">
+                    {topFiveInfluencers.map((influencer, index) => (
+                      <div key={influencer.id} className="mb-4 last:mb-0">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3">
+                            <div className="relative">
+                              {influencer.channel_thumbnails?.high?.url ? (
+                                <Image
+                                  src={influencer.channel_thumbnails.high.url}
+                                  alt={influencer.name || "Influencer"}
+                                  width={40}
+                                  height={40}
+                                  className="w-10 h-10 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
+                                  <span className="text-white font-medium">
+                                    {influencer.name?.match(/\b\w/g)?.join("") || "?"}
+                                  </span>
+                                </div>
+                              )}
+                              {index === 0 && (
+                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
+                                  <span className="text-xs">👑</span>
+                                </div>
+                              )}
+                            </div>
+                            <div>
+                              <div className="font-medium text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</div>
+                              <div className="text-sm text-gray-500">{influencer.platform}</div>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm text-gray-500">ROI: {influencer.prob_weighted_returns?.toFixed(1) || 0}%</div>
+                            <span className="text-xs font-medium text-gray-700">{influencer.win_percentage?.toFixed(1) || 0}%</span>
+                          </div>
+                        </div>
+                        <div className="relative">
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className={`${getProgressBarColor(influencer.win_percentage)} h-2 rounded-full transition-all duration-500`}
+                              style={{ width: `${influencer.win_percentage}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                </div>
-                <h3 className="font-semibold text-sm text-center text-gray-800 mb-1 line-clamp-2 px-2">
-                  {topThreeInfluencers[2]?.name?.replace(/_/g, " ") || "Unknown"}
-                </h3>
-                <div className="bg-gradient-to-br from-orange-400 to-orange-600 rounded-t-2xl w-full h-24 flex items-center justify-center shadow-xl">
-                  <span className="text-4xl font-bold text-white">3</span>
-                </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">No influencers found</div>
+                )}
               </div>
             </div>
-          </div>
-        )}
-      </section>
 
-      {/* Leaderboard Table */}
-      <section className="w-full px-4">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-purple-100">
-          {(loading || initialLoad) ? (
-            <div className="animate-pulse">
-              {/* Table Header Skeleton */}
-              <div className="bg-gradient-to-r from-purple-100 to-blue-100 px-6 py-4">
-                <div className="h-6 bg-gray-200 rounded w-48" />
+            {/* Leaderboard Section */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Leaderboard</h2>
               </div>
-              {/* Table Rows Skeleton */}
-              {Array.from({ length: 15 }).map((_, i) => (
-                <div key={`skeleton-${i}`} className="border-b border-gray-200 px-6 py-4 flex items-center gap-4">
-                  <div className="w-8 h-8 bg-gray-200 rounded" />
-                  <div className="w-12 h-12 bg-gray-200 rounded-full" />
-                  <div className="flex-1">
-                    <div className="h-5 bg-gray-200 rounded w-48 mb-2" />
-                    <div className="h-4 bg-gray-200 rounded w-32" />
-                  </div>
-                  <div className="h-5 bg-gray-200 rounded w-20" />
-                </div>
-              ))}
-            </div>
-          ) : error ? (
-            <div className="text-center text-red-600 py-8">{error}</div>
-          ) : (
-            <>
-              {/* Table Header */}
-              <div className="bg-gradient-to-r from-purple-500 to-blue-500 px-6 py-4">
-                <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                  <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                    <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
-                  </svg>
-                  Leaderboard Rankings
-                </h2>
-              </div>
-
-              {/* Table Content */}
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50 border-b-2 border-gray-200">
+                  <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Rank
-                      </th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
-                        Influencer
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider hidden md:table-cell">
-                        ROI
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider hidden md:table-cell">
-                        Win %
-                      </th>
-                      <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider hidden lg:table-cell">
-                        Loss %
-                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Influencer</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">ROI</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Win %</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {paginatedInfluencers.length > 0 ? (
-                      paginatedInfluencers.map((inf, index) => {
-                        const globalRank = startIndex + index + 4; // +4 because we skip top 3
-                        return (
-                          <tr
-                            key={inf.id}
-                            onClick={() => {
-                              window.location.href = selectedPlatform === "youtube"
-                                ? `/influencers/${inf.id}`
-                                : `/telegram-influencer/${inf.id}`;
-                            }}
-                            className="hover:bg-purple-50 transition-colors cursor-pointer group"
-                          >
-                            {/* Rank */}
+                    {loading || initialLoad ? (
+                      Array.from({ length: 10 }).map((_, i) => (
+                        <tr key={`skeleton-row-${i}`}>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="h-4 bg-gray-200 rounded w-4"></div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
+                              <div className="h-4 bg-gray-200 rounded w-32"></div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                            <div className="h-4 bg-gray-200 rounded w-16"></div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                            <div className="h-4 bg-gray-200 rounded w-16"></div>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <>
+                        {/* Include top 5 in the table */}
+                        {topFiveInfluencers.map((influencer, index) => (
+                          <tr key={influencer.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="flex items-center">
-                                <span className="text-2xl font-bold text-gray-400 group-hover:text-purple-600 transition-colors">
-                                  {globalRank}
-                                </span>
+                                {index === 0 && <span className="text-yellow-500 mr-1">🥇</span>}
+                                {index === 1 && <span className="text-gray-400 mr-1">🥈</span>}
+                                {index === 2 && <span className="text-orange-600 mr-1">🥉</span>}
+                                <span className="text-sm font-medium text-gray-900">{index + 1}</span>
                               </div>
                             </td>
-
-                            {/* Influencer Info */}
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center gap-3">
-                                {inf.channel_thumbnails?.high?.url ? (
+                            <td className="px-6 py-4">
+                              <div className="flex items-center mb-2">
+                                {influencer.channel_thumbnails?.high?.url ? (
                                   <Image
-                                    src={inf.channel_thumbnails.high.url}
-                                    alt={inf.name || "Influencer"}
-                                    width={48}
-                                    height={48}
-                                    className="w-12 h-12 rounded-full object-cover border-2 border-purple-200 group-hover:border-purple-400 transition-colors"
+                                    src={influencer.channel_thumbnails.high.url}
+                                    alt={influencer.name || "Influencer"}
+                                    width={32}
+                                    height={32}
+                                    className="w-8 h-8 rounded-full object-cover mr-3"
                                   />
                                 ) : (
-                                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center border-2 border-purple-200 group-hover:border-purple-400 transition-colors">
-                                    <span className="text-sm font-bold text-white">
-                                      {inf.name?.match(/\b\w/g)?.join("") || "?"}
+                                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3">
+                                    <span className="text-white text-xs font-medium">
+                                      {influencer.name?.match(/\b\w/g)?.join("") || "?"}
                                     </span>
                                   </div>
                                 )}
-                                <div className="min-w-0">
-                                  <div className="text-sm font-semibold text-gray-900 group-hover:text-purple-600 transition-colors truncate">
-                                    {inf.name?.replace(/_/g, " ") || "Unknown"}
-                                  </div>
+                                <div className="flex-1">
+                                  <div className="text-sm font-medium text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</div>
+                                  <div className="text-xs text-gray-500">{influencer.platform}</div>
+                                </div>
+                              </div>
+                              <div className="relative ml-11">
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div
+                                    className={`${getProgressBarColor(influencer.win_percentage)} h-2 rounded-full transition-all duration-500`}
+                                    style={{ width: `${influencer.win_percentage}%` }}
+                                  ></div>
                                 </div>
                               </div>
                             </td>
-
-                            {/* ROI */}
                             <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800">
-                                {inf.prob_weighted_returns !== undefined
-                                  ? `${inf.prob_weighted_returns.toFixed(1)}%`
+                                {influencer.prob_weighted_returns !== undefined
+                                  ? `${influencer.prob_weighted_returns.toFixed(1)}%`
                                   : '0%'}
                               </span>
                             </td>
-
-                            {/* Win % */}
                             <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
-                                {typeof inf.win_percentage === 'number'
-                                  ? `${inf.win_percentage.toFixed(1)}%`
-                                  : 'N/A'}
-                              </span>
-                            </td>
-
-                            {/* Loss % */}
-                            <td className="px-6 py-4 whitespace-nowrap text-center hidden lg:table-cell">
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800">
-                                {typeof inf.win_percentage === 'number'
-                                  ? `${(100 - inf.win_percentage).toFixed(1)}%`
+                                {typeof influencer.win_percentage === 'number'
+                                  ? `${influencer.win_percentage.toFixed(1)}%`
                                   : 'N/A'}
                               </span>
                             </td>
                           </tr>
-                        );
-                      })
-                    ) : (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
-                          No influencers found
-                        </td>
-                      </tr>
+                        ))}
+
+                        {/* Paginated remaining influencers */}
+                        {paginatedInfluencers.map((influencer, index) => {
+                          const globalRank = startIndex + index + 6; // +6 because we already showed top 5
+                          return (
+                            <tr key={influencer.id} className="hover:bg-gray-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {globalRank}
+                              </td>
+                              <td className="px-6 py-4">
+                                <div className="flex items-center mb-2">
+                                  {influencer.channel_thumbnails?.high?.url ? (
+                                    <Image
+                                      src={influencer.channel_thumbnails.high.url}
+                                      alt={influencer.name || "Influencer"}
+                                      width={32}
+                                      height={32}
+                                      className="w-8 h-8 rounded-full object-cover mr-3"
+                                    />
+                                  ) : (
+                                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3">
+                                      <span className="text-white text-xs font-medium">
+                                        {influencer.name?.match(/\b\w/g)?.join("") || "?"}
+                                      </span>
+                                    </div>
+                                  )}
+                                  <div className="flex-1">
+                                    <div className="text-sm font-medium text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</div>
+                                    <div className="text-xs text-gray-500">{influencer.platform}</div>
+                                  </div>
+                                </div>
+                                <div className="relative ml-11">
+                                  <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                      className={`${getProgressBarColor(influencer.win_percentage)} h-2 rounded-full transition-all duration-500`}
+                                      style={{ width: `${influencer.win_percentage}%` }}
+                                    ></div>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800">
+                                  {influencer.prob_weighted_returns !== undefined
+                                    ? `${influencer.prob_weighted_returns.toFixed(1)}%`
+                                    : '0%'}
+                                </span>
+                              </td>
+                              <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+                                  {typeof influencer.win_percentage === 'number'
+                                    ? `${influencer.win_percentage.toFixed(1)}%`
+                                    : 'N/A'}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </>
                     )}
                   </tbody>
                 </table>
               </div>
 
-              {/* Pagination Controls */}
+              {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex flex-col items-center px-6 py-6 border-t-2 border-gray-200 space-y-4">
-                  {/* Pagination Info */}
-                  <div className="text-sm text-gray-600 text-center">
-                    Showing {startIndex + 1} to {Math.min(endIndex, totalRemainingInfluencers)} of {totalRemainingInfluencers} influencers
+                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                  <div className="text-sm text-gray-700">
+                    Showing <span className="font-medium">{startIndex + 6}</span> to{" "}
+                    <span className="font-medium">{Math.min(endIndex + 5, filteredInfluencers.length)}</span> of{" "}
+                    <span className="font-medium">{filteredInfluencers.length}</span> results
                   </div>
-
-                  {/* Mobile Pagination - Show only on small screens */}
-                  <div className="flex sm:hidden items-center justify-center space-x-1 w-full">
-                    {/* First Button - Mobile */}
-                    <button
-                      onClick={() => handlePageChange(1)}
-                      disabled={currentPage === 1}
-                      className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                        }`}
-                    >
-                      ‹‹
-                    </button>
-
-                    {/* Previous Button - Mobile */}
+                  <div className="flex items-center space-x-2">
                     <button
                       onClick={handlePrevious}
                       disabled={currentPage === 1}
-                      className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
+                      className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === 1
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                         }`}
                     >
-                      ‹
+                      Previous
                     </button>
-
-                    {/* Current Page Info */}
-                    <div className="flex items-center space-x-2 px-2">
-                      <span className="text-xs text-gray-600">Page</span>
-                      <span className="px-2 py-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded text-xs font-medium">
-                        {currentPage}
-                      </span>
-                      <span className="text-xs text-gray-600">of {totalPages}</span>
-                    </div>
-
-                    {/* Next Button - Mobile */}
-                    <button
-                      onClick={handleNext}
-                      disabled={currentPage === totalPages}
-                      className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                        }`}
-                    >
-                      ›
-                    </button>
-
-                    {/* Last Button - Mobile */}
-                    <button
-                      onClick={() => handlePageChange(totalPages)}
-                      disabled={currentPage === totalPages}
-                      className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                        }`}
-                    >
-                      ››
-                    </button>
-                  </div>
-
-                  {/* Desktop/Tablet Pagination - Show on medium screens and up */}
-                  <div className="hidden sm:flex items-center space-x-1 md:space-x-2 flex-wrap justify-center">
-                    {/* First Button - Desktop */}
-                    <button
-                      onClick={() => handlePageChange(1)}
-                      disabled={currentPage === 1}
-                      className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                        }`}
-                    >
-                      &lt;&lt;
-                    </button>
-
-                    {/* Previous Button - Desktop */}
-                    <button
-                      onClick={handlePrevious}
-                      disabled={currentPage === 1}
-                      className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                        }`}
-                    >
-                      &lt;
-                    </button>
-
-                    {/* First Page */}
-                    {getPageNumbers()[0] > 1 && (
-                      <>
-                        <button
-                          onClick={() => handlePageChange(1)}
-                          className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500 transition-all duration-200"
-                        >
-                          1
-                        </button>
-                        {getPageNumbers()[0] > 2 && (
-                          <span className="text-gray-600 text-xs">...</span>
-                        )}
-                      </>
-                    )}
-
-                    {/* Page Numbers */}
                     {getPageNumbers().map((page) => (
                       <button
                         key={page}
                         onClick={() => handlePageChange(page)}
-                        className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === page
-                          ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
+                        className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === page
+                          ? "bg-blue-600 text-white"
+                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                           }`}
                       >
                         {page}
                       </button>
                     ))}
-
-                    {/* Last Page */}
-                    {getPageNumbers()[getPageNumbers().length - 1] < totalPages && (
-                      <>
-                        {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
-                          <span className="text-gray-600 text-xs">...</span>
-                        )}
-                        <button
-                          onClick={() => handlePageChange(totalPages)}
-                          className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500 transition-all duration-200"
-                        >
-                          {totalPages}
-                        </button>
-                      </>
-                    )}
-
-                    {/* Next Button - Desktop */}
                     <button
                       onClick={handleNext}
                       disabled={currentPage === totalPages}
-                      className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
+                      className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === totalPages
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
                         }`}
                     >
-                      &gt;
-                    </button>
-
-                    {/* Last Button - Desktop */}
-                    <button
-                      onClick={() => handlePageChange(totalPages)}
-                      disabled={currentPage === totalPages}
-                      className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 hover:border-purple-500'
-                        }`}
-                    >
-                      &gt;&gt;
+                      Next
                     </button>
                   </div>
                 </div>
               )}
-            </>
-          )}
+            </div>
+          </div>
+
+          {/* Right Sidebar - Stats and Badges */}
+          <div className="w-full lg:w-80">
+            {/* Monthly Sales Target */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Monthly Sales Target</h2>
+              </div>
+              <div className="p-6">
+                <div className="mb-4">
+                  <div className="flex justify-between items-end mb-2">
+                    <span className="text-2xl font-bold text-gray-900">£{currentEarnings.toLocaleString()}</span>
+                    <span className="text-sm text-gray-500">of £{monthlyTarget.toLocaleString()}</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-3">
+                    <div
+                      className="bg-blue-600 h-3 rounded-full"
+                      style={{ width: `${Math.min((currentEarnings / monthlyTarget) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <div className="mt-2 text-sm text-gray-600">
+                    {Math.round((currentEarnings / monthlyTarget) * 100)}% Complete
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Top Seller Badges */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Achievements</h2>
+              </div>
+              <div className="p-6 space-y-4">
+                {/* Top Seller Last Month */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">🏆</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">Top seller last month</div>
+                    <div className="text-sm text-gray-500">
+                      {topInfluencer?.name?.replace(/_/g, " ") || "John Smith"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Best Deal Ever */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">💎</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">Best deal ever</div>
+                    <div className="text-sm text-gray-500">
+                      {bestDealInfluencer?.name?.replace(/_/g, " ") || "John Smith"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Most Transactions */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">📈</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">Most transactions</div>
+                    <div className="text-sm text-gray-500">
+                      {filteredInfluencers[0]?.name?.replace(/_/g, " ") || "John Smith"}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Highest Win Rate */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-2xl">🎯</span>
+                  </div>
+                  <div>
+                    <div className="font-medium text-gray-900">Highest win rate</div>
+                    <div className="text-sm text-gray-500">
+                      {filteredInfluencers.length > 0
+                        ? filteredInfluencers.reduce((prev, current) =>
+                            (prev.win_percentage > current.win_percentage) ? prev : current
+                          )?.name?.replace(/_/g, " ") || "John Smith"
+                        : "John Smith"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-semibold text-gray-900">Quick Stats</h2>
+              </div>
+              <div className="p-6 space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Total Influencers</span>
+                  <span className="text-sm font-medium text-gray-900">{filteredInfluencers.length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Average ROI</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {filteredInfluencers.length > 0
+                      ? (filteredInfluencers.reduce((sum, inf) => sum + (inf.prob_weighted_returns || 0), 0) / filteredInfluencers.length).toFixed(1) + "%"
+                      : "0%"
+                    }
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Average Win Rate</span>
+                  <span className="text-sm font-medium text-gray-900">
+                    {filteredInfluencers.length > 0
+                      ? (filteredInfluencers.reduce((sum, inf) => sum + (inf.win_percentage || 0), 0) / filteredInfluencers.length).toFixed(1) + "%"
+                      : "0%"
+                    }
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-600">Total Revenue</span>
+                  <span className="text-sm font-medium text-gray-900">£{currentEarnings.toLocaleString()}</span>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
-    </div >
+      </main>
+    </div>
   );
 }

@@ -8,9 +8,15 @@ import CTASection from "../components/CTASection";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
+import { useTop10LivePrice } from "../livePriceTop10";
+import { useTimezone } from "../contexts/TimezoneContext";
 
 export default function HomePage() {
   const router = useRouter();
+  const { top10Data, isConnected } = useTop10LivePrice();
+  const { useLocalTime } = useTimezone();
+  const scrollingData = [...top10Data, ...top10Data];
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [influencerData, setInfluencerData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -266,7 +272,50 @@ export default function HomePage() {
 
         {/* YouTube Telegram Data Table Guage Component */}
         <div className="mt-16">
-          <YouTubeTelegramDataTable />
+          <YouTubeTelegramDataTable useLocalTime={useLocalTime} />
+        </div>
+
+        {/* Influencer Flash News Text */}
+        <h2 className="text-center text-gray-900 text-2xl font-bold mb-3 mt-10">
+          Live Prices <span className="text-gray-600 text-sm">(Source Binance)</span>
+        </h2>
+        {/* Influencer News Scroller Container */}
+        <div className="relative h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl border border-blue-200 overflow-hidden shadow-2xl mb-4">
+          {/* Continuous Left-to-Right Scrolling News */}
+          <div className="absolute inset-0 flex items-center">
+            <motion.div
+              animate={{
+                x: [0, -1920],
+              }}
+              transition={{
+                x: {
+                  repeat: Infinity,
+                  repeatType: "loop",
+                  duration: 40,
+                  ease: "linear",
+                },
+              }}
+              className="flex whitespace-nowrap"
+            >
+              {[...scrollingData, ...scrollingData, ...scrollingData].map((item, index) => (
+                <div
+                  key={item.symbol + index}
+                  className="flex items-center space-x-4 bg-gradient-to-r from-purple-800/20 to-blue-800/20 px-6 py-2 rounded-xl border border-purple-400/30 mx-4 flex-shrink-0 w-48"
+                >
+                  <span className="text-purple-500 font-bold text-sm">
+                    📈 {item.symbol}
+                  </span>
+                  <span className="text-gray-900 font-semibold">
+                    {typeof item.price === 'number' ? `${item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : item.price}
+                  </span>
+                </div>
+              ))}
+            </motion.div>
+          </div>
+
+          {/* Gradient Overlay Edges */}
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-gray-200 to-transparent"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-gray-200 to-transparent"></div>
         </div>
 
         {/* Testimonials Section */}
