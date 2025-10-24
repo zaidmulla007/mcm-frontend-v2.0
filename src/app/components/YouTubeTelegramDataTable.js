@@ -292,23 +292,23 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         {/* Long Term */}
                                                         <div>
                                                             <div className="mb-1 text-xs whitespace-nowrap">
-                                                                <span className="font-semibold text-black">Long Term: {longTermPosts} posts</span>
+                                                                <span className="font-semibold text-black">Long Term:{longTermPosts} posts</span>
                                                             </div>
                                                             {longTermPosts === 0 ? (
                                                                 <>
                                                                     <div className="segmented-bar-container mb-1">
-                                                                        <div className="segmented-bar-background">
-                                                                            <div className="segment" style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
-                                                                            <div className="segment" style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
-                                                                            <div className="segment" style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
+                                                                        <div style={{ display: 'flex', width: '100%', height: '100%' }}>
+                                                                            <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
+                                                                            <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
+                                                                            <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
                                                                         </div>
                                                                         <div
-                                                                            className="percentage-ball-gray"
-                                                                            style={{ left: '50%' }}
+                                                                            className="percentage-ball"
+                                                                            style={{ left: '45%', position: 'absolute' }}
                                                                         />
                                                                     </div>
                                                                     <div className="font-semibold text-xs text-center text-gray-500">
-                                                                        - Not Applicable
+                                                                        Not Applicable
                                                                     </div>
                                                                 </>
                                                             ) : (
