@@ -253,9 +253,10 @@ export default function HomePage() {
               influencerData.map((influencer, index) => {
                 // Define rank labels for each card
                 const rankLabels = ['Rank #1hr', 'Rank #24hrs', 'Rank #7days'];
+                const channelId = influencer?.id || influencer?.channel_id || influencer?.channelId || `influencer-${index}`;
                 return (
                   <InfluencerFlashCard
-                    key={index}
+                    key={channelId}
                     data={influencer}
                     rank={index + 1}
                     rankLabel={rankLabels[index]}

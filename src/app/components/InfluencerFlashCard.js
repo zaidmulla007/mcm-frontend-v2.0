@@ -1,12 +1,11 @@
 "use client";
 
 import { FaInfoCircle, FaStar } from "react-icons/fa";
-import { useState } from "react";
+import { useState, useMemo, memo } from "react";
 import Image from "next/image";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LabelList } from "recharts";
 
 // Moon Phase Component
-const MoonPhase = ({ percentage, year }) => {
+const MoonPhase = memo(({ percentage, year }) => {
   const getShadowPath = (percent) => {
     const radius = 28;
     const centerX = 32;
@@ -38,14 +37,14 @@ const MoonPhase = ({ percentage, year }) => {
     <svg width="64" height="64" viewBox="0 0 64 64">
       <defs>
         <radialGradient id={`moonGlow-${year}`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#FFF4A3" stopOpacity="0.2" />
-          <stop offset="100%" stopColor="#FFF4A3" stopOpacity="0" />
+          <stop offset="0%" stopColor="#dbeafe" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#dbeafe" stopOpacity="0" />
         </radialGradient>
 
         <radialGradient id={`moonSurface-${year}`} cx="35%" cy="35%">
-          <stop offset="0%" stopColor="#FFF9C4" />
-          <stop offset="50%" stopColor="#FFD54F" />
-          <stop offset="100%" stopColor="#FFC107" />
+          <stop offset="0%" stopColor="#dbeafe" />
+          <stop offset="50%" stopColor="#bfdbfe" />
+          <stop offset="100%" stopColor="#93c5fd" />
         </radialGradient>
       </defs>
 
@@ -56,11 +55,11 @@ const MoonPhase = ({ percentage, year }) => {
       <circle cx="32" cy="32" r="28" fill={`url(#moonSurface-${year})`} />
 
       {/* Craters */}
-      <circle cx="24" cy="24" r="4" fill="#F9A825" opacity="0.4" />
-      <circle cx="38" cy="28" r="5" fill="#F9A825" opacity="0.3" />
-      <circle cx="28" cy="38" r="3" fill="#F9A825" opacity="0.35" />
-      <circle cx="40" cy="22" r="2.5" fill="#F9A825" opacity="0.4" />
-      <circle cx="35" cy="40" r="2" fill="#F9A825" opacity="0.3" />
+      <circle cx="24" cy="24" r="4" fill="#60a5fa" opacity="0.4" />
+      <circle cx="38" cy="28" r="5" fill="#60a5fa" opacity="0.3" />
+      <circle cx="28" cy="38" r="3" fill="#60a5fa" opacity="0.35" />
+      <circle cx="40" cy="22" r="2.5" fill="#60a5fa" opacity="0.4" />
+      <circle cx="35" cy="40" r="2" fill="#60a5fa" opacity="0.3" />
 
       {/* Shadow overlay */}
       <path
@@ -78,9 +77,11 @@ const MoonPhase = ({ percentage, year }) => {
       />
     </svg>
   );
-};
+});
 
-export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn, onViewFull }) {
+MoonPhase.displayName = 'MoonPhase';
+
+const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFull }) => {
   const [showTooltip, setShowTooltip] = useState(null);
 
   // Calculate star rating from trust score (0-5 stars)
@@ -214,6 +215,89 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
 
   const moonshotProb = extractMoonshotProb(data, channelType);
 
+  // Get current year once - stable value
+  const currentYear = useMemo(() => new Date().getFullYear().toString(), []);
+
+  // Memoize chart data to prevent flickering
+  const totalCallsChartData = useMemo(() => {
+    if (!data?.Yearly) return null;
+
+    const overallData = data.Yearly;
+
+    const transformYearlyData = (yearlyData) => {
+      if (!yearlyData) return [];
+      return Object.keys(yearlyData)
+        .map((year) => ({
+          year,
+          total: (yearlyData[year]?.bullish_count || 0) + (yearlyData[year]?.bearish_count || 0),
+        }))
+        .sort((a, b) => a.year.localeCompare(b.year));
+    };
+
+    const chartData = transformYearlyData(overallData).map((item) => ({
+      year: item.year === currentYear ? item.year + '*' : item.year,
+      total: item.total,
+    }));
+
+    return chartData;
+  }, [data?.Yearly, currentYear]);
+
+  // Memoize ROI graph data points to prevent recalculation on every render
+  const roiGraphData = useMemo(() => {
+    if (!data?.Yearly || Object.keys(totalCalls).length === 0) return null;
+
+    const dataPoints = [];
+    const years = new Set();
+
+    if (data?.Yearly) {
+      Object.keys(data.Yearly).forEach(year => years.add(year));
+    }
+    Object.keys(totalCalls).forEach(quarter => {
+      years.add(quarter.substring(0, 4));
+    });
+
+    const sortedYears = Array.from(years).sort((a, b) => a.localeCompare(b));
+    const currentMonth = new Date().getMonth() + 1;
+
+    const getCurrentQuarterLimit = (month) => {
+      if (month <= 3) return 0;
+      if (month <= 6) return 1;
+      if (month <= 9) return 2;
+      return 3;
+    };
+
+    const maxQuarterToShow = getCurrentQuarterLimit(currentMonth);
+
+    sortedYears.forEach(year => {
+      if (data?.Yearly?.[year]) {
+        const roi = data.Yearly[year]?.["180_days"]?.probablity_weighted_returns_percentage || 0;
+        const clampedRoi = Math.max(-100, Math.min(100, roi));
+        const yearLabel = year === currentYear ? year + '*' : year;
+        dataPoints.push({ label: yearLabel, value: clampedRoi, actualValue: roi, isYearly: true });
+      }
+
+      const quarters = Object.keys(totalCalls)
+        .filter(q => q.startsWith(year))
+        .sort((a, b) => a.localeCompare(b));
+
+      quarters.forEach(quarter => {
+        if (year === currentYear) {
+          const quarterNum = quarter.substring(4);
+          const quarterIndex = parseInt(quarterNum.substring(1));
+          if (quarterIndex > maxQuarterToShow) {
+            return;
+          }
+        }
+
+        const roi = data?.Quarterly?.[quarter]?.["180_days"]?.probablity_weighted_returns_percentage || 0;
+        const clampedRoi = Math.max(-100, Math.min(100, roi));
+        dataPoints.push({ label: quarter, value: clampedRoi, actualValue: roi, isYearly: false });
+      });
+    });
+
+    return dataPoints;
+  }, [data?.Yearly, data?.Quarterly, totalCalls, currentYear]);
+
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
       {/* Header */}
@@ -300,58 +384,79 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
           </div>
 
           {/* Chart Container */}
-          <div className="mt-3 bg-white rounded-lg p-3 border border-gray-200 overflow-x-auto">
-            {data?.Yearly ? (
+          <div className="mt-3 bg-white rounded-lg p-3 border border-gray-200">
+            {totalCallsChartData && totalCallsChartData.length > 0 ? (
               (() => {
-                const currentYear = new Date().getFullYear().toString();
-                const overallData = data?.Yearly || {};
+                const data = totalCallsChartData;
+                const width = 350;
+                const height = 180;
+                const padding = { top: 30, right: 20, bottom: 40, left: 20 };
+                const chartWidth = width - padding.left - padding.right;
+                const chartHeight = height - padding.top - padding.bottom;
 
-                const transformYearlyData = (yearlyData) => {
-                  if (!yearlyData) return [];
-                  return Object.keys(yearlyData)
-                    .map((year) => ({
-                      year,
-                      total: (yearlyData[year]?.bullish_count || 0) + (yearlyData[year]?.bearish_count || 0),
-                    }))
-                    .sort((a, b) => a.year.localeCompare(b.year));
-                };
-
-                const chartData = transformYearlyData(overallData).map((item) => ({
-                  year: item.year === currentYear ? item.year + '*' : item.year,
-                  total: item.total,
-                }));
-
-                if (chartData.length === 0) {
-                  return (
-                    <div className="h-24 flex items-center justify-center text-gray-400 text-xs">
-                      No recommendation data available
-                    </div>
-                  );
-                }
+                // Find max value for scaling
+                const maxValue = Math.max(...data.map(d => d.total));
+                const barWidth = chartWidth / data.length;
+                const barPadding = barWidth * 0.2;
 
                 return (
-                  <div className="flex flex-col items-center">
-                    <ResponsiveContainer width="100%" height={180}>
-                      <BarChart
-                        data={chartData}
-                        margin={{ top: 25, right: 5, left: 0, bottom: 25 }}
-                      >
-                        <XAxis dataKey="year" tick={{ fontSize: 10 }} stroke="#666" />
-                        <YAxis hide />
-                        <Bar
-                          dataKey="total"
-                          fill="#1e3a8a"
-                          radius={[4, 4, 0, 0]}
-                          barSize={30}
-                        >
-                          <LabelList
-                            dataKey="total"
-                            position="top"
-                            style={{ fontSize: '10px', fill: '#333' }}
-                          />
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <div className="flex justify-center">
+                    <svg width={width} height={height}>
+                      {/* Bars */}
+                      {data.map((item, index) => {
+                        const barHeight = (item.total / maxValue) * chartHeight;
+                        const x = padding.left + (index * barWidth) + barPadding / 2;
+                        const y = padding.top + (chartHeight - barHeight);
+
+                        return (
+                          <g key={`${item.year}-${item.total}`}>
+                            {/* Bar */}
+                            <rect
+                              x={x}
+                              y={y}
+                              width={barWidth - barPadding}
+                              height={barHeight}
+                              fill="#1e3a8a"
+                              rx="4"
+                            />
+
+                            {/* Value label on top */}
+                            <text
+                              x={x + (barWidth - barPadding) / 2}
+                              y={y - 5}
+                              textAnchor="middle"
+                              fontSize="10"
+                              fill="#333"
+                              fontWeight="bold"
+                            >
+                              {item.total}
+                            </text>
+
+                            {/* Year label at bottom */}
+                            <text
+                              x={x + (barWidth - barPadding) / 2}
+                              y={height - padding.bottom + 20}
+                              textAnchor="middle"
+                              fontSize="10"
+                              fill="#666"
+                              fontWeight="bold"
+                            >
+                              {item.year}
+                            </text>
+                          </g>
+                        );
+                      })}
+
+                      {/* X-axis line */}
+                      <line
+                        x1={padding.left}
+                        y1={height - padding.bottom}
+                        x2={width - padding.right}
+                        y2={height - padding.bottom}
+                        stroke="#666"
+                        strokeWidth="1"
+                      />
+                    </svg>
                   </div>
                 );
               })()
@@ -402,72 +507,9 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
           </div>
           {/* Line Graph */}
           <div className="mt-3 bg-white rounded-lg p-4 border border-gray-200 overflow-x-auto">
-            {Object.keys(totalCalls).length > 0 ? (
+            {roiGraphData && roiGraphData.length > 0 ? (
               (() => {
-                // Collect all data points organized by year, then quarters
-                const dataPoints = [];
-
-                // Get all unique years from both Yearly and Quarterly data
-                const years = new Set();
-                if (data?.Yearly) {
-                  Object.keys(data.Yearly).forEach(year => years.add(year));
-                }
-                Object.keys(totalCalls).forEach(quarter => {
-                  years.add(quarter.substring(0, 4));
-                });
-
-                // Sort years from oldest to newest (2021 to 2025)
-                const sortedYears = Array.from(years).sort((a, b) => a.localeCompare(b));
-
-                // Get current year and month for dynamic quarter filtering
-                const currentDate = new Date();
-                const currentYear = currentDate.getFullYear().toString();
-                const currentMonth = currentDate.getMonth() + 1; // 1-12
-
-                // Calculate which quarters should be displayed based on current month
-                // Q1: Jan-Mar (months 1-3), Q2: Apr-Jun (months 4-6), Q3: Jul-Sep (months 7-9), Q4: Oct-Dec (months 10-12)
-                // Show quarters that have been completed (previous quarter)
-                const getCurrentQuarterLimit = (month) => {
-                  if (month <= 3) return 0; // Jan-Mar: No complete quarters yet
-                  if (month <= 6) return 1; // Apr-Jun: Q1 complete
-                  if (month <= 9) return 2; // Jul-Sep: Q1, Q2 complete
-                  return 3; // Oct-Dec: Q1, Q2, Q3 complete
-                };
-
-                const maxQuarterToShow = getCurrentQuarterLimit(currentMonth);
-
-                // For each year, add year data first, then its quarters
-                sortedYears.forEach(year => {
-                  // Add yearly data point
-                  if (data?.Yearly?.[year]) {
-                    const roi = data.Yearly[year]?.["180_days"]?.probablity_weighted_returns_percentage || 0;
-                    const clampedRoi = Math.max(-100, Math.min(100, roi));
-                    const yearLabel = year === currentYear ? year + '*' : year;
-                    dataPoints.push({ label: yearLabel, value: clampedRoi, actualValue: roi, isYearly: true });
-                  }
-
-                  // Add quarterly data points for this year (Q1, Q2, Q3, Q4)
-                  const quarters = Object.keys(totalCalls)
-                    .filter(q => q.startsWith(year))
-                    .sort((a, b) => a.localeCompare(b)); // Q1 to Q4
-
-                  quarters.forEach(quarter => {
-                    // For current year, only show quarters that have been analyzed
-                    if (year === currentYear) {
-                      const quarterNum = quarter.substring(4); // Extract Q1, Q2, Q3, Q4 (e.g., "2025Q1" -> "Q1")
-                      const quarterIndex = parseInt(quarterNum.substring(1)); // Get 1, 2, 3, or 4
-
-                      // Skip quarters that haven't been analyzed yet
-                      if (quarterIndex > maxQuarterToShow) {
-                        return;
-                      }
-                    }
-
-                    const roi = data?.Quarterly?.[quarter]?.["180_days"]?.probablity_weighted_returns_percentage || 0;
-                    const clampedRoi = Math.max(-100, Math.min(100, roi));
-                    dataPoints.push({ label: quarter, value: clampedRoi, actualValue: roi, isYearly: false });
-                  });
-                });
+                const dataPoints = roiGraphData;
 
                 // Fixed Y-axis scale for consistency across all graphs
                 const yMax = 100;
@@ -695,4 +737,8 @@ export default function InfluencerFlashCard({ data, rank, rankLabel, isLoggedIn,
       </div>
     </div>
   );
-}
+});
+
+InfluencerFlashCard.displayName = 'InfluencerFlashCard';
+
+export default InfluencerFlashCard;

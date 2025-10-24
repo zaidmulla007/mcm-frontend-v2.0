@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import Link from "next/link";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getYearOptions, getQuarterOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
@@ -35,13 +36,20 @@ export default function InfluencerSearchPage() {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 15;
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [initialLoad, setInitialLoad] = useState(true);
+
+  // Animation state for ranking transitions
+  const previousRankingsRef = useRef({});
+  const previousFiltersRef = useRef(null);
+  const animationTimerRef = useRef(null);
+  const isFirstRenderRef = useRef(true);
+  const [positions, setPositions] = useState({});
 
   // Dropdown state
   const [selectedInfluencer, setSelectedInfluencer] = useState("");
@@ -65,7 +73,10 @@ export default function InfluencerSearchPage() {
 
   // Memoized API call functions
   const fetchYouTubeData = useCallback(async () => {
-    setLoading(true);
+    // Only show loading on first load
+    if (isFirstRenderRef.current) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const params = new URLSearchParams(apiParams);
@@ -86,13 +97,19 @@ export default function InfluencerSearchPage() {
       setError("Failed to fetch YouTube data");
       setYoutubeInfluencers([]);
     } finally {
-      setLoading(false);
-      setInitialLoad(false);
+      if (isFirstRenderRef.current) {
+        setLoading(false);
+        setInitialLoad(false);
+        isFirstRenderRef.current = false;
+      }
     }
   }, [apiParams]);
 
   const fetchTelegramData = useCallback(async () => {
-    setLoading(true);
+    // Only show loading on first load
+    if (isFirstRenderRef.current) {
+      setLoading(true);
+    }
     setError(null);
     try {
       const params = new URLSearchParams(apiParams);
@@ -113,22 +130,21 @@ export default function InfluencerSearchPage() {
       setError("Failed to fetch Telegram data");
       setTelegramInfluencers([]);
     } finally {
-      setLoading(false);
-      setInitialLoad(false);
+      if (isFirstRenderRef.current) {
+        setLoading(false);
+        setInitialLoad(false);
+        isFirstRenderRef.current = false;
+      }
     }
   }, [apiParams]);
 
   useEffect(() => {
-    // Add a small delay to allow page to render first
-    const timer = setTimeout(() => {
-      if (selectedPlatform === "youtube") {
-        fetchYouTubeData();
-      } else if (selectedPlatform === "telegram") {
-        fetchTelegramData();
-      }
-    }, 100); // 100ms delay for immediate page render
-
-    return () => clearTimeout(timer);
+    // Fetch data when platform or filters change
+    if (selectedPlatform === "youtube") {
+      fetchYouTubeData();
+    } else if (selectedPlatform === "telegram") {
+      fetchTelegramData();
+    }
   }, [selectedPlatform, fetchYouTubeData, fetchTelegramData]);
 
   // Close dropdown when clicking outside
@@ -218,6 +234,87 @@ export default function InfluencerSearchPage() {
 
   const filteredInfluencers = getFilteredInfluencers();
 
+  // Track ranking changes for animations - only trigger when filters change
+  useEffect(() => {
+    const currentFilters = JSON.stringify(apiParams);
+    const filtersChanged = previousFiltersRef.current !== null && previousFiltersRef.current !== currentFilters;
+
+    if (filtersChanged && filteredInfluencers.length > 0) {
+      // First, set positions to show items at their OLD positions
+      const oldPositions = {};
+
+      filteredInfluencers.forEach((inf, newIndex) => {
+        const oldIndex = previousRankingsRef.current[inf.id];
+        if (oldIndex !== undefined && oldIndex !== newIndex) {
+          // Calculate the Y offset: how far this item needs to move FROM its old position TO its new position
+          const positionChange = oldIndex - newIndex;
+          oldPositions[inf.id] = {
+            offsetY: positionChange * 100, // Approximate height per item (cards or rows)
+            delay: newIndex * 0.08 // Stagger based on NEW position (0.08s between each card)
+          };
+        } else {
+          oldPositions[inf.id] = {
+            offsetY: 0,
+            delay: newIndex * 0.08 // Even non-moving items get staggered for visual consistency
+          };
+        }
+      });
+
+      // Set initial positions (items at their old positions)
+      setPositions(oldPositions);
+
+      // After a brief delay, animate to new positions (offsetY: 0)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const newPositions = {};
+          filteredInfluencers.forEach((inf, newIndex) => {
+            newPositions[inf.id] = {
+              offsetY: 0,
+              delay: newIndex * 0.08 // Keep the same stagger timing
+            };
+          });
+          setPositions(newPositions);
+        });
+      });
+
+      // Update previous rankings
+      const newRankings = {};
+      filteredInfluencers.forEach((inf, index) => {
+        newRankings[inf.id] = index;
+      });
+      previousRankingsRef.current = newRankings;
+      previousFiltersRef.current = currentFilters;
+
+      // Clear animation after delay
+      if (animationTimerRef.current) {
+        clearTimeout(animationTimerRef.current);
+      }
+
+      // Calculate total animation time based on number of items
+      const totalAnimationTime = (filteredInfluencers.length * 80) + 1000;
+
+      animationTimerRef.current = setTimeout(() => {
+        setPositions({});
+        animationTimerRef.current = null;
+      }, totalAnimationTime);
+    } else if (previousFiltersRef.current === null && filteredInfluencers.length > 0) {
+      // Initialize on first load
+      previousFiltersRef.current = currentFilters;
+      const initRankings = {};
+      filteredInfluencers.forEach((inf, index) => {
+        initRankings[inf.id] = index;
+      });
+      previousRankingsRef.current = initRankings;
+    }
+
+    return () => {
+      if (animationTimerRef.current) {
+        clearTimeout(animationTimerRef.current);
+      }
+    };
+  }, [apiParams, filteredInfluencers]);
+
+
   const handlePageChange = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -232,6 +329,18 @@ export default function InfluencerSearchPage() {
   const handleNext = () => {
     if (currentPage < totalPages) {
       handlePageChange(currentPage + 1);
+    }
+  };
+
+  const handleFirst = () => {
+    if (currentPage !== 1) {
+      handlePageChange(1);
+    }
+  };
+
+  const handleLast = () => {
+    if (currentPage !== totalPages) {
+      handlePageChange(totalPages);
     }
   };
 
@@ -304,14 +413,12 @@ export default function InfluencerSearchPage() {
 
   // Get top 5 influencers for top sellers section
   const topFiveInfluencers = filteredInfluencers.slice(0, 5);
-  const remainingInfluencers = filteredInfluencers.slice(5);
 
-  // Pagination for table (excluding top 5)
-  const totalRemainingInfluencers = remainingInfluencers.length;
-  const totalPages = Math.ceil(totalRemainingInfluencers / itemsPerPage);
+  // Pagination for ALL influencers (including top 5)
+  const totalPages = Math.ceil(filteredInfluencers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedInfluencers = remainingInfluencers.slice(startIndex, endIndex);
+  const paginatedInfluencers = filteredInfluencers.slice(startIndex, endIndex);
 
   // Hardcoded data for the right sidebar
   const monthlyTarget = 1000000;
@@ -320,19 +427,84 @@ export default function InfluencerSearchPage() {
   const bestDealInfluencer = filteredInfluencers[0];
 
   // Helper function to get progress bar color based on win percentage
-  const getProgressBarColor = (winPercentage) => {
-    if (winPercentage >= 80) return 'bg-green-500';
-    if (winPercentage >= 60) return 'bg-blue-500';
-    if (winPercentage >= 40) return 'bg-yellow-500';
-    return 'bg-red-500';
+  const getProgressBarColor = () => {
+    return 'bg-gradient-to-r from-blue-600 to-purple-600';
   };
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 font-sans">
+      <style jsx>{`
+        @keyframes pulseHighlight {
+          0%, 100% {
+            box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
+            border-color: rgba(147, 51, 234, 0);
+          }
+          50% {
+            box-shadow: 0 0 20px 4px rgba(147, 51, 234, 0.5);
+            border-color: rgba(147, 51, 234, 0.3);
+          }
+        }
+
+        @keyframes rankNumberPulse {
+          0%, 100% {
+            transform: scale(1);
+            color: inherit;
+          }
+          50% {
+            transform: scale(1.3);
+            color: rgb(147, 51, 234);
+          }
+        }
+
+        .card-transition {
+          transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                      opacity 0.8s ease,
+                      box-shadow 0.8s ease;
+          position: relative;
+          z-index: 1;
+          will-change: transform;
+        }
+
+        .card-moving {
+          z-index: 10;
+          box-shadow: 0 10px 40px rgba(147, 51, 234, 0.4);
+        }
+
+        .row-transition {
+          transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                      opacity 0.6s ease,
+                      background-color 0.3s ease;
+          position: relative;
+          z-index: 1;
+          will-change: transform;
+        }
+
+        .row-moving {
+          z-index: 10;
+          background-color: rgba(147, 51, 234, 0.08) !important;
+        }
+
+        .rank-number-animate {
+          animation: rankNumberPulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .highlight-pulse {
+          animation: pulseHighlight 1s ease-in-out;
+        }
+
+        .top-seller-card {
+          transition: all 0.3s ease;
+        }
+
+        .top-seller-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+      `}</style>
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 text-center">Influencer Performance Dashboard</h1>
+          <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Influencer Performance Dashboard</h1>
         </div>
       </header>
 
@@ -443,79 +615,90 @@ export default function InfluencerSearchPage() {
       </section>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 pb-8">
-        <div className="flex flex-col lg:flex-row gap-6">
+      <main className="max-w-7xl mx-auto px-4 pb-8 overflow-x-hidden">
+        <div className="flex flex-col lg:flex-row gap-6 min-w-0">
           {/* Left Content - Top Sellers and Leaderboard */}
-          <div className="flex-1">
+          <div className="flex-1 min-w-0">
             {/* Top Sellers Section */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-900">Top Sellers</h2>
               </div>
               <div className="p-6">
-                {loading || initialLoad ? (
-                  <div className="animate-pulse">
+                {initialLoad ? (
+                  <div className="animate-pulse grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={`skeleton-${i}`} className="mb-4 last:mb-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
-                            <div className="h-4 bg-gray-200 rounded w-32"></div>
-                          </div>
-                          <div className="h-4 bg-gray-200 rounded w-24"></div>
-                        </div>
-                        <div className="h-2 bg-gray-200 rounded-full w-full"></div>
-                      </div>
+                      <div key={`skeleton-${i}`} className="w-full h-32 bg-gray-200 rounded-lg"></div>
                     ))}
                   </div>
                 ) : topFiveInfluencers.length > 0 ? (
-                  <div className="space-y-4">
-                    {topFiveInfluencers.map((influencer, index) => (
-                      <div key={influencer.id} className="mb-4 last:mb-0">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-3">
-                            <div className="relative">
-                              {influencer.channel_thumbnails?.high?.url ? (
-                                <Image
-                                  src={influencer.channel_thumbnails.high.url}
-                                  alt={influencer.name || "Influencer"}
-                                  width={40}
-                                  height={40}
-                                  className="w-10 h-10 rounded-full object-cover"
-                                />
-                              ) : (
-                                <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center">
-                                  <span className="text-white font-medium">
-                                    {influencer.name?.match(/\b\w/g)?.join("") || "?"}
-                                  </span>
-                                </div>
-                              )}
-                              {index === 0 && (
-                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
-                                  <span className="text-xs">👑</span>
-                                </div>
-                              )}
-                            </div>
-                            <div>
-                              <div className="font-medium text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</div>
-                              <div className="text-sm text-gray-500">{influencer.platform}</div>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-sm text-gray-500">ROI: {influencer.prob_weighted_returns?.toFixed(1) || 0}%</div>
-                            <span className="text-xs font-medium text-gray-700">{influencer.win_percentage?.toFixed(1) || 0}%</span>
-                          </div>
-                        </div>
-                        <div className="relative">
-                          <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                    {topFiveInfluencers.map((influencer, index) => {
+                      const position = positions[influencer.id];
+                      const isMoving = position && Math.abs(position.offsetY) > 0;
+
+                      return (
+                      <Link
+                        key={influencer.id}
+                        href={
+                          selectedPlatform === "youtube"
+                            ? `/influencers/${influencer.id}`
+                            : `/telegram-influencer/${influencer.id}`
+                        }
+                        className={`top-seller-card card-transition w-full bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4 border border-gray-200 ${
+                          isMoving ? 'card-moving highlight-pulse' : ''
+                        }`}
+                        style={{
+                          transform: position ? `translateY(${position.offsetY}px)` : 'translateY(0)',
+                          transitionDelay: position ? `${position.delay}s` : '0s'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex flex-col items-center text-center space-y-2">
+                          <div className="relative">
+                            {influencer.channel_thumbnails?.high?.url ? (
+                              <Image
+                                src={influencer.channel_thumbnails.high.url}
+                                alt={influencer.name || "Influencer"}
+                                width={48}
+                                height={48}
+                                className="w-12 h-12 rounded-full object-cover"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
                             <div
-                              className={`${getProgressBarColor(influencer.win_percentage)} h-2 rounded-full transition-all duration-500`}
-                              style={{ width: `${influencer.win_percentage}%` }}
-                            ></div>
+                              className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center"
+                              style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
+                            >
+                              <span className="text-white font-bold text-lg">
+                                {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
+                              </span>
+                            </div>
+                            {index === 0 && (
+                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
+                                <span className="text-xs">👑</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="w-full">
+                            <div className="font-semibold text-gray-900 text-sm truncate" title={influencer.name?.replace(/_/g, " ") || "Unknown"}>
+                              {influencer.name?.replace(/_/g, " ") || "Unknown"}
+                            </div>
+                            <div className="text-xs text-gray-500 mt-1">{influencer.platform}</div>
+                          </div>
+                          <div className="w-full pt-2 border-t border-gray-200">
+                            <div className="text-xs text-gray-500">ROI</div>
+                            <div className="text-lg font-bold text-purple-600">
+                              {influencer.prob_weighted_returns?.toFixed(1) || 0}%
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      </Link>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">No influencers found</div>
@@ -532,14 +715,14 @@ export default function InfluencerSearchPage() {
                 <table className="w-full">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Influencer</th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">ROI</th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Win %</th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {loading || initialLoad ? (
+                    {initialLoad ? (
                       Array.from({ length: 10 }).map((_, i) => (
                         <tr key={`skeleton-row-${i}`}>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -561,47 +744,77 @@ export default function InfluencerSearchPage() {
                       ))
                     ) : (
                       <>
-                        {/* Include top 5 in the table */}
-                        {topFiveInfluencers.map((influencer, index) => (
-                          <tr key={influencer.id} className="hover:bg-gray-50">
+                        {/* Paginated influencers */}
+                        {paginatedInfluencers.map((influencer, index) => {
+                          const globalRank = startIndex + index + 1;
+                          const position = positions[influencer.id];
+                          const isMoving = position && Math.abs(position.offsetY) > 0;
+
+                          return (
+                          <tr
+                            key={influencer.id}
+                            className={`hover:bg-gray-50 row-transition ${
+                              isMoving ? 'row-moving' : ''
+                            }`}
+                            style={{
+                              transform: position ? `translateY(${position.offsetY}px)` : 'translateY(0)',
+                              transitionDelay: position ? `${position.delay}s` : '0s'
+                            }}
+                          >
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                {index === 0 && <span className="text-yellow-500 mr-1">🥇</span>}
-                                {index === 1 && <span className="text-gray-400 mr-1">🥈</span>}
-                                {index === 2 && <span className="text-orange-600 mr-1">🥉</span>}
-                                <span className="text-sm font-medium text-gray-900">{index + 1}</span>
+                              <div className={`flex items-center ${isMoving ? 'rank-number-animate' : ''}`}>
+                                {globalRank === 1 && <span className="text-yellow-500 mr-1">🥇</span>}
+                                {globalRank === 2 && <span className="text-gray-400 mr-1">🥈</span>}
+                                {globalRank === 3 && <span className="text-orange-600 mr-1">🥉</span>}
+                                <span className="text-sm font-medium text-gray-900">{globalRank}</span>
                               </div>
                             </td>
                             <td className="px-6 py-4">
-                              <div className="flex items-center mb-2">
-                                {influencer.channel_thumbnails?.high?.url ? (
-                                  <Image
-                                    src={influencer.channel_thumbnails.high.url}
-                                    alt={influencer.name || "Influencer"}
-                                    width={32}
-                                    height={32}
-                                    className="w-8 h-8 rounded-full object-cover mr-3"
-                                  />
-                                ) : (
-                                  <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3">
-                                    <span className="text-white text-xs font-medium">
-                                      {influencer.name?.match(/\b\w/g)?.join("") || "?"}
+                              <Link
+                                href={
+                                  selectedPlatform === "youtube"
+                                    ? `/influencers/${influencer.id}`
+                                    : `/telegram-influencer/${influencer.id}`
+                                }
+                                className="block"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <div className="flex items-center mb-2">
+                                  {influencer.channel_thumbnails?.high?.url ? (
+                                    <Image
+                                      src={influencer.channel_thumbnails.high.url}
+                                      alt={influencer.name || "Influencer"}
+                                      width={32}
+                                      height={32}
+                                      className="w-8 h-8 rounded-full object-cover mr-3"
+                                      onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.nextSibling.style.display = 'flex';
+                                      }}
+                                    />
+                                  ) : null}
+                                  <div
+                                    className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center mr-3"
+                                    style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
+                                  >
+                                    <span className="text-white text-xs font-bold">
+                                      {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
                                     </span>
                                   </div>
-                                )}
-                                <div className="flex-1">
-                                  <div className="text-sm font-medium text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</div>
-                                  <div className="text-xs text-gray-500">{influencer.platform}</div>
+                                  <div className="flex-1">
+                                    <div className="text-sm font-medium text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</div>
+                                    <div className="text-xs text-gray-500">{influencer.platform}</div>
+                                  </div>
                                 </div>
-                              </div>
-                              <div className="relative ml-11">
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div
-                                    className={`${getProgressBarColor(influencer.win_percentage)} h-2 rounded-full transition-all duration-500`}
-                                    style={{ width: `${influencer.win_percentage}%` }}
-                                  ></div>
+                                <div className="relative ml-11">
+                                  <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                      className={`${getProgressBarColor(influencer.win_percentage)} h-2 rounded-full transition-all duration-500`}
+                                      style={{ width: `${influencer.win_percentage}%` }}
+                                    ></div>
+                                  </div>
                                 </div>
-                              </div>
+                              </Link>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800">
@@ -618,62 +831,6 @@ export default function InfluencerSearchPage() {
                               </span>
                             </td>
                           </tr>
-                        ))}
-
-                        {/* Paginated remaining influencers */}
-                        {paginatedInfluencers.map((influencer, index) => {
-                          const globalRank = startIndex + index + 6; // +6 because we already showed top 5
-                          return (
-                            <tr key={influencer.id} className="hover:bg-gray-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {globalRank}
-                              </td>
-                              <td className="px-6 py-4">
-                                <div className="flex items-center mb-2">
-                                  {influencer.channel_thumbnails?.high?.url ? (
-                                    <Image
-                                      src={influencer.channel_thumbnails.high.url}
-                                      alt={influencer.name || "Influencer"}
-                                      width={32}
-                                      height={32}
-                                      className="w-8 h-8 rounded-full object-cover mr-3"
-                                    />
-                                  ) : (
-                                    <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center mr-3">
-                                      <span className="text-white text-xs font-medium">
-                                        {influencer.name?.match(/\b\w/g)?.join("") || "?"}
-                                      </span>
-                                    </div>
-                                  )}
-                                  <div className="flex-1">
-                                    <div className="text-sm font-medium text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</div>
-                                    <div className="text-xs text-gray-500">{influencer.platform}</div>
-                                  </div>
-                                </div>
-                                <div className="relative ml-11">
-                                  <div className="w-full bg-gray-200 rounded-full h-2">
-                                    <div
-                                      className={`${getProgressBarColor(influencer.win_percentage)} h-2 rounded-full transition-all duration-500`}
-                                      style={{ width: `${influencer.win_percentage}%` }}
-                                    ></div>
-                                  </div>
-                                </div>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800">
-                                  {influencer.prob_weighted_returns !== undefined
-                                    ? `${influencer.prob_weighted_returns.toFixed(1)}%`
-                                    : '0%'}
-                                </span>
-                              </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
-                                  {typeof influencer.win_percentage === 'number'
-                                    ? `${influencer.win_percentage.toFixed(1)}%`
-                                    : 'N/A'}
-                                </span>
-                              </td>
-                            </tr>
                           );
                         })}
                       </>
@@ -686,11 +843,21 @@ export default function InfluencerSearchPage() {
               {totalPages > 1 && (
                 <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                   <div className="text-sm text-gray-700">
-                    Showing <span className="font-medium">{startIndex + 6}</span> to{" "}
-                    <span className="font-medium">{Math.min(endIndex + 5, filteredInfluencers.length)}</span> of{" "}
+                    Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
+                    <span className="font-medium">{Math.min(endIndex, filteredInfluencers.length)}</span> of{" "}
                     <span className="font-medium">{filteredInfluencers.length}</span> results
                   </div>
                   <div className="flex items-center space-x-2">
+                    <button
+                      onClick={handleFirst}
+                      disabled={currentPage === 1}
+                      className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === 1
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                        }`}
+                    >
+                      First
+                    </button>
                     <button
                       onClick={handlePrevious}
                       disabled={currentPage === 1}
@@ -723,6 +890,16 @@ export default function InfluencerSearchPage() {
                     >
                       Next
                     </button>
+                    <button
+                      onClick={handleLast}
+                      disabled={currentPage === totalPages}
+                      className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === totalPages
+                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                        }`}
+                    >
+                      Last
+                    </button>
                   </div>
                 </div>
               )}
@@ -730,7 +907,7 @@ export default function InfluencerSearchPage() {
           </div>
 
           {/* Right Sidebar - Stats and Badges */}
-          <div className="w-full lg:w-80">
+          <div className="w-full lg:w-80 lg:flex-shrink-0">
             {/* Monthly Sales Target */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
               <div className="px-6 py-4 border-b border-gray-200">
@@ -763,12 +940,12 @@ export default function InfluencerSearchPage() {
               <div className="p-6 space-y-4">
                 {/* Top Seller Last Month */}
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 flex-shrink-0 bg-yellow-100 rounded-full flex items-center justify-center">
                     <span className="text-2xl">🏆</span>
                   </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Top seller last month</div>
-                    <div className="text-sm text-gray-500">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-gray-900 text-sm">Top seller last month</div>
+                    <div className="text-sm text-gray-500 truncate">
                       {topInfluencer?.name?.replace(/_/g, " ") || "John Smith"}
                     </div>
                   </div>
@@ -776,12 +953,12 @@ export default function InfluencerSearchPage() {
 
                 {/* Best Deal Ever */}
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 flex-shrink-0 bg-purple-100 rounded-full flex items-center justify-center">
                     <span className="text-2xl">💎</span>
                   </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Best deal ever</div>
-                    <div className="text-sm text-gray-500">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-gray-900 text-sm">Best deal ever</div>
+                    <div className="text-sm text-gray-500 truncate">
                       {bestDealInfluencer?.name?.replace(/_/g, " ") || "John Smith"}
                     </div>
                   </div>
@@ -789,12 +966,12 @@ export default function InfluencerSearchPage() {
 
                 {/* Most Transactions */}
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 flex-shrink-0 bg-green-100 rounded-full flex items-center justify-center">
                     <span className="text-2xl">📈</span>
                   </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Most transactions</div>
-                    <div className="text-sm text-gray-500">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-gray-900 text-sm">Most transactions</div>
+                    <div className="text-sm text-gray-500 truncate">
                       {filteredInfluencers[0]?.name?.replace(/_/g, " ") || "John Smith"}
                     </div>
                   </div>
@@ -802,12 +979,12 @@ export default function InfluencerSearchPage() {
 
                 {/* Highest Win Rate */}
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center">
                     <span className="text-2xl">🎯</span>
                   </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Highest win rate</div>
-                    <div className="text-sm text-gray-500">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-gray-900 text-sm">Highest win rate</div>
+                    <div className="text-sm text-gray-500 truncate">
                       {filteredInfluencers.length > 0
                         ? filteredInfluencers.reduce((prev, current) =>
                             (prev.win_percentage > current.win_percentage) ? prev : current

@@ -271,7 +271,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         {/* Short Term */}
                                                         <div>
                                                             <div className="mb-1 text-xs whitespace-nowrap">
-                                                                <span className="font-semibold text-black">Short Term : {shortTermPosts} posts</span>
+                                                                <span className="font-semibold text-black">Short Term:{shortTermPosts} posts</span>
                                                             </div>
                                                             <div className="segmented-bar-container mb-1">
                                                                 <div className="segmented-bar-background">
@@ -292,22 +292,43 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         {/* Long Term */}
                                                         <div>
                                                             <div className="mb-1 text-xs whitespace-nowrap">
-                                                                <span className="font-semibold text-black">Long Term : {longTermPosts} posts</span>
+                                                                <span className="font-semibold text-black">Long Term: {longTermPosts} posts</span>
                                                             </div>
-                                                            <div className="segmented-bar-container mb-1">
-                                                                <div className="segmented-bar-background">
-                                                                    <div className="segment segment-red" />
-                                                                    <div className="segment segment-yellow" />
-                                                                    <div className="segment segment-green" />
-                                                                </div>
-                                                                <div
-                                                                    className="percentage-ball"
-                                                                    style={{ left: `${(longTermBallPosition / 100) * 100}%` }}
-                                                                />
-                                                            </div>
-                                                            <div className={`font-semibold text-xs text-center ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
-                                                                {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
-                                                            </div>
+                                                            {longTermPosts === 0 ? (
+                                                                <>
+                                                                    <div className="segmented-bar-container mb-1">
+                                                                        <div className="segmented-bar-background">
+                                                                            <div className="segment" style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
+                                                                            <div className="segment" style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
+                                                                            <div className="segment" style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
+                                                                        </div>
+                                                                        <div
+                                                                            className="percentage-ball-gray"
+                                                                            style={{ left: '50%' }}
+                                                                        />
+                                                                    </div>
+                                                                    <div className="font-semibold text-xs text-center text-gray-500">
+                                                                        - Not Applicable
+                                                                    </div>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <div className="segmented-bar-container mb-1">
+                                                                        <div className="segmented-bar-background">
+                                                                            <div className="segment segment-red" />
+                                                                            <div className="segment segment-yellow" />
+                                                                            <div className="segment segment-green" />
+                                                                        </div>
+                                                                        <div
+                                                                            className="percentage-ball"
+                                                                            style={{ left: `${(longTermBallPosition / 100) * 100}%` }}
+                                                                        />
+                                                                    </div>
+                                                                    <div className={`font-semibold text-xs text-center ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                                        {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
+                                                                    </div>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -320,7 +341,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     </table>
                 </div>
 
-                <div
+                {/* <div
                     className="p-6 overflow-x-auto overflow-y-auto"
                     style={{ scrollbarGutter: "stable" }}
                 >
@@ -375,9 +396,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                         >
                                             <td colSpan="2" className="py-4  ">
                                                 <div className="flex items-center gap-6">
-                                                    {/* Left - Coin Info */}
                                                     <div className="bg-gradient-to-r from-purple-600 to-blue-600 flex flex-col items-center text-center min-w-[80px] py-2 px-4 rounded-lg">
-                                                        {/* <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border border-blue-200 flex flex-col items-center text-center min-w-[80px] py-2 px-4 rounded-lg"> */}
                                                         <img
                                                             src={coin.image_small || coin.image_thumb}
                                                             alt={coin.symbol}
@@ -395,9 +414,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         </div>
                                                     </div>
 
-                                                    {/* Right - Sentiment Data */}
                                                     <div className="flex-1 space-y-3">
-                                                        {/* Short Term */}
                                                         <div>
                                                             <div className="mb-1 text-xs whitespace-nowrap flex flex-row justify-between items-stretch">
                                                                 <div className="flex items-center gap-2">
@@ -446,7 +463,6 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                             </div>
                                                         </div>
 
-                                                        {/* Long Term */}
                                                         <div>
                                                             <div className="flex flex-row justify-start items-center">
                                                                 <div className="segmented-bar-container mb-1 min-w-[9vw]">
@@ -503,7 +519,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                             )}
                         </tbody>
                     </table>
-                </div>;
+                </div>; */}
 
                 {/* <div className="p-6 overflow-x-auto overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
                     <table className="w-full min-w-full table-fixed">
@@ -765,6 +781,15 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     height: 100%;
                 }
 
+                .segmented-bar-background-gray {
+                    display: block;
+                    width: 100px;
+                    height: 8px;
+                    background: linear-gradient(to right, #9ca3af 0%, #6b7280 33%, #4b5563 66%, #374151 100%) !important;
+                    border-radius: 4px;
+                    position: relative;
+                }
+
                 .segment {
                     flex: 1;
                     height: 100%;
@@ -782,6 +807,18 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     background-color: #10b981;
                 }
 
+                .segment-gray-light {
+                    background-color: #9ca3af !important;
+                }
+
+                .segment-gray-medium {
+                    background-color: #6b7280 !important;
+                }
+
+                .segment-gray-dark {
+                    background-color: #4b5563 !important;
+                }
+
                 .percentage-ball {
                     position: absolute;
                     top: -2px;
@@ -793,6 +830,18 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     transform: translateX(-50%);
                     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
                     left: clamp(6px, var(--ball-position), calc(100% - 6px)) !important;
+                }
+
+                .percentage-ball-gray {
+                    position: absolute;
+                    top: -2px;
+                    width: 12px;
+                    height: 12px;
+                    background-color: #e5e7eb;
+                    border: 2px solid #9ca3af;
+                    border-radius: 50%;
+                    transform: translateX(-50%);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
                 }
             `}</style>
         </div>
