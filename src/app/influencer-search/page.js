@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import { getYearOptions, getQuarterOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
 const platforms = [
@@ -45,11 +46,7 @@ export default function InfluencerSearchPage() {
   const [initialLoad, setInitialLoad] = useState(true);
 
   // Animation state for ranking transitions
-  const previousRankingsRef = useRef({});
-  const previousFiltersRef = useRef(null);
-  const animationTimerRef = useRef(null);
   const isFirstRenderRef = useRef(true);
-  const [positions, setPositions] = useState({});
 
   // Dropdown state
   const [selectedInfluencer, setSelectedInfluencer] = useState("");
@@ -234,86 +231,6 @@ export default function InfluencerSearchPage() {
 
   const filteredInfluencers = getFilteredInfluencers();
 
-  // Track ranking changes for animations - only trigger when filters change
-  useEffect(() => {
-    const currentFilters = JSON.stringify(apiParams);
-    const filtersChanged = previousFiltersRef.current !== null && previousFiltersRef.current !== currentFilters;
-
-    if (filtersChanged && filteredInfluencers.length > 0) {
-      // First, set positions to show items at their OLD positions
-      const oldPositions = {};
-
-      filteredInfluencers.forEach((inf, newIndex) => {
-        const oldIndex = previousRankingsRef.current[inf.id];
-        if (oldIndex !== undefined && oldIndex !== newIndex) {
-          // Calculate the Y offset: how far this item needs to move FROM its old position TO its new position
-          const positionChange = oldIndex - newIndex;
-          oldPositions[inf.id] = {
-            offsetY: positionChange * 100, // Approximate height per item (cards or rows)
-            delay: newIndex * 0.08 // Stagger based on NEW position (0.08s between each card)
-          };
-        } else {
-          oldPositions[inf.id] = {
-            offsetY: 0,
-            delay: newIndex * 0.08 // Even non-moving items get staggered for visual consistency
-          };
-        }
-      });
-
-      // Set initial positions (items at their old positions)
-      setPositions(oldPositions);
-
-      // After a brief delay, animate to new positions (offsetY: 0)
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const newPositions = {};
-          filteredInfluencers.forEach((inf, newIndex) => {
-            newPositions[inf.id] = {
-              offsetY: 0,
-              delay: newIndex * 0.08 // Keep the same stagger timing
-            };
-          });
-          setPositions(newPositions);
-        });
-      });
-
-      // Update previous rankings
-      const newRankings = {};
-      filteredInfluencers.forEach((inf, index) => {
-        newRankings[inf.id] = index;
-      });
-      previousRankingsRef.current = newRankings;
-      previousFiltersRef.current = currentFilters;
-
-      // Clear animation after delay
-      if (animationTimerRef.current) {
-        clearTimeout(animationTimerRef.current);
-      }
-
-      // Calculate total animation time based on number of items
-      const totalAnimationTime = (filteredInfluencers.length * 80) + 1000;
-
-      animationTimerRef.current = setTimeout(() => {
-        setPositions({});
-        animationTimerRef.current = null;
-      }, totalAnimationTime);
-    } else if (previousFiltersRef.current === null && filteredInfluencers.length > 0) {
-      // Initialize on first load
-      previousFiltersRef.current = currentFilters;
-      const initRankings = {};
-      filteredInfluencers.forEach((inf, index) => {
-        initRankings[inf.id] = index;
-      });
-      previousRankingsRef.current = initRankings;
-    }
-
-    return () => {
-      if (animationTimerRef.current) {
-        clearTimeout(animationTimerRef.current);
-      }
-    };
-  }, [apiParams, filteredInfluencers]);
-
 
   const handlePageChange = (page) => {
     setCurrentPage(page);
@@ -433,74 +350,6 @@ export default function InfluencerSearchPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 font-sans">
-      <style jsx>{`
-        @keyframes pulseHighlight {
-          0%, 100% {
-            box-shadow: 0 0 0 0 rgba(147, 51, 234, 0);
-            border-color: rgba(147, 51, 234, 0);
-          }
-          50% {
-            box-shadow: 0 0 20px 4px rgba(147, 51, 234, 0.5);
-            border-color: rgba(147, 51, 234, 0.3);
-          }
-        }
-
-        @keyframes rankNumberPulse {
-          0%, 100% {
-            transform: scale(1);
-            color: inherit;
-          }
-          50% {
-            transform: scale(1.3);
-            color: rgb(147, 51, 234);
-          }
-        }
-
-        .card-transition {
-          transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                      opacity 0.8s ease,
-                      box-shadow 0.8s ease;
-          position: relative;
-          z-index: 1;
-          will-change: transform;
-        }
-
-        .card-moving {
-          z-index: 10;
-          box-shadow: 0 10px 40px rgba(147, 51, 234, 0.4);
-        }
-
-        .row-transition {
-          transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94),
-                      opacity 0.6s ease,
-                      background-color 0.3s ease;
-          position: relative;
-          z-index: 1;
-          will-change: transform;
-        }
-
-        .row-moving {
-          z-index: 10;
-          background-color: rgba(147, 51, 234, 0.08) !important;
-        }
-
-        .rank-number-animate {
-          animation: rankNumberPulse 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .highlight-pulse {
-          animation: pulseHighlight 1s ease-in-out;
-        }
-
-        .top-seller-card {
-          transition: all 0.3s ease;
-        }
-
-        .top-seller-card:hover {
-          transform: translateY(-5px);
-          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-      `}</style>
       {/* Header */}
       <header className="">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -633,25 +482,34 @@ export default function InfluencerSearchPage() {
                   </div>
                 ) : topFiveInfluencers.length > 0 ? (
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                    {topFiveInfluencers.map((influencer, index) => {
-                      const position = positions[influencer.id];
-                      const isMoving = position && Math.abs(position.offsetY) > 0;
-
-                      return (
-                      <Link
+                    <AnimatePresence mode="popLayout">
+                    {topFiveInfluencers.map((influencer, index) => (
+                      <motion.div
                         key={influencer.id}
+                        layout
+                        layoutId={`top-seller-${influencer.id}`}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{
+                          layout: {
+                            type: "spring",
+                            stiffness: 120,
+                            damping: 20,
+                            mass: 1.2
+                          },
+                          opacity: { duration: 0.6 },
+                          scale: { duration: 0.6 }
+                        }}
+                        className="w-full"
+                      >
+                      <Link
                         href={
                           selectedPlatform === "youtube"
                             ? `/influencers/${influencer.id}`
                             : `/telegram-influencer/${influencer.id}`
                         }
-                        className={`top-seller-card card-transition w-full bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4 border border-gray-200 ${
-                          isMoving ? 'card-moving highlight-pulse' : ''
-                        }`}
-                        style={{
-                          transform: position ? `translateY(${position.offsetY}px)` : 'translateY(0)',
-                          transitionDelay: position ? `${position.delay}s` : '0s'
-                        }}
+                        className="top-seller-card block w-full bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4 border border-gray-200 hover:shadow-lg transition-shadow"
                         onClick={(e) => e.stopPropagation()}
                       >
                         <div className="flex flex-col items-center text-center space-y-2">
@@ -697,22 +555,23 @@ export default function InfluencerSearchPage() {
                           </div>
                         </div>
                       </Link>
-                      );
-                    })}
+                      </motion.div>
+                    ))}
+                    </AnimatePresence>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">No influencers found</div>
+                  <div className="text-center py-8 text-gray-500">Loading...</div>
                 )}
               </div>
             </div>
 
             {/* Leaderboard Section */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-900">Leaderboard</h2>
               </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
+              <div className="overflow-x-auto overflow-y-clip">
+                <table className="w-full relative">
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
@@ -721,7 +580,7 @@ export default function InfluencerSearchPage() {
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Win %</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white divide-y divide-gray-200 relative" style={{ isolation: 'isolate' }}>
                     {initialLoad ? (
                       Array.from({ length: 10 }).map((_, i) => (
                         <tr key={`skeleton-row-${i}`}>
@@ -743,31 +602,43 @@ export default function InfluencerSearchPage() {
                         </tr>
                       ))
                     ) : (
-                      <>
+                      <AnimatePresence mode="popLayout">
                         {/* Paginated influencers */}
                         {paginatedInfluencers.map((influencer, index) => {
                           const globalRank = startIndex + index + 1;
-                          const position = positions[influencer.id];
-                          const isMoving = position && Math.abs(position.offsetY) > 0;
 
                           return (
-                          <tr
+                          <motion.tr
                             key={influencer.id}
-                            className={`hover:bg-gray-50 row-transition ${
-                              isMoving ? 'row-moving' : ''
-                            }`}
-                            style={{
-                              transform: position ? `translateY(${position.offsetY}px)` : 'translateY(0)',
-                              transitionDelay: position ? `${position.delay}s` : '0s'
+                            layout
+                            layoutId={`leaderboard-${influencer.id}`}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            transition={{
+                              layout: {
+                                type: "spring",
+                                stiffness: 100,
+                                damping: 18,
+                                mass: 1.5
+                              },
+                              opacity: { duration: 0.5 },
+                              x: { duration: 0.5 }
                             }}
+                            className="hover:bg-gray-50"
+                            style={{ position: 'relative', zIndex: 1 }}
                           >
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className={`flex items-center ${isMoving ? 'rank-number-animate' : ''}`}>
+                              <motion.div
+                                className="flex items-center"
+                                layout
+                                transition={{ duration: 0.3 }}
+                              >
                                 {globalRank === 1 && <span className="text-yellow-500 mr-1">🥇</span>}
                                 {globalRank === 2 && <span className="text-gray-400 mr-1">🥈</span>}
                                 {globalRank === 3 && <span className="text-orange-600 mr-1">🥉</span>}
                                 <span className="text-sm font-medium text-gray-900">{globalRank}</span>
-                              </div>
+                              </motion.div>
                             </td>
                             <td className="px-6 py-4">
                               <Link
@@ -830,10 +701,10 @@ export default function InfluencerSearchPage() {
                                   : 'N/A'}
                               </span>
                             </td>
-                          </tr>
+                          </motion.tr>
                           );
                         })}
-                      </>
+                      </AnimatePresence>
                     )}
                   </tbody>
                 </table>
