@@ -20,12 +20,35 @@ export default function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [influencerData, setInfluencerData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [countsData, setCountsData] = useState(null);
+  const [countsLoading, setCountsLoading] = useState(true);
 
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
     setIsLoggedIn(!!accessToken);
     fetchInfluencerData();
+    fetchCountsData();
   }, []);
+
+  const fetchCountsData = async () => {
+    try {
+      setCountsLoading(true);
+      const response = await fetch('/api/landing-counts');
+      const result = await response.json();
+
+      if (result.success && result.data) {
+        setCountsData({
+          totalInfluencers: result.data.totalInfluencers,
+          callsTrackedTested: result.data.callsTrackedTested,
+          coinsCovered: result.data.coinsCovered
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching counts data:', error);
+    } finally {
+      setCountsLoading(false);
+    }
+  };
 
   const fetchInfluencerData = async () => {
     try {
@@ -43,62 +66,109 @@ export default function HomePage() {
       const youtube24hChannelId = youtube24hRank.results?.[0]?.channel_id;
       const telegram7dChannelId = telegram7dRank.results?.[0]?.channel_id;
 
-      // Step 3: Fetch detailed channel data (both full data and specific fields)
-      const detailedDataPromises = [];
-      const moonshotDataPromises = [];
+      // Step 3: Collect all YouTube and Telegram channel IDs
+      const youtubeChannelIds = [youtube1hChannelId, youtube24hChannelId].filter(Boolean);
+      const telegramChannelIds = [telegram7dChannelId].filter(Boolean);
 
-      if (youtube1hChannelId) {
-        detailedDataPromises.push(
-          fetch(`/api/admin/influenceryoutubedata/channel/${youtube1hChannelId}`).then(res => res.json())
+      // Step 4: Fetch data using batch APIs (influencer data + moonshot data)
+      const fetchPromises = [];
+
+      if (youtubeChannelIds.length > 0) {
+        fetchPromises.push(
+          fetch(`/api/admin/influenceryoutubedata/specificFieldsInfluencers?channel_id=${youtubeChannelIds.join(',')}&fields=Yearly,subscriber_count,channel_thumbnails`)
+            .then(res => res.json())
         );
-        moonshotDataPromises.push(
-          fetch(`/api/youtube-specific-fields?channel_id=${youtube1hChannelId}&fields=score.moonshots.yearly&fields=score.moonshots.overall`).then(res => res.json())
-        );
+
+        // Separate API call for each YouTube channel's rankings
+        youtubeChannelIds.forEach(channelId => {
+          fetchPromises.push(
+            fetch(`/api/admin/rankingsyoutubedata/specificFieldRankings?channel_id=${channelId}&fields=score.moonshots.yearly`)
+              .then(res => res.json())
+          );
+        });
       }
 
-      if (youtube24hChannelId) {
-        detailedDataPromises.push(
-          fetch(`/api/admin/influenceryoutubedata/channel/${youtube24hChannelId}`).then(res => res.json())
+      if (telegramChannelIds.length > 0) {
+        fetchPromises.push(
+          fetch(`/api/admin/influencertelegramdata/specificFieldsInfluencers?channel_id=${telegramChannelIds.join(',')}&fields=Yearly,subscriber_count`)
+            .then(res => res.json())
         );
-        moonshotDataPromises.push(
-          fetch(`/api/youtube-specific-fields?channel_id=${youtube24hChannelId}&fields=score.moonshots.yearly&fields=score.moonshots.overall`).then(res => res.json())
-        );
+
+        // Separate API call for each Telegram channel's rankings
+        telegramChannelIds.forEach(channelId => {
+          fetchPromises.push(
+            fetch(`/api/admin/rankingstelegramdata/specificFieldRankings?channel_id=${channelId}&fields=score.moonshots.yearly`)
+              .then(res => res.json())
+          );
+        });
       }
 
-      if (telegram7dChannelId) {
-        detailedDataPromises.push(
-          fetch(`/api/admin/influencertelegramdata/channel/${telegram7dChannelId}`).then(res => res.json())
-        );
-        moonshotDataPromises.push(
-          fetch(`/api/telegram-specific-fields?channel_id=${telegram7dChannelId}&fields=score.moonshots.yearly&fields=score.moonshots.overall`).then(res => res.json())
-        );
-      }
+      const results = await Promise.all(fetchPromises);
 
-      const [detailedData, moonshotData] = await Promise.all([
-        Promise.all(detailedDataPromises),
-        Promise.all(moonshotDataPromises)
-      ]);
+      // Step 5: Process and combine results
+      const extractedData = [];
+      let resultIndex = 0;
 
-      // Extract results from API response and merge with moonshot data
-      const extractedData = detailedData.map((response, index) => {
-        let channelData;
-        if (response?.success && response?.results) {
-          channelData = response.results;
-        } else {
-          channelData = response;
+      // Process YouTube data
+      if (youtubeChannelIds.length > 0) {
+        const youtubeData = results[resultIndex];
+        resultIndex += 1;
+
+        // Get moonshot data for each YouTube channel
+        const youtubeMoonshotDataArray = [];
+        for (let i = 0; i < youtubeChannelIds.length; i++) {
+          youtubeMoonshotDataArray.push(results[resultIndex]);
+          resultIndex += 1;
         }
 
-        // Merge moonshot data if available
-        if (moonshotData[index]?.success && moonshotData[index]?.results?.[0]) {
-          const moonshotInfo = moonshotData[index].results[0];
-          channelData.moonshotData = {
-            yearly: moonshotInfo['score.moonshots.yearly'],
-            overall: moonshotInfo['score.moonshots.overall']
-          };
+        if (youtubeData?.success && youtubeData?.results) {
+          youtubeChannelIds.forEach((channelId, index) => {
+            const channelData = youtubeData.results.find(r => r.channel_id === channelId);
+            if (channelData) {
+              // Merge moonshot data if available
+              const youtubeMoonshotData = youtubeMoonshotDataArray[index];
+              if (youtubeMoonshotData?.success && youtubeMoonshotData?.results) {
+                const moonshotInfo = youtubeMoonshotData.results.find(r => r.channel_id === channelId);
+                if (moonshotInfo) {
+                  channelData.moonshotData = moonshotInfo['score.moonshots.yearly'];
+                }
+              }
+              extractedData.push(channelData);
+            }
+          });
+        }
+      }
+
+      // Process Telegram data
+      if (telegramChannelIds.length > 0) {
+        const telegramData = results[resultIndex];
+        resultIndex += 1;
+
+        // Get moonshot data for each Telegram channel
+        const telegramMoonshotDataArray = [];
+        for (let i = 0; i < telegramChannelIds.length; i++) {
+          telegramMoonshotDataArray.push(results[resultIndex]);
+          resultIndex += 1;
         }
 
-        return channelData;
-      }).filter(Boolean);
+        if (telegramData?.success && telegramData?.results) {
+          telegramChannelIds.forEach((channelId, index) => {
+            const channelData = telegramData.results.find(r => r.channel_id === channelId);
+            if (channelData) {
+              // Merge moonshot data if available
+              const telegramMoonshotData = telegramMoonshotDataArray[index];
+              if (telegramMoonshotData?.success && telegramMoonshotData?.results) {
+                const moonshotInfo = telegramMoonshotData.results.find(r => r.channel_id === channelId);
+                if (moonshotInfo) {
+                  channelData.moonshotData = moonshotInfo['score.moonshots.yearly'];
+                }
+              }
+              extractedData.push(channelData);
+            }
+          });
+        }
+      }
+
       setInfluencerData(extractedData);
     } catch (error) {
       console.error('Error fetching influencer data:', error);
@@ -131,7 +201,7 @@ export default function HomePage() {
               Backtested. Verified. Trusted.
             </span>
           </h1>
-          <h2 className="text-2xl md:text-3xl lg:text-2xl font-bold text-gray-900 mb-6 md:whitespace-nowrap">World&apos;s only trust engine to navigate crypto investors through the noise of social media</h2>
+          <h2 className="text-2xl md:text-3xl lg:text-2xl font-bold text-gray-900 mb-6 md:whitespace-nowrap">World&apos;s only Platform to navigate crypto investors through the noise of social media</h2>
           <div className="text-base md:text-lg text-gray-700 mx-auto mb-8 space-y-4">
             <p className="md:whitespace-nowrap">
               <strong>Social Media moves markets</strong>, we create accountability by turning social buzz into measurable trust
@@ -163,7 +233,9 @@ export default function HomePage() {
                 <circle cx="9" cy="7" r="4"></circle>
               </svg>
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">225+</div>
+            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">
+              {countsLoading ? 'Loading...' : `${countsData?.totalInfluencers || 0}+`}
+            </div>
             <div className="text-sm text-gray-600 text-center font-semibold">Total Influencers</div>
           </div>
 
@@ -173,7 +245,9 @@ export default function HomePage() {
                 <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"></path>
               </svg>
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">200,000+</div>
+            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">
+              {countsLoading ? 'Loading...' : `${countsData?.callsTrackedTested?.toLocaleString('en-US') || 0}+`}
+            </div>
             <div className="text-sm text-gray-600 text-center font-semibold">Calls Tracked & Tested</div>
             <div className="text-sm text-gray-600 text-center font-semibold">for 3+ years</div>
           </div>
@@ -217,7 +291,9 @@ export default function HomePage() {
                 <path d="m16.71 13.88.7.71-2.82 2.82"></path>
               </svg>
             </div>
-            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">17,000+</div>
+            <div className="text-3xl font-bold text-gray-900 mb-1 text-center">
+              {countsLoading ? 'Loading...' : `${countsData?.coinsCovered?.toLocaleString('en-US') || 0}+`}
+            </div>
             <div className="text-sm text-gray-600 text-center font-semibold">Coins Covered</div>
           </div>
         </div>
@@ -236,7 +312,7 @@ export default function HomePage() {
             Live Leaderboard
           </Link>
 
-          <p className="text-lg text-gray-600 leading-relaxed">
+          <p className="text-md text-gray-600 leading-relaxed">
             Trust is the real Alpha. Track ROI, win rate, and trust scores with our
             comprehensive analytics and Influencer dashboard.
           </p>

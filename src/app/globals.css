@@ -339,3 +339,27 @@ td.hover\:text-to-purple:hover,
 .text-to-green-recomendations1{
   color:#13c636 !important;
 }
+
+/* Hide scrollbar for auto-scroll containers */
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Chrome, Safari and Opera */
+}
+
+/* Smooth hardware-accelerated scrolling */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+  scroll-behavior: auto;
+}
+
+.overflow-x-auto > * {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}

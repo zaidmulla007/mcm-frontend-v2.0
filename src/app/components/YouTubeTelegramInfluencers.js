@@ -96,12 +96,11 @@ export default function YouTubeTelegramInfluencers() {
         return next;
     });
     const [expandedSummaries, setExpandedSummaries] = useState({});
-    const [expandedCoins, setExpandedCoins] = useState({});
+    const [coinsPage, setCoinsPage] = useState({});
     const [expandedTitles, setExpandedTitles] = useState({});
     const [expandedMarketing, setExpandedMarketing] = useState({});
     const [hoveredPost, setHoveredPost] = useState(null);
     const [apiData, setApiData] = useState(null);
-
 
     // Toggle summary expansion
     const toggleSummary = (postId) => {
@@ -111,11 +110,19 @@ export default function YouTubeTelegramInfluencers() {
         }));
     };
 
-    // Toggle coins expansion
-    const toggleCoins = (postId) => {
-        setExpandedCoins(prev => ({
+    // Toggle coins page (show next 5)
+    const showMoreCoins = (postId) => {
+        setCoinsPage(prev => ({
             ...prev,
-            [postId]: !prev[postId]
+            [postId]: (prev[postId] || 1) + 1
+        }));
+    };
+
+    // Reset coins page
+    const showLessCoins = (postId) => {
+        setCoinsPage(prev => ({
+            ...prev,
+            [postId]: 1
         }));
     };
 
@@ -436,13 +443,14 @@ export default function YouTubeTelegramInfluencers() {
 
 
                 {/* Posts */}
-                <div className="flex gap-4 overflow-x-auto pb-6">
+                <div className="relative overflow-x-auto pb-6">
                     {getDisplayData().length === 0 ? (
                         <div className="w-full text-center py-12">
                             <p className="text-xl text-gray-600 font-semibold">No posts available</p>
                         </div>
                     ) : (
-                        getDisplayData().map((post, index) => (
+                        <div className="flex gap-4">
+                        {getDisplayData().map((post, index) => (
                             <div
                                 key={post.id}
                                 className="w-80 flex-shrink-0 bg-white rounded-xl overflow-hidden"
@@ -450,30 +458,30 @@ export default function YouTubeTelegramInfluencers() {
                                 {/* Post Header with Platform Icon in Top Right */}
                                 <div className="border-b border-gray-700">
                                     <div
-                                        className={`${getColumnColor(index)} text-black p-3 text-center text-sm font-medium flex justify-between items-center`}
+                                        className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-3 text-center text-sm font-medium flex justify-between items-center"
                                     >
                                         <span>POST {index + 1}</span>
                                         <div className="flex items-center">
-                                            <span className="text-xs text-black mr-2">{formatDate(post.date)}</span>
+                                            <span className="text-xs text-white mr-2">{formatDate(post.date)}</span>
                                             {(selectedPlatform === "Combined") ? (
                                                 post.platform === "YouTube" ? (
-                                                    <YouTubeIcon className="text-red-900" />
+                                                    <YouTubeIcon className="text-white" />
                                                 ) : (
-                                                    <TelegramIcon className="text-blue-900" />
+                                                    <TelegramIcon className="text-white" />
                                                 )
                                             ) : selectedPlatform === "YouTube" ? (
-                                                <YouTubeIcon className="text-red-900" />
+                                                <YouTubeIcon className="text-white" />
                                             ) : (
-                                                <TelegramIcon className="text-blue-900" />
+                                                <TelegramIcon className="text-white" />
                                             )}
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Post Header */}
-                                <div className="p-3 border-b border-gray-700">
+                                <div className="p-3 border-b border-gray-700 h-36">
                                     {/* Influencer Name Link */}
-                                    <div className="text-xs text-black mb-2">
+                                    <div className="text-xs text-black mb-2 line-clamp-1">
                                         Name :
                                         <a
                                             href={
@@ -484,27 +492,30 @@ export default function YouTubeTelegramInfluencers() {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="ml-1 text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
+                                            title={post.channel_name}
                                         >
                                             {post.channel_name}
                                         </a>
                                     </div>
 
                                     {/* Rank Link (simple) */}
-                                    <div className="text-xs text-black mb-2 flex items-center gap-2">
-                                        Rank
-                                        <span className="sr-only">Rank (180 days / Overall)</span>
-                                        <button
-                                            type="button"
-                                            title="180 days / Overall"
-                                            className="inline-flex items-center gap-2 focus:outline-none"
-                                            aria-label="Rank info: 180 days / Overall"
-                                        >
-                                            {/* Eye icon */}
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.5 12s3.5-7.5 9.5-7.5S21.5 12 21.5 12s-3.5 7.5-9.5 7.5S2.5 12 2.5 12z" />
-                                                <circle cx="12" cy="12" r="3" />
-                                            </svg>
-                                        </button> :
+                                    <div className="text-xs text-black mb-2 flex items-center gap-1">
+                                        MCM Scoring
+                                        <span className="relative group">
+                                            <button
+                                                type="button"
+                                                className="inline-flex items-center focus:outline-none cursor-pointer"
+                                            >
+                                                {/* Eye icon */}
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.5 12s3.5-7.5 9.5-7.5S21.5 12 21.5 12s-3.5 7.5-9.5 7.5S2.5 12 2.5 12z" />
+                                                    <circle cx="12" cy="12" r="3" />
+                                                </svg>
+                                            </button>
+                                            <span className="invisible group-hover:visible absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-gray-800 text-white text-center text-xs p-3 rounded-lg shadow-xl w-48 break-words z-50">
+                                                180 days / Overall
+                                            </span>
+                                        </span>:
                                         <a
                                             href={post.platform === "YouTube" ? `/influencers/${post.channelID}` : `/telegram-influencer/${post.channelID}`}
                                             target="_blank"
@@ -517,7 +528,8 @@ export default function YouTubeTelegramInfluencers() {
 
 
                                     {/* Post Title Link */}
-                                    <div className="min-h-[40px] mb-2">
+                                    <div className="text-xs text-black mb-2 line-clamp-2">
+                                        Post Title :
                                         <a
                                             href={
                                                 post.platform === "YouTube"
@@ -526,25 +538,13 @@ export default function YouTubeTelegramInfluencers() {
                                             }
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="block text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
+                                            className="ml-1 text-black hover:text-gray-700 hover:underline cursor-pointer transition-colors duration-200"
+                                            title={post.title}
                                         >
-                                            <div className={`text-xs ${expandedTitles[post.id] ? '' : 'line-clamp-2'}`} title={post.title}>
-                                                {post.title}
-                                            </div>
+                                            {post.title}
                                         </a>
                                     </div>
-
-                                    <div className="h-6 mb-2">
-                                        {post.title.length > 80 && (
-                                            <button
-                                                onClick={() => toggleTitle(post.id)}
-                                                className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
-                                            >
-                                                {expandedTitles[post.id] ? '.....' : '......'}
-                                            </button>
-                                        )}
-                                    </div>
-                                    <div className="text-xs h-6">
+                                    <div className="text-xs">
                                         <a
                                             href={post.videoUrl || post.telegramUrl}
                                             target="_blank"
@@ -556,7 +556,7 @@ export default function YouTubeTelegramInfluencers() {
                                     </div>
                                 </div>
                                 {/* MCM Scoring */}
-                                <div className="p-3 border-b border-gray-700">
+                                <div className="p-3 border-b border-gray-700 h-32">
                                     <div className="flex items-center gap-2 mb-2">
                                         <span className="font-bold text-xs text-black">MCM Scoring</span>
                                     </div>
@@ -573,42 +573,30 @@ export default function YouTubeTelegramInfluencers() {
                                             <span className="text-black">Actionable</span>
                                             {renderStars(post.actionableInsights)}
                                         </li>
-                                        <li className="flex flex-col">
-                                            <span className="text-black mb-2">Marketing Content</span>
-                                            <div className={`text-xs text-black ${expandedMarketing[post.id] ? 'leading-tight' : 'truncate overflow-hidden whitespace-nowrap'}`}>
-                                                {typeof post.marketingContent === "string"
-                                                    ? expandedMarketing[post.id]
-                                                        ? post.marketingContent
-                                                            .split(" ")
-                                                            .map((word, i) =>
-                                                                i < 2 ? word.charAt(0).toUpperCase() + word.slice(1) : word
-                                                            )
-                                                            .join(" ")
-                                                        : post.marketingContent
-                                                            .split(" ")
-                                                            .map((word, i) =>
-                                                                i < 2 ? word.charAt(0).toUpperCase() + word.slice(1) : word
-                                                            )
-                                                            .join(" ")
-                                                    : "N/A"}
-                                            </div>
-                                            <div className="h-6 mt-2">
-                                                {typeof post.marketingContent === "string" &&
-                                                    post.marketingContent.length > 50 && (
-                                                        <button
-                                                            onClick={() => toggleMarketing(post.id)}
-                                                            className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer self-start"
-                                                        >
-                                                            {expandedMarketing[post.id] ? "Read Less" : "Read More"}
-                                                        </button>
-                                                    )}
-                                            </div>
+                                        <li className="flex items-center justify-between">
+                                            <span className="text-black">Marketing Content</span>
+                                            {typeof post.marketingContent === "string" &&
+                                             post.marketingContent.toLowerCase().includes("no marketing content") ? (
+                                                <span className="text-black">None</span>
+                                            ) : post.marketingContent ? (
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-black">Yes</span>
+                                                    <span className="relative group cursor-pointer">
+                                                        <span className="text-blue-600 text-sm">ⓘ</span>
+                                                        <span className="invisible group-hover:visible absolute bottom-full mb-2 right-0 bg-gray-800 text-white text-xs p-3 rounded-lg shadow-xl w-64 break-words z-50">
+                                                            {post.marketingContent}
+                                                        </span>
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <span className="text-black">None</span>
+                                            )}
                                         </li>
                                     </ul>
                                 </div>
 
                                 {/* Post Summary */}
-                                <div className="p-3 border-b border-gray-700">
+                                <div className="p-3 border-b border-gray-700 h-40">
                                     <div className="flex items-center justify-between mb-2">
                                         <span className="font-bold text-xs text-black">Post Summary</span>
                                         <button
@@ -643,12 +631,12 @@ export default function YouTubeTelegramInfluencers() {
 
                                 {/* Coins Analysis */}
                                 <div
-                                    className="p-3 relative"
+                                    className="px-3 pt-3 pb-2 relative"
                                     onMouseEnter={() => setHoveredPost(post.id)}
                                     onMouseLeave={() => setHoveredPost(null)}
                                 >
                                     <div className="flex items-center gap-2 mb-2">
-                                        <span className="font-bold text-xs text-black">Coins Analysis</span>
+                                        <span className="font-bold text-xs text-black">Coins Mentioned</span>
                                     </div>
 
                                     {/* Coins table */}
@@ -664,63 +652,67 @@ export default function YouTubeTelegramInfluencers() {
                                                 </thead>
                                                 <tbody>
                                                     {(() => {
-                                                        const coins = expandedCoins[post.id]
-                                                            ? post.mentionedCoins
-                                                            : post.mentionedCoins.slice(0, 5);
+                                                        const currentPage = coinsPage[post.id] || 1;
+                                                        const lastBatchStart = (currentPage - 1) * 5;
+                                                        const currentBatchCoins = post.mentionedCoins.slice(lastBatchStart, lastBatchStart + 5);
 
-                                                        return coins.map((coin, i) => {
-
-                                                            return (
-                                                                <tr key={i} className="border-b border-gray-700/50">
-                                                                    <td className="py-1 pr-2 text-center">
-                                                                        {coin ? (
-                                                                            <span className="text-black" title={coin.symbol}>
-                                                                                {formatCoinName(coin.name || coin.symbol)}
-                                                                            </span>
-                                                                        ) : (
-                                                                            <span className="text-transparent">-</span>
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="py-1 pr-2 text-center">
-                                                                        {coin ? (
-                                                                            <span className={getSentimentColor(coin.sentiment)}>
-                                                                                {formatSentiment(coin.sentiment)}
-                                                                            </span>
-                                                                        ) : (
-                                                                            <span className="text-transparent">-</span>
-                                                                        )}
-                                                                    </td>
-                                                                    <td className="py-1 text-center">
-                                                                        {coin ? (
-                                                                            <span className="text-black">
-                                                                                {formatHoldingPeriod(coin.outlook)}
-                                                                            </span>
-                                                                        ) : (
-                                                                            <span className="text-transparent">-</span>
-                                                                        )}
-                                                                    </td>
-                                                                </tr>
-                                                            );
-                                                        });
+                                                        return currentBatchCoins.map((coin, i) => (
+                                                            <tr key={i} className="border-b border-gray-700/50 last:border-b-0">
+                                                                <td className="py-0.5 pr-2 text-center">
+                                                                    <span className="text-black" title={coin.symbol}>
+                                                                        {formatCoinName(coin.name || coin.symbol)}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-0.5 pr-2 text-center">
+                                                                    <span className={getSentimentColor(coin.sentiment)}>
+                                                                        {formatSentiment(coin.sentiment)}
+                                                                    </span>
+                                                                </td>
+                                                                <td className="py-0.5 text-center">
+                                                                    <span className="text-black">
+                                                                        {formatHoldingPeriod(coin.outlook)}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        ));
                                                     })()}
                                                 </tbody>
                                             </table>
                                         </div>
                                     </div>
 
-                                    <div className="h-6 mt-2">
-                                        {post.mentionedCoins && post.mentionedCoins.length > 5 && (
-                                            <button
-                                                onClick={() => toggleCoins(post.id)}
-                                                className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
-                                            >
-                                                {expandedCoins[post.id]
-                                                    ? 'Read Less'
-                                                    : 'Read More'
-                                                }
-                                            </button>
-                                        )}
-                                    </div>
+                                    {post.mentionedCoins && post.mentionedCoins.length > 5 && (
+                                        <div className="mt-2 flex gap-2">
+                                        {(() => {
+                                            const currentPage = coinsPage[post.id] || 1;
+                                            const totalCoins = post.mentionedCoins.length;
+                                            const coinsShown = currentPage * 5;
+                                            const remainingCoins = totalCoins - coinsShown;
+                                            const hasMore = remainingCoins > 0;
+
+                                            return (
+                                                <>
+                                                    {hasMore && (
+                                                        <button
+                                                            onClick={() => showMoreCoins(post.id)}
+                                                            className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
+                                                        >
+                                                            Show More ({Math.min(5, remainingCoins)} more)
+                                                        </button>
+                                                    )}
+                                                    {currentPage > 1 && (
+                                                        <button
+                                                            onClick={() => showLessCoins(post.id)}
+                                                            className="text-xs text-blue-700 hover:text-blue-800 cursor-pointer"
+                                                        >
+                                                            Show Less
+                                                        </button>
+                                                    )}
+                                                </>
+                                            );
+                                        })()}
+                                        </div>
+                                    )}
 
                                     {/* Hover Tooltip */}
                                     {hoveredPost === post.id && (
@@ -778,7 +770,9 @@ export default function YouTubeTelegramInfluencers() {
                                     )}
                                 </div>
                             </div>
-                        )))}
+                        ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

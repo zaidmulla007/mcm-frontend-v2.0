@@ -83,6 +83,27 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         return `${momentDate.format('ddd DD MMM hh:mm A')}${locationDisplay}`;
     };
 
+    const formatDate = (date) => {
+        if (!date) return "N/A";
+
+        const momentDate = moment(date);
+        let formattedDate;
+        let locationDisplay = '';
+
+        if (useLocalTime) {
+            const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            const localDate = momentDate.tz(userTimeZone);
+            const cityName = userTimeZone.split('/').pop().replace(/_/g, ' ');
+            locationDisplay = ` (${cityName})`;
+            formattedDate = localDate.format('ddd DD MMM hh:mm A');
+        } else {
+            formattedDate = momentDate.utc().format('ddd DD MMM hh:mm A');
+            locationDisplay = ' UTC';
+        }
+
+        return `${formattedDate}${locationDisplay}`;
+    };
+
     const getTimeframeData = (timeframe, coinType) => {
         if (!combinedData || !combinedData.resultsByTimeframe || !combinedData.resultsByTimeframe[timeframe]) {
             return [];
@@ -210,9 +231,9 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
                 <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-4">
                     <h3 className="text-xl font-bold text-white text-center mb-1">{title}</h3>
-                    <div className="text-xs text-white text-center">
+                    {/* <div className="text-xs text-white text-center">
                         {getFromDateForTimeframe()}
-                    </div>
+                    </div> */}
                 </div>
 
                 <div className="p-6 overflow-x-auto overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
@@ -273,39 +294,14 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                             <div className="mb-1 text-xs whitespace-nowrap">
                                                                 <span className="font-semibold text-black">Short Term:{shortTermPosts} posts</span>
                                                             </div>
-                                                            <div className="segmented-bar-container mb-1">
-                                                                <div className="segmented-bar-background">
-                                                                    <div className="segment segment-red" />
-                                                                    <div className="segment segment-yellow" />
-                                                                    <div className="segment segment-green" />
-                                                                </div>
-                                                                <div
-                                                                    className="percentage-ball"
-                                                                    style={{ left: `${(shortTermBallPosition / 100) * 100}%` }}
-                                                                />
-                                                            </div>
-                                                            <div className={`font-semibold text-xs text-center ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
-                                                                {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Long Term */}
-                                                        <div>
-                                                            <div className="mb-1 text-xs whitespace-nowrap">
-                                                                <span className="font-semibold text-black">Long Term:{longTermPosts} posts</span>
-                                                            </div>
-                                                            {longTermPosts === 0 ? (
+                                                            {shortTermPosts === 0 ? (
                                                                 <>
                                                                     <div className="segmented-bar-container mb-1">
-                                                                        <div style={{ display: 'flex', width: '100%', height: '100%' }}>
+                                                                        <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
                                                                             <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
                                                                             <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
                                                                             <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
                                                                         </div>
-                                                                        <div
-                                                                            className="percentage-ball"
-                                                                            style={{ left: '45%', position: 'absolute' }}
-                                                                        />
                                                                     </div>
                                                                     <div className="font-semibold text-xs text-center text-gray-500">
                                                                         Not Applicable
@@ -321,7 +317,53 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                         </div>
                                                                         <div
                                                                             className="percentage-ball"
-                                                                            style={{ left: `${(longTermBallPosition / 100) * 100}%` }}
+                                                                            style={{
+                                                                                left: `${Math.min(Math.max(shortTermBallPosition, 6), 94)}%`,
+                                                                                backgroundColor: shortTermBullish >= shortTermBearish ? '#00ff15' : '#ff2121',
+                                                                                borderColor: shortTermBullish >= shortTermBearish ? '#00cc11' : '#cc1a1a'
+                                                                            }}
+                                                                        />
+                                                                    </div>
+                                                                    <div className={`font-semibold text-xs text-center ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                                        {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
+                                                                    </div>
+                                                                </>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Long Term */}
+                                                        <div>
+                                                            <div className="mb-1 text-xs whitespace-nowrap">
+                                                                <span className="font-semibold text-black">Long Term:{longTermPosts} posts</span>
+                                                            </div>
+                                                            {longTermPosts === 0 ? (
+                                                                <>
+                                                                    <div className="segmented-bar-container mb-1">
+                                                                        <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
+                                                                            <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
+                                                                            <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
+                                                                            <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="font-semibold text-xs text-center text-gray-500">
+                                                                        Not Applicable
+                                                                    </div>
+                                                                </>
+                                                            ) : (
+                                                                <>
+                                                                    <div className="segmented-bar-container mb-1">
+                                                                        <div className="segmented-bar-background">
+                                                                            <div className="segment segment-red" />
+                                                                            <div className="segment segment-yellow" />
+                                                                            <div className="segment segment-green" />
+                                                                        </div>
+                                                                        <div
+                                                                            className="percentage-ball"
+                                                                            style={{
+                                                                                left: `${Math.min(Math.max(longTermBallPosition, 6), 94)}%`,
+                                                                                backgroundColor: longTermBullish >= longTermBearish ? '#00ff15' : '#ff2121',
+                                                                                borderColor: longTermBullish >= longTermBearish ? '#00cc11' : '#cc1a1a'
+                                                                            }}
                                                                         />
                                                                     </div>
                                                                     <div className={`font-semibold text-xs text-center ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
@@ -670,10 +712,8 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         <div className="space-y-6">
             {/* Header */}
             <div className="text-center">
-                <h2 className="text-3xl md:text-4xl font-bold mt-10">
-                    <span className="text-black">
-                        Trending Coins
-                    </span>
+                <h2 className="text-3xl md:text-4xl font-bold mt-10 text-black">
+                    Trending Coins ({lastUpdated ? formatDate(lastUpdated) : "N/A"})
                 </h2>
             </div>
 

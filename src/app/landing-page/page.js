@@ -1241,15 +1241,15 @@ export default function Home() {
             </div>
 
             {/* Right: Timezone and Update Info */}
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-3 min-w-[300px]">
               {/* Timezone Toggle */}
-              <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border border-blue-200 p-3">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs text-black-700">Timezone:</span>
-                  <div className="flex items-center bg-gray-100/50 rounded-lg p-1">
+              <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border border-blue-200 p-4">
+                <div className="flex flex-col gap-3">
+                  <span className="text-sm font-semibold text-black-700">Timezone:</span>
+                  <div className="flex flex-col gap-2 bg-gray-100/50 rounded-lg p-2">
                     <button
                       onClick={() => toggleTimezone()}
-                      className={`px-3 py-1.5 text-xs rounded-md transition-all duration-200 ${!useLocalTime
+                      className={`px-4 py-2.5 text-sm rounded-md transition-all duration-200 ${!useLocalTime
                         ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-xl font-bold text-white shadow-lg'
                         : 'text-gray-700 hover:text-gray-900'
                         }`}
@@ -1258,7 +1258,7 @@ export default function Home() {
                     </button>
                     <button
                       onClick={() => toggleTimezone()}
-                      className={`px-3 py-1.5 text-xs  rounded-md transition-all duration-200 ${useLocalTime
+                      className={`px-4 py-2.5 text-sm rounded-md transition-all duration-200 ${useLocalTime
                         ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-xl font-bold text-white shadow-lg'
                         : 'text-gray-700 hover:text-gray-900'
                         }`}
@@ -1270,18 +1270,18 @@ export default function Home() {
               </div>
 
               {/* Update Times */}
-              <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border border-blue-200 p-3">
-                <div className="flex items-center gap-4 text-xs">
-                  <div className="flex flex-col">
-                    <span className="text-xs text-black-700">Last Updated:</span>
-                    <span className="text-xs text-black-700">
+              <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border border-blue-200 p-4">
+                <div className="flex flex-col gap-3 text-sm">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-semibold text-black-700">Last Updated:</span>
+                    <span className="text-sm text-black-700">
                       {lastUpdated ? formatDate(lastUpdated) : "N/A"}
                     </span>
                   </div>
-                  <div className="h-8 w-px bg-gray-400"></div>
-                  <div className="flex flex-col">
-                    <span className="text-xs text-black-700">Next Update:</span>
-                    <span className="text-xs text-black-700">
+                  <div className="h-px w-full bg-gray-400"></div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-semibold text-black-700">Next Update:</span>
+                    <span className="text-sm text-black-700">
                       {nextUpdate ? formatDate(nextUpdate) : "N/A"}
                     </span>
                   </div>
