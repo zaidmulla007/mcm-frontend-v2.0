@@ -756,7 +756,7 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
               (() => {
                 const dataPoints = roiGraphData;
 
-                // Fixed Y-axis scale for consistency across all graphs
+                // Y-axis scale - visual display range
                 const yMax = 100;
                 const yMin = -100;
                 const range = yMax - yMin;
@@ -767,14 +767,14 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
                 const padding = { left: 35, right: 20, top: 20, bottom: 30 };
 
                 // Custom Y-axis labels: 100+, 100, 50, 0, -50, -100
-                // Position 100+ slightly above 100 for visual separation
+                // The 100+ label is at the top and represents any value > 100
                 const yLabels = [
-                  { value: 110, display: '100+' },  // Position above 100
-                  { value: 100, display: '100' },
-                  { value: 50, display: '50' },
-                  { value: 0, display: '0' },
-                  { value: -50, display: '-50' },
-                  { value: -100, display: '-100' }
+                  { value: 100, display: '100+', position: 0 },  // Top position for 100+
+                  { value: 100, display: '100', position: 1 },   // Second position for exactly 100
+                  { value: 50, display: '50', position: 2 },
+                  { value: 0, display: '0', position: 3 },
+                  { value: -50, display: '-50', position: 4 },
+                  { value: -100, display: '-100', position: 5 }
                 ];
 
                 return (
@@ -802,7 +802,7 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
 
                       {/* Y-axis labels and grid lines */}
                       {yLabels.map((label, i) => {
-                        const y = padding.top + (i * graphHeight / (yLabels.length - 1));
+                        const y = padding.top + (label.position * graphHeight / (yLabels.length - 1));
                         return (
                           <g key={i}>
                             <text
@@ -815,7 +815,8 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
                             >
                               {label.display}
                             </text>
-                            {i < yLabels.length - 1 && (
+                            {/* Only draw grid line for positions 1-5, not for 100+ at position 0 */}
+                            {label.position > 0 && label.position < yLabels.length - 1 && (
                               <line
                                 x1={padding.left}
                                 y1={y}
@@ -832,10 +833,20 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
                       {/* Data line segments with color based on value */}
                       {dataPoints.map((point, index) => {
                         if (index === 0) return null;
+
+                        // Clamp values between -100 and 100 for display
+                        const clampedPrevValue = Math.max(yMin, Math.min(yMax, dataPoints[index - 1].value));
+                        const clampedValue = Math.max(yMin, Math.min(yMax, point.value));
+
+                        // Calculate positions using same logic as data points
+                        const normalizedPrevValue = (clampedPrevValue - yMin) / range;
+                        const normalizedValue = (clampedValue - yMin) / range;
+                        const effectiveGraphHeight = graphHeight * (5/6);
+
                         const x1 = padding.left + ((index - 1) / (dataPoints.length - 1)) * graphWidth;
-                        const y1 = graphHeight + padding.top - ((dataPoints[index - 1].value - yMin) / range * graphHeight);
+                        const y1 = padding.top + (graphHeight - (normalizedPrevValue * effectiveGraphHeight));
                         const x2 = padding.left + (index / (dataPoints.length - 1)) * graphWidth;
-                        const y2 = graphHeight + padding.top - ((point.value - yMin) / range * graphHeight);
+                        const y2 = padding.top + (graphHeight - (normalizedValue * effectiveGraphHeight));
 
                         // Use #1e3a8a for positive values (>= 0), #dbeafe for negative values (< 0)
                         const strokeColor = point.value >= 0 ? "#1e3a8a" : "#dbeafe";
@@ -857,8 +868,16 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
                       {/* Data points */}
                       {dataPoints.map((point, index) => {
                         const x = padding.left + (index / (dataPoints.length - 1)) * graphWidth;
-                        const normalizedValue = (point.value - yMin) / range;
-                        const y = graphHeight + padding.top - (normalizedValue * graphHeight);
+
+                        // Clamp value between -100 and 100 for display position
+                        const clampedValue = Math.max(yMin, Math.min(yMax, point.value));
+
+                        // Calculate Y position: map -100 to 100 onto the graph height
+                        // The "100" label is at position 1 out of 5 positions (20% from top)
+                        // So we need to map our data to that space
+                        const normalizedValue = (clampedValue - yMin) / range; // 0 to 1
+                        const effectiveGraphHeight = graphHeight * (5/6); // Use 5/6 of height (exclude 100+ space)
+                        const y = padding.top + (graphHeight - (normalizedValue * effectiveGraphHeight));
 
                         // Use #1e3a8a for positive values (>= 0), #dbeafe for negative values (< 0)
                         const fillColor = point.value >= 0 ? "#1e3a8a" : "#dbeafe";
