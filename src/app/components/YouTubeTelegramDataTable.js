@@ -74,7 +74,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             momentDate = date.tz(userTimeZone);
             const cityName = userTimeZone.split('/').pop().replace(/_/g, ' ');
-            locationDisplay = ` (${cityName})`;
+            locationDisplay = ` ${cityName}`;
         } else {
             momentDate = date;
             locationDisplay = ' UTC';
@@ -94,7 +94,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             const localDate = momentDate.tz(userTimeZone);
             const cityName = userTimeZone.split('/').pop().replace(/_/g, ' ');
-            locationDisplay = ` (${cityName})`;
+            locationDisplay = ` ${cityName}`;
             formattedDate = localDate.format('ddd DD MMM hh:mm A');
         } else {
             formattedDate = momentDate.utc().format('ddd DD MMM hh:mm A');
@@ -229,7 +229,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
         return (
             <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
-                <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-4">
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
                     <h3 className="text-xl font-bold text-white text-center mb-1">{title}</h3>
                     {/* <div className="text-xs text-white text-center">
                         {getFromDateForTimeframe()}
@@ -686,7 +686,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     <div className="flex justify-center items-center mb-2">
                         <button
                             onClick={() => toggleExpanded(timeframe)}
-                            className="bg-gradient-to-r from-purple-600 to-blue-600 p-4 text-white font-semibold text-sm cursor-pointer rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 text-white font-semibold text-sm cursor-pointer rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
                         >
                             {isExpanded ? "Show Less" : "Read More"}
                         </button>
@@ -713,8 +713,11 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             {/* Header */}
             <div className="text-center">
                 <h2 className="text-3xl md:text-4xl font-bold mt-10 text-black">
-                    Trending Coins ({lastUpdated ? formatDate(lastUpdated) : "N/A"})
+                    Trending Coins
                 </h2>
+                <p className="text-xl text-gray-600 mt-2">
+                    {lastUpdated ? formatDate(lastUpdated) : "N/A"}
+                </p>
             </div>
 
             {/* Channel and Coin Type Dropdowns */}

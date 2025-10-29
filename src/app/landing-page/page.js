@@ -1192,7 +1192,7 @@ export default function Home() {
 
       // Extract city name only
       const cityName = userTimeZone.split('/').pop().replace(/_/g, ' ');
-      locationDisplay = ` (${cityName})`;
+      locationDisplay = ` ${cityName}`;
     } else {
       // Use UTC time
       momentDate = moment(date).utc();
@@ -1241,49 +1241,39 @@ export default function Home() {
             </div>
 
             {/* Right: Timezone and Update Info */}
-            <div className="flex flex-col gap-3 min-w-[300px]">
-              {/* Timezone Toggle */}
-              <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border border-blue-200 p-4">
-                <div className="flex flex-col gap-3">
-                  <span className="text-sm font-semibold text-black-700">Timezone:</span>
-                  <div className="flex flex-col gap-2 bg-gray-100/50 rounded-lg p-2">
-                    <button
-                      onClick={() => toggleTimezone()}
-                      className={`px-4 py-2.5 text-sm rounded-md transition-all duration-200 ${!useLocalTime
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-xl font-bold text-white shadow-lg'
-                        : 'text-gray-700 hover:text-gray-900'
-                        }`}
-                    >
-                      Default UTC
-                    </button>
-                    <button
-                      onClick={() => toggleTimezone()}
-                      className={`px-4 py-2.5 text-sm rounded-md transition-all duration-200 ${useLocalTime
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-xl font-bold text-white shadow-lg'
-                        : 'text-gray-700 hover:text-gray-900'
-                        }`}
-                    >
-                      Local Time Zone
-                    </button>
-                  </div>
+            <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded border border-blue-200 p-1.5 min-w-[160px]">
+              <div className="flex flex-col gap-1">
+                {/* Timezone Toggle */}
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => toggleTimezone()}
+                    className={`px-1.5 py-0.5 text-[9px] rounded transition-all flex-1 ${!useLocalTime
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-white'
+                      : 'text-gray-700'
+                      }`}
+                  >
+                    UTC
+                  </button>
+                  <button
+                    onClick={() => toggleTimezone()}
+                    className={`px-1.5 py-0.5 text-[9px] rounded transition-all flex-1 ${useLocalTime
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-white'
+                      : 'text-gray-700'
+                      }`}
+                  >
+                    Local Time
+                  </button>
                 </div>
-              </div>
 
-              {/* Update Times */}
-              <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl border border-blue-200 p-4">
-                <div className="flex flex-col gap-3 text-sm">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm font-semibold text-black-700">Last Updated:</span>
-                    <span className="text-sm text-black-700">
-                      {lastUpdated ? formatDate(lastUpdated) : "N/A"}
-                    </span>
+                {/* Update Times */}
+                <div className="text-[9px] leading-tight">
+                  <div className="bg-white/40 rounded p-1 mb-0.5">
+                    <div className="font-semibold mb-0.5">Last Updated:</div>
+                    <div>{lastUpdated ? formatDate(lastUpdated) : "Loading..."}</div>
                   </div>
-                  <div className="h-px w-full bg-gray-400"></div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-sm font-semibold text-black-700">Next Update:</span>
-                    <span className="text-sm text-black-700">
-                      {nextUpdate ? formatDate(nextUpdate) : "N/A"}
-                    </span>
+                  <div className="bg-white/40 rounded p-1">
+                    <div className="font-semibold mb-0.5">Next Update:</div>
+                    <div>{nextUpdate ? formatDate(nextUpdate) : "Loading..."}</div>
                   </div>
                 </div>
               </div>

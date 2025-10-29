@@ -40,7 +40,7 @@ export const TimezoneProvider = ({ children }) => {
 
   // Helper function to format dates consistently across the app
   const formatDate = (date, format = 'ddd DD MMM hh:mm A') => {
-    if (!date) return "N/A";
+    if (!date) return "Loading...";
 
     const momentDate = moment(date);
     let formattedMoment;
@@ -50,7 +50,7 @@ export const TimezoneProvider = ({ children }) => {
       // Use local time
       formattedMoment = momentDate.tz(userTimezone);
       const cityName = userTimezone.split('/').pop().replace(/_/g, ' ');
-      locationDisplay = ` (${cityName})`;
+      locationDisplay = ` ${cityName}`;
     } else {
       // Use UTC time
       formattedMoment = momentDate.utc();

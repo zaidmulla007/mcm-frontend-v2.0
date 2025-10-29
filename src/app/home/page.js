@@ -7,7 +7,6 @@ import YouTubeTelegramDataTable from "../components/YouTubeTelegramDataTable";
 import CTASection from "../components/CTASection";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { motion } from "framer-motion";
 import { useTop10LivePrice } from "../livePriceTop10";
 import { useTimezone } from "../contexts/TimezoneContext";
@@ -177,13 +176,6 @@ export default function HomePage() {
     }
   };
 
-  const handleLeaderboardClick = (e) => {
-    if (!isLoggedIn) {
-      e.preventDefault();
-      router.push('/login?signup=true');
-    }
-  };
-
   const handleViewFullClick = (e) => {
     if (!isLoggedIn) {
       e.preventDefault();
@@ -304,13 +296,20 @@ export default function HomePage() {
             View Top Crypto Influencers
           </h2>
 
-          <Link
-            href="/influencers"
-            onClick={handleLeaderboardClick}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              const userData = localStorage.getItem('userData');
+              if (userData) {
+                window.location.href = '/influencers';
+              } else {
+                window.location.href = '/login?signup=true';
+              }
+            }}
             className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold text-2xl md:text-3xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 mb-6"
           >
             Live Leaderboard
-          </Link>
+          </button>
 
           <p className="text-md text-gray-600 leading-relaxed">
             Trust is the real Alpha. Track ROI, win rate, and trust scores with our

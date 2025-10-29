@@ -956,14 +956,14 @@ export default function Login() {
             title: 'Success!',
             text: 'Login successful!',
             icon: 'success',
-            confirmButtonText: 'Continue',
             confirmButtonColor: '#8b5cf6',
             background: '#ffffff',
-            color: '#000000'
-          }).then((result) => {
-            if (result.isConfirmed) {
-              router.push('/influencers');
-            }
+            color: '#000000',
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false
+          }).then(() => {
+            router.push('/landing-page');
           });
         } else {
           throw new Error('Login failed');
@@ -1043,15 +1043,15 @@ export default function Login() {
               </div>
             `,
             icon: 'success',
-            confirmButtonText: 'Start Exploring',
             confirmButtonColor: '#8b5cf6',
             background: '#ffffff',
             color: '#000000',
-            showConfetti: true
-          }).then((result) => {
-            if (result.isConfirmed) {
-              router.push('/influencers');
-            }
+            showConfetti: true,
+            timer: 3000,
+            timerProgressBar: true,
+            showConfirmButton: false
+          }).then(() => {
+            router.push('/landing-page');
           });
         } else {
           throw new Error('Failed to verify OTP');

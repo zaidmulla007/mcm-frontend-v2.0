@@ -38,14 +38,14 @@ const MoonPhase = memo(({ percentage, year }) => {
     <svg width="64" height="64" viewBox="0 0 64 64">
       <defs>
         <radialGradient id={`moonGlow-${year}`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#dbeafe" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#dbeafe" stopOpacity="0" />
+          <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#c084fc" stopOpacity="0" />
         </radialGradient>
 
         <radialGradient id={`moonSurface-${year}`} cx="35%" cy="35%">
-          <stop offset="0%" stopColor="#dbeafe" />
-          <stop offset="50%" stopColor="#bfdbfe" />
-          <stop offset="100%" stopColor="#93c5fd" />
+          <stop offset="0%" stopColor="#60a5fa" />
+          <stop offset="50%" stopColor="#a78bfa" />
+          <stop offset="100%" stopColor="#c084fc" />
         </radialGradient>
       </defs>
 
@@ -56,11 +56,11 @@ const MoonPhase = memo(({ percentage, year }) => {
       <circle cx="32" cy="32" r="28" fill={`url(#moonSurface-${year})`} />
 
       {/* Craters */}
-      <circle cx="24" cy="24" r="4" fill="#60a5fa" opacity="0.4" />
-      <circle cx="38" cy="28" r="5" fill="#60a5fa" opacity="0.3" />
-      <circle cx="28" cy="38" r="3" fill="#60a5fa" opacity="0.35" />
-      <circle cx="40" cy="22" r="2.5" fill="#60a5fa" opacity="0.4" />
-      <circle cx="35" cy="40" r="2" fill="#60a5fa" opacity="0.3" />
+      <circle cx="24" cy="24" r="4" fill="#a78bfa" opacity="0.4" />
+      <circle cx="38" cy="28" r="5" fill="#a78bfa" opacity="0.3" />
+      <circle cx="28" cy="38" r="3" fill="#a78bfa" opacity="0.35" />
+      <circle cx="40" cy="22" r="2.5" fill="#a78bfa" opacity="0.4" />
+      <circle cx="35" cy="40" r="2" fill="#a78bfa" opacity="0.3" />
 
       {/* Shadow overlay */}
       <path
@@ -95,7 +95,7 @@ const BubbleClusterChart = memo(({ data }) => {
 
     const containerWidth = containerRef.current?.offsetWidth || 350;
     const width = containerWidth;
-    const height = 200; // Increased height to accommodate bubbles
+    const height = 120; // Reduced height for horizontal layout
     const padding = 10; // Padding to ensure bubbles don't get cut off
 
     const svg = d3.select(svgRef.current)
@@ -104,63 +104,15 @@ const BubbleClusterChart = memo(({ data }) => {
       .attr("viewBox", `0 0 ${width} ${height}`)
       .attr("preserveAspectRatio", "xMidYMid meet");
 
-    // Define vibrant crypto-style gradients
-    const defs = svg.append("defs");
-
-    const gradients = [
-      ["#22d3ee", "#06b6d4", "#0891b2"], // Cyan (matches header)
-      ["#a78bfa", "#8b5cf6", "#7c3aed"], // Purple (matches header)
-      ["#60a5fa", "#3b82f6", "#2563eb"], // Blue
-      ["#93c5fd", "#60a5fa", "#3b82f6"], // Light Blue
-      ["#c4b5fd", "#a78bfa", "#8b5cf6"], // Light Purple
-      ["#06b6d4", "#8b5cf6", "#7c3aed"], // Cyan-Purple gradient
-      ["#22d3ee", "#a78bfa", "#8b5cf6"], // Cyan-Purple blend
-      ["#3b82f6", "#8b5cf6", "#7c3aed"]  // Blue-Purple gradient
-    ];
-
-    data.forEach((d, i) => {
-      const colorScheme = gradients[i % gradients.length];
-      const gradient = defs.append("radialGradient")
-        .attr("id", `bubble-gradient-${d.year}`)
-        .attr("cx", "30%")
-        .attr("cy", "30%");
-
-      gradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", colorScheme[0])
-        .attr("stop-opacity", 1);
-
-      gradient.append("stop")
-        .attr("offset", "50%")
-        .attr("stop-color", colorScheme[1])
-        .attr("stop-opacity", 0.9);
-
-      gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", colorScheme[2])
-        .attr("stop-opacity", 0.8);
-
-      // Add shimmer overlay gradient
-      const shimmerGradient = defs.append("radialGradient")
-        .attr("id", `shimmer-${d.year}`)
-        .attr("cx", "30%")
-        .attr("cy", "30%");
-
-      shimmerGradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "#ffffff")
-        .attr("stop-opacity", 0.4);
-
-      shimmerGradient.append("stop")
-        .attr("offset", "50%")
-        .attr("stop-color", "#ffffff")
-        .attr("stop-opacity", 0.1);
-
-      shimmerGradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "#ffffff")
-        .attr("stop-opacity", 0);
+    // Sort data by year (oldest to newest)
+    const sortedData = [...data].sort((a, b) => {
+      const yearA = parseInt(a.year.replace('*', ''));
+      const yearB = parseInt(b.year.replace('*', ''));
+      return yearA - yearB;
     });
+
+    // Define defs for filters
+    const defs = svg.append("defs");
 
     // Add glow filter
     const filter = defs.append("filter")
@@ -175,55 +127,44 @@ const BubbleClusterChart = memo(({ data }) => {
     feMerge.append("feMergeNode").attr("in", "SourceGraphic");
 
     // Calculate bubble sizes with padding consideration
-    const maxCalls = d3.max(data, d => d.calls);
-    const minCalls = d3.min(data, d => d.calls);
+    const maxCalls = d3.max(sortedData, d => d.calls);
+    const minCalls = d3.min(sortedData, d => d.calls);
 
-    const bubbleCount = data.length;
-    // Reduce max radius to ensure bubbles fit with padding
-    const maxRadius = Math.min(45, (width - padding * 4) / (bubbleCount * 1.5));
-    const minRadius = maxRadius * 0.4;
+    // Reduce max radius to ensure bubbles fit horizontally with year label below
+    const maxRadius = Math.min(35, (height - 30) / 2); // Reserve 30px for year label below
+    const minRadius = maxRadius * 0.5;
 
     const radiusScale = d3.scaleSqrt()
       .domain([minCalls, maxCalls])
       .range([minRadius, maxRadius]);
 
-    // Calculate fixed positions for bubbles - no animation
-    const nodes = data.map((d) => {
+    // Calculate fixed positions for bubbles - horizontal layout
+    const nodes = sortedData.map((d, index) => {
       const radius = radiusScale(d.calls);
       return {
         ...d,
-        radius: radius
+        radius: radius,
+        index: index
       };
     });
 
-    // Sort nodes by radius (largest first) for better visual hierarchy
-    nodes.sort((a, b) => b.radius - a.radius);
-
-    // Calculate fixed positions in a tight cluster with bounds checking
+    // Calculate fixed positions in a horizontal line from left to right
     const calculateFixedPositions = (bubbles) => {
       if (bubbles.length === 0) return bubbles;
 
-      // Place largest bubble at center
-      bubbles[0].x = width / 2;
-      bubbles[0].y = height / 2;
+      // Find the maximum radius to center bubbles vertically
+      const maxBubbleRadius = d3.max(bubbles, d => d.radius);
 
-      if (bubbles.length === 1) return bubbles;
+      // Calculate available width accounting for bubble sizes
+      const availableWidth = width - (maxBubbleRadius * 2) - (padding * 2);
+      const spacing = bubbles.length > 1 ? availableWidth / (bubbles.length - 1) : 0;
 
-      // Position remaining bubbles in a circular pattern around the center
-      for (let i = 1; i < bubbles.length; i++) {
-        const angle = ((i - 1) / (bubbles.length - 1)) * 2 * Math.PI;
-        const distance = bubbles[0].radius + bubbles[i].radius + 8;
-
-        let x = width / 2 + Math.cos(angle) * distance;
-        let y = height / 2 + Math.sin(angle) * distance;
-
-        // Ensure bubbles stay within bounds
-        x = Math.max(bubbles[i].radius + padding, Math.min(width - bubbles[i].radius - padding, x));
-        y = Math.max(bubbles[i].radius + padding, Math.min(height - bubbles[i].radius - padding, y));
-
-        bubbles[i].x = x;
-        bubbles[i].y = y;
-      }
+      bubbles.forEach((bubble, i) => {
+        // Position horizontally from left to right, ensuring bubbles stay within bounds
+        bubble.x = padding + maxBubbleRadius + (i * spacing);
+        // Center vertically (accounting for year label below)
+        bubble.y = maxBubbleRadius + padding + 5;
+      });
 
       return bubbles;
     };
@@ -245,22 +186,20 @@ const BubbleClusterChart = memo(({ data }) => {
       .attr("fill", "rgba(0, 0, 0, 0.2)")
       .attr("filter", "url(#glow)");
 
-    // Add main bubble circles
+    // Create color scale based on number of calls
+    const colorScale = d3.scaleLinear()
+      .domain([minCalls, maxCalls])
+      .range(["#9ca3af", "#4b5563"]); // light gray (gray-300) to dark gray (gray-600)
+
+    // Add main bubble circles with colors based on call count
     bubbleGroups.append("circle")
       .attr("class", "bubble-main")
       .attr("r", d => d.radius)
-      .attr("fill", d => `url(#bubble-gradient-${d.year})`)
+      .attr("fill", d => colorScale(d.calls))
       .attr("filter", "url(#glow)")
       .style("transition", "all 0.3s ease");
 
-    // Add shimmer overlay
-    bubbleGroups.append("circle")
-      .attr("class", "bubble-shimmer")
-      .attr("r", d => d.radius)
-      .attr("fill", d => `url(#shimmer-${d.year})`)
-      .attr("pointer-events", "none");
-
-    // Function to calculate responsive text sizes
+    // Function to calculate responsive text size for calls count
     const getCallsFontSize = (radius) => {
       // Calls count - BIG size
       if (radius < 20) return Math.max(10, radius * 0.50);
@@ -269,30 +208,11 @@ const BubbleClusterChart = memo(({ data }) => {
       return Math.max(16, radius * 0.42);
     };
 
-    const getLabelFontSize = (radius) => {
-      // "Trading calls" label - SMALL size
-      if (radius < 20) return Math.max(5, radius * 0.22);
-      if (radius < 30) return Math.max(6, radius * 0.20);
-      if (radius < 40) return Math.max(7, radius * 0.18);
-      return Math.max(8, radius * 0.16);
-    };
-
-    const getYearFontSize = (radius) => {
-      // Year - SMALL size
-      if (radius < 20) return Math.max(5, radius * 0.22);
-      if (radius < 30) return Math.max(6, radius * 0.20);
-      if (radius < 40) return Math.max(7, radius * 0.18);
-      return Math.max(8, radius * 0.16);
-    };
-
-    // 1. Add calls count text at TOP - BIG
+    // Add calls count text at CENTER
     bubbleGroups.append("text")
       .attr("class", "bubble-calls")
       .attr("text-anchor", "middle")
-      .attr("dy", d => {
-        const fontSize = getCallsFontSize(d.radius);
-        return -fontSize * 0.5;
-      })
+      .attr("dy", "0.35em") // Vertically center the text
       .style("font-size", d => `${getCallsFontSize(d.radius)}px`)
       .style("font-weight", "bold")
       .style("fill", "#ffffff")
@@ -300,39 +220,15 @@ const BubbleClusterChart = memo(({ data }) => {
       .style("text-shadow", "0 2px 4px rgba(0,0,0,0.3)")
       .text(d => d.calls.toLocaleString());
 
-    // 2. Add "Trading calls" label in MIDDLE - small (tight spacing)
-    bubbleGroups.append("text")
-      .attr("class", "bubble-label")
-      .attr("text-anchor", "middle")
-      .attr("dy", d => {
-        const callsFontSize = getCallsFontSize(d.radius);
-        const labelFontSize = getLabelFontSize(d.radius);
-        return -callsFontSize * 0.5 + callsFontSize * 0.7 + labelFontSize * 0.4;
-      })
-      .style("font-size", d => `${getLabelFontSize(d.radius)}px`)
-      .style("font-weight", "500")
-      .style("fill", "#ffffff")
-      .style("opacity", 0.85)
-      .style("pointer-events", "none")
-      .style("text-shadow", "0 1px 2px rgba(0,0,0,0.3)")
-      .text("Trading calls");
-
-    // 3. Add year text at BOTTOM - small (tight spacing)
+    // 3. Add year text OUTSIDE BELOW the bubble - smaller than text-xs and black
     bubbleGroups.append("text")
       .attr("class", "bubble-year")
       .attr("text-anchor", "middle")
-      .attr("dy", d => {
-        const callsFontSize = getCallsFontSize(d.radius);
-        const labelFontSize = getLabelFontSize(d.radius);
-        const yearFontSize = getYearFontSize(d.radius);
-        return -callsFontSize * 0.5 + callsFontSize * 0.7 + labelFontSize * 0.4 + labelFontSize * 0.8 + yearFontSize * 0.3;
-      })
-      .style("font-size", d => `${getYearFontSize(d.radius)}px`)
+      .attr("dy", d => d.radius + 12) // Position below the bubble
+      .style("font-size", "10px") // Smaller than text-xs (12px)
       .style("font-weight", "500")
-      .style("fill", "#ffffff")
-      .style("opacity", 0.85)
+      .style("fill", "#000000") // Black color
       .style("pointer-events", "none")
-      .style("text-shadow", "0 1px 2px rgba(0,0,0,0.3)")
       .text(d => d.year);
 
     // Add hover effects
@@ -360,7 +256,7 @@ const BubbleClusterChart = memo(({ data }) => {
 
 BubbleClusterChart.displayName = 'BubbleClusterChart';
 
-const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFull }) => {
+const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn }) => {
   const [showTooltip, setShowTooltip] = useState(null);
 
   // Calculate star rating from trust score (0-5 stars)
@@ -616,7 +512,7 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
   return (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-4">
+      <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4">
         <div className="flex items-center gap-3">
           {/* Profile Image - Centered */}
           <div className="relative flex-shrink-0">
@@ -631,7 +527,7 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
                 />
               </div>
             ) : channelType === "Telegram" ? (
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-blue-400 flex items-center justify-center shadow-lg border-2 border-white">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg border-2 border-white">
                 <span className="text-xl font-bold text-white">
                   {influencerName ? influencerName.match(/\b\w/g)?.join("") || "?" : "?"}
                 </span>
@@ -654,7 +550,17 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
                 </div>
               </div>
               <button
-                onClick={(e) => onViewFull(e)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const userData = localStorage.getItem('userData');
+                  if (userData) {
+                    window.location.href = platformType === "youtube"
+                      ? `/influencers/${channelId}`
+                      : `/telegram-influencer/${channelId}`;
+                  } else {
+                    window.location.href = '/login?signup=true';
+                  }
+                }}
                 className="text-white text-xs hover:text-gray-200 font-semibold whitespace-nowrap"
               >
                 View Full →
@@ -683,7 +589,7 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
         {/* Total Calls */}
         <div className="bg-gray-50 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-2">
-            <h4 className="text-sm font-bold text-gray-900">Total Calls</h4>
+            <h4 className="text-sm font-bold text-gray-900">Total No.of Calls</h4>
             <button
               className="relative"
               onMouseEnter={() => setShowTooltip('totalRecommendations')}
@@ -691,8 +597,11 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
             >
               <FaInfoCircle className="text-gray-400 text-xs" />
               {showTooltip === 'totalRecommendations' && (
-                <div className="absolute z-10 w-64 p-3 bg-gray-900 text-white text-xs rounded shadow-lg -top-2 left-6">
+                <div className="absolute z-50 w-64 p-3 bg-gray-900 text-white text-xs rounded shadow-lg bottom-full left-1/2 -translate-x-1/2 mb-2">
                   <p className="text-left leading-relaxed">Total bullish and bearish recommendations given by the influencer each year.</p>
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
+                    <div className="border-4 border-transparent border-t-gray-900"></div>
+                  </div>
                 </div>
               )}
             </button>
@@ -745,7 +654,9 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
               <FaInfoCircle className="text-gray-400 text-xs" />
               {showTooltip === 'roi' && (
                 <div className="absolute z-10 w-72 p-3 bg-gray-900 text-white text-xs rounded shadow-lg -top-2 left-6">
-                  <p className="text-left leading-relaxed">% of calls that generated positive returns (that is, where the price of the coin moved in the direction of the influencer&apos;s sentiment), for a 180 day holding period</p>
+                  <p className="text-left leading-relaxed mb-2">% of calls that generated positive returns (that is, where the price of the coin moved in the direction of the influencer&apos;s sentiment), for a 180 day holding period</p>
+                  <p className="text-left leading-relaxed"><strong>H1:</strong> January to June</p>
+                  <p className="text-left leading-relaxed"><strong>H2:</strong> June to December</p>
                 </div>
               )}
             </button>
@@ -756,14 +667,9 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
               (() => {
                 const dataPoints = roiGraphData;
 
-                // Y-axis scale - visual display range
-                const yMax = 100;
-                const yMin = -100;
-                const range = yMax - yMin;
-
                 // Fixed width to fit container without scrolling
                 const graphWidth = 280;
-                const graphHeight = 120;
+                const graphHeight = 100;
                 const padding = { left: 35, right: 20, top: 20, bottom: 30 };
 
                 // Custom Y-axis labels: 100+, 100, 50, 0, -50, -100
@@ -834,22 +740,38 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
                       {dataPoints.map((point, index) => {
                         if (index === 0) return null;
 
-                        // Clamp values between -100 and 100 for display
-                        const clampedPrevValue = Math.max(yMin, Math.min(yMax, dataPoints[index - 1].value));
-                        const clampedValue = Math.max(yMin, Math.min(yMax, point.value));
+                        const prevPoint = dataPoints[index - 1];
 
-                        // Calculate positions using same logic as data points
-                        const normalizedPrevValue = (clampedPrevValue - yMin) / range;
-                        const normalizedValue = (clampedValue - yMin) / range;
-                        const effectiveGraphHeight = graphHeight * (5/6);
+                        // Calculate Y positions for both points using same logic as data points
+                        let y1, y2;
+
+                        // Previous point Y position (use actualValue)
+                        if (prevPoint.actualValue > 100) {
+                          y1 = padding.top + (0 * graphHeight / (yLabels.length - 1));
+                        } else if (prevPoint.actualValue < -100) {
+                          y1 = padding.top + (5 * graphHeight / (yLabels.length - 1));
+                        } else {
+                          const clampedPrevValue = Math.max(-100, Math.min(100, prevPoint.actualValue));
+                          const position1 = 3 - (clampedPrevValue / 50);
+                          y1 = padding.top + (position1 * graphHeight / (yLabels.length - 1));
+                        }
+
+                        // Current point Y position (use actualValue)
+                        if (point.actualValue > 100) {
+                          y2 = padding.top + (0 * graphHeight / (yLabels.length - 1));
+                        } else if (point.actualValue < -100) {
+                          y2 = padding.top + (5 * graphHeight / (yLabels.length - 1));
+                        } else {
+                          const clampedValue = Math.max(-100, Math.min(100, point.actualValue));
+                          const position2 = 3 - (clampedValue / 50);
+                          y2 = padding.top + (position2 * graphHeight / (yLabels.length - 1));
+                        }
 
                         const x1 = padding.left + ((index - 1) / (dataPoints.length - 1)) * graphWidth;
-                        const y1 = padding.top + (graphHeight - (normalizedPrevValue * effectiveGraphHeight));
                         const x2 = padding.left + (index / (dataPoints.length - 1)) * graphWidth;
-                        const y2 = padding.top + (graphHeight - (normalizedValue * effectiveGraphHeight));
 
-                        // Use #1e3a8a for positive values (>= 0), #dbeafe for negative values (< 0)
-                        const strokeColor = point.value >= 0 ? "#1e3a8a" : "#dbeafe";
+                        // Use #60a5fa (blue-400) for positive values (>= 0), #c084fc (purple-400) for negative values (< 0)
+                        const strokeColor = point.actualValue >= 0 ? "#60a5fa" : "#c084fc";
 
                         return (
                           <line
@@ -869,18 +791,32 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn, onViewFul
                       {dataPoints.map((point, index) => {
                         const x = padding.left + (index / (dataPoints.length - 1)) * graphWidth;
 
-                        // Clamp value between -100 and 100 for display position
-                        const clampedValue = Math.max(yMin, Math.min(yMax, point.value));
+                        // Calculate Y position based on actualValue (not clamped value)
+                        // Labels are at positions 0-5, where:
+                        // Position 0 = 100+ (top)
+                        // Position 1 = 100
+                        // Position 2 = 50
+                        // Position 3 = 0
+                        // Position 4 = -50
+                        // Position 5 = -100 (bottom)
+                        let y;
+                        if (point.actualValue > 100) {
+                          // Values > 100 should be at position 0 (100+)
+                          y = padding.top + (0 * graphHeight / (yLabels.length - 1));
+                        } else if (point.actualValue < -100) {
+                          // Values < -100 should be at position 5 (-100)
+                          y = padding.top + (5 * graphHeight / (yLabels.length - 1));
+                        } else {
+                          // Map value to position 1-5 range
+                          // 100 -> position 1, -100 -> position 5
+                          const clampedValue = Math.max(-100, Math.min(100, point.actualValue));
+                          // Convert value (-100 to 100) to position (5 to 1)
+                          const position = 3 - (clampedValue / 50); // 100->1, 50->2, 0->3, -50->4, -100->5
+                          y = padding.top + (position * graphHeight / (yLabels.length - 1));
+                        }
 
-                        // Calculate Y position: map -100 to 100 onto the graph height
-                        // The "100" label is at position 1 out of 5 positions (20% from top)
-                        // So we need to map our data to that space
-                        const normalizedValue = (clampedValue - yMin) / range; // 0 to 1
-                        const effectiveGraphHeight = graphHeight * (5/6); // Use 5/6 of height (exclude 100+ space)
-                        const y = padding.top + (graphHeight - (normalizedValue * effectiveGraphHeight));
-
-                        // Use #1e3a8a for positive values (>= 0), #dbeafe for negative values (< 0)
-                        const fillColor = point.value >= 0 ? "#1e3a8a" : "#dbeafe";
+                        // Use #60a5fa (blue-400) for positive values (>= 0), #c084fc (purple-400) for negative values (< 0)
+                        const fillColor = point.actualValue >= 0 ? "#60a5fa" : "#c084fc";
 
                         return (
                           <g key={point.label}>
