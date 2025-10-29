@@ -185,7 +185,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="mx-auto px-4 py-16">
         {/* Hero Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">
@@ -215,7 +215,7 @@ export default function HomePage() {
         </div>
 
         {/* Stats Cards - 4 square tabs */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-6xl mx-auto mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mx-auto mb-12">
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow">
             <div className="flex items-center justify-center w-12 h-12 bg-blue-100 rounded-lg mx-auto mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-users w-6 h-6 text-blue-600" aria-hidden="true">
@@ -291,7 +291,7 @@ export default function HomePage() {
         </div>
 
         {/* Section Title and Description */}
-        <div className="text-center mb-12 max-w-4xl mx-auto">
+        <div className="text-center mb-12 mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             View Top Crypto Influencers
           </h2>
@@ -323,7 +323,7 @@ export default function HomePage() {
             <div className="text-gray-600">Loading influencer data...</div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto">
             {influencerData.length > 0 ? (
               influencerData.map((influencer, index) => {
                 // Define rank labels for each card

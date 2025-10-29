@@ -137,7 +137,7 @@ export default function ClientHeader() {
 
   return (
     <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+      <div className="mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo */}
         <Link href="/home" className="flex items-center gap-2">
           <Image src="/images/mycryptomonitor.jpg" alt="Logo" width={80} height={90} className="logo-img" />

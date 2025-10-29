@@ -25,7 +25,7 @@ export const metadata = {
 function Footer() {
   return (
     <footer className="w-full bg-white border-t border-gray-200 mt-12 py-8 px-4">
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
+      <div className="mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
         {/* Links */}
         <div className="flex flex-wrap gap-4 text-sm text-gray-700 mb-4 md:mb-0">
           <a href="/about" className="hover:text-purple-400 transition">
