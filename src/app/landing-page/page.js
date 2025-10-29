@@ -921,7 +921,7 @@ const TestimonialsCarousel = ({ testimonials }) => {
 
   return (
     <div
-      className="relative max-w-6xl mx-auto"
+      className="relative mx-auto"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -1219,7 +1219,7 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 text-gray-900 font-sans pb-16 overflow-x-hidden">
 
       {/* What's Trending - YouTube and Telegram Tables */}
-      <section id="trending" className="max-w-7xl mx-auto px-4 py-6 relative z-10">
+      <section id="trending" className="mx-auto px-4 py-6 relative z-10">
         <motion.div
           className="mb-4"
           initial={{ opacity: 0 }}
@@ -1514,7 +1514,7 @@ export default function Home() {
             {/* Desktop: Static Cards, Mobile: Continuous Scrolling */}
             <div className="relative w-full">
               {/* Desktop View - Static Cards */}
-              <div className="hidden md:flex items-center justify-center gap-8 max-w-6xl mx-auto">
+              <div className="hidden md:flex items-center justify-center gap-8 mx-auto">
                 {topMentionedCoins.slice(2, 5).map((coin, index) => (
                   <motion.div
                     key={`desktop-${coin.symbol}`}
@@ -1737,7 +1737,7 @@ export default function Home() {
 
           {/* Top 2 Coins - Animated Text Box */}
           <motion.div
-            className="max-w-4xl mx-auto"
+            className="mx-auto"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}

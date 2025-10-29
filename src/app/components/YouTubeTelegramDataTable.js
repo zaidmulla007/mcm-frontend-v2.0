@@ -267,7 +267,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     return (
                                         <tr key={index} className="border-b border-gray-800">
                                             <td colSpan="2" className="py-4 px-4">
-                                                <div className="flex items-start gap-6">
+                                                <div className="flex items-center justify-center gap-6">
                                                     {/* Left - Coin Info */}
                                                     <div className="flex flex-col items-center text-center min-w-[80px]">
                                                         <img
@@ -288,7 +288,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                     </div>
 
                                                     {/* Right - Sentiment Data */}
-                                                    <div className="flex-1 space-y-3">
+                                                    <div className="flex-1 space-y-3 max-w-md">
                                                         {/* Short Term */}
                                                         <div>
                                                             <div className="mb-1 text-xs whitespace-nowrap">
