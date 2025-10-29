@@ -301,7 +301,7 @@ export default function HomePage() {
               e.stopPropagation();
               const userData = localStorage.getItem('userData');
               if (userData) {
-                window.location.href = '/influencers';
+                window.location.href = '/influencer-search';
               } else {
                 window.location.href = '/login?signup=true';
               }
