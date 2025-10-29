@@ -1452,28 +1452,41 @@ export default function Home() {
           <div className="absolute inset-0 flex items-center">
             <motion.div
               animate={{
-                x: [0, -1920],
+                x: ["0%", "-50%"],
               }}
               transition={{
                 x: {
                   repeat: Infinity,
                   repeatType: "loop",
-                  duration: 40,
+                  duration: 30,
                   ease: "linear",
                 },
               }}
+              style={{ willChange: "transform" }}
               className="flex whitespace-nowrap"
             >
-              {[...scrollingData, ...scrollingData, ...scrollingData].map((item, index) => (
+              {[...scrollingData, ...scrollingData].map((item, index) => (
                 <div
                   key={item.symbol + index}
-                  className="flex items-center space-x-4 bg-gradient-to-r from-purple-800/20 to-blue-800/20 px-6 py-2 rounded-xl border border-purple-400/30 mx-4 flex-shrink-0 w-48"
+                  className="flex items-center gap-3 bg-gradient-to-r from-purple-800/20 to-blue-800/20 px-5 py-3 rounded-xl border border-purple-400/30 mx-4 flex-shrink-0 w-[240px]"
                 >
-                  <span className="text-purple-500 font-bold text-sm">
-                    📈 {item.symbol}
-                  </span>
-                  <span className="text-gray-900 font-semibold">
-                    {item.price}
+                  {item.image && (
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-8 h-8 rounded-full flex-shrink-0"
+                    />
+                  )}
+                  <div className="flex flex-col flex-1 min-w-0">
+                    <span className="text-purple-600 font-bold text-xs uppercase truncate">
+                      {item.symbol}
+                    </span>
+                    <span className="text-gray-600 text-xs capitalize truncate">
+                      {item.name}
+                    </span>
+                  </div>
+                  <span className="text-gray-900 font-bold text-sm whitespace-nowrap">
+                    ${typeof item.price === 'number' ? item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : item.price}
                   </span>
                 </div>
               ))}
