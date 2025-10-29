@@ -267,28 +267,29 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     return (
                                         <tr key={index} className="border-b border-gray-800">
                                             <td colSpan="2" className="py-4 px-4">
-                                                <div className="flex items-center justify-center gap-6">
-                                                    {/* Left - Coin Info */}
-                                                    <div className="flex flex-col items-center text-center min-w-[80px]">
-                                                        <img
-                                                            src={coin.image_small || coin.image_thumb}
-                                                            alt={coin.symbol}
-                                                            className="w-14 h-14 rounded-full mb-2"
-                                                            onError={(e) => {
-                                                                e.target.onerror = null;
-                                                                e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
-                                                            }}
-                                                        />
-                                                        <div className="text-sm text-black font-bold mb-1">
-                                                            {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
+                                                <div className="flex justify-center">
+                                                    <div className="flex items-center gap-6 max-w-md">
+                                                        {/* Left - Coin Info */}
+                                                        <div className="flex flex-col items-center text-center min-w-[80px]">
+                                                            <img
+                                                                src={coin.image_small || coin.image_thumb}
+                                                                alt={coin.symbol}
+                                                                className="w-14 h-14 rounded-full mb-2"
+                                                                onError={(e) => {
+                                                                    e.target.onerror = null;
+                                                                    e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
+                                                                }}
+                                                            />
+                                                            <div className="text-sm text-black font-bold mb-1">
+                                                                {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
+                                                            </div>
+                                                            <div className="text-xs text-black">
+                                                                {sentimentData.mentions} posts
+                                                            </div>
                                                         </div>
-                                                        <div className="text-xs text-black">
-                                                            {sentimentData.mentions} posts
-                                                        </div>
-                                                    </div>
 
-                                                    {/* Right - Sentiment Data */}
-                                                    <div className="space-y-3 w-full max-w-[200px]">
+                                                        {/* Right - Sentiment Data */}
+                                                        <div className="space-y-3 flex-1">
                                                         {/* Short Term */}
                                                         <div>
                                                             <div className="mb-1 text-xs whitespace-nowrap">
@@ -373,6 +374,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                             )}
                                                         </div>
                                                     </div>
+                                                </div>
                                                 </div>
                                             </td>
                                         </tr>
