@@ -288,7 +288,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                     </div>
 
                                                     {/* Right - Sentiment Data */}
-                                                    <div className="flex-1 space-y-3 max-w-md">
+                                                    <div className="space-y-3 w-full max-w-[200px]">
                                                         {/* Short Term */}
                                                         <div>
                                                             <div className="mb-1 text-xs whitespace-nowrap">
