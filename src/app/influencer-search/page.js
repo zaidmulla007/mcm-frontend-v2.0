@@ -568,7 +568,7 @@ export default function InfluencerSearchPage() {
             {/* Leaderboard Section */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Leaderboard</h2>
+                <h2 className="text-lg font-semibold text-gray-900">Influencers</h2>
               </div>
               <div className="overflow-x-auto overflow-y-clip">
                 <table className="w-full relative">

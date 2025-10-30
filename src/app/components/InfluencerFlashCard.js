@@ -275,9 +275,51 @@ BubbleClusterChart.displayName = 'BubbleClusterChart';
 const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn }) => {
   const [showTooltip, setShowTooltip] = useState(null);
 
-  // Calculate star rating from trust score (0-5 stars)
-  const getStarRating = (trustScore) => {
+  // Get star rating from API data (180 days current_rating)
+  const getStarRating = () => {
+    // Try to get star rating from API response
+    if (data?.star_rating?.overall?.["180_days"]?.current_rating !== undefined) {
+      return data.star_rating.overall["180_days"].current_rating;
+    }
+    // Fallback to calculating from trust score if not available
+    const trustScore = data?.trustScore || 75;
     return Math.min(5, Math.max(0, Math.round(trustScore / 20)));
+  };
+
+  // Render star rating with full, half, and empty stars
+  const renderStars = (rating) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+
+    // Add full stars
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <FaStar key={`full-${i}`} className="text-yellow-400" size={16} />
+      );
+    }
+
+    // Add half star if needed
+    if (hasHalfStar) {
+      stars.push(
+        <div key="half" className="relative inline-block" style={{ width: '16px', height: '16px' }}>
+          <FaStar className="text-gray-400 absolute" size={16} />
+          <div style={{ overflow: 'hidden', width: '50%', position: 'absolute' }}>
+            <FaStar className="text-yellow-400" size={16} />
+          </div>
+        </div>
+      );
+    }
+
+    // Add empty stars to make total 5
+    const emptyStars = 5 - Math.ceil(rating);
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <FaStar key={`empty-${i}`} className="text-gray-400" size={16} />
+      );
+    }
+
+    return stars;
   };
 
   // Extract total calls from 180 days data across all quarters
@@ -334,7 +376,7 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn }) => {
     return roiByYear;
   };
 
-  const starRating = getStarRating(data?.trustScore || 75);
+  const starRating = getStarRating();
 
   // Parse data from API response
   // Determine platform based on available fields
@@ -587,13 +629,7 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn }) => {
             <div className="flex items-center justify-between">
               <div className="text-white text-xs">MCM Rating</div>
               <div className="flex">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <FaStar
-                    key={star}
-                    className={star <= starRating ? "text-yellow-400" : "text-gray-400"}
-                    size={16}
-                  />
-                ))}
+                {renderStars(starRating)}
               </div>
             </div>
           </div>

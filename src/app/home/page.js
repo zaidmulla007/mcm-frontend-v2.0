@@ -6,8 +6,8 @@ import TestimonialsSection from "../components/TestimonialsSection";
 import YouTubeTelegramDataTable from "../components/YouTubeTelegramDataTable";
 import CTASection from "../components/CTASection";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef } from "react";
+import { motion, useMotionValue, useAnimationControls } from "framer-motion";
 import { useTop10LivePrice } from "../livePriceTop10";
 import { useTimezone } from "../contexts/TimezoneContext";
 
@@ -22,6 +22,10 @@ export default function HomePage() {
   const [countsData, setCountsData] = useState(null);
   const [countsLoading, setCountsLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
+  const scrollContainerRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const x = useMotionValue(0);
+  const controls = useAnimationControls();
 
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
@@ -70,7 +74,7 @@ export default function HomePage() {
       const youtubeChannelIds = [youtube1hChannelId, youtube24hChannelId].filter(Boolean);
       const telegramChannelIds = [telegram7dChannelId].filter(Boolean);
 
-      // Step 4: Fetch data using batch APIs (influencer data + moonshot data)
+      // Step 4: Fetch data using batch APIs (influencer data + moonshot data + star rating)
       const fetchPromises = [];
 
       if (youtubeChannelIds.length > 0) {
@@ -79,13 +83,11 @@ export default function HomePage() {
             .then(res => res.json())
         );
 
-        // Separate API call for each YouTube channel's rankings
-        youtubeChannelIds.forEach(channelId => {
-          fetchPromises.push(
-            fetch(`/api/admin/rankingsyoutubedata/specificFieldRankings?channel_id=${channelId}&fields=score.moonshots.yearly`)
-              .then(res => res.json())
-          );
-        });
+        // Batch API call for YouTube moonshots and star ratings
+        fetchPromises.push(
+          fetch(`/api/admin/rankingsyoutubedata/specificFieldRankings?channel_id=${youtubeChannelIds.join(',')}&fields=score.moonshots.yearly,star_rating`)
+            .then(res => res.json())
+        );
       }
 
       if (telegramChannelIds.length > 0) {
@@ -94,13 +96,11 @@ export default function HomePage() {
             .then(res => res.json())
         );
 
-        // Separate API call for each Telegram channel's rankings
-        telegramChannelIds.forEach(channelId => {
-          fetchPromises.push(
-            fetch(`/api/admin/rankingstelegramdata/specificFieldRankings?channel_id=${channelId}&fields=score.moonshots.yearly`)
-              .then(res => res.json())
-          );
-        });
+        // Batch API call for Telegram moonshots and star ratings
+        fetchPromises.push(
+          fetch(`/api/admin/rankingstelegramdata/specificFieldRankings?channel_id=${telegramChannelIds.join(',')}&fields=score.moonshots.yearly,star_rating`)
+            .then(res => res.json())
+        );
       }
 
       const results = await Promise.all(fetchPromises);
@@ -114,23 +114,20 @@ export default function HomePage() {
         const youtubeData = results[resultIndex];
         resultIndex += 1;
 
-        // Get moonshot data for each YouTube channel
-        const youtubeMoonshotDataArray = [];
-        for (let i = 0; i < youtubeChannelIds.length; i++) {
-          youtubeMoonshotDataArray.push(results[resultIndex]);
-          resultIndex += 1;
-        }
+        // Get rankings data (moonshots + star rating) for YouTube channels
+        const youtubeRankingsData = results[resultIndex];
+        resultIndex += 1;
 
         if (youtubeData?.success && youtubeData?.results) {
-          youtubeChannelIds.forEach((channelId, index) => {
+          youtubeChannelIds.forEach((channelId) => {
             const channelData = youtubeData.results.find(r => r.channel_id === channelId);
             if (channelData) {
-              // Merge moonshot data if available
-              const youtubeMoonshotData = youtubeMoonshotDataArray[index];
-              if (youtubeMoonshotData?.success && youtubeMoonshotData?.results) {
-                const moonshotInfo = youtubeMoonshotData.results.find(r => r.channel_id === channelId);
-                if (moonshotInfo) {
-                  channelData.moonshotData = moonshotInfo['score.moonshots.yearly'];
+              // Merge rankings data (moonshots + star rating) if available
+              if (youtubeRankingsData?.success && youtubeRankingsData?.results) {
+                const rankingsInfo = youtubeRankingsData.results.find(r => r.channel_id === channelId);
+                if (rankingsInfo) {
+                  channelData.moonshotData = rankingsInfo['score.moonshots.yearly'];
+                  channelData.star_rating = rankingsInfo.star_rating;
                 }
               }
               extractedData.push(channelData);
@@ -144,23 +141,20 @@ export default function HomePage() {
         const telegramData = results[resultIndex];
         resultIndex += 1;
 
-        // Get moonshot data for each Telegram channel
-        const telegramMoonshotDataArray = [];
-        for (let i = 0; i < telegramChannelIds.length; i++) {
-          telegramMoonshotDataArray.push(results[resultIndex]);
-          resultIndex += 1;
-        }
+        // Get rankings data (moonshots + star rating) for Telegram channels
+        const telegramRankingsData = results[resultIndex];
+        resultIndex += 1;
 
         if (telegramData?.success && telegramData?.results) {
-          telegramChannelIds.forEach((channelId, index) => {
+          telegramChannelIds.forEach((channelId) => {
             const channelData = telegramData.results.find(r => r.channel_id === channelId);
             if (channelData) {
-              // Merge moonshot data if available
-              const telegramMoonshotData = telegramMoonshotDataArray[index];
-              if (telegramMoonshotData?.success && telegramMoonshotData?.results) {
-                const moonshotInfo = telegramMoonshotData.results.find(r => r.channel_id === channelId);
-                if (moonshotInfo) {
-                  channelData.moonshotData = moonshotInfo['score.moonshots.yearly'];
+              // Merge rankings data (moonshots + star rating) if available
+              if (telegramRankingsData?.success && telegramRankingsData?.results) {
+                const rankingsInfo = telegramRankingsData.results.find(r => r.channel_id === channelId);
+                if (rankingsInfo) {
+                  channelData.moonshotData = rankingsInfo['score.moonshots.yearly'];
+                  channelData.star_rating = rankingsInfo.star_rating;
                 }
               }
               extractedData.push(channelData);
@@ -183,6 +177,72 @@ export default function HomePage() {
       router.push('/login?signup=true');
     }
   };
+
+  // Get the width of one loop of scrolling data
+  const getLoopWidth = () => {
+    if (!scrollContainerRef.current) return 0;
+    const firstItem = scrollContainerRef.current.querySelector('.price-item');
+    if (!firstItem) return 0;
+    return firstItem.offsetWidth * scrollingData.length;
+  };
+
+  // Handle mouse wheel scroll with infinite loop
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const currentX = x.get();
+    const newX = currentX - e.deltaY;
+    const loopWidth = getLoopWidth();
+
+    // Wrap around for infinite scroll
+    if (newX < -loopWidth) {
+      x.set(newX + loopWidth);
+    } else if (newX > 0) {
+      x.set(newX - loopWidth);
+    } else {
+      x.set(newX);
+    }
+  };
+
+  // Handle drag
+  const handleDrag = (event, info) => {
+    const loopWidth = getLoopWidth();
+    const currentX = x.get();
+
+    // Wrap around during drag
+    if (currentX < -loopWidth) {
+      x.set(currentX + loopWidth);
+    } else if (currentX > 0) {
+      x.set(currentX - loopWidth);
+    }
+  };
+
+  // Auto-scroll animation
+  useEffect(() => {
+    if (isPaused || isDragging) {
+      controls.stop();
+      return;
+    }
+
+    const loopWidth = getLoopWidth();
+    if (loopWidth === 0) return;
+
+    const animate = async () => {
+      const currentX = x.get();
+      await controls.start({
+        x: currentX - loopWidth,
+        transition: {
+          duration: 60,
+          ease: "linear",
+        },
+      });
+      x.set(0);
+      animate();
+    };
+
+    animate();
+
+    return () => controls.stop();
+  }, [isPaused, isDragging, scrollingData, controls, x]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
@@ -353,34 +413,40 @@ export default function HomePage() {
         </div>
 
         {/* Influencer Flash News Text */}
-        <h2 className="text-center text-gray-900 text-2xl font-bold mb-3 mt-10">
+        <h2 className="text-center text-gray-900 text-2xl font-bold mb-0 mt-10">
           Live Prices <span className="text-gray-600 text-sm">(Source Binance)</span>
+
         </h2>
+        <h2 className="text-center text-gray-900 text-2xl font-bold mb-3 mt-0">
+          <span className="text-gray-600 text-sm">(Price change percentage in last 24 hours)</span>
+        </h2>
+
         {/* Influencer News Scroller Container */}
-        <div className="relative h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl border border-blue-200 overflow-hidden shadow-2xl mb-4">
+        <div
+          ref={scrollContainerRef}
+          className="relative h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl border border-blue-200 overflow-hidden shadow-2xl mb-4"
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          onWheel={handleWheel}
+        >
           {/* Continuous Left-to-Right Scrolling News */}
           <div className="absolute inset-0 flex items-center">
             <motion.div
-              animate={!isPaused ? {
-                x: ["0%", "-50%"],
-              } : {}}
-              transition={{
-                x: {
-                  repeat: Infinity,
-                  repeatType: "loop",
-                  duration: 60,
-                  ease: "linear",
-                },
-              }}
-              style={{ willChange: "transform" }}
-              className="flex whitespace-nowrap"
+              drag="x"
+              dragConstraints={false}
+              dragElastic={0}
+              dragMomentum={false}
+              onDrag={handleDrag}
+              onDragStart={() => setIsDragging(true)}
+              onDragEnd={() => setIsDragging(false)}
+              style={{ x }}
+              animate={controls}
+              className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
             >
-              {[...scrollingData, ...scrollingData].map((item, index) => (
+              {[...scrollingData, ...scrollingData, ...scrollingData, ...scrollingData].map((item, index) => (
                 <div
                   key={item.symbol + index}
-                  className="flex items-center gap-3 px-5 py-3 mx-4 flex-shrink-0 cursor-pointer"
-                  onMouseEnter={() => setIsPaused(true)}
-                  onMouseLeave={() => setIsPaused(false)}
+                  className="price-item flex items-center gap-3 px-5 py-3 mx-4 flex-shrink-0"
                 >
                   {item.image && (
                     <img
@@ -397,9 +463,21 @@ export default function HomePage() {
                       {item.name}
                     </span>
                   </div>
-                  <span className="text-gray-900 font-bold text-sm whitespace-nowrap">
-                    ${typeof item.price === 'number' ? item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : item.price}
-                  </span>
+                  <div className="flex flex-col items-center">
+                    <span className="text-gray-900 font-bold text-sm whitespace-nowrap">
+                      ${typeof item.price === 'number' ? item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : item.price}
+                    </span>
+                    <span className={`text-xs font-semibold whitespace-nowrap ${typeof item.priceChange24h === 'number'
+                      ? item.priceChange24h >= 0
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                      : 'text-gray-500'
+                      }`}>
+                      {typeof item.priceChange24h === 'number'
+                        ? `${item.priceChange24h >= 0 ? '+' : ''}${item.priceChange24h.toFixed(2)}%`
+                        : '0.00%'}
+                    </span>
+                  </div>
                 </div>
               ))}
             </motion.div>
