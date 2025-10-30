@@ -389,8 +389,8 @@ export default function YouTubeTelegramInfluencers() {
     }
 
     return (
-        <div className="jsx-816192472cbeba0e flex justify-center">
-            <div className="max-w-6xl mx-auto">
+        <div className="jsx-816192472cbeba0e w-full">
+            <div className="w-full">
                 <div className="text-center mt-2">
                     <h1 className="text-3xl font-bold text-black mb-2">
                         Latest Posts
