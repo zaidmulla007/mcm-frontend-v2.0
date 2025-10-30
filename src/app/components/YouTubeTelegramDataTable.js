@@ -266,115 +266,113 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
                                     return (
                                         <tr key={index} className="border-b border-gray-800">
-                                            <td colSpan="2" className="py-4 px-4">
-                                                <div className="flex justify-center">
-                                                    <div className="flex items-center gap-6 max-w-md">
-                                                        {/* Left - Coin Info */}
-                                                        <div className="flex flex-col items-center text-center min-w-[80px]">
-                                                            <img
-                                                                src={coin.image_small || coin.image_thumb}
-                                                                alt={coin.symbol}
-                                                                className="w-14 h-14 rounded-full mb-2"
-                                                                onError={(e) => {
-                                                                    e.target.onerror = null;
-                                                                    e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
-                                                                }}
-                                                            />
-                                                            <div className="text-sm text-black font-bold mb-1">
-                                                                {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
-                                                            </div>
-                                                            <div className="text-xs text-black">
-                                                                {sentimentData.mentions} posts
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Right - Sentiment Data */}
-                                                        <div className="space-y-3 flex-1">
-                                                        {/* Short Term */}
-                                                        <div>
-                                                            <div className="mb-1 text-xs whitespace-nowrap">
-                                                                <span className="text-black">Short Term:{shortTermPosts} posts</span>
-                                                            </div>
-                                                            {shortTermPosts === 0 ? (
-                                                                <>
-                                                                    <div className="segmented-bar-container mb-1">
-                                                                        <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
-                                                                            <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
-                                                                            <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
-                                                                            <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="text-xs text-center text-gray-500">
-                                                                        Not Applicable
-                                                                    </div>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <div className="segmented-bar-container mb-1">
-                                                                        <div className="segmented-bar-background">
-                                                                            <div className="segment segment-red" />
-                                                                            <div className="segment segment-yellow" />
-                                                                            <div className="segment segment-green" />
-                                                                        </div>
-                                                                        <div
-                                                                            className="percentage-ball"
-                                                                            style={{
-                                                                                left: `${Math.min(Math.max(shortTermBallPosition, 6), 94)}%`,
-                                                                                backgroundColor: shortTermBullish >= shortTermBearish ? '#00ff15' : '#ff2121',
-                                                                                borderColor: shortTermBullish >= shortTermBearish ? '#00cc11' : '#cc1a1a'
-                                                                            }}
-                                                                        />
-                                                                    </div>
-                                                                    <div className={`text-xs text-center ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
-                                                                        {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
-                                                                    </div>
-                                                                </>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Long Term */}
-                                                        <div>
-                                                            <div className="mb-1 text-xs whitespace-nowrap">
-                                                                <span className="text-black">Long Term:{longTermPosts} posts</span>
-                                                            </div>
-                                                            {longTermPosts === 0 ? (
-                                                                <>
-                                                                    <div className="segmented-bar-container mb-1">
-                                                                        <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
-                                                                            <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
-                                                                            <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
-                                                                            <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
-                                                                        </div>
-                                                                    </div>
-                                                                    <div className="text-xs text-center text-gray-500">
-                                                                        Not Applicable
-                                                                    </div>
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <div className="segmented-bar-container mb-1">
-                                                                        <div className="segmented-bar-background">
-                                                                            <div className="segment segment-red" />
-                                                                            <div className="segment segment-yellow" />
-                                                                            <div className="segment segment-green" />
-                                                                        </div>
-                                                                        <div
-                                                                            className="percentage-ball"
-                                                                            style={{
-                                                                                left: `${Math.min(Math.max(longTermBallPosition, 6), 94)}%`,
-                                                                                backgroundColor: longTermBullish >= longTermBearish ? '#00ff15' : '#ff2121',
-                                                                                borderColor: longTermBullish >= longTermBearish ? '#00cc11' : '#cc1a1a'
-                                                                            }}
-                                                                        />
-                                                                    </div>
-                                                                    <div className={`text-xs text-center ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
-                                                                        {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
-                                                                    </div>
-                                                                </>
-                                                            )}
-                                                        </div>
+                                            {/* Coin Column */}
+                                            <td className="py-4 px-4 w-1/2">
+                                                <div className="flex flex-col items-center text-center">
+                                                    <img
+                                                        src={coin.image_small || coin.image_thumb}
+                                                        alt={coin.symbol}
+                                                        className="w-14 h-14 rounded-full mb-2"
+                                                        onError={(e) => {
+                                                            e.target.onerror = null;
+                                                            e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
+                                                        }}
+                                                    />
+                                                    <div className="text-sm text-black font-bold mb-1">
+                                                        {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
+                                                    </div>
+                                                    <div className="text-xs text-black">
+                                                        {sentimentData.mentions} posts
                                                     </div>
                                                 </div>
+                                            </td>
+
+                                            {/* Outlook Column */}
+                                            <td className="py-4 px-4 w-1/2">
+                                                <div className="space-y-3">
+                                                    {/* Short Term */}
+                                                    <div>
+                                                        <div className="mb-1 text-xs whitespace-nowrap">
+                                                            <span className="text-black">Short Term:{shortTermPosts} posts</span>
+                                                        </div>
+                                                        {shortTermPosts === 0 ? (
+                                                            <>
+                                                                <div className="segmented-bar-container mb-1">
+                                                                    <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
+                                                                        <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
+                                                                        <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
+                                                                        <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-xs text-center text-gray-500">
+                                                                    Not Applicable
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className="segmented-bar-container mb-1">
+                                                                    <div className="segmented-bar-background">
+                                                                        <div className="segment segment-red" />
+                                                                        <div className="segment segment-yellow" />
+                                                                        <div className="segment segment-green" />
+                                                                    </div>
+                                                                    <div
+                                                                        className="percentage-ball"
+                                                                        style={{
+                                                                            left: `${Math.min(Math.max(shortTermBallPosition, 6), 94)}%`,
+                                                                            backgroundColor: shortTermBullish >= shortTermBearish ? '#00ff15' : '#ff2121',
+                                                                            borderColor: shortTermBullish >= shortTermBearish ? '#00cc11' : '#cc1a1a'
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <div className={`text-xs text-center ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                                    {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Long Term */}
+                                                    <div>
+                                                        <div className="mb-1 text-xs whitespace-nowrap">
+                                                            <span className="text-black">Long Term:{longTermPosts} posts</span>
+                                                        </div>
+                                                        {longTermPosts === 0 ? (
+                                                            <>
+                                                                <div className="segmented-bar-container mb-1">
+                                                                    <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
+                                                                        <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
+                                                                        <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
+                                                                        <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
+                                                                    </div>
+                                                                </div>
+                                                                <div className="text-xs text-center text-gray-500">
+                                                                    Not Applicable
+                                                                </div>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <div className="segmented-bar-container mb-1">
+                                                                    <div className="segmented-bar-background">
+                                                                        <div className="segment segment-red" />
+                                                                        <div className="segment segment-yellow" />
+                                                                        <div className="segment segment-green" />
+                                                                    </div>
+                                                                    <div
+                                                                        className="percentage-ball"
+                                                                        style={{
+                                                                            left: `${Math.min(Math.max(longTermBallPosition, 6), 94)}%`,
+                                                                            backgroundColor: longTermBullish >= longTermBearish ? '#00ff15' : '#ff2121',
+                                                                            borderColor: longTermBullish >= longTermBearish ? '#00cc11' : '#cc1a1a'
+                                                                        }}
+                                                                    />
+                                                                </div>
+                                                                <div className={`text-xs text-center ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                                    {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
