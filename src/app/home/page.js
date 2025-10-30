@@ -307,7 +307,7 @@ export default function HomePage() {
                 window.location.href = '/login?signup=true';
               }
             }}
-            className="inline-block bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-lg font-semibold text-2xl md:text-3xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 mb-6"
+            className="inline-block bg-green-500 text-white px-8 py-3 rounded-lg font-semibold text-2xl md:text-3xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 mb-6"
           >
             Live Leaderboard
           </button>

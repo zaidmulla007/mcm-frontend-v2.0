@@ -114,6 +114,22 @@ const BubbleClusterChart = memo(({ data }) => {
     // Define defs for filters
     const defs = svg.append("defs");
 
+    // Add gradient for text
+    const textGradient = defs.append("linearGradient")
+      .attr("id", "textGradient")
+      .attr("x1", "0%")
+      .attr("y1", "0%")
+      .attr("x2", "100%")
+      .attr("y2", "0%");
+
+    textGradient.append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", "#3b82f6"); // blue-500
+
+    textGradient.append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", "#a855f7"); // purple-500
+
     // Add glow filter
     const filter = defs.append("filter")
       .attr("id", "glow");
@@ -189,7 +205,7 @@ const BubbleClusterChart = memo(({ data }) => {
     // Create color scale based on number of calls
     const colorScale = d3.scaleLinear()
       .domain([minCalls, maxCalls])
-      .range(["#dbeafe", "#1e3a8a"]); // light blue for low calls, dark blue for high calls
+      .range(["#6b7280", "#374151"]); // gray-500 for low calls, gray-700 for high calls
 
     // Add main bubble circles with colors based on call count
     bubbleGroups.append("circle")

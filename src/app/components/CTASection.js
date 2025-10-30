@@ -20,7 +20,7 @@ export default function CTASection() {
           Join thousands of traders who make informed decisions based on influencer performance data
         </p>
         <div className="flex flex-col sm:flex-row justify-center gap-6">
-          <Link href="/login">
+          <Link href="/login?signup=true">
             <motion.button
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-10 py-5 rounded-xl font-bold text-xl shadow-lg transition-all duration-300"
               whileHover={{ scale: 1.05 }}

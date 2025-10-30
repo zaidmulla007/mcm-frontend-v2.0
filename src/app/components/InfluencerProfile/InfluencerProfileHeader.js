@@ -33,9 +33,9 @@ export default function InfluencerProfileHeader({ channelData }) {
         Swal.fire({
           title: newFavoriteState ? 'Added to favourites' : 'Removed from favourite list',
           icon: newFavoriteState ? 'success' : 'info',
-          background: '#232042',
-          color: '#ffffff',
-          confirmButtonColor: '#8b5cf6',
+          background: '#ffffff',
+          color: '#111827',
+          confirmButtonColor: '#2563eb',
           timer: 2000,
           timerProgressBar: true,
           showConfirmButton: false,
@@ -53,9 +53,9 @@ export default function InfluencerProfileHeader({ channelData }) {
         title: 'Error',
         text: 'Failed to update favorite status. Please try again.',
         icon: 'error',
-        background: '#232042',
-        color: '#ffffff',
-        confirmButtonColor: '#8b5cf6',
+        background: '#ffffff',
+        color: '#111827',
+        confirmButtonColor: '#2563eb',
         timer: 3000,
         timerProgressBar: true,
         showConfirmButton: false,
@@ -70,7 +70,7 @@ export default function InfluencerProfileHeader({ channelData }) {
     }
   };
   return (
-    <section className="w-full bg-gradient-to-br from-purple-400/10 to-blue-400/10 border-b border-[#232042] mb-3 py-5">
+    <section className="w-full bg-white border-b border-gray-200 mb-3 py-5">
       <div className="flex flex-col gap-6 px-4">
         <div className="flex flex-col md:flex-row items-center gap-8">
           {/* Avatar */}
@@ -96,7 +96,7 @@ export default function InfluencerProfileHeader({ channelData }) {
               {/* Title Section with Heart Icon (Mobile Only) */}
               <div className="flex flex-col items-center md:items-start w-full">
                 <div className="flex items-center justify-center md:justify-start gap-2 w-full">
-                  <h1 className="text-2xl md:text-4xl font-bold flex items-center gap-2">
+                  <h1 className="text-2xl md:text-4xl font-bold text-black-900 flex items-center gap-2">
                     {channelData.influencer_name ||
                       channelData.channel_title ||
                       "Unknown Channel"}
@@ -121,7 +121,7 @@ export default function InfluencerProfileHeader({ channelData }) {
 
               <a
                 href={`https://www.youtube.com/channel/${channelData.channel_id}`}
-                className="text-blue-400 hover:underline text-base mb-2 flex items-center gap-2"
+                className="text-blue-700 hover:underline text-base mb-2 flex items-center gap-2"
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -138,11 +138,11 @@ export default function InfluencerProfileHeader({ channelData }) {
                   : "Unknown Subscribers"}
               </a>
               {/* Analysis Dates */}
-              <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-400">
+              <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-600">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <span>📅 Analysis Start Date:</span>
-                    <span className="text-white">
+                    <span className="text-gray-900">
                       {channelData.Overall?.start_date
                         ? new Date(
                           channelData.Overall.start_date
@@ -172,9 +172,9 @@ export default function InfluencerProfileHeader({ channelData }) {
                   </div>
                 </div> */}
                 <div className="flex flex-col gap-1">
-                  <div className="text-sm text-gray-400 flex items-center gap-2">
+                  <div className="text-sm text-gray-600 flex items-center gap-2">
                     <span>🔄 Last System Updated:</span>
-                    <span className="text-white">{channelData.last_updated
+                    <span className="text-gray-900">{channelData.last_updated
                       ? `${new Date(channelData.last_updated).toLocaleDateString("en-GB", {
                         day: "2-digit",
                         month: "2-digit",
@@ -209,7 +209,7 @@ export default function InfluencerProfileHeader({ channelData }) {
                 <button
                   onClick={handleFavoriteClick}
                   disabled={isLoading}
-                  className={`focus:outline-none transition-all duration-300 hover:scale-110 flex-shrink-0 p-3 rounded-full bg-white/5 border border-gray-600 hover:bg-white/10 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`focus:outline-none transition-all duration-300 hover:scale-110 flex-shrink-0 p-3 rounded-full bg-gray-50 border border-gray-300 hover:bg-gray-100 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
                 >
                   {isLoading ? (
@@ -220,7 +220,7 @@ export default function InfluencerProfileHeader({ channelData }) {
                     <FaRegHeart className="text-gray-400" size={32} />
                   )}
                 </button>
-                <span className="text-sm text-gray-400">
+                <span className="text-sm text-gray-600">
                   {isLoading ? "Processing..." : isFavorite ? "Added to Favorites" : "Add to Favorites"}
                 </span>
               </div>

@@ -2036,18 +2036,16 @@ export default function Login() {
             </button>
           </p>
 
-          {isLogin && (
-            <div className="mt-4">
-              <button
-                type="button"
-                onClick={() => setShowContactModal(true)}
-                className="text-black hover:text-purple-600 transition inline-flex items-center gap-2"
-              >
-                <span>Contact Support</span>
-                <FaEnvelope size={16} />
-              </button>
-            </div>
-          )}
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => setShowContactModal(true)}
+              className="text-black hover:text-purple-600 transition inline-flex items-center gap-2"
+            >
+              <span>Contact Support</span>
+              <FaEnvelope size={16} />
+            </button>
+          </div>
         </div>
       </motion.div>
 

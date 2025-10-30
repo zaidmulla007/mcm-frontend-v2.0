@@ -1222,7 +1222,7 @@ export default function Home() {
       {/* What's Trending - YouTube and Telegram Tables */}
       <section id="trending" className="mx-auto px-4 pt-0 pb-6 relative z-10">
         <motion.div
-          className="mb-2"
+          className="mb-0"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -1230,7 +1230,7 @@ export default function Home() {
         >
 
           {/* Header with Title on Left and Controls on Right */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-2">
             {/* Left: What's Trending Title */}
             <div>
               <h2 className="text-4xl md:text-5xl font-bold">
@@ -1286,7 +1286,9 @@ export default function Home() {
           {/* <YoutubeTelegramDataTableLight /> */}
           {/* <h2 className="text-gray-900-300 text-2xl font-bold mb-3">Top 5 Mentioned Coins in 24H</h2> */}
         </motion.div>
-        <YouTubeTelegramInfluencers />
+        <div className="mt-5">
+          <YouTubeTelegramInfluencers />
+        </div>
         {/* Display Purpose Text */}
         {/* <p className="text-center text-gray-600 text-sm italic mb-4 mt-1">
           The coins are listed for display purpose

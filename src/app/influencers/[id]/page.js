@@ -158,10 +158,10 @@ export default function InfluencerProfilePage() {
   // Loading state
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#19162b] text-white font-sans flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 font-sans flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading channel data...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading channel data...</p>
         </div>
       </div>
     );
@@ -170,10 +170,10 @@ export default function InfluencerProfilePage() {
   // Error state
   if (error) {
     return (
-      <div className="min-h-screen bg-[#19162b] text-white font-sans flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 font-sans flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-400 text-2xl mb-4">⚠️</div>
-          <p className="text-gray-400 mb-4">{error}</p>
+          <div className="text-red-600 text-2xl mb-4">⚠️</div>
+          <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={getChannelData}
             className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-5 py-2 rounded-lg font-semibold shadow hover:scale-105 transition"
@@ -188,10 +188,10 @@ export default function InfluencerProfilePage() {
   // No data state
   if (!channelData) {
     return (
-      <div className="min-h-screen bg-[#19162b] text-white font-sans flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 font-sans flex items-center justify-center">
         <div className="text-center">
-          <div className="text-gray-400 text-2xl mb-4">📺</div>
-          <p className="text-gray-400">No channel data found.</p>
+          <div className="text-gray-600 text-2xl mb-4">📺</div>
+          <p className="text-gray-600">No channel data found.</p>
         </div>
       </div>
     );
@@ -226,7 +226,7 @@ export default function InfluencerProfilePage() {
   const availableYears = Object.keys(yearlyData).sort().reverse();
 
   return (
-    <div className="min-h-screen bg-[#19162b] text-white font-sans pb-16">
+    <div className="min-h-screen bg-white text-gray-900 font-sans pb-16">
       {/* Profile Header */}
       <InfluencerProfileHeader
         channelData={channelData}
@@ -237,15 +237,15 @@ export default function InfluencerProfilePage() {
 
       {/* Tabs */}
       <div className="px-4">
-        <div className="flex gap-2 border-b border-[#232042] mb-8 overflow-x-auto">
+        <div className="flex gap-2 border-b border-gray-200 mb-8 overflow-x-auto">
           {TABS.map((t) => (
             <button
               key={t.value}
               onClick={() => setTab(t.value)}
               className={`px-6 py-3 text-sm font-semibold border-b-2 transition whitespace-nowrap
                 ${tab === t.value
-                  ? "border-blue-400 text-blue-400"
-                  : "border-transparent text-gray-300 hover:text-white"
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-gray-600 hover:text-gray-900"
                 }`}
             >
               {t.label}
