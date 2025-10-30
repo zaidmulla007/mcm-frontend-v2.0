@@ -1149,6 +1149,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false); // No loading needed for static data
   const [lastUpdated, setLastUpdated] = useState(null);
   const [nextUpdate, setNextUpdate] = useState(null);
+  const [isPaused, setIsPaused] = useState(false);
 
   // Fetch combined data for update times
   const fetchUpdateTimes = async () => {
@@ -1219,9 +1220,9 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 text-gray-900 font-sans pb-16 overflow-x-hidden">
 
       {/* What's Trending - YouTube and Telegram Tables */}
-      <section id="trending" className="mx-auto px-4 py-6 relative z-10">
+      <section id="trending" className="mx-auto px-4 pt-0 pb-6 relative z-10">
         <motion.div
-          className="mb-4"
+          className="mb-2"
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
@@ -1229,7 +1230,7 @@ export default function Home() {
         >
 
           {/* Header with Title on Left and Controls on Right */}
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
             {/* Left: What's Trending Title */}
             <div>
               <h2 className="text-4xl md:text-5xl font-bold">
@@ -1451,14 +1452,14 @@ export default function Home() {
           {/* Continuous Left-to-Right Scrolling News */}
           <div className="absolute inset-0 flex items-center">
             <motion.div
-              animate={{
+              animate={!isPaused ? {
                 x: ["0%", "-50%"],
-              }}
+              } : {}}
               transition={{
                 x: {
                   repeat: Infinity,
                   repeatType: "loop",
-                  duration: 30,
+                  duration: 60,
                   ease: "linear",
                 },
               }}
@@ -1468,7 +1469,9 @@ export default function Home() {
               {[...scrollingData, ...scrollingData].map((item, index) => (
                 <div
                   key={item.symbol + index}
-                  className="flex items-center gap-3 bg-gradient-to-r from-purple-800/20 to-blue-800/20 px-5 py-3 rounded-xl border border-purple-400/30 mx-4 flex-shrink-0 w-[240px]"
+                  className="flex items-center gap-3 px-5 py-3 mx-4 flex-shrink-0 cursor-pointer"
+                  onMouseEnter={() => setIsPaused(true)}
+                  onMouseLeave={() => setIsPaused(false)}
                 >
                   {item.image && (
                     <img
@@ -1494,8 +1497,8 @@ export default function Home() {
           </div>
 
           {/* Gradient Overlay Edges */}
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-gray-200 to-transparent"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-gray-200 to-transparent"></div>
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-blue-100 to-transparent pointer-events-none"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-purple-100 to-transparent pointer-events-none"></div>
         </div>
 
         <div className="space-y-6 mt-4">

@@ -458,7 +458,7 @@ export default function YouTubeTelegramInfluencers() {
                                 {/* Post Header with Platform Icon in Top Right */}
                                 <div className="border-b border-gray-700">
                                     <div
-                                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 text-center text-sm font-medium flex justify-between items-center"
+                                        className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-3 text-center text-sm font-medium flex justify-between items-center"
                                     >
                                         <span>POST {index + 1}</span>
                                         <div className="flex items-center">

@@ -229,7 +229,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
         return (
             <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4">
                     <h3 className="text-xl font-bold text-white text-center mb-1">{title}</h3>
                     {/* <div className="text-xs text-white text-center">
                         {getFromDateForTimeframe()}
@@ -293,7 +293,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         {/* Short Term */}
                                                         <div>
                                                             <div className="mb-1 text-xs whitespace-nowrap">
-                                                                <span className="font-semibold text-black">Short Term:{shortTermPosts} posts</span>
+                                                                <span className="text-black">Short Term:{shortTermPosts} posts</span>
                                                             </div>
                                                             {shortTermPosts === 0 ? (
                                                                 <>
@@ -304,7 +304,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                             <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
                                                                         </div>
                                                                     </div>
-                                                                    <div className="font-semibold text-xs text-center text-gray-500">
+                                                                    <div className="text-xs text-center text-gray-500">
                                                                         Not Applicable
                                                                     </div>
                                                                 </>
@@ -325,7 +325,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                             }}
                                                                         />
                                                                     </div>
-                                                                    <div className={`font-semibold text-xs text-center ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                                    <div className={`text-xs text-center ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
                                                                         {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
                                                                     </div>
                                                                 </>
@@ -335,7 +335,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         {/* Long Term */}
                                                         <div>
                                                             <div className="mb-1 text-xs whitespace-nowrap">
-                                                                <span className="font-semibold text-black">Long Term:{longTermPosts} posts</span>
+                                                                <span className="text-black">Long Term:{longTermPosts} posts</span>
                                                             </div>
                                                             {longTermPosts === 0 ? (
                                                                 <>
@@ -346,7 +346,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                             <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
                                                                         </div>
                                                                     </div>
-                                                                    <div className="font-semibold text-xs text-center text-gray-500">
+                                                                    <div className="text-xs text-center text-gray-500">
                                                                         Not Applicable
                                                                     </div>
                                                                 </>
@@ -367,7 +367,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                             }}
                                                                         />
                                                                     </div>
-                                                                    <div className={`font-semibold text-xs text-center ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                                                    <div className={`text-xs text-center ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
                                                                         {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
                                                                     </div>
                                                                 </>
@@ -688,7 +688,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     <div className="flex justify-center items-center mb-2">
                         <button
                             onClick={() => toggleExpanded(timeframe)}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 text-white font-semibold text-sm cursor-pointer rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
+                            className="bg-gradient-to-r from-blue-500 to-purple-500 p-4 text-white font-semibold text-sm cursor-pointer rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
                         >
                             {isExpanded ? "Show Less" : "Read More"}
                         </button>
@@ -711,13 +711,13 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-2">
             {/* Header */}
             <div className="text-center">
-                <h2 className="text-3xl md:text-4xl font-bold mt-10 text-black">
+                <h2 className="text-3xl md:text-4xl font-bold mt-0 text-black">
                     Trending Coins
                 </h2>
-                <p className="text-xl text-gray-600 mt-2">
+                <p className="text-xl text-gray-600 mt-1">
                     {lastUpdated ? formatDate(lastUpdated) : "N/A"}
                 </p>
             </div>

@@ -21,6 +21,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [countsData, setCountsData] = useState(null);
   const [countsLoading, setCountsLoading] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     const accessToken = localStorage.getItem('accessToken');
@@ -306,7 +307,7 @@ export default function HomePage() {
                 window.location.href = '/login?signup=true';
               }
             }}
-            className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-lg font-semibold text-2xl md:text-3xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 mb-6"
+            className="inline-block bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-3 rounded-lg font-semibold text-2xl md:text-3xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 mb-6"
           >
             Live Leaderboard
           </button>
@@ -360,14 +361,14 @@ export default function HomePage() {
           {/* Continuous Left-to-Right Scrolling News */}
           <div className="absolute inset-0 flex items-center">
             <motion.div
-              animate={{
+              animate={!isPaused ? {
                 x: ["0%", "-50%"],
-              }}
+              } : {}}
               transition={{
                 x: {
                   repeat: Infinity,
                   repeatType: "loop",
-                  duration: 30,
+                  duration: 60,
                   ease: "linear",
                 },
               }}
@@ -377,7 +378,9 @@ export default function HomePage() {
               {[...scrollingData, ...scrollingData].map((item, index) => (
                 <div
                   key={item.symbol + index}
-                  className="flex items-center gap-3 bg-gradient-to-r from-purple-800/20 to-blue-800/20 px-5 py-3 rounded-xl border border-purple-400/30 mx-4 flex-shrink-0 w-[240px]"
+                  className="flex items-center gap-3 px-5 py-3 mx-4 flex-shrink-0 cursor-pointer"
+                  onMouseEnter={() => setIsPaused(true)}
+                  onMouseLeave={() => setIsPaused(false)}
                 >
                   {item.image && (
                     <img
@@ -403,8 +406,8 @@ export default function HomePage() {
           </div>
 
           {/* Gradient Overlay Edges */}
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-gray-200 to-transparent"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-gray-200 to-transparent"></div>
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-blue-100 to-transparent pointer-events-none"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-purple-100 to-transparent pointer-events-none"></div>
         </div>
 
         {/* Testimonials Section */}

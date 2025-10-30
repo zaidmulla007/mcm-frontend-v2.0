@@ -38,42 +38,42 @@ const MoonPhase = memo(({ percentage, year }) => {
     <svg width="64" height="64" viewBox="0 0 64 64">
       <defs>
         <radialGradient id={`moonGlow-${year}`} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#60a5fa" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#c084fc" stopOpacity="0" />
+          <stop offset="0%" stopColor="#374151" stopOpacity="0.3" />
+          <stop offset="100%" stopColor="#1f2937" stopOpacity="0" />
         </radialGradient>
 
         <radialGradient id={`moonSurface-${year}`} cx="35%" cy="35%">
-          <stop offset="0%" stopColor="#60a5fa" />
-          <stop offset="50%" stopColor="#a78bfa" />
-          <stop offset="100%" stopColor="#c084fc" />
+          <stop offset="0%" stopColor="#4b5563" />
+          <stop offset="50%" stopColor="#374151" />
+          <stop offset="100%" stopColor="#1f2937" />
         </radialGradient>
       </defs>
 
       {/* Outer glow */}
       <circle cx="32" cy="32" r="30" fill={`url(#moonGlow-${year})`} />
 
-      {/* Main moon body */}
+      {/* Main moon body - black-gray background */}
       <circle cx="32" cy="32" r="28" fill={`url(#moonSurface-${year})`} />
 
       {/* Craters */}
-      <circle cx="24" cy="24" r="4" fill="#a78bfa" opacity="0.4" />
-      <circle cx="38" cy="28" r="5" fill="#a78bfa" opacity="0.3" />
-      <circle cx="28" cy="38" r="3" fill="#a78bfa" opacity="0.35" />
-      <circle cx="40" cy="22" r="2.5" fill="#a78bfa" opacity="0.4" />
-      <circle cx="35" cy="40" r="2" fill="#a78bfa" opacity="0.3" />
+      <circle cx="24" cy="24" r="4" fill="#1f2937" opacity="0.4" />
+      <circle cx="38" cy="28" r="5" fill="#1f2937" opacity="0.3" />
+      <circle cx="28" cy="38" r="3" fill="#1f2937" opacity="0.35" />
+      <circle cx="40" cy="22" r="2.5" fill="#1f2937" opacity="0.4" />
+      <circle cx="35" cy="40" r="2" fill="#1f2937" opacity="0.3" />
 
-      {/* Shadow overlay */}
+      {/* Light blue overlay - represents the percentage */}
       <path
         d={getShadowPath(percentage)}
-        fill="rgba(30, 30, 50, 0.75)"
+        fill="#dbeafe"
         opacity="0.9"
       />
 
-      {/* Subtle shadow edge highlight */}
+      {/* Subtle edge highlight */}
       <path
         d={getShadowPath(percentage)}
         fill="none"
-        stroke="rgba(30, 30, 50, 0.3)"
+        stroke="#dbeafe"
         strokeWidth="1"
       />
     </svg>
@@ -189,7 +189,7 @@ const BubbleClusterChart = memo(({ data }) => {
     // Create color scale based on number of calls
     const colorScale = d3.scaleLinear()
       .domain([minCalls, maxCalls])
-      .range(["#9ca3af", "#4b5563"]); // light gray (gray-300) to dark gray (gray-600)
+      .range(["#dbeafe", "#1e3a8a"]); // light blue for low calls, dark blue for high calls
 
     // Add main bubble circles with colors based on call count
     bubbleGroups.append("circle")
@@ -770,8 +770,8 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn }) => {
                         const x1 = padding.left + ((index - 1) / (dataPoints.length - 1)) * graphWidth;
                         const x2 = padding.left + (index / (dataPoints.length - 1)) * graphWidth;
 
-                        // Use #60a5fa (blue-400) for positive values (>= 0), #c084fc (purple-400) for negative values (< 0)
-                        const strokeColor = point.actualValue >= 0 ? "#60a5fa" : "#c084fc";
+                        // Use #1e3a8a (dark blue) for positive values (>= 0), #dbeafe (light blue) for negative values (< 0)
+                        const strokeColor = point.actualValue >= 0 ? "#1e3a8a" : "#dbeafe";
 
                         return (
                           <line
@@ -815,8 +815,8 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn }) => {
                           y = padding.top + (position * graphHeight / (yLabels.length - 1));
                         }
 
-                        // Use #60a5fa (blue-400) for positive values (>= 0), #c084fc (purple-400) for negative values (< 0)
-                        const fillColor = point.actualValue >= 0 ? "#60a5fa" : "#c084fc";
+                        // Use #1e3a8a (dark blue) for positive values (>= 0), #dbeafe (light blue) for negative values (< 0)
+                        const fillColor = point.actualValue >= 0 ? "#1e3a8a" : "#dbeafe";
 
                         return (
                           <g key={point.label}>
@@ -895,7 +895,7 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn }) => {
                   .map(([year, count]) => {
                     // Treat count as percentage (0-100)
                     // Cap at 100 if count exceeds 100
-                    const percentage =100 - Math.min(count, 100);
+                    const percentage = Math.min(count, 100);
 
                     // Mark current year with asterisk
                     const displayYear = year === currentYear ? year + '*' : year;
