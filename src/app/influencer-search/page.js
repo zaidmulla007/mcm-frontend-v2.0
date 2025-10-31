@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { getYearOptions, getQuarterOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
+import { FaStar, FaStarHalfAlt } from "react-icons/fa";
+import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
 const platforms = [
   {
@@ -27,11 +28,36 @@ const platforms = [
   },
 ];
 
+// Render stars based on rating (0-5 scale)
+const renderStars = (rating) => {
+  const stars = [];
+  const fullStars = Math.floor(rating);
+  const hasHalfStar = rating % 1 >= 0.5;
+
+  for (let i = 0; i < 5; i++) {
+    if (i < fullStars) {
+      stars.push(<FaStar key={i} className="text-yellow-500" />);
+    } else if (i === fullStars && hasHalfStar) {
+      stars.push(<FaStarHalfAlt key={i} className="text-yellow-500" />);
+    } else {
+      stars.push(<FaStar key={i} className="text-gray-400" />);
+    }
+  }
+
+  return (
+    <div className="flex gap-0.5">
+      {stars}
+    </div>
+  );
+};
+
 export default function InfluencerSearchPage() {
   const router = useRouter();
   const [selectedPlatform, setSelectedPlatform] = useState("youtube");
   const [youtubeInfluencers, setYoutubeInfluencers] = useState([]);
   const [telegramInfluencers, setTelegramInfluencers] = useState([]);
+  const [youtubeMcmRatings, setYoutubeMcmRatings] = useState({});
+  const [telegramMcmRatings, setTelegramMcmRatings] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -53,20 +79,16 @@ export default function InfluencerSearchPage() {
   const [showDropdown, setShowDropdown] = useState(false);
 
   // Filter states
-  const [selectedSentiment, setSelectedSentiment] = useState("all");
+  const [selectedRating, setSelectedRating] = useState("3");
   const [selectedTimeframe, setSelectedTimeframe] = useState("1_hour");
-  const [selectedType, setSelectedType] = useState("overall");
   const [selectedYear, setSelectedYear] = useState("all");
-  const [selectedQuarter, setSelectedQuarter] = useState("all");
 
   // API parameters using filter states
   const apiParams = useMemo(() => ({
-    sentiment: selectedSentiment,
+    rating: selectedRating,
     timeframe: selectedTimeframe,
-    type: selectedType,
-    year: selectedYear,
-    quarter: selectedQuarter
-  }), [selectedSentiment, selectedTimeframe, selectedType, selectedYear, selectedQuarter]);
+    year: selectedYear
+  }), [selectedRating, selectedTimeframe, selectedYear]);
 
   // Memoized API call functions
   const fetchYouTubeData = useCallback(async () => {
@@ -89,6 +111,17 @@ export default function InfluencerSearchPage() {
         setYoutubeInfluencers(sortedResults);
       } else {
         setYoutubeInfluencers([]);
+      }
+
+      // Fetch MCM ratings
+      const mcmRes = await fetch(`/api/youtube-data/mcm-ratings?timeframe=${apiParams.timeframe}`);
+      const mcmData = await mcmRes.json();
+      if (mcmData.success && Array.isArray(mcmData.results)) {
+        const ratingsMap = {};
+        mcmData.results.forEach(item => {
+          ratingsMap[item.channel_id] = item;
+        });
+        setYoutubeMcmRatings(ratingsMap);
       }
     } catch (err) {
       setError("Failed to fetch YouTube data");
@@ -122,6 +155,17 @@ export default function InfluencerSearchPage() {
         setTelegramInfluencers(sortedResults);
       } else {
         setTelegramInfluencers([]);
+      }
+
+      // Fetch MCM ratings
+      const mcmRes = await fetch(`/api/telegram-data/mcm-ratings?timeframe=${apiParams.timeframe}`);
+      const mcmData = await mcmRes.json();
+      if (mcmData.success && Array.isArray(mcmData.results)) {
+        const ratingsMap = {};
+        mcmData.results.forEach(item => {
+          ratingsMap[item.channel_id] = item;
+        });
+        setTelegramMcmRatings(ratingsMap);
       }
     } catch (err) {
       setError("Failed to fetch Telegram data");
@@ -161,7 +205,7 @@ export default function InfluencerSearchPage() {
   // Reset current page when platform or filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedPlatform, selectedSentiment, selectedTimeframe, selectedType, selectedYear, selectedQuarter]);
+  }, [selectedPlatform, selectedRating, selectedTimeframe, selectedYear]);
 
   // Search functionality
   useEffect(() => {
@@ -209,6 +253,9 @@ export default function InfluencerSearchPage() {
         channel_thumbnails: ch.channel_thumbnails,
         prob_weighted_returns: ch.prob_weighted_returns || 0,
         win_percentage: ch.win_percentage || 0,
+        ai_overall_score: ch.ai_overall_score || 0,
+        final_score: ch.final_score || 0,
+        current_rating: ch.current_rating || 0,
       }));
     } else if (selectedPlatform === "telegram") {
       influencers = telegramInfluencers.map((tg) => ({
@@ -221,6 +268,9 @@ export default function InfluencerSearchPage() {
         channel_thumbnails: tg.channel_thumbnails,
         prob_weighted_returns: tg.prob_weighted_returns || 0,
         win_percentage: tg.win_percentage || 0,
+        ai_overall_score: tg.ai_overall_score || 0,
+        final_score: tg.final_score || 0,
+        current_rating: tg.current_rating || 0,
       }));
     } else {
       influencers = [];
@@ -285,42 +335,24 @@ export default function InfluencerSearchPage() {
   };
 
   // Filter options
-  const sentimentOptions = [
-    { value: "all", label: "All Sentiment" },
-    { value: "bullish", label: "Bullish" },
-    { value: "bearish", label: "Bearish" },
-    { value: "mild_bullish", label: "Mild Bullish" },
-    { value: "mild_bearish", label: "Mild Bearish" },
-    { value: "strong_bearish", label: "Strong Bearish" },
-    { value: "strong_sentiment", label: "Strong Sentiment" },
+  const ratingOptions = [
+    { value: "all", label: "All", stars: 0 },
+    { value: "5", label: "5", stars: 5 },
+    { value: "4", label: "4", stars: 4 },
+    { value: "3", label: "3", stars: 3 },
+    { value: "2", label: "2", stars: 2 },
+    { value: "1", label: "1", stars: 1 },
   ];
 
   const timeframeOptions = getDynamicTimeframeOptions(selectedYear);
 
-  const typeOptions = [
-    { value: "overall", label: "Overall" },
-    { value: "hyperactive", label: "Moonshots" },
-    { value: "normal", label: "Normal" },
-    { value: "pre_ico", label: "Pre ICO" },
-  ];
-
   const yearOptions = selectedPlatform === "telegram"
     ? getYearOptions(2024, false)
     : getYearOptions(2022);
-  const quarterOptions = getQuarterOptions(selectedYear);
 
   // Handle year change
   const handleYearChange = (year) => {
     setSelectedYear(year);
-    if (year === "all") {
-      setSelectedQuarter("all");
-      return;
-    }
-    const newQuarterOptions = getQuarterOptions(year);
-    const isCurrentQuarterValid = newQuarterOptions.some(q => q.value === selectedQuarter);
-    if (!isCurrentQuarterValid) {
-      setSelectedQuarter("all");
-    }
     const newTimeframeOptions = getDynamicTimeframeOptions(year);
     const isCurrentTimeframeValid = newTimeframeOptions.some(t => t.value === selectedTimeframe);
     if (!isCurrentTimeframeValid) {
@@ -328,20 +360,11 @@ export default function InfluencerSearchPage() {
     }
   };
 
-  // Get top 5 influencers for top sellers section
-  const topFiveInfluencers = filteredInfluencers.slice(0, 5);
-
-  // Pagination for ALL influencers (including top 5)
+  // Pagination for ALL influencers
   const totalPages = Math.ceil(filteredInfluencers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const paginatedInfluencers = filteredInfluencers.slice(startIndex, endIndex);
-
-  // Hardcoded data for the right sidebar
-  const monthlyTarget = 1000000;
-  const currentEarnings = filteredInfluencers.reduce((sum, inf) => sum + (inf.prob_weighted_returns * 1000 || 0), 0);
-  const topInfluencer = filteredInfluencers[0];
-  const bestDealInfluencer = filteredInfluencers[0];
 
   // Helper function to get progress bar color based on win percentage
   const getProgressBarColor = () => {
@@ -380,17 +403,17 @@ export default function InfluencerSearchPage() {
       {/* Filter Section */}
       <section className="mx-auto px-4 py-4">
         <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sentiment</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
               <select
-                value={selectedSentiment}
-                onChange={(e) => setSelectedSentiment(e.target.value)}
+                value={selectedRating}
+                onChange={(e) => setSelectedRating(e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                {sentimentOptions.map((option) => (
+                {ratingOptions.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.label}
+                    {option.value === "all" ? "All Ratings" : `${option.stars} ${"⭐".repeat(option.stars)}`}
                   </option>
                 ))}
               </select>
@@ -412,21 +435,6 @@ export default function InfluencerSearchPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {typeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
               <select
                 value={selectedYear}
@@ -440,131 +448,13 @@ export default function InfluencerSearchPage() {
                 ))}
               </select>
             </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quarter</label>
-              <select
-                value={selectedQuarter}
-                onChange={(e) => setSelectedQuarter(e.target.value)}
-                disabled={selectedYear === "all"}
-                className={`w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedYear === "all"
-                  ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                  : ""
-                  }`}
-              >
-                {quarterOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
           </div>
         </div>
       </section>
 
       {/* Main Content */}
       <main className="mx-auto px-4 pb-8 overflow-x-hidden">
-        <div className="flex flex-col lg:flex-row gap-6 min-w-0">
-          {/* Left Content - Top Sellers and Leaderboard */}
-          <div className="flex-1 min-w-0">
-            {/* Top Sellers Section */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Top Influencers</h2>
-              </div>
-              <div className="p-6">
-                {initialLoad ? (
-                  <div className="animate-pulse grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <div key={`skeleton-${i}`} className="w-full h-32 bg-gray-200 rounded-lg"></div>
-                    ))}
-                  </div>
-                ) : topFiveInfluencers.length > 0 ? (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                    <AnimatePresence mode="popLayout">
-                    {topFiveInfluencers.map((influencer, index) => (
-                      <motion.div
-                        key={influencer.id}
-                        layout
-                        layoutId={`top-seller-${influencer.id}`}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{
-                          layout: {
-                            type: "spring",
-                            stiffness: 120,
-                            damping: 20,
-                            mass: 1.2
-                          },
-                          opacity: { duration: 0.6 },
-                          scale: { duration: 0.6 }
-                        }}
-                        className="w-full"
-                      >
-                      <Link
-                        href={
-                          selectedPlatform === "youtube"
-                            ? `/influencers/${influencer.id}`
-                            : `/telegram-influencer/${influencer.id}`
-                        }
-                        className="top-seller-card block w-full bg-gradient-to-br from-purple-50 to-blue-50 rounded-lg p-4 border border-gray-200 hover:shadow-lg transition-shadow"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div className="flex flex-col items-center text-center space-y-2">
-                          <div className="relative">
-                            {influencer.channel_thumbnails?.high?.url ? (
-                              <Image
-                                src={influencer.channel_thumbnails.high.url}
-                                alt={influencer.name || "Influencer"}
-                                width={48}
-                                height={48}
-                                className="w-12 h-12 rounded-full object-cover"
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                  e.target.nextSibling.style.display = 'flex';
-                                }}
-                              />
-                            ) : null}
-                            <div
-                              className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center"
-                              style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
-                            >
-                              <span className="text-white font-bold text-lg">
-                                {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
-                              </span>
-                            </div>
-                            {index === 0 && (
-                              <div className="absolute -top-1 -right-1 w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center">
-                                <span className="text-xs">👑</span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="w-full">
-                            <div className="font-semibold text-gray-900 text-sm truncate" title={influencer.name?.replace(/_/g, " ") || "Unknown"}>
-                              {influencer.name?.replace(/_/g, " ") || "Unknown"}
-                            </div>
-                            <div className="text-xs text-gray-500 mt-1">{influencer.platform}</div>
-                          </div>
-                          <div className="w-full pt-2 border-t border-gray-200">
-                            <div className="text-xs text-gray-500">ROI</div>
-                            <div className="text-lg font-bold text-purple-600">
-                              {influencer.prob_weighted_returns?.toFixed(1) || 0}%
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-                      </motion.div>
-                    ))}
-                    </AnimatePresence>
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-500">Loading...</div>
-                )}
-              </div>
-            </div>
-
+        <div className="min-w-0">
             {/* Leaderboard Section */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200">
@@ -574,19 +464,32 @@ export default function InfluencerSearchPage() {
                 <table className="w-full relative">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rating</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Influencer</th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">ROI</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Win %</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">AI Score</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Final Score</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <span className="inline-flex items-center gap-1" title="Overall Rating">
+                          Rating
+                          <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          </svg>
+                        </span>
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
+                        <span className="inline-flex items-center gap-1" title="Yearly Rating">
+                          MCM Rating
+                          <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                          </svg>
+                        </span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200 relative" style={{ isolation: 'isolate' }}>
                     {initialLoad ? (
                       Array.from({ length: 10 }).map((_, i) => (
                         <tr key={`skeleton-row-${i}`}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="h-4 bg-gray-200 rounded w-4"></div>
-                          </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div className="w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
@@ -599,6 +502,15 @@ export default function InfluencerSearchPage() {
                           <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
                             <div className="h-4 bg-gray-200 rounded w-16"></div>
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
+                            <div className="h-4 bg-gray-200 rounded w-16"></div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="h-4 bg-gray-200 rounded w-4"></div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
+                            <div className="h-16 bg-gray-200 rounded w-32"></div>
+                          </td>
                         </tr>
                       ))
                     ) : (
@@ -606,6 +518,41 @@ export default function InfluencerSearchPage() {
                         {/* Paginated influencers */}
                         {paginatedInfluencers.map((influencer, index) => {
                           const globalRank = startIndex + index + 1;
+
+                          // Get MCM ratings from API
+                          const mcmRatingsMap = selectedPlatform === "youtube" ? youtubeMcmRatings : telegramMcmRatings;
+                          const mcmData = mcmRatingsMap[influencer.id] || {};
+
+                          // Extract all available yearly ratings dynamically
+                          const scatterData = [];
+                          const years = [];
+
+                          // Find all year fields in the data
+                          Object.keys(mcmData).forEach(key => {
+                            const match = key.match(/star_rating\.yearly\.(\d{4})\./);
+                            if (match) {
+                              const year = parseInt(match[1]);
+                              if (!years.includes(year)) {
+                                years.push(year);
+                              }
+                            }
+                          });
+
+                          // Sort years in ascending order
+                          years.sort((a, b) => a - b);
+
+                          // Build scatter data for each year
+                          years.forEach((year, yearIndex) => {
+                            const fieldKey = `star_rating.yearly.${year}.${selectedTimeframe}`;
+                            if (mcmData[fieldKey] && mcmData[fieldKey].current_rating) {
+                              scatterData.push({
+                                year: yearIndex,
+                                yearLabel: year,
+                                rating: mcmData[fieldKey].current_rating,
+                                finalScore: mcmData[fieldKey].current_final_score
+                              });
+                            }
+                          });
 
                           return (
                           <motion.tr
@@ -628,18 +575,6 @@ export default function InfluencerSearchPage() {
                             className="hover:bg-gray-50"
                             style={{ position: 'relative', zIndex: 1 }}
                           >
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <motion.div
-                                className="flex items-center"
-                                layout
-                                transition={{ duration: 0.3 }}
-                              >
-                                {globalRank === 1 && <span className="text-yellow-500 mr-1">🥇</span>}
-                                {globalRank === 2 && <span className="text-gray-400 mr-1">🥈</span>}
-                                {globalRank === 3 && <span className="text-orange-600 mr-1">🥉</span>}
-                                <span className="text-sm font-medium text-gray-900">{globalRank}</span>
-                              </motion.div>
-                            </td>
                             <td className="px-6 py-4">
                               <Link
                                 href={
@@ -678,7 +613,23 @@ export default function InfluencerSearchPage() {
                                   </div>
                                 </div>
                                 <div className="relative ml-11">
-                                  <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div className="relative flex items-center justify-between mb-1">
+                                    <span className="text-xs text-gray-500">Win %</span>
+                                    {/* Percentage at filled position */}
+                                    <span
+                                      className="absolute text-xs font-medium text-gray-900"
+                                      style={{
+                                        left: `${influencer.win_percentage}%`,
+                                        transform: 'translateX(-50%)'
+                                      }}
+                                    >
+                                      {typeof influencer.win_percentage === 'number'
+                                        ? influencer.win_percentage.toFixed(1)
+                                        : '0'}
+                                    </span>
+                                    <span className="text-xs font-medium text-gray-500">100</span>
+                                  </div>
+                                  <div className="relative w-full bg-gray-200 rounded-full h-2">
                                     <div
                                       className={`${getProgressBarColor(influencer.win_percentage)} h-2 rounded-full transition-all duration-500`}
                                       style={{ width: `${influencer.win_percentage}%` }}
@@ -695,11 +646,87 @@ export default function InfluencerSearchPage() {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
-                                {typeof influencer.win_percentage === 'number'
-                                  ? `${influencer.win_percentage.toFixed(1)}%`
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+                                {influencer.ai_overall_score !== undefined
+                                  ? influencer.ai_overall_score.toFixed(1)
                                   : 'N/A'}
                               </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+                                {influencer.final_score !== undefined
+                                  ? influencer.final_score.toFixed(2)
+                                  : 'N/A'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <motion.div
+                                className="flex items-center"
+                                layout
+                                transition={{ duration: 0.3 }}
+                              >
+                                {renderStars(influencer.current_rating || 0)}
+                              </motion.div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
+                              <div className="flex justify-center">
+                                <div className="relative border-l-2 border-b-2 border-gray-300" style={{ width: `${Math.max(years.length * 50, 200)}px`, height: '120px' }}>
+                                  {/* Scatter plot stars - displayed vertically */}
+                                  <div className="relative w-full h-full pl-2 pb-2">
+                                    {scatterData.length > 0 ? (
+                                      scatterData.map((point, idx) => {
+                                        // For ratings like 0.5, 3.5, show the appropriate number of full stars
+                                        const fullStars = Math.floor(point.rating);
+                                        const hasHalfStar = point.rating % 1 >= 0.5;
+                                        const columnWidth = 100 / years.length;
+
+                                        // Calculate empty stars
+                                        const totalStars = 5;
+                                        const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+
+                                        return (
+                                          <div
+                                            key={idx}
+                                            className="absolute flex flex-col items-center"
+                                            style={{
+                                              left: `${point.year * columnWidth + columnWidth / 2}%`,
+                                              bottom: '5px',
+                                              transform: 'translateX(-50%)',
+                                              fontSize: '14px',
+                                              lineHeight: '1.2'
+                                            }}
+                                            title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
+                                          >
+                                            {/* Full stars using Font Awesome */}
+                                            {[...Array(fullStars)].map((_, i) => (
+                                              <FaStar key={`full-${i}`} className="text-yellow-500" />
+                                            ))}
+                                            {/* Half star */}
+                                            {hasHalfStar && (
+                                              <FaStarHalfAlt key="half" className="text-yellow-500" />
+                                            )}
+                                            {/* Empty stars */}
+                                            {[...Array(emptyStars)].map((_, i) => (
+                                              <FaStar key={`empty-${i}`} className="text-gray-400" />
+                                            ))}
+                                          </div>
+                                        );
+                                      })
+                                    ) : (
+                                      <div className="flex items-center justify-center h-full text-xs text-gray-400">
+                                        No data
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* X-axis labels */}
+                                  <div className="absolute -bottom-5 left-0 w-full flex justify-around text-xs text-gray-500">
+                                    {years.map((year, idx) => (
+                                      <span key={idx}>{year}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
                             </td>
                           </motion.tr>
                           );
@@ -775,133 +802,6 @@ export default function InfluencerSearchPage() {
                 </div>
               )}
             </div>
-          </div>
-
-          {/* Right Sidebar - Stats and Badges */}
-          <div className="w-full lg:w-80 lg:flex-shrink-0">
-            {/* Monthly Sales Target */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Monthly Sales Target</h2>
-              </div>
-              <div className="p-6">
-                <div className="mb-4">
-                  <div className="flex justify-between items-end mb-2">
-                    <span className="text-2xl font-bold text-gray-900">£{currentEarnings.toLocaleString()}</span>
-                    <span className="text-sm text-gray-500">of £{monthlyTarget.toLocaleString()}</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
-                    <div
-                      className="bg-blue-600 h-3 rounded-full"
-                      style={{ width: `${Math.min((currentEarnings / monthlyTarget) * 100, 100)}%` }}
-                    ></div>
-                  </div>
-                  <div className="mt-2 text-sm text-gray-600">
-                    {Math.round((currentEarnings / monthlyTarget) * 100)}% Complete
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Top Seller Badges */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Achievements</h2>
-              </div>
-              <div className="p-6 space-y-4">
-                {/* Top Seller Last Month */}
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 flex-shrink-0 bg-yellow-100 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">🏆</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-medium text-gray-900 text-sm">Top seller last month</div>
-                    <div className="text-sm text-gray-500 truncate">
-                      {topInfluencer?.name?.replace(/_/g, " ") || "John Smith"}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Best Deal Ever */}
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 flex-shrink-0 bg-purple-100 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">💎</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-medium text-gray-900 text-sm">Best deal ever</div>
-                    <div className="text-sm text-gray-500 truncate">
-                      {bestDealInfluencer?.name?.replace(/_/g, " ") || "John Smith"}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Most Transactions */}
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 flex-shrink-0 bg-green-100 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">📈</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-medium text-gray-900 text-sm">Most transactions</div>
-                    <div className="text-sm text-gray-500 truncate">
-                      {filteredInfluencers[0]?.name?.replace(/_/g, " ") || "John Smith"}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Highest Win Rate */}
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 flex-shrink-0 bg-blue-100 rounded-full flex items-center justify-center">
-                    <span className="text-2xl">🎯</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="font-medium text-gray-900 text-sm">Highest win rate</div>
-                    <div className="text-sm text-gray-500 truncate">
-                      {filteredInfluencers.length > 0
-                        ? filteredInfluencers.reduce((prev, current) =>
-                            (prev.win_percentage > current.win_percentage) ? prev : current
-                          )?.name?.replace(/_/g, " ") || "John Smith"
-                        : "John Smith"}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Quick Stats</h2>
-              </div>
-              <div className="p-6 space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Total Influencers</span>
-                  <span className="text-sm font-medium text-gray-900">{filteredInfluencers.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Average ROI</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {filteredInfluencers.length > 0
-                      ? (filteredInfluencers.reduce((sum, inf) => sum + (inf.prob_weighted_returns || 0), 0) / filteredInfluencers.length).toFixed(1) + "%"
-                      : "0%"
-                    }
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Average Win Rate</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {filteredInfluencers.length > 0
-                      ? (filteredInfluencers.reduce((sum, inf) => sum + (inf.win_percentage || 0), 0) / filteredInfluencers.length).toFixed(1) + "%"
-                      : "0%"
-                    }
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-gray-600">Total Revenue</span>
-                  <span className="text-sm font-medium text-gray-900">£{currentEarnings.toLocaleString()}</span>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </main>
     </div>

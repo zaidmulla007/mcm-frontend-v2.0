@@ -4,16 +4,20 @@ export async function GET(request) {
   try {
     // Get URL search parameters
     const { searchParams } = new URL(request.url);
-    const sentiment = searchParams.get('sentiment') || 'all';
     const timeframe = searchParams.get('timeframe') || '1_hour';
-    const type = searchParams.get('type') || 'overall';
     const year = searchParams.get('year') || 'all';
     const quarter = searchParams.get('quarter') || 'all';
+    const rating = searchParams.get('rating') || '3';
 
-    console.log(`Fetching Telegram ranking data with params: sentiment=${sentiment}, timeframe=${timeframe}, type=${type}, year=${year}, quarter=${quarter}`);
+    // Build star query parameter with proper format
+    // API expects: =3 for exact value, >3 for greater than, >=3 for greater or equal, or "all"
+    let starValue = rating === 'all' ? 'all' : `>=${rating}`;
+    const starParam = `&star=${starValue}`;
+
+    console.log(`Fetching Telegram ranking data with params: timeframe=${timeframe}, year=${year}, quarter=${quarter}, rating=${rating}, starValue=${starValue}`);
 
     // Build the external URL with query parameters
-    const externalUrl = `http://37.27.120.45:5901/api/admin/rankingstelegramdata/ranking?timeframe=${timeframe}&type=${type}&year=${year}&quarter=${quarter}`;
+    const externalUrl = `http://37.27.120.45:5901/api/admin/rankingstelegramdata/ranking?timeframe=${timeframe}&year=${year}&quarter=${quarter}${starParam}`;
     console.log(`Making request to: ${externalUrl}`);
 
     // Make request to external API
