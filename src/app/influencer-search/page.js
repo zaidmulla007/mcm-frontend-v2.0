@@ -352,13 +352,13 @@ export default function InfluencerSearchPage() {
     <div className="min-h-screen bg-gray-100 text-gray-900 font-sans">
       {/* Header */}
       <header className="">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Influencer Performance Dashboard</h1>
         </div>
       </header>
 
       {/* Platform Toggle - Between header and filters */}
-      <section className="max-w-5xl mx-auto px-4 py-4">
+      <section className="mx-auto px-4 py-4">
         <div className="flex justify-center gap-3">
           {platforms.map((platform) => (
             <button
@@ -378,7 +378,7 @@ export default function InfluencerSearchPage() {
       </section>
 
       {/* Filter Section */}
-      <section className="max-w-7xl mx-auto px-4 py-4">
+      <section className="mx-auto px-4 py-4">
         <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
@@ -464,7 +464,7 @@ export default function InfluencerSearchPage() {
       </section>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 pb-8 overflow-x-hidden">
+      <main className="mx-auto px-4 pb-8 overflow-x-hidden">
         <div className="flex flex-col lg:flex-row gap-6 min-w-0">
           {/* Left Content - Top Sellers and Leaderboard */}
           <div className="flex-1 min-w-0">
