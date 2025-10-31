@@ -413,7 +413,7 @@ export default function InfluencerSearchPage() {
               >
                 {ratingOptions.map((option) => (
                   <option key={option.value} value={option.value}>
-                    {option.value === "all" ? "All Ratings" : `${option.stars} ${"⭐".repeat(option.stars)}`}
+                    {option.value === "all" ? "All Ratings" : "⭐".repeat(option.stars)}
                   </option>
                 ))}
               </select>
