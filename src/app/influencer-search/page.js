@@ -4,7 +4,8 @@ import Link from "next/link";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaStar, FaStarHalfAlt } from "react-icons/fa";
+import { FaStar, FaStarHalfAlt, FaInfoCircle, FaArrowUp, FaArrowDown, FaBitcoin } from "react-icons/fa";
+import { FaEthereum } from "react-icons/fa6";
 import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
 const platforms = [
@@ -28,26 +29,32 @@ const platforms = [
   },
 ];
 
-// Render stars based on rating (0-5 scale)
-const renderStars = (rating) => {
-  const stars = [];
-  const fullStars = Math.floor(rating);
-  const hasHalfStar = rating % 1 >= 0.5;
+// Hardcoded Recent Recommendations data
+const getRecentRecommendations = () => ({
+  "24_hrs": [
+    { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-2xl" />, direction: "bullish", term: "long" },
+    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" }
+  ],
+  "7_days": [
+    { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-2xl" />, direction: "bullish", term: "long" },
+    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" }
+  ],
+  "30_days": [
+    { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-2xl" />, direction: "bullish", term: "long" },
+    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" }
+  ]
+});
 
-  for (let i = 0; i < 5; i++) {
-    if (i < fullStars) {
-      stars.push(<FaStar key={i} className="text-yellow-500" />);
-    } else if (i === fullStars && hasHalfStar) {
-      stars.push(<FaStarHalfAlt key={i} className="text-yellow-500" />);
-    } else {
-      stars.push(<FaStar key={i} className="text-gray-400" />);
-    }
-  }
+// Component to render arrow based on direction and term
+const RecommendationArrow = ({ direction, term }) => {
+  const isFullArrow = term === "long";
+  const arrowClass = direction === "bullish" ? "text-green-500" : "text-red-500";
+  const ArrowIcon = direction === "bullish" ? FaArrowUp : FaArrowDown;
 
   return (
-    <div className="flex gap-0.5">
-      {stars}
-    </div>
+    <ArrowIcon
+      className={`${arrowClass} ${isFullArrow ? 'text-xl' : 'text-sm'}`}
+    />
   );
 };
 
@@ -60,6 +67,7 @@ export default function InfluencerSearchPage() {
   const [telegramMcmRatings, setTelegramMcmRatings] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -253,6 +261,7 @@ export default function InfluencerSearchPage() {
         channel_thumbnails: ch.channel_thumbnails,
         prob_weighted_returns: ch.prob_weighted_returns || 0,
         win_percentage: ch.win_percentage || 0,
+        price_counts: ch.price_counts || 0,
         ai_overall_score: ch.ai_overall_score || 0,
         final_score: ch.final_score || 0,
         current_rating: ch.current_rating || 0,
@@ -268,6 +277,7 @@ export default function InfluencerSearchPage() {
         channel_thumbnails: tg.channel_thumbnails,
         prob_weighted_returns: tg.prob_weighted_returns || 0,
         win_percentage: tg.win_percentage || 0,
+        price_counts: tg.price_counts || 0,
         ai_overall_score: tg.ai_overall_score || 0,
         final_score: tg.final_score || 0,
         current_rating: tg.current_rating || 0,
@@ -366,11 +376,6 @@ export default function InfluencerSearchPage() {
   const endIndex = startIndex + itemsPerPage;
   const paginatedInfluencers = filteredInfluencers.slice(startIndex, endIndex);
 
-  // Helper function to get progress bar color based on win percentage
-  const getProgressBarColor = () => {
-    return 'bg-gradient-to-r from-blue-600 to-purple-600';
-  };
-
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 font-sans">
       {/* Header */}
@@ -456,33 +461,56 @@ export default function InfluencerSearchPage() {
       <main className="mx-auto px-4 pb-8 overflow-x-hidden">
         <div className="min-w-0">
             {/* Leaderboard Section */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
               <div className="px-6 py-4 border-b border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-900">Influencers</h2>
               </div>
-              <div className="overflow-x-auto overflow-y-clip">
+              <div className="overflow-x-auto">
                 <table className="w-full relative">
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Influencer</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">ROI</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">AI Score</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Final Score</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        <span className="inline-flex items-center gap-1" title="Overall Rating">
-                          MCM Rating
-                          <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                          </svg>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ROI</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Win Rate</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Calls</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Subscribers</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider relative">
+                        <span className="inline-flex items-center gap-1">
+                          Recent Recommendations
+                          <FaInfoCircle
+                            className="w-4 h-4 text-gray-400 cursor-help hover:text-gray-600 transition-colors"
+                            onMouseEnter={() => setShowTooltip(true)}
+                            onMouseLeave={() => setShowTooltip(false)}
+                          />
                         </span>
-                      </th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
-                        <span className="inline-flex items-center gap-1" title="Yearly Rating">
-                          MCM Rating
-                          <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                          </svg>
-                        </span>
+                        {showTooltip && (
+                          <div
+                            className="fixed w-72 p-4 bg-gray-900 text-white text-sm rounded-lg shadow-2xl border border-gray-700"
+                            style={{
+                              top: '120px',
+                              right: '20px',
+                              zIndex: 10000
+                            }}
+                            onMouseEnter={() => setShowTooltip(true)}
+                            onMouseLeave={() => setShowTooltip(false)}
+                          >
+                            <div className="space-y-2">
+                              <div className="font-semibold text-base mb-3">Arrow Meanings:</div>
+                              <div className="flex items-center gap-3">
+                                <FaArrowUp className="text-green-500 text-xl" />
+                                <span>Green upward arrow = Bullish</span>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <FaArrowDown className="text-red-500 text-xl" />
+                                <span>Red downward arrow = Bearish</span>
+                              </div>
+                              <div className="mt-3 pt-3 border-t border-gray-700">
+                                <div className="mb-1"><strong>Full arrow</strong> = Long term</div>
+                                <div><strong>Half arrow</strong> = Short term</div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                       </th>
                     </tr>
                   </thead>
@@ -491,25 +519,26 @@ export default function InfluencerSearchPage() {
                       Array.from({ length: 10 }).map((_, i) => (
                         <tr key={`skeleton-row-${i}`}>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
+                            <div className="flex items-center mb-2">
                               <div className="w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
                               <div className="h-4 bg-gray-200 rounded w-32"></div>
                             </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                            <div className="h-4 bg-gray-200 rounded w-16"></div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                            <div className="h-4 bg-gray-200 rounded w-16"></div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap hidden md:table-cell">
-                            <div className="h-4 bg-gray-200 rounded w-16"></div>
+                            <div className="ml-11 h-16 bg-gray-200 rounded w-48"></div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="h-4 bg-gray-200 rounded w-4"></div>
+                            <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
-                            <div className="h-16 bg-gray-200 rounded w-32"></div>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="h-20 bg-gray-200 rounded w-40"></div>
                           </td>
                         </tr>
                       ))
@@ -554,6 +583,8 @@ export default function InfluencerSearchPage() {
                             }
                           });
 
+                          const recommendations = getRecentRecommendations();
+
                           return (
                           <motion.tr
                             key={influencer.id}
@@ -585,7 +616,7 @@ export default function InfluencerSearchPage() {
                                 className="block"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <div className="flex items-center mb-2">
+                                <div className="flex items-center">
                                   {influencer.channel_thumbnails?.high?.url ? (
                                     <Image
                                       src={influencer.channel_thumbnails.high.url}
@@ -608,121 +639,131 @@ export default function InfluencerSearchPage() {
                                     </span>
                                   </div>
                                   <div className="flex-1">
-                                    <div className="text-sm font-medium text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</div>
-                                    <div className="text-xs text-gray-500">{influencer.platform}</div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-sm font-medium text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</span>
+                                      {selectedPlatform === "youtube" ? (
+                                        <svg className="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="currentColor">
+                                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                        </svg>
+                                      ) : (
+                                        <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                                          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                                        </svg>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
-                                <div className="relative ml-11">
-                                  <div className="relative flex items-center justify-between mb-1">
-                                    <span className="text-xs text-gray-500">Win %</span>
-                                    {/* Percentage at filled position */}
-                                    <span
-                                      className="absolute text-xs font-medium text-gray-900"
-                                      style={{
-                                        left: `${influencer.win_percentage}%`,
-                                        transform: 'translateX(-50%)'
-                                      }}
-                                    >
-                                      {typeof influencer.win_percentage === 'number'
-                                        ? influencer.win_percentage.toFixed(1)
-                                        : '0'}
-                                    </span>
-                                    <span className="text-xs font-medium text-gray-500">100</span>
-                                  </div>
-                                  <div className="relative w-full bg-gray-200 rounded-full h-2">
-                                    <div
-                                      className={`${getProgressBarColor(influencer.win_percentage)} h-2 rounded-full transition-all duration-500`}
-                                      style={{ width: `${influencer.win_percentage}%` }}
-                                    ></div>
+                                {/* Yearly Rating Chart */}
+                                <div className="ml-11">
+                                  <div className="relative" style={{ width: '200px', height: '80px' }}>
+                                    <div className="relative w-full h-full pl-2 pb-2">
+                                      {scatterData.length > 0 ? (
+                                        scatterData.map((point, idx) => {
+                                          const fullStars = Math.floor(point.rating);
+                                          const hasHalfStar = point.rating % 1 >= 0.5;
+                                          const columnWidth = 100 / years.length;
+                                          const totalStars = 5;
+                                          const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+
+                                          return (
+                                            <div
+                                              key={idx}
+                                              className="absolute flex flex-col items-center"
+                                              style={{
+                                                left: `${point.year * columnWidth + columnWidth / 2}%`,
+                                                bottom: '5px',
+                                                transform: 'translateX(-50%)',
+                                                fontSize: '10px',
+                                                lineHeight: '1.1'
+                                              }}
+                                              title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
+                                            >
+                                              {[...Array(fullStars)].map((_, i) => (
+                                                <FaStar key={`full-${i}`} className="text-yellow-500" />
+                                              ))}
+                                              {hasHalfStar && (
+                                                <FaStarHalfAlt key="half" className="text-yellow-500" />
+                                              )}
+                                              {[...Array(emptyStars)].map((_, i) => (
+                                                <FaStar key={`empty-${i}`} className="text-gray-400" />
+                                              ))}
+                                            </div>
+                                          );
+                                        })
+                                      ) : (
+                                        <div className="flex items-center justify-center h-full text-xs text-gray-400">
+                                          loading...
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="absolute -bottom-4 left-0 w-full flex justify-around text-xs text-gray-500">
+                                      {years.map((year, idx) => (
+                                        <span key={idx}>{year}</span>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
                               </Link>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800">
                                 {influencer.prob_weighted_returns !== undefined
-                                  ? `${influencer.prob_weighted_returns.toFixed(1)}%`
+                                  ? `${Math.round(influencer.prob_weighted_returns * 100)}%`
                                   : '0%'}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
-                                {influencer.ai_overall_score !== undefined
-                                  ? influencer.ai_overall_score.toFixed(1)
-                                  : 'N/A'}
+                                {influencer.win_percentage !== undefined
+                                  ? `${Math.round(influencer.win_percentage)}%`
+                                  : '0%'}
                               </span>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-center hidden md:table-cell">
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
-                                {influencer.final_score !== undefined
-                                  ? influencer.final_score.toFixed(2)
-                                  : 'N/A'}
+                                {influencer.price_counts ? influencer.price_counts.toLocaleString() : '0'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-center">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-800">
+                                {influencer.subs ? (influencer.subs >= 1000000 ? `${(influencer.subs / 1000000).toFixed(1)}M` : influencer.subs >= 1000 ? `${(influencer.subs / 1000).toFixed(1)}K` : influencer.subs) : '0'}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <motion.div
-                                className="flex items-center"
-                                layout
-                                transition={{ duration: 0.3 }}
-                              >
-                                {renderStars(influencer.current_rating || 0)}
-                              </motion.div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap hidden lg:table-cell">
-                              <div className="flex justify-center">
-                                <div className="relative border-l-2 border-b-2 border-gray-300" style={{ width: `${Math.max(years.length * 50, 200)}px`, height: '120px' }}>
-                                  {/* Scatter plot stars - displayed vertically */}
-                                  <div className="relative w-full h-full pl-2 pb-2">
-                                    {scatterData.length > 0 ? (
-                                      scatterData.map((point, idx) => {
-                                        // For ratings like 0.5, 3.5, show the appropriate number of full stars
-                                        const fullStars = Math.floor(point.rating);
-                                        const hasHalfStar = point.rating % 1 >= 0.5;
-                                        const columnWidth = 100 / years.length;
-
-                                        // Calculate empty stars
-                                        const totalStars = 5;
-                                        const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
-
-                                        return (
-                                          <div
-                                            key={idx}
-                                            className="absolute flex flex-col items-center"
-                                            style={{
-                                              left: `${point.year * columnWidth + columnWidth / 2}%`,
-                                              bottom: '5px',
-                                              transform: 'translateX(-50%)',
-                                              fontSize: '14px',
-                                              lineHeight: '1.2'
-                                            }}
-                                            title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
-                                          >
-                                            {/* Full stars using Font Awesome */}
-                                            {[...Array(fullStars)].map((_, i) => (
-                                              <FaStar key={`full-${i}`} className="text-yellow-500" />
-                                            ))}
-                                            {/* Half star */}
-                                            {hasHalfStar && (
-                                              <FaStarHalfAlt key="half" className="text-yellow-500" />
-                                            )}
-                                            {/* Empty stars */}
-                                            {[...Array(emptyStars)].map((_, i) => (
-                                              <FaStar key={`empty-${i}`} className="text-gray-400" />
-                                            ))}
-                                          </div>
-                                        );
-                                      })
-                                    ) : (
-                                      <div className="flex items-center justify-center h-full text-xs text-gray-400">
-                                        No data
+                              <div className="space-y-2">
+                                {/* 24 hours */}
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium text-gray-600 w-16">24 hrs:</span>
+                                  <div className="flex items-center gap-2">
+                                    {recommendations["24_hrs"].map((rec, idx) => (
+                                      <div key={idx} className="flex items-center gap-1">
+                                        {rec.icon}
+                                        <RecommendationArrow direction={rec.direction} term={rec.term} />
                                       </div>
-                                    )}
+                                    ))}
                                   </div>
-
-                                  {/* X-axis labels */}
-                                  <div className="absolute -bottom-5 left-0 w-full flex justify-around text-xs text-gray-500">
-                                    {years.map((year, idx) => (
-                                      <span key={idx}>{year}</span>
+                                </div>
+                                {/* 7 days */}
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium text-gray-600 w-16">7 days:</span>
+                                  <div className="flex items-center gap-2">
+                                    {recommendations["7_days"].map((rec, idx) => (
+                                      <div key={idx} className="flex items-center gap-1">
+                                        {rec.icon}
+                                        <RecommendationArrow direction={rec.direction} term={rec.term} />
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                {/* 30 days */}
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs font-medium text-gray-600 w-16">30 days:</span>
+                                  <div className="flex items-center gap-2">
+                                    {recommendations["30_days"].map((rec, idx) => (
+                                      <div key={idx} className="flex items-center gap-1">
+                                        {rec.icon}
+                                        <RecommendationArrow direction={rec.direction} term={rec.term} />
+                                      </div>
                                     ))}
                                   </div>
                                 </div>
