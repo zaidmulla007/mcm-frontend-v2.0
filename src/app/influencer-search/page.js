@@ -725,8 +725,8 @@ export default function InfluencerSearchPage() {
                             <td className="px-6 py-4 whitespace-nowrap">
                               <div className="space-y-2">
                                 {/* 24 hours */}
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-medium text-gray-600 w-16">24 hrs:</span>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-xs font-medium text-gray-600 w-20">Last 24 hrs:</span>
                                   <div className="flex items-center gap-2">
                                     {recommendations["24_hrs"].map((rec, idx) => (
                                       <div key={idx} className="flex items-center gap-1">
@@ -737,8 +737,8 @@ export default function InfluencerSearchPage() {
                                   </div>
                                 </div>
                                 {/* 7 days */}
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-medium text-gray-600 w-16">7 days:</span>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-xs font-medium text-gray-600 w-20">Last 7 days:</span>
                                   <div className="flex items-center gap-2">
                                     {recommendations["7_days"].map((rec, idx) => (
                                       <div key={idx} className="flex items-center gap-1">
@@ -749,8 +749,8 @@ export default function InfluencerSearchPage() {
                                   </div>
                                 </div>
                                 {/* 30 days */}
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-medium text-gray-600 w-16">30 days:</span>
+                                <div className="flex items-center gap-3">
+                                  <span className="text-xs font-medium text-gray-600 w-20">Last 30 days:</span>
                                   <div className="flex items-center gap-2">
                                     {recommendations["30_days"].map((rec, idx) => (
                                       <div key={idx} className="flex items-center gap-1">
