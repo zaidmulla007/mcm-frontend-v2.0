@@ -67,7 +67,6 @@ export default function InfluencerSearchPage() {
   const [telegramMcmRatings, setTelegramMcmRatings] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showTooltip, setShowTooltip] = useState(false);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -477,40 +476,27 @@ export default function InfluencerSearchPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider relative">
                         <span className="inline-flex items-center gap-1">
                           Recent Recommendations
-                          <FaInfoCircle
-                            className="w-4 h-4 text-gray-400 cursor-help hover:text-gray-600 transition-colors"
-                            onMouseEnter={() => setShowTooltip(true)}
-                            onMouseLeave={() => setShowTooltip(false)}
-                          />
+                          <span className="relative group cursor-pointer">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-3 rounded-lg shadow-xl w-72 break-words z-[9999]">
+                              <div className="space-y-2">
+                                <div className="font-semibold text-base mb-3">Arrow Meanings:</div>
+                                <div className="flex items-center gap-3">
+                                  <FaArrowUp className="text-green-500 text-xl" />
+                                  <span>Green upward arrow = Bullish</span>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                  <FaArrowDown className="text-red-500 text-xl" />
+                                  <span>Red downward arrow = Bearish</span>
+                                </div>
+                                <div className="mt-3 pt-3 border-t border-gray-700">
+                                  <div className="mb-1"><strong>Full arrow</strong> = Long term</div>
+                                  <div><strong>Half arrow</strong> = Short term</div>
+                                </div>
+                              </div>
+                            </span>
+                          </span>
                         </span>
-                        {showTooltip && (
-                          <div
-                            className="fixed w-72 p-4 bg-gray-900 text-white text-sm rounded-lg shadow-2xl border border-gray-700"
-                            style={{
-                              top: '120px',
-                              right: '20px',
-                              zIndex: 10000
-                            }}
-                            onMouseEnter={() => setShowTooltip(true)}
-                            onMouseLeave={() => setShowTooltip(false)}
-                          >
-                            <div className="space-y-2">
-                              <div className="font-semibold text-base mb-3">Arrow Meanings:</div>
-                              <div className="flex items-center gap-3">
-                                <FaArrowUp className="text-green-500 text-xl" />
-                                <span>Green upward arrow = Bullish</span>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <FaArrowDown className="text-red-500 text-xl" />
-                                <span>Red downward arrow = Bearish</span>
-                              </div>
-                              <div className="mt-3 pt-3 border-t border-gray-700">
-                                <div className="mb-1"><strong>Full arrow</strong> = Long term</div>
-                                <div><strong>Half arrow</strong> = Short term</div>
-                              </div>
-                            </div>
-                          </div>
-                        )}
                       </th>
                     </tr>
                   </thead>
@@ -603,8 +589,15 @@ export default function InfluencerSearchPage() {
                               opacity: { duration: 0.5 },
                               x: { duration: 0.5 }
                             }}
-                            className="hover:bg-gray-50"
+                            className="hover:bg-gray-50 cursor-pointer"
                             style={{ position: 'relative', zIndex: 1 }}
+                            onClick={() => {
+                              router.push(
+                                selectedPlatform === "youtube"
+                                  ? `/influencers/${influencer.id}`
+                                  : `/telegram-influencer/${influencer.id}`
+                              );
+                            }}
                           >
                             <td className="px-6 py-4">
                               <Link
@@ -654,8 +647,8 @@ export default function InfluencerSearchPage() {
                                   </div>
                                 </div>
                                 {/* Yearly Rating Chart */}
-                                <div className="ml-11">
-                                  <div className="relative" style={{ width: '200px', height: '80px' }}>
+                                <div className="ml-11 mt-1">
+                                  <div className="relative" style={{ width: '200px', height: '60px' }}>
                                     <div className="relative w-full h-full pl-2 pb-2">
                                       {scatterData.length > 0 ? (
                                         scatterData.map((point, idx) => {
