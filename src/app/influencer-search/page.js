@@ -490,8 +490,8 @@ export default function InfluencerSearchPage() {
                                   <span>Red downward arrow = Bearish</span>
                                 </div>
                                 <div className="mt-3 pt-3 border-t border-gray-700">
-                                  <div className="mb-1"><strong>Full arrow</strong> = Long term</div>
-                                  <div><strong>Half arrow</strong> = Short term</div>
+                                  <div className="mb-1"><strong>Bigger arrow</strong> = Long term</div>
+                                  <div><strong>Smaller arrow</strong> = Short term</div>
                                 </div>
                               </div>
                             </span>
