@@ -33,15 +33,24 @@ const platforms = [
 const getRecentRecommendations = () => ({
   "24_hrs": [
     { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-2xl" />, direction: "bullish", term: "long" },
-    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" }
+    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" },
+    { coin: "Cardano", icon: <span className="text-blue-600 text-2xl font-bold">₳</span>, direction: "bullish", term: "short" },
+    { coin: "Solana", icon: <span className="text-purple-600 text-2xl font-bold">◎</span>, direction: "bullish", term: "long" },
+    { coin: "Ripple", icon: <span className="text-gray-700 text-2xl font-bold">✕</span>, direction: "bearish", term: "long" }
   ],
   "7_days": [
     { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-2xl" />, direction: "bullish", term: "long" },
-    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" }
+    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" },
+    { coin: "Cardano", icon: <span className="text-blue-600 text-2xl font-bold">₳</span>, direction: "bullish", term: "short" },
+    { coin: "Solana", icon: <span className="text-purple-600 text-2xl font-bold">◎</span>, direction: "bullish", term: "long" },
+    { coin: "Ripple", icon: <span className="text-gray-700 text-2xl font-bold">✕</span>, direction: "bearish", term: "long" }
   ],
   "30_days": [
     { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-2xl" />, direction: "bullish", term: "long" },
-    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" }
+    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" },
+    { coin: "Cardano", icon: <span className="text-blue-600 text-2xl font-bold">₳</span>, direction: "bullish", term: "short" },
+    { coin: "Solana", icon: <span className="text-purple-600 text-2xl font-bold">◎</span>, direction: "bullish", term: "long" },
+    { coin: "Ripple", icon: <span className="text-gray-700 text-2xl font-bold">✕</span>, direction: "bearish", term: "long" }
   ]
 });
 
@@ -88,7 +97,12 @@ export default function InfluencerSearchPage() {
   // Filter states
   const [selectedRating, setSelectedRating] = useState("3");
   const [selectedTimeframe, setSelectedTimeframe] = useState("1_hour");
-  const [selectedYear, setSelectedYear] = useState("all");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+
+  // Client-side filters
+  const [roiFilter, setRoiFilter] = useState("all");
+  const [winRateFilter, setWinRateFilter] = useState("all");
+  const [totalCallsFilter, setTotalCallsFilter] = useState("all");
 
   // API parameters using filter states
   const apiParams = useMemo(() => ({
@@ -212,7 +226,7 @@ export default function InfluencerSearchPage() {
   // Reset current page when platform or filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedPlatform, selectedRating, selectedTimeframe, selectedYear]);
+  }, [selectedPlatform, selectedRating, selectedTimeframe, selectedYear, roiFilter, winRateFilter, totalCallsFilter]);
 
   // Search functionality
   useEffect(() => {
@@ -288,7 +302,38 @@ export default function InfluencerSearchPage() {
     return influencers;
   };
 
-  const filteredInfluencers = getFilteredInfluencers();
+  // Apply client-side filters
+  const applyClientFilters = (influencers) => {
+    return influencers.filter(influencer => {
+      // ROI Filter
+      if (roiFilter !== "all") {
+        const roi = influencer.prob_weighted_returns;
+        if (roiFilter === "above_0.8" && roi < 0.8) return false;
+        if (roiFilter === "0.5_to_0.8" && (roi < 0.5 || roi >= 0.8)) return false;
+        if (roiFilter === "below_0.5" && roi >= 0.5) return false;
+      }
+
+      // Win Rate Filter
+      if (winRateFilter !== "all") {
+        const winRate = influencer.win_percentage;
+        if (winRateFilter === "above_70" && winRate < 70) return false;
+        if (winRateFilter === "50_to_70" && (winRate < 50 || winRate >= 70)) return false;
+        if (winRateFilter === "below_50" && winRate >= 50) return false;
+      }
+
+      // Total Calls Filter
+      if (totalCallsFilter !== "all") {
+        const calls = influencer.price_counts;
+        if (totalCallsFilter === "above_1000" && calls < 1000) return false;
+        if (totalCallsFilter === "500_to_1000" && (calls < 500 || calls >= 1000)) return false;
+        if (totalCallsFilter === "below_500" && calls >= 500) return false;
+      }
+
+      return true;
+    });
+  };
+
+  const filteredInfluencers = applyClientFilters(getFilteredInfluencers());
 
 
   const handlePageChange = (page) => {
@@ -343,8 +388,8 @@ export default function InfluencerSearchPage() {
     return pages;
   };
 
-  // Filter options
-  const ratingOptions = [
+  // Filter options - Dynamic rating filter based on available data
+  const allRatingOptions = [
     { value: "all", label: "All", stars: 0 },
     { value: "5", label: "5", stars: 5 },
     { value: "4", label: "4", stars: 4 },
@@ -352,6 +397,22 @@ export default function InfluencerSearchPage() {
     { value: "2", label: "2", stars: 2 },
     { value: "1", label: "1", stars: 1 },
   ];
+
+  // Get current influencers based on platform
+  const currentInfluencersForFilter = selectedPlatform === "youtube" ? youtubeInfluencers : telegramInfluencers;
+
+  // Filter rating options to show only those with at least 1 influencer
+  const ratingOptions = useMemo(() => {
+    return allRatingOptions.filter(option => {
+      if (option.value === "all") return true; // Always show "All"
+
+      const ratingValue = parseInt(option.value);
+      // Check if any influencer has current_rating equal to or greater than this rating
+      return currentInfluencersForFilter.some(influencer =>
+        Math.floor(influencer.current_rating || 0) >= ratingValue
+      );
+    });
+  }, [currentInfluencersForFilter]);
 
   const timeframeOptions = getDynamicTimeframeOptions(selectedYear);
 
@@ -406,8 +467,8 @@ export default function InfluencerSearchPage() {
 
       {/* Filter Section */}
       <section className="mx-auto px-4 py-4">
-        <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="max-w-4xl mx-auto px-4 mb-6 w-full bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
               <select
@@ -453,6 +514,50 @@ export default function InfluencerSearchPage() {
               </select>
             </div>
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ROI</label>
+              <select
+                value={roiFilter}
+                onChange={(e) => setRoiFilter(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All ROI</option>
+                <option value="above_0.8">Above 0.8</option>
+                <option value="0.5_to_0.8">0.5 - 0.8</option>
+                <option value="below_0.5">Below 0.5</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Win Rate</label>
+              <select
+                value={winRateFilter}
+                onChange={(e) => setWinRateFilter(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Win Rates</option>
+                <option value="above_70">Above 70%</option>
+                <option value="50_to_70">50% - 70%</option>
+                <option value="below_50">Below 50%</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Total Calls</label>
+              <select
+                value={totalCallsFilter}
+                onChange={(e) => setTotalCallsFilter(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all">All Calls</option>
+                <option value="above_1000">Above 1000</option>
+                <option value="500_to_1000">500 - 1000</option>
+                <option value="below_500">Below 500</option>
+              </select>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -468,14 +573,14 @@ export default function InfluencerSearchPage() {
                 <table className="w-full relative">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Influencer</th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Influencer</th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ROI</th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Win Rate</th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Calls</th>
                       <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Subscribers</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider relative">
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider relative">
                         <span className="inline-flex items-center gap-1">
-                          Recent Recommendations
+                          Recent Posts
                           <span className="relative group cursor-pointer">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-3 rounded-lg shadow-xl w-72 break-words z-[9999]">
@@ -528,6 +633,18 @@ export default function InfluencerSearchPage() {
                           </td>
                         </tr>
                       ))
+                    ) : filteredInfluencers.length === 0 ? (
+                      <tr>
+                        <td colSpan="6" className="px-6 py-12 text-center">
+                          <div className="flex flex-col items-center justify-center">
+                            <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="text-lg font-semibold text-gray-600 mb-2">No influencers found</p>
+                            <p className="text-sm text-gray-500">No influencers match the selected filters. Try adjusting your filter criteria.</p>
+                          </div>
+                        </td>
+                      </tr>
                     ) : (
                       <AnimatePresence mode="popLayout">
                         {/* Paginated influencers */}
@@ -614,9 +731,9 @@ export default function InfluencerSearchPage() {
                                     <Image
                                       src={influencer.channel_thumbnails.high.url}
                                       alt={influencer.name || "Influencer"}
-                                      width={32}
-                                      height={32}
-                                      className="w-8 h-8 rounded-full object-cover mr-3"
+                                      width={64}
+                                      height={64}
+                                      className="w-16 h-16 rounded-full object-cover mr-4"
                                       onError={(e) => {
                                         e.target.style.display = 'none';
                                         e.target.nextSibling.style.display = 'flex';
@@ -624,22 +741,22 @@ export default function InfluencerSearchPage() {
                                     />
                                   ) : null}
                                   <div
-                                    className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center mr-3"
+                                    className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center mr-4"
                                     style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
                                   >
-                                    <span className="text-white text-xs font-bold">
+                                    <span className="text-white text-xl font-bold">
                                       {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
                                     </span>
                                   </div>
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2">
-                                      <span className="text-sm font-medium text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</span>
+                                      <span className="text-lg font-semibold text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</span>
                                       {selectedPlatform === "youtube" ? (
-                                        <svg className="w-4 h-4 text-red-600" viewBox="0 0 24 24" fill="currentColor">
+                                        <svg className="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="currentColor">
                                           <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
                                         </svg>
                                       ) : (
-                                        <svg className="w-4 h-4 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                                        <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
                                           <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
                                         </svg>
                                       )}
@@ -647,62 +764,50 @@ export default function InfluencerSearchPage() {
                                   </div>
                                 </div>
                                 {/* Yearly Rating Chart */}
-                                <div className="ml-11 mt-1">
-                                  <div className="relative" style={{ width: '200px', height: '60px' }}>
-                                    <div className="relative w-full h-full pl-2 pb-2">
-                                      {scatterData.length > 0 ? (
-                                        scatterData.map((point, idx) => {
-                                          const fullStars = Math.floor(point.rating);
-                                          const hasHalfStar = point.rating % 1 >= 0.5;
-                                          const columnWidth = 100 / years.length;
-                                          const totalStars = 5;
-                                          const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+                                <div className="ml-11 mt-2">
+                                  {scatterData.length > 0 ? (
+                                    <div className="space-y-1">
+                                      {scatterData.map((point, idx) => {
+                                        const fullStars = Math.floor(point.rating);
+                                        const hasHalfStar = point.rating % 1 >= 0.5;
+                                        const totalStars = 5;
+                                        const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
 
-                                          return (
-                                            <div
-                                              key={idx}
-                                              className="absolute flex flex-col items-center"
-                                              style={{
-                                                left: `${point.year * columnWidth + columnWidth / 2}%`,
-                                                bottom: '5px',
-                                                transform: 'translateX(-50%)',
-                                                fontSize: '10px',
-                                                lineHeight: '1.1'
-                                              }}
-                                              title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
-                                            >
+                                        return (
+                                          <div
+                                            key={idx}
+                                            className="flex items-center gap-2"
+                                            title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
+                                          >
+                                            <span className="text-sm text-gray-600 font-medium w-12">{point.yearLabel}</span>
+                                            <div className="flex items-center gap-0.5">
                                               {[...Array(fullStars)].map((_, i) => (
-                                                <FaStar key={`full-${i}`} className="text-yellow-500" />
+                                                <FaStar key={`full-${i}`} className="text-yellow-500 w-3 h-3" />
                                               ))}
                                               {hasHalfStar && (
-                                                <FaStarHalfAlt key="half" className="text-yellow-500" />
+                                                <FaStarHalfAlt key="half" className="text-yellow-500 w-3 h-3" />
                                               )}
                                               {[...Array(emptyStars)].map((_, i) => (
-                                                <FaStar key={`empty-${i}`} className="text-gray-400" />
+                                                <FaStar key={`empty-${i}`} className="text-gray-400 w-3 h-3" />
                                               ))}
                                             </div>
-                                          );
-                                        })
-                                      ) : (
-                                        <div className="flex items-center justify-center h-full text-xs text-gray-400">
-                                          loading...
-                                        </div>
-                                      )}
+                                          </div>
+                                        );
+                                      })}
                                     </div>
-                                    <div className="absolute -bottom-4 left-0 w-full flex justify-around text-xs text-gray-500">
-                                      {years.map((year, idx) => (
-                                        <span key={idx}>{year}</span>
-                                      ))}
+                                  ) : (
+                                    <div className="text-sm text-gray-400">
+                                      loading...
                                     </div>
-                                  </div>
+                                  )}
                                 </div>
                               </Link>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-center">
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800">
                                 {influencer.prob_weighted_returns !== undefined
-                                  ? `${Math.round(influencer.prob_weighted_returns * 100)}%`
-                                  : '0%'}
+                                  ? influencer.prob_weighted_returns.toFixed(1)
+                                  : '0.0'}
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -723,41 +828,64 @@ export default function InfluencerSearchPage() {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="space-y-2">
-                                {/* 24 hours */}
-                                <div className="flex items-center gap-3">
-                                  <span className="text-xs font-medium text-gray-600 w-20">Last 24 hrs:</span>
-                                  <div className="flex items-center gap-2">
-                                    {recommendations["24_hrs"].map((rec, idx) => (
-                                      <div key={idx} className="flex items-center gap-1">
-                                        {rec.icon}
-                                        <RecommendationArrow direction={rec.direction} term={rec.term} />
-                                      </div>
-                                    ))}
+                              <div className="space-y-3">
+                                {/* 24 hours - Name Tag Style */}
+                                <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                                  <div className="bg-gray-100 px-3 py-1.5 border-b border-gray-200 text-center">
+                                    <span className="text-xs font-medium text-gray-700">Last 24 hrs:</span>
+                                  </div>
+                                  <div className="px-3 py-2 overflow-x-auto">
+                                    <div className="flex items-center justify-start gap-3 min-w-max">
+                                      {recommendations["24_hrs"].map((rec, idx) => (
+                                        <div key={idx} className="flex flex-col items-center flex-shrink-0">
+                                          <div className="flex items-center gap-1 h-6">
+                                            {rec.icon}
+                                            <RecommendationArrow direction={rec.direction} term={rec.term} />
+                                          </div>
+                                          <span className="text-xs text-gray-500 mt-0.5">{rec.coin}</span>
+                                        </div>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
-                                {/* 7 days */}
-                                <div className="flex items-center gap-3">
-                                  <span className="text-xs font-medium text-gray-600 w-20">Last 7 days:</span>
-                                  <div className="flex items-center gap-2">
-                                    {recommendations["7_days"].map((rec, idx) => (
-                                      <div key={idx} className="flex items-center gap-1">
-                                        {rec.icon}
-                                        <RecommendationArrow direction={rec.direction} term={rec.term} />
-                                      </div>
-                                    ))}
+
+                                {/* 7 days - Name Tag Style */}
+                                <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                                  <div className="bg-gray-100 px-3 py-1.5 border-b border-gray-200 text-center">
+                                    <span className="text-xs font-medium text-gray-700">Last 7 days:</span>
+                                  </div>
+                                  <div className="px-3 py-2 overflow-x-auto">
+                                    <div className="flex items-center justify-start gap-3 min-w-max">
+                                      {recommendations["7_days"].map((rec, idx) => (
+                                        <div key={idx} className="flex flex-col items-center flex-shrink-0">
+                                          <div className="flex items-center gap-1 h-6">
+                                            {rec.icon}
+                                            <RecommendationArrow direction={rec.direction} term={rec.term} />
+                                          </div>
+                                          <span className="text-xs text-gray-500 mt-0.5">{rec.coin}</span>
+                                        </div>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
-                                {/* 30 days */}
-                                <div className="flex items-center gap-3">
-                                  <span className="text-xs font-medium text-gray-600 w-20">Last 30 days:</span>
-                                  <div className="flex items-center gap-2">
-                                    {recommendations["30_days"].map((rec, idx) => (
-                                      <div key={idx} className="flex items-center gap-1">
-                                        {rec.icon}
-                                        <RecommendationArrow direction={rec.direction} term={rec.term} />
-                                      </div>
-                                    ))}
+
+                                {/* 30 days - Name Tag Style */}
+                                <div className="border border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm">
+                                  <div className="bg-gray-100 px-3 py-1.5 border-b border-gray-200 text-center">
+                                    <span className="text-xs font-medium text-gray-700">Last 30 days:</span>
+                                  </div>
+                                  <div className="px-3 py-2 overflow-x-auto">
+                                    <div className="flex items-center justify-start gap-3 min-w-max">
+                                      {recommendations["30_days"].map((rec, idx) => (
+                                        <div key={idx} className="flex flex-col items-center flex-shrink-0">
+                                          <div className="flex items-center gap-1 h-6">
+                                            {rec.icon}
+                                            <RecommendationArrow direction={rec.direction} term={rec.term} />
+                                          </div>
+                                          <span className="text-xs text-gray-500 mt-0.5">{rec.coin}</span>
+                                        </div>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
                               </div>

@@ -50,6 +50,29 @@ export default function MCMSignalPage() {
   const [showBullishFilter, setShowBullishFilter] = useState(true);
   const [showBearishFilter, setShowBearishFilter] = useState(false);
 
+  // Analysis Filters - Basic Settings
+  const [sentimentType, setSentimentType] = useState("Bullish");
+  const [source, setSource] = useState("YouTube + Telegram");
+  const [coinType, setCoinType] = useState("Overall");
+  const [timePeriodFilter, setTimePeriodFilter] = useState("Weekly");
+
+  // Analysis Filters - Time-Based Rules
+  const [rule1MinPosts, setRule1MinPosts] = useState("250");
+  const [rule1Sentiment, setRule1Sentiment] = useState("75");
+  const [rule2MinPosts, setRule2MinPosts] = useState("150");
+  const [rule2Sentiment, setRule2Sentiment] = useState("75");
+  const [rule3MinPosts, setRule3MinPosts] = useState("25");
+  const [rule3Sentiment, setRule3Sentiment] = useState("80");
+  const [rule4MinPosts, setRule4MinPosts] = useState("15");
+  const [rule4Sentiment, setRule4Sentiment] = useState("85");
+
+  // Analysis Filters - Advanced Settings
+  const [avgInfluenceScore, setAvgInfluenceScore] = useState("");
+  const [shortTermMinCount, setShortTermMinCount] = useState("");
+  const [shortTermMinPercent, setShortTermMinPercent] = useState("");
+  const [longTermMinCount, setLongTermMinCount] = useState("");
+  const [longTermMinPercent, setLongTermMinPercent] = useState("");
+
   // Influencer selection state
   const [selectedInfluencer, setSelectedInfluencer] = useState("all");
   const [allInfluencers, setAllInfluencers] = useState({ youtube: [], telegram: [] });
@@ -301,9 +324,322 @@ export default function MCMSignalPage() {
 
       {/* Filter Controls */}
       <section>
+        <div className="max-w-7xl mx-auto px-4 mb-6 w-full">
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border-2 border-purple-200 shadow-xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-6">Analysis Filters</h3>
+
+            {/* Three Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+              {/* Basic Settings */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-gray-900 text-base mb-4">Basic Settings</h4>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm text-gray-700 font-medium">Sentiment Type</label>
+                  <select
+                    value={sentimentType}
+                    onChange={(e) => setSentimentType(e.target.value)}
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="Bullish">Bullish</option>
+                    <option value="Bearish">Bearish</option>
+                    <option value="Neutral">Neutral</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm text-gray-700 font-medium">Source</label>
+                  <select
+                    value={source}
+                    onChange={(e) => setSource(e.target.value)}
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="YouTube + Telegram">YouTube + Telegram</option>
+                    <option value="YouTube">YouTube</option>
+                    <option value="Telegram">Telegram</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm text-gray-700 font-medium">Coin Type</label>
+                  <select
+                    value={coinType}
+                    onChange={(e) => setCoinType(e.target.value)}
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="Overall">Overall</option>
+                    <option value="Bitcoin">Bitcoin</option>
+                    <option value="Ethereum">Ethereum</option>
+                    <option value="Altcoins">Altcoins</option>
+                  </select>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm text-gray-700 font-medium">Time Period Filter</label>
+                  <select
+                    value={timePeriodFilter}
+                    onChange={(e) => setTimePeriodFilter(e.target.value)}
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="Weekly">Weekly</option>
+                    <option value="Daily">Daily</option>
+                    <option value="Monthly">Monthly</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Time-Based Rules */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-gray-900 text-base mb-4">Time-Based Rules</h4>
+
+                {/* Rule 1 - 60 Days */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-semibold text-gray-800">Rule 1 - 60 Days</h5>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">Min Posts</label>
+                      <input
+                        type="number"
+                        value={rule1MinPosts}
+                        onChange={(e) => setRule1MinPosts(e.target.value)}
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">Sentiment %</label>
+                      <input
+                        type="number"
+                        value={rule1Sentiment}
+                        onChange={(e) => setRule1Sentiment(e.target.value)}
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rule 2 - 30 Days */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-semibold text-gray-800">Rule 2 - 30 Days</h5>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">Min Posts</label>
+                      <input
+                        type="number"
+                        value={rule2MinPosts}
+                        onChange={(e) => setRule2MinPosts(e.target.value)}
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">Sentiment %</label>
+                      <input
+                        type="number"
+                        value={rule2Sentiment}
+                        onChange={(e) => setRule2Sentiment(e.target.value)}
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rule 3 - 7 Days */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-semibold text-gray-800">Rule 3 - 7 Days</h5>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">Min Posts</label>
+                      <input
+                        type="number"
+                        value={rule3MinPosts}
+                        onChange={(e) => setRule3MinPosts(e.target.value)}
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">Sentiment %</label>
+                      <input
+                        type="number"
+                        value={rule3Sentiment}
+                        onChange={(e) => setRule3Sentiment(e.target.value)}
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rule 4 - 24 Hours */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-semibold text-gray-800">Rule 4 - 24 Hours</h5>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">Min Posts</label>
+                      <input
+                        type="number"
+                        value={rule4MinPosts}
+                        onChange={(e) => setRule4MinPosts(e.target.value)}
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">Sentiment %</label>
+                      <input
+                        type="number"
+                        value={rule4Sentiment}
+                        onChange={(e) => setRule4Sentiment(e.target.value)}
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Advanced Settings */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-gray-900 text-base mb-4">Advanced Settings</h4>
+
+                {/* Date Range */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-semibold text-gray-800">Date Range</h5>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">From</label>
+                      <input
+                        type="date"
+                        value={dateFrom}
+                        onChange={(e) => setDateFrom(e.target.value)}
+                        className="bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">To</label>
+                      <input
+                        type="date"
+                        value={dateTo}
+                        onChange={(e) => setDateTo(e.target.value)}
+                        className="bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* AVG Influence Score */}
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm text-gray-700 font-medium">AVG Influence Score (Min)</label>
+                  <input
+                    type="text"
+                    value={avgInfluenceScore}
+                    onChange={(e) => setAvgInfluenceScore(e.target.value)}
+                    placeholder="Leave blank if not needed"
+                    className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+
+                {/* Short Term */}
+                <div className="bg-blue-50 p-3 rounded-lg space-y-2">
+                  <h5 className="text-sm font-semibold text-blue-900">Short Term</h5>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-700">Min Count</label>
+                    <input
+                      type="text"
+                      value={shortTermMinCount}
+                      onChange={(e) => setShortTermMinCount(e.target.value)}
+                      placeholder="Optional"
+                      className="bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-700">Min Percent</label>
+                    <input
+                      type="text"
+                      value={shortTermMinPercent}
+                      onChange={(e) => setShortTermMinPercent(e.target.value)}
+                      placeholder="Optional"
+                      className="bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                </div>
+
+                {/* Long Term */}
+                <div className="bg-green-50 p-3 rounded-lg space-y-2">
+                  <h5 className="text-sm font-semibold text-green-900">Long Term</h5>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-700">Min Count</label>
+                    <input
+                      type="text"
+                      value={longTermMinCount}
+                      onChange={(e) => setLongTermMinCount(e.target.value)}
+                      placeholder="Optional"
+                      className="bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-700">Min Percent</label>
+                    <input
+                      type="text"
+                      value={longTermMinPercent}
+                      onChange={(e) => setLongTermMinPercent(e.target.value)}
+                      placeholder="Optional"
+                      className="bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Buttons at Bottom */}
+            <div className="mt-6 flex justify-center gap-4">
+              <button
+                type="button"
+                onClick={() => {
+                  // Reset all filters
+                  setDateFrom('2025-10-01');
+                  setDateTo('2025-10-07');
+                  setSentimentType('Bullish');
+                  setSource('YouTube + Telegram');
+                  setCoinType('Overall');
+                  setTimePeriodFilter('Weekly');
+                  setRule1MinPosts('250');
+                  setRule1Sentiment('75');
+                  setRule2MinPosts('150');
+                  setRule2Sentiment('75');
+                  setRule3MinPosts('25');
+                  setRule3Sentiment('80');
+                  setRule4MinPosts('15');
+                  setRule4Sentiment('85');
+                  setAvgInfluenceScore('');
+                  setShortTermMinCount('');
+                  setShortTermMinPercent('');
+                  setLongTermMinCount('');
+                  setLongTermMinPercent('');
+                }}
+                className="px-6 py-2.5 bg-white text-gray-700 border-2 border-gray-300 font-semibold rounded-lg shadow hover:bg-gray-50 transition-all duration-200 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reset Filters
+              </button>
+              <button
+                type="submit"
+                className="px-8 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Apply Filters
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      {/* OLD FILTERS SECTION - KEPT FOR REFERENCE */}
+      <section className="hidden">
         <div className="max-w-5xl mx-auto px-4 mb-6 w-full">
           <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-6 border-2 border-purple-200 shadow-xl">
-            <h3 className="text-lg font-semibold text-purple-700 mb-4">Filters</h3>
+            <h3 className="text-lg font-semibold text-purple-700 mb-4">Old Filters</h3>
 
             {/* Influencer Search and Selector */}
             <div className="mb-4">
