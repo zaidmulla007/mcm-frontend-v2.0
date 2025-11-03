@@ -452,11 +452,10 @@ export default function InfluencerSearchPage() {
             <button
               key={platform.value}
               onClick={() => setSelectedPlatform(platform.value)}
-              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${
-                selectedPlatform === platform.value
+              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${selectedPlatform === platform.value
                   ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
                   : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
-              }`}
+                }`}
             >
               {platform.logo}
               <span>{platform.label}</span>
@@ -564,131 +563,131 @@ export default function InfluencerSearchPage() {
       {/* Main Content */}
       <main className="mx-auto px-4 pb-8 overflow-x-hidden">
         <div className="min-w-0">
-            {/* Leaderboard Section */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Influencers</h2>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full relative">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Influencer</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ROI</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Win Rate</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Calls</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Subscribers</th>
-                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider relative">
-                        <span className="inline-flex items-center gap-1">
-                          Recent Posts
-                          <span className="relative group cursor-pointer">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-3 rounded-lg shadow-xl w-72 break-words z-[9999]">
-                              <div className="space-y-2">
-                                <div className="font-semibold text-base mb-3">Arrow Meanings:</div>
-                                <div className="flex items-center gap-3">
-                                  <FaArrowUp className="text-green-500 text-xl" />
-                                  <span>Green upward arrow = Bullish</span>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                  <FaArrowDown className="text-red-500 text-xl" />
-                                  <span>Red downward arrow = Bearish</span>
-                                </div>
-                                <div className="mt-3 pt-3 border-t border-gray-700">
-                                  <div className="mb-1"><strong>Bigger arrow</strong> = Long term</div>
-                                  <div><strong>Smaller arrow</strong> = Short term</div>
-                                </div>
+          {/* Leaderboard Section */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-900">Influencers</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full relative">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Influencer</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">ROI</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Win Rate</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Total Calls</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Subscribers</th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider relative">
+                      <span className="inline-flex items-center gap-1">
+                        Recent Posts
+                        <span className="relative group cursor-pointer">
+                          <span className="text-blue-600 text-sm">ⓘ</span>
+                          <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-3 rounded-lg shadow-xl w-72 break-words z-[9999]">
+                            <div className="space-y-2">
+                              <div className="font-semibold text-base mb-3">Arrow Meanings:</div>
+                              <div className="flex items-center gap-3">
+                                <FaArrowUp className="text-green-500 text-xl" />
+                                <span>Green upward arrow = Bullish</span>
                               </div>
-                            </span>
+                              <div className="flex items-center gap-3">
+                                <FaArrowDown className="text-red-500 text-xl" />
+                                <span>Red downward arrow = Bearish</span>
+                              </div>
+                              <div className="mt-3 pt-3 border-t border-gray-700">
+                                <div className="mb-1"><strong>Bigger arrow</strong> = Long term</div>
+                                <div><strong>Smaller arrow</strong> = Short term</div>
+                              </div>
+                            </div>
                           </span>
                         </span>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200 relative" style={{ isolation: 'isolate' }}>
-                    {initialLoad ? (
-                      Array.from({ length: 10 }).map((_, i) => (
-                        <tr key={`skeleton-row-${i}`}>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center mb-2">
-                              <div className="w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
-                              <div className="h-4 bg-gray-200 rounded w-32"></div>
-                            </div>
-                            <div className="ml-11 h-16 bg-gray-200 rounded w-48"></div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="h-20 bg-gray-200 rounded w-40"></div>
-                          </td>
-                        </tr>
-                      ))
-                    ) : filteredInfluencers.length === 0 ? (
-                      <tr>
-                        <td colSpan="6" className="px-6 py-12 text-center">
-                          <div className="flex flex-col items-center justify-center">
-                            <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <p className="text-lg font-semibold text-gray-600 mb-2">No influencers found</p>
-                            <p className="text-sm text-gray-500">No influencers match the selected filters. Try adjusting your filter criteria.</p>
+                      </span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200 relative" style={{ isolation: 'isolate' }}>
+                  {initialLoad ? (
+                    Array.from({ length: 10 }).map((_, i) => (
+                      <tr key={`skeleton-row-${i}`}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center mb-2">
+                            <div className="w-8 h-8 bg-gray-200 rounded-full mr-3"></div>
+                            <div className="h-4 bg-gray-200 rounded w-32"></div>
                           </div>
+                          <div className="ml-11 h-16 bg-gray-200 rounded w-48"></div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-16 mx-auto"></div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-20 mx-auto"></div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-20 bg-gray-200 rounded w-40"></div>
                         </td>
                       </tr>
-                    ) : (
-                      <AnimatePresence mode="popLayout">
-                        {/* Paginated influencers */}
-                        {paginatedInfluencers.map((influencer, index) => {
-                          const globalRank = startIndex + index + 1;
+                    ))
+                  ) : filteredInfluencers.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <p className="text-lg font-semibold text-gray-600 mb-2">No influencers found</p>
+                          <p className="text-sm text-gray-500">No influencers match the selected filters. Try adjusting your filter criteria.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    <AnimatePresence mode="popLayout">
+                      {/* Paginated influencers */}
+                      {paginatedInfluencers.map((influencer, index) => {
+                        const globalRank = startIndex + index + 1;
 
-                          // Get MCM ratings from API
-                          const mcmRatingsMap = selectedPlatform === "youtube" ? youtubeMcmRatings : telegramMcmRatings;
-                          const mcmData = mcmRatingsMap[influencer.id] || {};
+                        // Get MCM ratings from API
+                        const mcmRatingsMap = selectedPlatform === "youtube" ? youtubeMcmRatings : telegramMcmRatings;
+                        const mcmData = mcmRatingsMap[influencer.id] || {};
 
-                          // Extract all available yearly ratings dynamically
-                          const scatterData = [];
-                          const years = [];
+                        // Extract all available yearly ratings dynamically
+                        const scatterData = [];
+                        const years = [];
 
-                          // Find all year fields in the data
-                          Object.keys(mcmData).forEach(key => {
-                            const match = key.match(/star_rating\.yearly\.(\d{4})\./);
-                            if (match) {
-                              const year = parseInt(match[1]);
-                              if (!years.includes(year)) {
-                                years.push(year);
-                              }
+                        // Find all year fields in the data
+                        Object.keys(mcmData).forEach(key => {
+                          const match = key.match(/star_rating\.yearly\.(\d{4})\./);
+                          if (match) {
+                            const year = parseInt(match[1]);
+                            if (!years.includes(year)) {
+                              years.push(year);
                             }
-                          });
+                          }
+                        });
 
-                          // Sort years in ascending order
-                          years.sort((a, b) => a - b);
+                        // Sort years in ascending order
+                        years.sort((a, b) => a - b);
 
-                          // Build scatter data for each year
-                          years.forEach((year, yearIndex) => {
-                            const fieldKey = `star_rating.yearly.${year}.${selectedTimeframe}`;
-                            if (mcmData[fieldKey] && mcmData[fieldKey].current_rating) {
-                              scatterData.push({
-                                year: yearIndex,
-                                yearLabel: year,
-                                rating: mcmData[fieldKey].current_rating,
-                                finalScore: mcmData[fieldKey].current_final_score
-                              });
-                            }
-                          });
+                        // Build scatter data for each year
+                        years.forEach((year, yearIndex) => {
+                          const fieldKey = `star_rating.yearly.${year}.${selectedTimeframe}`;
+                          if (mcmData[fieldKey] && mcmData[fieldKey].current_rating) {
+                            scatterData.push({
+                              year: yearIndex,
+                              yearLabel: year,
+                              rating: mcmData[fieldKey].current_rating,
+                              finalScore: mcmData[fieldKey].current_final_score
+                            });
+                          }
+                        });
 
-                          const recommendations = getRecentRecommendations();
+                        const recommendations = getRecentRecommendations();
 
-                          return (
+                        return (
                           <motion.tr
                             key={influencer.id}
                             layout
@@ -726,80 +725,90 @@ export default function InfluencerSearchPage() {
                                 className="block"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <div className="flex items-center">
-                                  {influencer.channel_thumbnails?.high?.url ? (
-                                    <Image
-                                      src={influencer.channel_thumbnails.high.url}
-                                      alt={influencer.name || "Influencer"}
-                                      width={64}
-                                      height={64}
-                                      className="w-16 h-16 rounded-full object-cover mr-4"
-                                      onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        e.target.nextSibling.style.display = 'flex';
-                                      }}
-                                    />
-                                  ) : null}
-                                  <div
-                                    className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center mr-4"
-                                    style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
-                                  >
-                                    <span className="text-white text-xl font-bold">
-                                      {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
-                                    </span>
-                                  </div>
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-lg font-semibold text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</span>
-                                      {selectedPlatform === "youtube" ? (
-                                        <svg className="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="currentColor">
-                                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                                        </svg>
-                                      ) : (
-                                        <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
-                                          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                                        </svg>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                                {/* Yearly Rating Chart */}
-                                <div className="ml-11 mt-2">
-                                  {scatterData.length > 0 ? (
-                                    <div className="space-y-1">
-                                      {scatterData.map((point, idx) => {
-                                        const fullStars = Math.floor(point.rating);
-                                        const hasHalfStar = point.rating % 1 >= 0.5;
-                                        const totalStars = 5;
-                                        const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+                                <div className="flex flex-col items-center text-center">
 
-                                        return (
-                                          <div
-                                            key={idx}
-                                            className="flex items-center gap-2"
-                                            title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
-                                          >
-                                            <span className="text-sm text-gray-600 font-medium w-12">{point.yearLabel}</span>
-                                            <div className="flex items-center gap-0.5">
-                                              {[...Array(fullStars)].map((_, i) => (
-                                                <FaStar key={`full-${i}`} className="text-yellow-500 w-3 h-3" />
-                                              ))}
-                                              {hasHalfStar && (
-                                                <FaStarHalfAlt key="half" className="text-yellow-500 w-3 h-3" />
-                                              )}
-                                              {[...Array(emptyStars)].map((_, i) => (
-                                                <FaStar key={`empty-${i}`} className="text-gray-400 w-3 h-3" />
-                                              ))}
+                                  {/* Profile Image */}
+                                  <div className="mb-2">
+                                    {influencer.channel_thumbnails?.high?.url ? (
+                                      <Image
+                                        src={influencer.channel_thumbnails.high.url}
+                                        alt={influencer.name || "Influencer"}
+                                        width={80}
+                                        height={80}
+                                        className="w-20 h-20 rounded-full object-cover"
+                                        onError={(e) => {
+                                          e.target.style.display = 'none';
+                                          e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                      />
+                                    ) : null}
+
+                                    {/* Name Initial Fallback */}
+                                    <div
+                                      className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center flex"
+                                      style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
+                                    >
+                                      <span className="text-white text-xl font-bold">
+                                        {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Name + Platform Icon */}
+                                  <div className="flex items-center gap-2 justify-center">
+                                    <span className="text-lg font-semibold text-gray-900">
+                                      {influencer.name?.replace(/_/g, " ") || "Unknown"}
+                                    </span>
+
+                                    {selectedPlatform === "youtube" ? (
+                                      <svg className="w-5 h-5 text-red-600" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                      </svg>
+                                    ) : (
+                                      <svg className="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.234-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                                      </svg>
+                                    )}
+                                  </div>
+
+                                  {/* Yearly Rating Chart */}
+                                  <div className="mt-3">
+                                    {scatterData.length > 0 ? (
+                                      <div className="space-y-1">
+                                        {scatterData.map((point, idx) => {
+                                          const fullStars = Math.floor(point.rating);
+                                          const hasHalfStar = point.rating % 1 >= 0.5;
+                                          const totalStars = 5;
+                                          const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+
+                                          return (
+                                            <div
+                                              key={idx}
+                                              className="flex items-center justify-center gap-2"
+                                              title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
+                                            >
+                                              <span className="text-sm text-gray-600 font-medium w-12">
+                                                {point.yearLabel}
+                                              </span>
+                                              <div className="flex items-center gap-0.5">
+                                                {[...Array(fullStars)].map((_, i) => (
+                                                  <FaStar key={`full-${i}`} className="text-yellow-500 w-3 h-3" />
+                                                ))}
+                                                {hasHalfStar && (
+                                                  <FaStarHalfAlt key="half" className="text-yellow-500 w-3 h-3" />
+                                                )}
+                                                {[...Array(emptyStars)].map((_, i) => (
+                                                  <FaStar key={`empty-${i}`} className="text-gray-400 w-3 h-3" />
+                                                ))}
+                                              </div>
                                             </div>
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  ) : (
-                                    <div className="text-sm text-gray-400">
-                                      loading...
-                                    </div>
-                                  )}
+                                          );
+                                        })}
+                                      </div>
+                                    ) : (
+                                      <div className="text-sm text-gray-400">loading...</div>
+                                    )}
+                                  </div>
                                 </div>
                               </Link>
                             </td>
@@ -891,79 +900,79 @@ export default function InfluencerSearchPage() {
                               </div>
                             </td>
                           </motion.tr>
-                          );
-                        })}
-                      </AnimatePresence>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                  <div className="text-sm text-gray-700">
-                    Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
-                    <span className="font-medium">{Math.min(endIndex, filteredInfluencers.length)}</span> of{" "}
-                    <span className="font-medium">{filteredInfluencers.length}</span> results
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={handleFirst}
-                      disabled={currentPage === 1}
-                      className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === 1
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
-                    >
-                      First
-                    </button>
-                    <button
-                      onClick={handlePrevious}
-                      disabled={currentPage === 1}
-                      className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === 1
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
-                    >
-                      Previous
-                    </button>
-                    {getPageNumbers().map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => handlePageChange(page)}
-                        className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === page
-                          ? "bg-blue-600 text-white"
-                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                          }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                    <button
-                      onClick={handleNext}
-                      disabled={currentPage === totalPages}
-                      className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === totalPages
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
-                    >
-                      Next
-                    </button>
-                    <button
-                      onClick={handleLast}
-                      disabled={currentPage === totalPages}
-                      className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === totalPages
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
-                    >
-                      Last
-                    </button>
-                  </div>
-                </div>
-              )}
+                        );
+                      })}
+                    </AnimatePresence>
+                  )}
+                </tbody>
+              </table>
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                <div className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
+                  <span className="font-medium">{Math.min(endIndex, filteredInfluencers.length)}</span> of{" "}
+                  <span className="font-medium">{filteredInfluencers.length}</span> results
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleFirst}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === 1
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                  >
+                    First
+                  </button>
+                  <button
+                    onClick={handlePrevious}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === 1
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                  >
+                    Previous
+                  </button>
+                  {getPageNumbers().map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === page
+                        ? "bg-blue-600 text-white"
+                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={handleNext}
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === totalPages
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                  >
+                    Next
+                  </button>
+                  <button
+                    onClick={handleLast}
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === totalPages
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                  >
+                    Last
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </main>
     </div>
