@@ -52,7 +52,7 @@ export default function MCMSignalPage() {
 
   // Analysis Filters - Basic Settings
   const [sentimentType, setSentimentType] = useState("Bullish");
-  const [source, setSource] = useState("YouTube + Telegram");
+  const [source, setSource] = useState("Youtube");
   const [coinType, setCoinType] = useState("Overall");
   const [timePeriodFilter, setTimePeriodFilter] = useState("Weekly");
 
@@ -309,11 +309,10 @@ export default function MCMSignalPage() {
             <button
               key={platform.value}
               onClick={() => setSelectedPlatform(platform.value)}
-              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${
-                selectedPlatform === platform.value
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
-              }`}
+              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${selectedPlatform === platform.value
+                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
+                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
+                }`}
             >
               {platform.logo}
               <span>{platform.label}</span>
@@ -336,10 +335,13 @@ export default function MCMSignalPage() {
                 <h4 className="font-semibold text-gray-900 text-base mb-4">Basic Settings</h4>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm text-gray-700 font-medium">Sentiment Type</label>
+                  <label className="text-sm text-gray-700 font-medium">
+                    Sentiment Type <span className="text-red-500">*</span>
+                  </label>
                   <select
                     value={sentimentType}
                     onChange={(e) => setSentimentType(e.target.value)}
+                    required
                     className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
                     <option value="Bullish">Bullish</option>
@@ -349,165 +351,49 @@ export default function MCMSignalPage() {
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm text-gray-700 font-medium">Source</label>
+                  <label className="text-sm text-gray-700 font-medium">
+                    Source <span className="text-red-500">*</span>
+                  </label>
                   <select
                     value={source}
                     onChange={(e) => setSource(e.target.value)}
+                    required
                     className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
-                    <option value="YouTube + Telegram">YouTube + Telegram</option>
                     <option value="YouTube">YouTube</option>
                     <option value="Telegram">Telegram</option>
                   </select>
                 </div>
 
                 <div className="flex flex-col gap-2">
-                  <label className="text-sm text-gray-700 font-medium">Coin Type</label>
+                  <label className="text-sm text-gray-700 font-medium">
+                    Coin Type <span className="text-red-500">*</span>
+                  </label>
                   <select
                     value={coinType}
                     onChange={(e) => setCoinType(e.target.value)}
+                    required
                     className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
                     <option value="Overall">Overall</option>
-                    <option value="Bitcoin">Bitcoin</option>
-                    <option value="Ethereum">Ethereum</option>
-                    <option value="Altcoins">Altcoins</option>
+                    <option value="Bitcoin">All Coins</option>
+                    <option value="Ethereum">Mem Coins</option>
                   </select>
                 </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm text-gray-700 font-medium">Time Period Filter</label>
-                  <select
-                    value={timePeriodFilter}
-                    onChange={(e) => setTimePeriodFilter(e.target.value)}
-                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  >
-                    <option value="Weekly">Weekly</option>
-                    <option value="Daily">Daily</option>
-                    <option value="Monthly">Monthly</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Time-Based Rules */}
-              <div className="space-y-4">
-                <h4 className="font-semibold text-gray-900 text-base mb-4">Time-Based Rules</h4>
-
-                {/* Rule 1 - 60 Days */}
-                <div className="space-y-2">
-                  <h5 className="text-sm font-semibold text-gray-800">Rule 1 - 60 Days</h5>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs text-gray-600">Min Posts</label>
-                      <input
-                        type="number"
-                        value={rule1MinPosts}
-                        onChange={(e) => setRule1MinPosts(e.target.value)}
-                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs text-gray-600">Sentiment %</label>
-                      <input
-                        type="number"
-                        value={rule1Sentiment}
-                        onChange={(e) => setRule1Sentiment(e.target.value)}
-                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Rule 2 - 30 Days */}
-                <div className="space-y-2">
-                  <h5 className="text-sm font-semibold text-gray-800">Rule 2 - 30 Days</h5>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs text-gray-600">Min Posts</label>
-                      <input
-                        type="number"
-                        value={rule2MinPosts}
-                        onChange={(e) => setRule2MinPosts(e.target.value)}
-                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs text-gray-600">Sentiment %</label>
-                      <input
-                        type="number"
-                        value={rule2Sentiment}
-                        onChange={(e) => setRule2Sentiment(e.target.value)}
-                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Rule 3 - 7 Days */}
-                <div className="space-y-2">
-                  <h5 className="text-sm font-semibold text-gray-800">Rule 3 - 7 Days</h5>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs text-gray-600">Min Posts</label>
-                      <input
-                        type="number"
-                        value={rule3MinPosts}
-                        onChange={(e) => setRule3MinPosts(e.target.value)}
-                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs text-gray-600">Sentiment %</label>
-                      <input
-                        type="number"
-                        value={rule3Sentiment}
-                        onChange={(e) => setRule3Sentiment(e.target.value)}
-                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Rule 4 - 24 Hours */}
-                <div className="space-y-2">
-                  <h5 className="text-sm font-semibold text-gray-800">Rule 4 - 24 Hours</h5>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs text-gray-600">Min Posts</label>
-                      <input
-                        type="number"
-                        value={rule4MinPosts}
-                        onChange={(e) => setRule4MinPosts(e.target.value)}
-                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1">
-                      <label className="text-xs text-gray-600">Sentiment %</label>
-                      <input
-                        type="number"
-                        value={rule4Sentiment}
-                        onChange={(e) => setRule4Sentiment(e.target.value)}
-                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Advanced Settings */}
-              <div className="space-y-4">
-                <h4 className="font-semibold text-gray-900 text-base mb-4">Advanced Settings</h4>
 
                 {/* Date Range */}
-                <div className="space-y-2">
-                  <h5 className="text-sm font-semibold text-gray-800">Date Range</h5>
-                  <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-2 pt-4">
+                  <h5 className="text-sm font-semibold text-gray-800">
+                    Date Range <span className="text-red-500">*</span>
+                  </h5>
+                  <div className="flex flex-col gap-2">
                     <div className="flex flex-col gap-1">
                       <label className="text-xs text-gray-600">From</label>
                       <input
                         type="date"
                         value={dateFrom}
                         onChange={(e) => setDateFrom(e.target.value)}
+                        required
                         className="bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                       />
                     </div>
@@ -517,10 +403,175 @@ export default function MCMSignalPage() {
                         type="date"
                         value={dateTo}
                         onChange={(e) => setDateTo(e.target.value)}
+                        required
                         className="bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                       />
                     </div>
                   </div>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm text-gray-700 font-medium">
+                    Filter <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={timePeriodFilter}
+                    onChange={(e) => setTimePeriodFilter(e.target.value)}
+                    required
+                    className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="Daily">Daily</option>
+                    <option value="Weekly">Weekly</option>
+                    <option value="Monthly">Monthly</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Time-Based Rules - ALL RULES ARE MANDATORY */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-gray-900 text-base mb-4">
+                  All Rules
+                   {/* <span className="text-red-500">*</span> */}
+                </h4>
+
+                {/* Rule 1 - 60 Days */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-semibold text-gray-800">
+                    Rule 1 - 60 Days <span className="text-red-500">*</span>
+                  </h5>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">
+                        Min Posts <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={rule1MinPosts}
+                        onChange={(e) => setRule1MinPosts(e.target.value)}
+                        required
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">
+                        Sentiment % <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={rule1Sentiment}
+                        onChange={(e) => setRule1Sentiment(e.target.value)}
+                        required
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rule 2 - 30 Days */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-semibold text-gray-800">
+                    Rule 2 - 30 Days <span className="text-red-500">*</span>
+                  </h5>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">
+                        Min Posts <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={rule2MinPosts}
+                        onChange={(e) => setRule2MinPosts(e.target.value)}
+                        required
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">
+                        Sentiment % <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={rule2Sentiment}
+                        onChange={(e) => setRule2Sentiment(e.target.value)}
+                        required
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rule 3 - 7 Days */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-semibold text-gray-800">
+                    Rule 3 - 7 Days <span className="text-red-500">*</span>
+                  </h5>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">
+                        Min Posts <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={rule3MinPosts}
+                        onChange={(e) => setRule3MinPosts(e.target.value)}
+                        required
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">
+                        Sentiment % <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={rule3Sentiment}
+                        onChange={(e) => setRule3Sentiment(e.target.value)}
+                        required
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rule 4 - 24 Hours */}
+                <div className="space-y-2">
+                  <h5 className="text-sm font-semibold text-gray-800">
+                    Rule 4 - 24 Hours <span className="text-red-500">*</span>
+                  </h5>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">
+                        Min Posts <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={rule4MinPosts}
+                        onChange={(e) => setRule4MinPosts(e.target.value)}
+                        required
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-gray-600">
+                        Sentiment % <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={rule4Sentiment}
+                        onChange={(e) => setRule4Sentiment(e.target.value)}
+                        required
+                        className="bg-gray-50 border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Advanced Settings */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <h4 className="font-semibold text-gray-900 text-base">Advanced Settings</h4>
+                  <span className="text-xs text-red-600 font-semibold">(To be discussed) Not Done</span>
                 </div>
 
                 {/* AVG Influence Score */}
@@ -590,10 +641,9 @@ export default function MCMSignalPage() {
 
             {/* Buttons at Bottom */}
             <div className="mt-6 flex justify-center gap-4">
-              <button
+              {/* <button
                 type="button"
                 onClick={() => {
-                  // Reset all filters
                   setDateFrom('2025-10-01');
                   setDateTo('2025-10-07');
                   setSentimentType('Bullish');
@@ -620,15 +670,15 @@ export default function MCMSignalPage() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 Reset Filters
-              </button>
+              </button> */}
               <button
                 type="submit"
                 className="px-8 py-2.5 bg-gradient-to-r from-purple-600 to-blue-600 text-white font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {/* <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
-                Apply Filters
+                </svg> */}
+                Submit
               </button>
             </div>
           </form>
@@ -764,11 +814,10 @@ export default function MCMSignalPage() {
                 <div className="flex gap-3">
                   <button
                     onClick={() => setSelectedInfluencer("all")}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                      selectedInfluencer === "all"
-                        ? 'bg-green-600 text-white shadow-lg'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
+                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${selectedInfluencer === "all"
+                      ? 'bg-green-600 text-white shadow-lg'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
                   >
                     All Influencers
                   </button>
@@ -847,11 +896,10 @@ export default function MCMSignalPage() {
                     setShowBearishFilter(false);
                   }
                 }}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                  showBullishFilter
-                    ? 'bg-green-600 text-white shadow-lg'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${showBullishFilter
+                  ? 'bg-green-600 text-white shadow-lg'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
               >
                 Min Bullish %
               </button>
@@ -862,11 +910,10 @@ export default function MCMSignalPage() {
                     setShowBullishFilter(false);
                   }
                 }}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${
-                  showBearishFilter
-                    ? 'bg-red-600 text-white shadow-lg'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all ${showBearishFilter
+                  ? 'bg-red-600 text-white shadow-lg'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
               >
                 Min Bearish %
               </button>
@@ -931,8 +978,9 @@ export default function MCMSignalPage() {
         </div>
       </section>
 
-      {/* Coins Data Table */}
-      <section className="max-w-full mx-auto px-4">
+      {/* First Table - Coins Historical Price Data */}
+      <section className="max-w-full mx-auto px-4 mb-8">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">Historical Price Performance</h3>
         {loading ? (
           <div className="bg-white rounded-lg shadow-lg p-4">
             <div className="animate-pulse space-y-4">
@@ -947,126 +995,88 @@ export default function MCMSignalPage() {
         ) : (
           <>
             {visibleCoins.length > 0 ? (
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-300">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-gradient-to-r from-purple-600 to-blue-600 text-white sticky top-0">
+                  <table className="w-full text-xs">
+                    <thead className="bg-blue-600 text-white">
                       <tr>
-                        <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">Symbol</th>
-                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Influencers</th>
-                        <th
-                          className="px-4 py-3 text-center font-semibold whitespace-nowrap cursor-pointer hover:bg-purple-700 transition-colors"
-                          onClick={toggleTotalPostsSort}
-                        >
-                          <div className="flex items-center justify-center gap-2">
-                            <span>Total Posts</span>
-                            <span className="text-sm">
-                              {sortByTotalPosts ? (totalPostsSortOrder === 'desc' ? '↓' : '↑') : ''}
-                            </span>
-                          </div>
-                        </th>
-                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Bullish Count</th>
-                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Bullish Short</th>
-                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Bullish Long</th>
-                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Bearish Count</th>
-                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Bearish Short</th>
-                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Bearish Long</th>
-                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Neutral/Null Outlook Count</th>
-                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">Threshold</th>
-                        <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">Start Date</th>
-                        <th className="px-4 py-3 text-right font-semibold whitespace-nowrap">Start Price</th>
-                        <th className="px-4 py-3 text-left font-semibold whitespace-nowrap">End Date</th>
-                        <th className="px-4 py-3 text-right font-semibold whitespace-nowrap">End Price</th>
-                        <th
-                          className="px-4 py-3 text-center font-semibold whitespace-nowrap cursor-pointer hover:bg-purple-700 transition-colors"
-                          onClick={toggleSortOrder}
-                        >
-                          <div className="flex items-center justify-center gap-2">
-                            <span>Price Change %</span>
-                            <span className="text-sm">
-                              {!sortByTotalPosts ? (sortOrder === 'desc' ? '↓' : '↑') : ''}
-                            </span>
-                          </div>
-                        </th>
-                        <th className="px-4 py-3 text-center font-semibold whitespace-nowrap">MCM Signal</th>
+                        <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Date</th>
+                        <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Sentiment</th>
+                        <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Coin Name</th>
+                        <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Base Price</th>
+                        <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">24 Hrs Price</th>
+                        <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">24 Hrs % change</th>
+                        <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">7 Days % change</th>
+                        <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">30 Days % change</th>
+                        <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">60 Days % change</th>
+                        <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">90 Days % change</th>
+                        <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">180 Days % change</th>
+                        <th className="px-3 py-2 text-center font-semibold whitespace-nowrap">1 Year % change</th>
                       </tr>
                     </thead>
                     <tbody>
                       {visibleCoins.map((coin, index) => (
                         <tr
-                          key={coin.mcm_symbol}
-                          className={`border-b border-gray-200 hover:bg-purple-50 transition-colors ${
-                            index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                          }`}
+                          key={coin.mcm_symbol + index}
+                          className={`border-b border-gray-300 hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                            }`}
                         >
-                          <td className="px-4 py-3 font-bold text-purple-600 whitespace-nowrap">
-                            {coin.mcm_symbol?.toUpperCase()}
-                          </td>
-                          <td className="px-4 py-3 text-center font-semibold text-purple-600">
-                            {coin.influencer_count || 0}
-                          </td>
-                          <td className="px-4 py-3 text-center font-semibold text-blue-600">
-                            {coin.total_posts}
-                          </td>
-                          <td className="px-4 py-3 text-center text-green-600 font-semibold">
-                            {coin.bullish_count}
-                          </td>
-                          <td className="px-4 py-3 text-center text-gray-700">
-                            {coin.bullish_short_term || 0}
-                          </td>
-                          <td className="px-4 py-3 text-center text-gray-700">
-                            {coin.bullish_long_term || 0}
-                          </td>
-                          <td className="px-4 py-3 text-center text-red-600 font-semibold">
-                            {coin.bearish_count}
-                          </td>
-                          <td className="px-4 py-3 text-center text-gray-700">
-                            {coin.bearish_short_term || 0}
-                          </td>
-                          <td className="px-4 py-3 text-center text-gray-700">
-                            {coin.bearish_long_term || 0}
-                          </td>
-                          <td className="px-4 py-3 text-center text-gray-600 font-semibold">
-                            {coin.null_outlook_count || 0}
-                          </td>
-                          <td className="px-4 py-3 text-center text-blue-600 font-semibold">
-                            {coin.threshold_calculation_bullish || 0}
-                          </td>
-                          <td className="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">
-                            {coin.price_data?.start_price_date || 'N/A'}
-                          </td>
-                          <td className="px-4 py-3 text-right text-gray-700 font-mono">
-                            ${coin.price_data?.start_price?.$numberDecimal
-                              ? parseFloat(coin.price_data.start_price.$numberDecimal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                          <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">
+                            {coin.price_data?.start_price_date
+                              ? new Date(coin.price_data.start_price_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, ' ')
                               : 'N/A'}
                           </td>
-                          <td className="px-4 py-3 text-gray-600 text-xs whitespace-nowrap">
-                            {coin.price_data?.end_price_date || 'N/A'}
-                          </td>
-                          <td className="px-4 py-3 text-right text-gray-700 font-mono">
-                            ${coin.price_data?.end_price?.$numberDecimal
-                              ? parseFloat(coin.price_data.end_price.$numberDecimal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-                              : 'N/A'}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <span className={`font-bold ${
-                              coin.price_data?.price_change_percent > 0
-                                ? 'text-green-600'
-                                : coin.price_data?.price_change_percent < 0
-                                ? 'text-red-600'
-                                : 'text-gray-600'
+                          <td className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200">
+                            <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                              coin.sentiment === 'Bullish' || coin.bullish_count > coin.bearish_count
+                                ? 'bg-green-100 text-green-800'
+                                : coin.sentiment === 'Bearish' || coin.bearish_count > coin.bullish_count
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-gray-100 text-gray-800'
                             }`}>
-                              {coin.price_data?.price_change_percent
-                                ? `${coin.price_data.price_change_percent > 0 ? '+' : ''}${coin.price_data.price_change_percent.toFixed(2)}%`
-                                : 'N/A'}
+                              {coin.sentiment || (coin.bullish_count > coin.bearish_count ? 'Bullish' : coin.bearish_count > coin.bullish_count ? 'Bearish' : 'Neutral')}
                             </span>
                           </td>
-                          <td className="px-4 py-3 text-center">
-                            {coin.inference_1 && (
-                              <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">
-                                {coin.inference_1}
-                              </span>
-                            )}
+                          <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">
+                            {coin.coin_name || coin.mcm_symbol?.toLowerCase() || 'N/A'}
+                          </td>
+                          <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
+                            ${coin.price_data?.start_price?.$numberDecimal
+                              ? Math.round(parseFloat(coin.price_data.start_price.$numberDecimal)).toLocaleString('en-US')
+                              : 'N/A'}
+                          </td>
+                          <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
+                            ${coin.price_data?.end_price?.$numberDecimal
+                              ? Math.round(parseFloat(coin.price_data.end_price.$numberDecimal)).toLocaleString('en-US')
+                              : 'N/A'}
+                          </td>
+                          <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin.price_24h_change || 0) > 0 ? 'text-green-600' : (coin.price_24h_change || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                            }`}>
+                            {coin.price_24h_change ? `${coin.price_24h_change > 0 ? '+' : ''}${Math.round(coin.price_24h_change)}%` : '3%'}
+                          </td>
+                          <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin.price_7d_change || 0) > 0 ? 'text-green-600' : (coin.price_7d_change || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                            }`}>
+                            {coin.price_7d_change ? `${coin.price_7d_change > 0 ? '+' : ''}${Math.round(coin.price_7d_change)}%` : '8%'}
+                          </td>
+                          <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin.price_30d_change || 0) > 0 ? 'text-green-600' : (coin.price_30d_change || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                            }`}>
+                            {coin.price_30d_change ? `${coin.price_30d_change > 0 ? '+' : ''}${Math.round(coin.price_30d_change)}%` : '-2%'}
+                          </td>
+                          <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin.price_60d_change || 0) > 0 ? 'text-green-600' : (coin.price_60d_change || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                            }`}>
+                            {coin.price_60d_change ? `${coin.price_60d_change > 0 ? '+' : ''}${Math.round(coin.price_60d_change)}%` : '43%'}
+                          </td>
+                          <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin.price_90d_change || 0) > 0 ? 'text-green-600' : (coin.price_90d_change || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                            }`}>
+                            {coin.price_90d_change ? `${coin.price_90d_change > 0 ? '+' : ''}${Math.round(coin.price_90d_change)}%` : '63%'}
+                          </td>
+                          <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin.price_180d_change || 0) > 0 ? 'text-green-600' : (coin.price_180d_change || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                            }`}>
+                            {coin.price_180d_change ? `${coin.price_180d_change > 0 ? '+' : ''}${Math.round(coin.price_180d_change)}%` : '40%'}
+                          </td>
+                          <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap ${(coin.price_1y_change || 0) > 0 ? 'text-green-600' : (coin.price_1y_change || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                            }`}>
+                            {coin.price_1y_change ? `${coin.price_1y_change > 0 ? '+' : ''}${Math.round(coin.price_1y_change)}%` : '114%'}
                           </td>
                         </tr>
                       ))}
@@ -1075,87 +1085,158 @@ export default function MCMSignalPage() {
                 </div>
               </div>
             ) : !loading && (
-              <div className="bg-white rounded-lg shadow-lg p-12 text-center">
+              <div className="bg-white rounded-lg shadow-lg p-12 text-center border border-gray-300">
                 <div className="text-gray-400 text-lg">No coins found</div>
                 <div className="text-gray-500 text-sm mt-2">Try adjusting your filters</div>
-              </div>
-            )}
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex flex-col items-center mt-8 space-y-4">
-                <div className="text-sm text-gray-700 text-center">
-                  Showing {startIndex + 1} to {Math.min(endIndex, totalCoins)} of {totalCoins} coins
-                </div>
-
-                <div className="flex items-center space-x-2 flex-wrap justify-center">
-                  <button
-                    onClick={() => handlePageChange(1)}
-                    disabled={currentPage === 1}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
-                      currentPage === 1
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                    }`}
-                  >
-                    ««
-                  </button>
-
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentPage === 1}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
-                      currentPage === 1
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                    }`}
-                  >
-                    «
-                  </button>
-
-                  {getPageNumbers().map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
-                        currentPage === page
-                          ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={handleNext}
-                    disabled={currentPage === totalPages}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
-                      currentPage === totalPages
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                    }`}
-                  >
-                    »
-                  </button>
-
-                  <button
-                    onClick={() => handlePageChange(totalPages)}
-                    disabled={currentPage === totalPages}
-                    className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${
-                      currentPage === totalPages
-                        ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                    }`}
-                  >
-                    »»
-                  </button>
-                </div>
               </div>
             )}
           </>
         )}
       </section>
+
+      {/* Second Table - Performance Metrics */}
+      <section className="max-w-full mx-auto px-4 mb-8">
+        <h3 className="text-xl font-bold text-gray-900 mb-4">Performance Metrics</h3>
+        {loading ? (
+          <div className="bg-white rounded-lg shadow-lg p-4">
+            <div className="animate-pulse space-y-4">
+              <div className="h-10 bg-gray-200 rounded"></div>
+              <div className="h-16 bg-gray-100 rounded"></div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-300">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-semibold border-r border-gray-300">Summary</th>
+                    <th className="px-4 py-3 text-center font-semibold border-r border-gray-300">24 Hrs</th>
+                    <th className="px-4 py-3 text-center font-semibold border-r border-gray-300">7 Days</th>
+                    <th className="px-4 py-3 text-center font-semibold border-r border-gray-300">30 Days</th>
+                    <th className="px-4 py-3 text-center font-semibold border-r border-gray-300">60 Days</th>
+                    <th className="px-4 py-3 text-center font-semibold border-r border-gray-300">90 Days</th>
+                    <th className="px-4 py-3 text-center font-semibold border-r border-gray-300">180 Days</th>
+                    <th className="px-4 py-3 text-center font-semibold">1 Year</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-gray-300 bg-white">
+                    <td className="px-4 py-3 font-semibold text-gray-900 border-r border-gray-200">Win Count</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">128</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">140</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">152</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">141</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">128</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">143</td>
+                    <td className="px-4 py-3 text-center text-gray-700">118</td>
+                  </tr>
+                  <tr className="border-b border-gray-300 bg-gray-50">
+                    <td className="px-4 py-3 font-semibold text-gray-900 border-r border-gray-200">Total Signals</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">252</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">252</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">252</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">252</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">252</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">252</td>
+                    <td className="px-4 py-3 text-center text-gray-700">131</td>
+                  </tr>
+                  <tr className="border-b border-gray-300 bg-white">
+                    <td className="px-4 py-3 font-semibold text-gray-900 border-r border-gray-200">Win Rate %</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">50.79%</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">55.56%</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">60.32%</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">55.95%</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">50.79%</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">56.75%</td>
+                    <td className="px-4 py-3 text-center text-gray-700">90.08%</td>
+                  </tr>
+                  <tr className="bg-gray-50">
+                    <td className="px-4 py-3 font-semibold text-gray-900 border-r border-gray-200">Average ROI</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">0.36</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">3.30</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">9.45</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">13.61</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">8.42</td>
+                    <td className="px-4 py-3 text-center text-gray-700 border-r border-gray-200">6.49</td>
+                    <td className="px-4 py-3 text-center text-gray-700">54.74</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Pagination Controls */}
+      {/* <section className="max-w-full mx-auto px-4 mb-8">
+        {!loading && visibleCoins.length > 0 && totalPages > 1 && (
+          <div className="flex flex-col items-center mt-8 space-y-4">
+            <div className="text-sm text-gray-700 text-center">
+              Showing {startIndex + 1} to {Math.min(endIndex, totalCoins)} of {totalCoins} coins
+            </div>
+
+            <div className="flex items-center space-x-2 flex-wrap justify-center">
+              <button
+                onClick={() => handlePageChange(1)}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${currentPage === 1
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                  }`}
+              >
+                ««
+              </button>
+
+              <button
+                onClick={handlePrevious}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${currentPage === 1
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                  }`}
+              >
+                «
+              </button>
+
+              {getPageNumbers().map((page) => (
+                <button
+                  key={page}
+                  onClick={() => handlePageChange(page)}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${currentPage === page
+                      ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                    }`}
+                >
+                  {page}
+                </button>
+              ))}
+
+              <button
+                onClick={handleNext}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${currentPage === totalPages
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                  }`}
+              >
+                »
+              </button>
+
+              <button
+                onClick={() => handlePageChange(totalPages)}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 ${currentPage === totalPages
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                  }`}
+              >
+                »»
+              </button>
+            </div>
+          </div>
+        )}
+      </section> */}
     </div>
   );
 }
