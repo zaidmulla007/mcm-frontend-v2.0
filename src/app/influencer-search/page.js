@@ -640,9 +640,9 @@ export default function InfluencerSearchPage() {
                                       <Image
                                         src={influencer.channel_thumbnails.high.url}
                                         alt={influencer.name || "Influencer"}
-                                        width={60}
-                                        height={60}
-                                        className="w-14 h-14 rounded-full object-cover"
+                                        width={40}
+                                        height={40}
+                                        className="w-11 h-11 rounded-full object-cover"
                                         onError={(e) => {
                                           e.target.style.display = 'none';
                                           e.target.nextSibling.style.display = 'flex';
@@ -722,7 +722,7 @@ export default function InfluencerSearchPage() {
                             <td className="px-6 py-4">
                               <div className="grid grid-cols-2 gap-3">
                                 {/* ROI */}
-                                <div className="flex flex-col items-center p-2 bg-purple-50 rounded-lg border border-purple-200">
+                                <div className="flex flex-col items-center p-2 bg-purple-50 rounded-lg ">
                                   <span className="text-xs font-medium text-gray-600 uppercase mb-1">ROI</span>
                                   <span className="text-sm font-semibold text-purple-800">
                                     {influencer.prob_weighted_returns !== undefined
@@ -732,7 +732,7 @@ export default function InfluencerSearchPage() {
                                 </div>
 
                                 {/* Win Rate */}
-                                <div className="flex flex-col items-center p-2 bg-blue-50 rounded-lg border border-blue-200">
+                                <div className="flex flex-col items-center p-2 bg-blue-50 rounded-lg">
                                   <span className="text-xs font-medium text-gray-600 uppercase mb-1">Win Rate</span>
                                   <span className="text-sm font-semibold text-blue-800">
                                     {influencer.win_percentage !== undefined
@@ -742,7 +742,7 @@ export default function InfluencerSearchPage() {
                                 </div>
 
                                 {/* Total Calls */}
-                                <div className="flex flex-col items-center p-2 bg-green-50 rounded-lg border border-green-200">
+                                <div className="flex flex-col items-center p-2 bg-green-50 rounded-lg">
                                   <span className="text-xs font-medium text-gray-600 uppercase mb-1">Total Calls</span>
                                   <span className="text-sm font-semibold text-green-800">
                                     {influencer.price_counts ? influencer.price_counts.toLocaleString() : '0'}
@@ -750,7 +750,7 @@ export default function InfluencerSearchPage() {
                                 </div>
 
                                 {/* Subscribers */}
-                                <div className="flex flex-col items-center p-2 bg-indigo-50 rounded-lg border border-indigo-200">
+                                <div className="flex flex-col items-center p-2 bg-indigo-50 rounded-lg">
                                   <span className="text-xs font-medium text-gray-600 uppercase mb-1">Subscribers</span>
                                   <span className="text-sm font-semibold text-indigo-800">
                                     {influencer.subs ? (influencer.subs >= 1000000 ? `${(influencer.subs / 1000000).toFixed(1)}M` : influencer.subs >= 1000 ? `${(influencer.subs / 1000).toFixed(1)}K` : influencer.subs) : '0'}
@@ -758,20 +758,20 @@ export default function InfluencerSearchPage() {
                                 </div>
 
                                 {/* Block 3 */}
-                                <div className="flex flex-col items-center p-2 bg-orange-50 rounded-lg border border-orange-200">
+                                {/* <div className="flex flex-col items-center p-2 bg-orange-50 rounded-lg border border-orange-200">
                                   <span className="text-xs font-medium text-gray-600 uppercase mb-1">Block 3</span>
                                   <span className="text-sm font-semibold text-orange-800">
                                     0.0
                                   </span>
-                                </div>
+                                </div> */}
 
                                 {/* Block 4 */}
-                                <div className="flex flex-col items-center p-2 bg-pink-50 rounded-lg border border-pink-200">
+                                {/* <div className="flex flex-col items-center p-2 bg-pink-50 rounded-lg border border-pink-200">
                                   <span className="text-xs font-medium text-gray-600 uppercase mb-1">Block 4</span>
                                   <span className="text-sm font-semibold text-pink-800">
                                     0.0
                                   </span>
-                                </div>
+                                </div> */}
                               </div>
                             </td>
                             {/* Bullish Column */}
