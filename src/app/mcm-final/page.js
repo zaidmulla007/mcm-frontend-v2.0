@@ -57,9 +57,9 @@ export default function MCMSignalPage() {
 
   // Analysis Filters - Basic Settings
   const [sentimentType, setSentimentType] = useState("Bullish");
-  const [source, setSource] = useState("Youtube");
+  const [source, setSource] = useState("YouTube + Telegram");
   const [coinType, setCoinType] = useState("Overall");
-  const [timePeriodFilter, setTimePeriodFilter] = useState("Weekly");
+  const [timePeriodFilter, setTimePeriodFilter] = useState("Daily");
 
   // Analysis Filters - Time-Based Rules
   const [rule1MinPosts, setRule1MinPosts] = useState("250");
@@ -138,7 +138,18 @@ export default function MCMSignalPage() {
       // Basic filters
       if (sentimentType) params.append('sentimentType', sentimentType.toLowerCase());
       if (coinType) params.append('coinType', coinType.toLowerCase());
-      if (selectedPlatform) params.append('source', selectedPlatform);
+
+      // Map source to API format
+      let sourceValue = selectedPlatform;
+      if (source === "YouTube + Telegram") {
+        sourceValue = "YTTG";
+      } else if (source === "YouTube") {
+        sourceValue = "YT";
+      } else if (source === "Telegram") {
+        sourceValue = "TG";
+      }
+      if (sourceValue) params.append('source', sourceValue);
+
       if (timePeriodFilter) params.append('timePeriod', timePeriodFilter.toLowerCase());
 
       // Time-based rules
@@ -208,14 +219,14 @@ export default function MCMSignalPage() {
     } finally {
       setLoading(false);
     }
-  }, [dateFrom, dateTo, sentimentType, coinType, selectedPlatform, timePeriodFilter, rule1MinPosts, rule1Sentiment, rule2MinPosts, rule2Sentiment, rule3MinPosts, rule3Sentiment, rule4MinPosts, rule4Sentiment]);
+  }, [dateFrom, dateTo, sentimentType, coinType, source, selectedPlatform, timePeriodFilter, rule1MinPosts, rule1Sentiment, rule2MinPosts, rule2Sentiment, rule3MinPosts, rule3Sentiment, rule4MinPosts, rule4Sentiment]);
 
   // Removed auto-fetch on filter changes - now only fetches on submit
 
   // Reset current page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [dateFrom, dateTo, sentimentType, coinType, selectedPlatform, timePeriodFilter, rule1MinPosts, rule1Sentiment, rule2MinPosts, rule2Sentiment, rule3MinPosts, rule3Sentiment, rule4MinPosts, rule4Sentiment]);
+  }, [dateFrom, dateTo, sentimentType, coinType, source, selectedPlatform, timePeriodFilter, rule1MinPosts, rule1Sentiment, rule2MinPosts, rule2Sentiment, rule3MinPosts, rule3Sentiment, rule4MinPosts, rule4Sentiment]);
 
   // Handle form submission
   const handleSubmit = (e) => {
@@ -407,7 +418,6 @@ export default function MCMSignalPage() {
                   >
                     <option value="Bullish">Bullish</option>
                     <option value="Bearish">Bearish</option>
-                    <option value="Neutral">Neutral</option>
                   </select>
                 </div>
 
@@ -421,6 +431,7 @@ export default function MCMSignalPage() {
                     required
                     className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
+                    <option value="YouTube + Telegram">YouTube + Telegram</option>
                     <option value="YouTube">YouTube</option>
                     <option value="Telegram">Telegram</option>
                   </select>
@@ -437,8 +448,8 @@ export default function MCMSignalPage() {
                     className="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
                   >
                     <option value="Overall">Overall</option>
-                    <option value="Bitcoin">All Coins</option>
-                    <option value="Ethereum">Mem Coins</option>
+                    <option value="meme">meme</option>
+                    <option value="normal">normal</option>
                   </select>
                 </div>
 
@@ -1221,7 +1232,7 @@ export default function MCMSignalPage() {
           <div className="text-center text-red-600 py-8">{error}</div>
         ) : (
           <>
-            {visibleCoins.length > 0 ? (
+            {sortedCoinsData.length > 0 ? (
               <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-300">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
@@ -1242,7 +1253,7 @@ export default function MCMSignalPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {visibleCoins.map((coin, index) => (
+                      {sortedCoinsData.map((coin, index) => (
                         <tr
                           key={coin.Symbol + coin.Date + index}
                           className={`border-b border-gray-300 hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
