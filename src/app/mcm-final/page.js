@@ -1112,31 +1112,31 @@ export default function MCMSignalPage() {
                                 <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">{signal.Symbol || 'N/A'}</td>
                                 <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">{signal['Coin Name'] || 'N/A'}</td>
                                 <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
-                                  ${signal['Base Price'] ? parseFloat(signal['Base Price']).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A'}
+                                  ${signal['Base Price'] ? Math.round(parseFloat(signal['Base Price'])).toLocaleString('en-US') : 'N/A'}
                                 </td>
                                 <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
-                                  ${signal['24 Hrs Price'] ? parseFloat(signal['24 Hrs Price']).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A'}
+                                  ${signal['24 Hrs Price'] ? Math.round(parseFloat(signal['24 Hrs Price'])).toLocaleString('en-US') : 'N/A'}
                                 </td>
                                 <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['24 Hrs % returns'] || 0) > 0 ? 'text-green-600' : (signal['24 Hrs % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['24 Hrs % returns'] != null ? `${signal['24 Hrs % returns'] > 0 ? '+' : ''}${signal['24 Hrs % returns'].toFixed(2)}%` : 'N/A'}
+                                  {signal['24 Hrs % returns'] != null ? `${signal['24 Hrs % returns'] > 0 ? '+' : ''}${Math.round(signal['24 Hrs % returns'])}%` : 'N/A'}
                                 </td>
                                 <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['7 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['7 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['7 Days % returns'] != null ? `${signal['7 Days % returns'] > 0 ? '+' : ''}${signal['7 Days % returns'].toFixed(2)}%` : 'N/A'}
+                                  {signal['7 Days % returns'] != null ? `${signal['7 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['7 Days % returns'])}%` : 'N/A'}
                                 </td>
                                 <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['30 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['30 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['30 Days % returns'] != null ? `${signal['30 Days % returns'] > 0 ? '+' : ''}${signal['30 Days % returns'].toFixed(2)}%` : 'N/A'}
+                                  {signal['30 Days % returns'] != null ? `${signal['30 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['30 Days % returns'])}%` : 'N/A'}
                                 </td>
                                 <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['60 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['60 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['60 Days % returns'] != null ? `${signal['60 Days % returns'] > 0 ? '+' : ''}${signal['60 Days % returns'].toFixed(2)}%` : 'N/A'}
+                                  {signal['60 Days % returns'] != null ? `${signal['60 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['60 Days % returns'])}%` : 'N/A'}
                                 </td>
                                 <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['90 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['90 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['90 Days % returns'] != null ? `${signal['90 Days % returns'] > 0 ? '+' : ''}${signal['90 Days % returns'].toFixed(2)}%` : 'N/A'}
+                                  {signal['90 Days % returns'] != null ? `${signal['90 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['90 Days % returns'])}%` : 'N/A'}
                                 </td>
                                 <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['180 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['180 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['180 Days % returns'] != null ? `${signal['180 Days % returns'] > 0 ? '+' : ''}${signal['180 Days % returns'].toFixed(2)}%` : 'N/A'}
+                                  {signal['180 Days % returns'] != null ? `${signal['180 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['180 Days % returns'])}%` : 'N/A'}
                                 </td>
                                 <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap ${(signal['1 Year % returns'] || 0) > 0 ? 'text-green-600' : (signal['1 Year % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['1 Year % returns'] != null ? `${signal['1 Year % returns'] > 0 ? '+' : ''}${signal['1 Year % returns'].toFixed(2)}%` : 'N/A'}
+                                  {signal['1 Year % returns'] != null ? `${signal['1 Year % returns'] > 0 ? '+' : ''}${Math.round(signal['1 Year % returns'])}%` : 'N/A'}
                                 </td>
                               </tr>
                             ))}
@@ -1277,38 +1277,38 @@ export default function MCMSignalPage() {
                             {coin['Coin Name'] || 'N/A'}
                           </td>
                           <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
-                            ${coin['Base Price'] ? parseFloat(coin['Base Price']).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A'}
+                            ${coin['Base Price'] ? Math.round(parseFloat(coin['Base Price'])).toLocaleString('en-US') : 'N/A'}
                           </td>
                           <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
-                            ${coin['24 Hrs Price'] ? parseFloat(coin['24 Hrs Price']).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : 'N/A'}
+                            ${coin['24 Hrs Price'] ? Math.round(parseFloat(coin['24 Hrs Price'])).toLocaleString('en-US') : 'N/A'}
                           </td>
                           <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['24 Hrs % returns'] || 0) > 0 ? 'text-green-600' : (coin['24 Hrs % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
                             }`}>
-                            {coin['24 Hrs % returns'] != null ? `${coin['24 Hrs % returns'] > 0 ? '+' : ''}${coin['24 Hrs % returns'].toFixed(2)}%` : 'N/A'}
+                            {coin['24 Hrs % returns'] != null ? `${coin['24 Hrs % returns'] > 0 ? '+' : ''}${Math.round(coin['24 Hrs % returns'])}%` : 'N/A'}
                           </td>
                           <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['7 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['7 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
                             }`}>
-                            {coin['7 Days % returns'] != null ? `${coin['7 Days % returns'] > 0 ? '+' : ''}${coin['7 Days % returns'].toFixed(2)}%` : 'N/A'}
+                            {coin['7 Days % returns'] != null ? `${coin['7 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['7 Days % returns'])}%` : 'N/A'}
                           </td>
                           <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['30 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['30 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
                             }`}>
-                            {coin['30 Days % returns'] != null ? `${coin['30 Days % returns'] > 0 ? '+' : ''}${coin['30 Days % returns'].toFixed(2)}%` : 'N/A'}
+                            {coin['30 Days % returns'] != null ? `${coin['30 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['30 Days % returns'])}%` : 'N/A'}
                           </td>
                           <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['60 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['60 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
                             }`}>
-                            {coin['60 Days % returns'] != null ? `${coin['60 Days % returns'] > 0 ? '+' : ''}${coin['60 Days % returns'].toFixed(2)}%` : 'N/A'}
+                            {coin['60 Days % returns'] != null ? `${coin['60 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['60 Days % returns'])}%` : 'N/A'}
                           </td>
                           <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['90 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['90 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
                             }`}>
-                            {coin['90 Days % returns'] != null ? `${coin['90 Days % returns'] > 0 ? '+' : ''}${coin['90 Days % returns'].toFixed(2)}%` : 'N/A'}
+                            {coin['90 Days % returns'] != null ? `${coin['90 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['90 Days % returns'])}%` : 'N/A'}
                           </td>
                           <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['180 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['180 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
                             }`}>
-                            {coin['180 Days % returns'] != null ? `${coin['180 Days % returns'] > 0 ? '+' : ''}${coin['180 Days % returns'].toFixed(2)}%` : 'N/A'}
+                            {coin['180 Days % returns'] != null ? `${coin['180 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['180 Days % returns'])}%` : 'N/A'}
                           </td>
                           <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap ${(coin['1 Year % returns'] || 0) > 0 ? 'text-green-600' : (coin['1 Year % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
                             }`}>
-                            {coin['1 Year % returns'] != null ? `${coin['1 Year % returns'] > 0 ? '+' : ''}${coin['1 Year % returns'].toFixed(2)}%` : 'N/A'}
+                            {coin['1 Year % returns'] != null ? `${coin['1 Year % returns'] > 0 ? '+' : ''}${Math.round(coin['1 Year % returns'])}%` : 'N/A'}
                           </td>
                         </tr>
                       ))}
