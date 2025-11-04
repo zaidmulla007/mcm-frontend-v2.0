@@ -10,26 +10,33 @@ import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateF
 
 // Hardcoded Recent Recommendations data
 const getRecentRecommendations = () => ({
-  "24_hrs": [
-    { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-2xl" />, direction: "bullish", term: "long" },
-    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" },
-    { coin: "Cardano", icon: <span className="text-blue-600 text-2xl font-bold">₳</span>, direction: "bullish", term: "short" },
-    { coin: "Solana", icon: <span className="text-purple-600 text-2xl font-bold">◎</span>, direction: "bullish", term: "long" },
-    { coin: "Ripple", icon: <span className="text-gray-700 text-2xl font-bold">✕</span>, direction: "bearish", term: "long" }
+  bullish_long: [
+    { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-xl" /> },
+    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-xl" /> },
+    { coin: "Cardano", icon: <span className="text-blue-600 text-xl font-bold">₳</span> },
+    { coin: "Solana", icon: <span className="text-purple-600 text-xl font-bold">◎</span> },
+    { coin: "Ripple", icon: <span className="text-gray-700 text-xl font-bold">✕</span> }
   ],
-  "7_days": [
-    { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-2xl" />, direction: "bullish", term: "long" },
-    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" },
-    { coin: "Cardano", icon: <span className="text-blue-600 text-2xl font-bold">₳</span>, direction: "bullish", term: "short" },
-    { coin: "Solana", icon: <span className="text-purple-600 text-2xl font-bold">◎</span>, direction: "bullish", term: "long" },
-    { coin: "Ripple", icon: <span className="text-gray-700 text-2xl font-bold">✕</span>, direction: "bearish", term: "long" }
+  bullish_short: [
+    { coin: "Polkadot", icon: <span className="text-pink-600 text-xl font-bold">●</span> },
+    { coin: "Chainlink", icon: <span className="text-blue-700 text-xl font-bold">⬢</span> },
+    { coin: "Litecoin", icon: <span className="text-gray-500 text-xl font-bold">Ł</span> },
+    { coin: "Uniswap", icon: <span className="text-pink-500 text-xl font-bold">🦄</span> },
+    { coin: "Avalanche", icon: <span className="text-red-600 text-xl font-bold">▲</span> }
   ],
-  "30_days": [
-    { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-2xl" />, direction: "bullish", term: "long" },
-    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" },
-    { coin: "Cardano", icon: <span className="text-blue-600 text-2xl font-bold">₳</span>, direction: "bullish", term: "short" },
-    { coin: "Solana", icon: <span className="text-purple-600 text-2xl font-bold">◎</span>, direction: "bullish", term: "long" },
-    { coin: "Ripple", icon: <span className="text-gray-700 text-2xl font-bold">✕</span>, direction: "bearish", term: "long" }
+  bearish_long: [
+    { coin: "Dogecoin", icon: <span className="text-yellow-600 text-xl font-bold">Ð</span> },
+    { coin: "Shiba", icon: <span className="text-orange-600 text-xl font-bold">🐕</span> },
+    { coin: "Terra", icon: <span className="text-blue-800 text-xl font-bold">⊕</span> },
+    { coin: "Polygon", icon: <span className="text-purple-700 text-xl font-bold">⬡</span> },
+    { coin: "Cosmos", icon: <span className="text-indigo-600 text-xl font-bold">⚛</span> }
+  ],
+  bearish_short: [
+    { coin: "Stellar", icon: <span className="text-gray-600 text-xl font-bold">✦</span> },
+    { coin: "Monero", icon: <span className="text-orange-700 text-xl font-bold">ɱ</span> },
+    { coin: "Tron", icon: <span className="text-red-700 text-xl font-bold">⊿</span> },
+    { coin: "EOS", icon: <span className="text-gray-800 text-xl font-bold">ε</span> },
+    { coin: "Tezos", icon: <span className="text-blue-800 text-xl font-bold">ꜩ</span> }
   ]
 });
 
@@ -490,29 +497,16 @@ export default function InfluencerSearchPage() {
                   <tr>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Influencer</th>
                     <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider relative">
-                      <span className="inline-flex items-center gap-1">
-                        Recent Posts
-                        <span className="relative group cursor-pointer">
-                          <span className="text-blue-600 text-sm">ⓘ</span>
-                          <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-3 rounded-lg shadow-xl w-72 break-words z-[9999]">
-                            <div className="space-y-2">
-                              <div className="font-semibold text-base mb-3">Arrow Meanings:</div>
-                              <div className="flex items-center gap-3">
-                                <FaArrowUp className="text-green-500 text-xl" />
-                                <span>Green upward arrow = Bullish</span>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <FaArrowDown className="text-red-500 text-xl" />
-                                <span>Red downward arrow = Bearish</span>
-                              </div>
-                              <div className="mt-3 pt-3 border-t border-gray-700">
-                                <div className="mb-1"><strong>Bigger arrow</strong> = Long term</div>
-                                <div><strong>Smaller arrow</strong> = Short term</div>
-                              </div>
-                            </div>
-                          </span>
-                        </span>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-1.5">
+                        <FaArrowUp className="text-green-600 text-sm" />
+                        <span>Bullish</span>
+                      </span>
+                    </th>
+                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-1.5">
+                        <FaArrowDown className="text-red-600 text-sm" />
+                        <span>Bearish</span>
                       </span>
                     </th>
                   </tr>
@@ -529,21 +523,26 @@ export default function InfluencerSearchPage() {
                           <div className="ml-11 h-16 bg-gray-200 rounded w-48"></div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="space-y-2">
-                            <div className="h-3 bg-gray-200 rounded w-32"></div>
-                            <div className="h-3 bg-gray-200 rounded w-32"></div>
-                            <div className="h-3 bg-gray-200 rounded w-32"></div>
-                            <div className="h-3 bg-gray-200 rounded w-32"></div>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div className="h-12 bg-gray-200 rounded-lg"></div>
+                            <div className="h-12 bg-gray-200 rounded-lg"></div>
+                            <div className="h-12 bg-gray-200 rounded-lg"></div>
+                            <div className="h-12 bg-gray-200 rounded-lg"></div>
+                            <div className="h-12 bg-gray-200 rounded-lg"></div>
+                            <div className="h-12 bg-gray-200 rounded-lg"></div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="h-20 bg-gray-200 rounded w-40"></div>
+                          <div className="h-32 bg-gray-200 rounded w-32"></div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="h-32 bg-gray-200 rounded w-32"></div>
                         </td>
                       </tr>
                     ))
                   ) : filteredInfluencers.length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="px-6 py-12 text-center">
+                      <td colSpan="4" className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -720,118 +719,130 @@ export default function InfluencerSearchPage() {
                                 </div>
                               </Link>
                             </td>
-                            <td className="px-6 py-4 text-left">
-                              <div className="space-y-2">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-medium text-gray-600 uppercase w-28">ROI</span>
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-purple-100 text-purple-800">
+                            <td className="px-6 py-4">
+                              <div className="grid grid-cols-2 gap-3">
+                                {/* ROI */}
+                                <div className="flex flex-col items-center p-2 bg-purple-50 rounded-lg border border-purple-200">
+                                  <span className="text-xs font-medium text-gray-600 uppercase mb-1">ROI</span>
+                                  <span className="text-sm font-semibold text-purple-800">
                                     {influencer.prob_weighted_returns !== undefined
                                       ? influencer.prob_weighted_returns.toFixed(1)
                                       : '0.0'}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-medium text-gray-600 uppercase w-28">Win Rate</span>
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
+
+                                {/* Win Rate */}
+                                <div className="flex flex-col items-center p-2 bg-blue-50 rounded-lg border border-blue-200">
+                                  <span className="text-xs font-medium text-gray-600 uppercase mb-1">Win Rate</span>
+                                  <span className="text-sm font-semibold text-blue-800">
                                     {influencer.win_percentage !== undefined
                                       ? `${Math.round(influencer.win_percentage)}%`
                                       : '0%'}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-medium text-gray-600 uppercase w-28">Total Calls</span>
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
+
+                                {/* Total Calls */}
+                                <div className="flex flex-col items-center p-2 bg-green-50 rounded-lg border border-green-200">
+                                  <span className="text-xs font-medium text-gray-600 uppercase mb-1">Total Calls</span>
+                                  <span className="text-sm font-semibold text-green-800">
                                     {influencer.price_counts ? influencer.price_counts.toLocaleString() : '0'}
                                   </span>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className="text-xs font-medium text-gray-600 uppercase w-28">Subscribers</span>
-                                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-indigo-100 text-indigo-800">
+
+                                {/* Subscribers */}
+                                <div className="flex flex-col items-center p-2 bg-indigo-50 rounded-lg border border-indigo-200">
+                                  <span className="text-xs font-medium text-gray-600 uppercase mb-1">Subscribers</span>
+                                  <span className="text-sm font-semibold text-indigo-800">
                                     {influencer.subs ? (influencer.subs >= 1000000 ? `${(influencer.subs / 1000000).toFixed(1)}M` : influencer.subs >= 1000 ? `${(influencer.subs / 1000).toFixed(1)}K` : influencer.subs) : '0'}
+                                  </span>
+                                </div>
+
+                                {/* Block 3 */}
+                                <div className="flex flex-col items-center p-2 bg-orange-50 rounded-lg border border-orange-200">
+                                  <span className="text-xs font-medium text-gray-600 uppercase mb-1">Block 3</span>
+                                  <span className="text-sm font-semibold text-orange-800">
+                                    0.0
+                                  </span>
+                                </div>
+
+                                {/* Block 4 */}
+                                <div className="flex flex-col items-center p-2 bg-pink-50 rounded-lg border border-pink-200">
+                                  <span className="text-xs font-medium text-gray-600 uppercase mb-1">Block 4</span>
+                                  <span className="text-sm font-semibold text-pink-800">
+                                    0.0
                                   </span>
                                 </div>
                               </div>
                             </td>
+                            {/* Bullish Column */}
                             <td className="px-6 py-4">
-                              <div className="flex gap-2">
-                                {/* Bullish Column - Green */}
-                                <div className="flex-1 border-2 border-green-300 rounded-lg overflow-hidden bg-white shadow-sm">
-                                  <div className="bg-green-100 px-2 py-1 text-center border-b border-green-300">
-                                    <span className="text-xs font-semibold text-green-800">Bullish</span>
+                              <div className="space-y-2">
+                                {/* Long Term Block */}
+                                <div className="border border-green-300 rounded-lg overflow-hidden bg-green-50">
+                                  <div className="bg-green-200 px-2 py-1 border-b border-green-300">
+                                    <div className="text-xs font-semibold text-green-800 text-center">Long Term</div>
                                   </div>
-                                  <div className="p-2 space-y-2">
-                                    {/* Long Term Block */}
-                                    <div className="border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
-                                      <div className="bg-gray-200 px-2 py-0.5 border-b border-gray-300">
-                                        <div className="text-xs font-semibold text-gray-800 text-center">Long Term</div>
-                                      </div>
-                                      <div className="p-1.5">
-                                        <div className="flex items-end justify-center gap-2">
-                                          {recommendations["30_days"].map((rec, idx) => (
-                                            <div key={idx} className="flex flex-col items-center justify-end">
-                                              <div className="text-base mb-0.5 h-5 flex items-center justify-center">{rec.icon}</div>
-                                              <span className="text-[10px] font-medium text-gray-800">{rec.coin}</span>
-                                            </div>
-                                          ))}
+                                  <div className="p-2">
+                                    <div className="flex items-start justify-center gap-2">
+                                      {recommendations.bullish_long.map((rec, idx) => (
+                                        <div key={idx} className="flex flex-col items-center justify-start w-12">
+                                          <div className="mb-1 h-6 flex items-center justify-center">{rec.icon}</div>
+                                          <span className="text-[9px] font-medium text-gray-800 text-center leading-tight">{rec.coin}</span>
                                         </div>
-                                      </div>
-                                    </div>
-                                    {/* Short Term Block */}
-                                    <div className="border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
-                                      <div className="bg-gray-200 px-2 py-0.5 border-b border-gray-300">
-                                        <div className="text-xs font-semibold text-gray-800 text-center">Short Term</div>
-                                      </div>
-                                      <div className="p-1.5">
-                                        <div className="flex items-end justify-center gap-2">
-                                          {recommendations["7_days"].map((rec, idx) => (
-                                            <div key={idx} className="flex flex-col items-center justify-end">
-                                              <div className="text-base mb-0.5 h-5 flex items-center justify-center">{rec.icon}</div>
-                                              <span className="text-[10px] font-medium text-gray-800">{rec.coin}</span>
-                                            </div>
-                                          ))}
-                                        </div>
-                                      </div>
+                                      ))}
                                     </div>
                                   </div>
                                 </div>
-
-                                {/* Bearish Column - Red */}
-                                <div className="flex-1 border-2 border-red-300 rounded-lg overflow-hidden bg-white shadow-sm">
-                                  <div className="bg-red-100 px-2 py-1 text-center border-b border-red-300">
-                                    <span className="text-xs font-semibold text-red-800">Bearish</span>
+                                {/* Short Term Block */}
+                                <div className="border border-green-300 rounded-lg overflow-hidden bg-green-50">
+                                  <div className="bg-green-200 px-2 py-1 border-b border-green-300">
+                                    <div className="text-xs font-semibold text-green-800 text-center">Short Term</div>
                                   </div>
-                                  <div className="p-2 space-y-2">
-                                    {/* Long Term Block */}
-                                    <div className="border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
-                                      <div className="bg-gray-200 px-2 py-0.5 border-b border-gray-300">
-                                        <div className="text-xs font-semibold text-gray-800 text-center">Long Term</div>
-                                      </div>
-                                      <div className="p-1.5">
-                                        <div className="flex items-end justify-center gap-2">
-                                          {recommendations["30_days"].map((rec, idx) => (
-                                            <div key={idx} className="flex flex-col items-center justify-end">
-                                              <div className="text-base mb-0.5 h-5 flex items-center justify-center">{rec.icon}</div>
-                                              <span className="text-[10px] font-medium text-gray-800">{rec.coin}</span>
-                                            </div>
-                                          ))}
+                                  <div className="p-2">
+                                    <div className="flex items-start justify-center gap-2">
+                                      {recommendations.bullish_short.map((rec, idx) => (
+                                        <div key={idx} className="flex flex-col items-center justify-start w-12">
+                                          <div className="mb-1 h-6 flex items-center justify-center">{rec.icon}</div>
+                                          <span className="text-[9px] font-medium text-gray-800 text-center leading-tight">{rec.coin}</span>
                                         </div>
-                                      </div>
+                                      ))}
                                     </div>
-                                    {/* Short Term Block */}
-                                    <div className="border border-gray-300 rounded-lg overflow-hidden bg-gray-50">
-                                      <div className="bg-gray-200 px-2 py-0.5 border-b border-gray-300">
-                                        <div className="text-xs font-semibold text-gray-800 text-center">Short Term</div>
-                                      </div>
-                                      <div className="p-1.5">
-                                        <div className="flex items-end justify-center gap-2">
-                                          {recommendations["7_days"].map((rec, idx) => (
-                                            <div key={idx} className="flex flex-col items-center justify-end">
-                                              <div className="text-base mb-0.5 h-5 flex items-center justify-center">{rec.icon}</div>
-                                              <span className="text-[10px] font-medium text-gray-800">{rec.coin}</span>
-                                            </div>
-                                          ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            {/* Bearish Column */}
+                            <td className="px-6 py-4">
+                              <div className="space-y-2">
+                                {/* Long Term Block */}
+                                <div className="border border-red-300 rounded-lg overflow-hidden bg-red-50">
+                                  <div className="bg-red-200 px-2 py-1 border-b border-red-300">
+                                    <div className="text-xs font-semibold text-red-800 text-center">Long Term</div>
+                                  </div>
+                                  <div className="p-2">
+                                    <div className="flex items-start justify-center gap-2">
+                                      {recommendations.bearish_long.map((rec, idx) => (
+                                        <div key={idx} className="flex flex-col items-center justify-start w-12">
+                                          <div className="mb-1 h-6 flex items-center justify-center">{rec.icon}</div>
+                                          <span className="text-[9px] font-medium text-gray-800 text-center leading-tight">{rec.coin}</span>
                                         </div>
-                                      </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                                {/* Short Term Block */}
+                                <div className="border border-red-300 rounded-lg overflow-hidden bg-red-50">
+                                  <div className="bg-red-200 px-2 py-1 border-b border-red-300">
+                                    <div className="text-xs font-semibold text-red-800 text-center">Short Term</div>
+                                  </div>
+                                  <div className="p-2">
+                                    <div className="flex items-start justify-center gap-2">
+                                      {recommendations.bearish_short.map((rec, idx) => (
+                                        <div key={idx} className="flex flex-col items-center justify-start w-12">
+                                          <div className="mb-1 h-6 flex items-center justify-center">{rec.icon}</div>
+                                          <span className="text-[9px] font-medium text-gray-800 text-center leading-tight">{rec.coin}</span>
+                                        </div>
+                                      ))}
                                     </div>
                                   </div>
                                 </div>
