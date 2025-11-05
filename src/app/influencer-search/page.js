@@ -445,7 +445,7 @@ export default function InfluencerSearchPage() {
                   <select
                     value={selectedRating}
                     onChange={(e) => setSelectedRating(e.target.value)}
-                    className="w-full border-2 border-purple-200 bg-purple-50 rounded-full px-4 py-2.5 text-sm font-medium text-purple-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all cursor-pointer"
+                    className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
                   >
                     {ratingOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -460,7 +460,7 @@ export default function InfluencerSearchPage() {
                   <select
                     value={selectedTimeframe}
                     onChange={(e) => setSelectedTimeframe(e.target.value)}
-                    className="w-full border-2 border-blue-200 bg-blue-50 rounded-full px-4 py-2.5 text-sm font-medium text-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all cursor-pointer"
+                    className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
                   >
                     {timeframeOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -475,7 +475,7 @@ export default function InfluencerSearchPage() {
                   <select
                     value={selectedYear}
                     onChange={(e) => handleYearChange(e.target.value)}
-                    className="w-full border-2 border-green-200 bg-green-50 rounded-full px-4 py-2.5 text-sm font-medium text-green-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all cursor-pointer"
+                    className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
                   >
                     {yearOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -490,25 +490,25 @@ export default function InfluencerSearchPage() {
             <div className="overflow-x-auto">
               <table className="w-full relative">
                 <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-44">Influencer</th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">ROI</th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Win Rate</th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Total Calls</th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Subscribers</th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <tr className="border-b-2 border-gray-200">
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-44 border-r border-gray-300">Influencer</th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20 border-r border-gray-300">ROI</th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24 border-r border-gray-300">Win Rate</th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24 border-r border-gray-300">Total Calls</th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24 border-r border-gray-300">Subscribers</th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
                       <span className="inline-flex items-center gap-1.5">
                         <FaArrowUp className="text-green-600 text-sm" />
                         <span>Bullish Short Term</span>
                       </span>
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
                       <span className="inline-flex items-center gap-1.5">
                         <FaArrowUp className="text-green-600 text-sm" />
                         <span>Bullish Long Term</span>
                       </span>
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
                       <span className="inline-flex items-center gap-1.5">
                         <FaArrowDown className="text-red-600 text-sm" />
                         <span>Bearish Short Term</span>
@@ -526,32 +526,32 @@ export default function InfluencerSearchPage() {
                   {initialLoad ? (
                     Array.from({ length: 10 }).map((_, i) => (
                       <tr key={`skeleton-row-${i}`}>
-                        <td className="px-1 py-2 whitespace-nowrap">
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
                           <div className="flex items-center mb-1">
                             <div className="w-8 h-8 bg-gray-200 rounded-full mr-2"></div>
                             <div className="h-4 bg-gray-200 rounded w-32"></div>
                           </div>
                           <div className="ml-10 h-12 bg-gray-200 rounded w-40"></div>
                         </td>
-                        <td className="px-1 py-2 whitespace-nowrap">
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
                           <div className="h-12 bg-gray-200 rounded w-20"></div>
                         </td>
-                        <td className="px-1 py-2 whitespace-nowrap">
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
                           <div className="h-12 bg-gray-200 rounded w-20"></div>
                         </td>
-                        <td className="px-1 py-2 whitespace-nowrap">
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
                           <div className="h-12 bg-gray-200 rounded w-20"></div>
                         </td>
-                        <td className="px-1 py-2 whitespace-nowrap">
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
                           <div className="h-12 bg-gray-200 rounded w-20"></div>
                         </td>
-                        <td className="px-1 py-2 whitespace-nowrap">
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
                           <div className="h-24 bg-gray-200 rounded w-28"></div>
                         </td>
-                        <td className="px-1 py-2 whitespace-nowrap">
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
                           <div className="h-24 bg-gray-200 rounded w-28"></div>
                         </td>
-                        <td className="px-1 py-2 whitespace-nowrap">
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
                           <div className="h-24 bg-gray-200 rounded w-28"></div>
                         </td>
                         <td className="px-1 py-2 whitespace-nowrap">
@@ -642,7 +642,7 @@ export default function InfluencerSearchPage() {
                               );
                             }}
                           >
-                            <td className="px-1 py-2">
+                            <td className="px-1 py-2 border-r border-gray-300">
                               <Link
                                 href={
                                   selectedPlatform === "youtube"
@@ -742,9 +742,8 @@ export default function InfluencerSearchPage() {
                               </Link>
                             </td>
                             {/* ROI Column */}
-                            <td className="px-1 py-2">
+                            <td className="px-1 py-2 border-r border-gray-300">
                               <div className="flex flex-col items-center justify-center p-1 bg-purple-50 rounded-lg">
-                                <span className="text-xs font-medium text-gray-600 uppercase mb-0.5">ROI</span>
                                 <span className="text-sm font-semibold text-purple-800">
                                   {influencer.prob_weighted_returns !== undefined
                                     ? influencer.prob_weighted_returns.toFixed(1)
@@ -754,9 +753,8 @@ export default function InfluencerSearchPage() {
                             </td>
 
                             {/* Win Rate Column */}
-                            <td className="px-1 py-2">
+                            <td className="px-1 py-2 border-r border-gray-300">
                               <div className="flex flex-col items-center justify-center p-1 bg-blue-50 rounded-lg">
-                                <span className="text-xs font-medium text-gray-600 uppercase mb-0.5">Win Rate</span>
                                 <span className="text-sm font-semibold text-blue-800">
                                   {influencer.win_percentage !== undefined
                                     ? `${Math.round(influencer.win_percentage)}%`
@@ -766,26 +764,24 @@ export default function InfluencerSearchPage() {
                             </td>
 
                             {/* Total Calls Column */}
-                            <td className="px-1 py-2">
+                            <td className="px-1 py-2 border-r border-gray-300">
                               <div className="flex flex-col items-center justify-center p-1 bg-green-50 rounded-lg">
-                                <span className="text-xs font-medium text-gray-600 uppercase mb-0.5">Total Calls</span>
                                 <span className="text-sm font-semibold text-green-800">
                                   {influencer.price_counts ? influencer.price_counts.toLocaleString() : '0'}
                                 </span>
                               </div>
                             </td>
                             {/* Subscribers Column */}
-                            <td className="px-1 py-2">
+                            <td className="px-1 py-2 border-r border-gray-300">
                               <div className="flex flex-col items-center justify-center p-1 bg-orange-50 rounded-lg">
-                                <span className="text-xs font-medium text-gray-600 uppercase mb-0.5">Subscribers</span>
                                 <span className="text-sm font-semibold text-orange-800">
                                   {formatNumber(influencer.subs)}
                                 </span>
                               </div>
                             </td>
                             {/* Bullish Short Term Column */}
-                            <td className="px-1 py-2">
-                              <div className="border-2 border-green-300 rounded-lg overflow-hidden bg-green-50 shadow-sm">
+                            <td className="px-1 py-2 border-r border-gray-300">
+                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
                                 <div className="p-1.5">
                                   <div className="flex flex-col items-center justify-center gap-1">
                                     {recommendations.bullish_short.map((rec, idx) => (
@@ -799,8 +795,8 @@ export default function InfluencerSearchPage() {
                               </div>
                             </td>
                             {/* Bullish Long Term Column */}
-                            <td className="px-1 py-2">
-                              <div className="border-2 border-green-300 rounded-lg overflow-hidden bg-green-50 shadow-sm">
+                            <td className="px-1 py-2 border-r border-gray-300">
+                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
                                 <div className="p-1.5">
                                   <div className="flex flex-col items-center justify-center gap-1">
                                     {recommendations.bullish_long.map((rec, idx) => (
@@ -814,8 +810,8 @@ export default function InfluencerSearchPage() {
                               </div>
                             </td>
                             {/* Bearish Short Term Column */}
-                            <td className="px-1 py-2">
-                              <div className="border-2 border-red-300 rounded-lg overflow-hidden bg-red-50 shadow-sm">
+                            <td className="px-1 py-2 border-r border-gray-300">
+                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
                                 <div className="p-1.5">
                                   <div className="flex flex-col items-center justify-center gap-1">
                                     {recommendations.bearish_short.map((rec, idx) => (
@@ -830,7 +826,7 @@ export default function InfluencerSearchPage() {
                             </td>
                             {/* Bearish Long Term Column */}
                             <td className="px-1 py-2">
-                              <div className="border-2 border-red-300 rounded-lg overflow-hidden bg-red-50 shadow-sm">
+                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
                                 <div className="p-1.5">
                                   <div className="flex flex-col items-center justify-center gap-1">
                                     {recommendations.bearish_long.map((rec, idx) => (
