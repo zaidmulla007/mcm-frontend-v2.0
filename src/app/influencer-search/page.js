@@ -28,22 +28,34 @@ const getRecentRecommendations = () => ({
   bullish_long: [
     { coin: "BTC", icon: <FaBitcoin className="text-orange-500 text-xl" /> },
     { coin: "ETH", icon: <FaEthereum className="text-blue-500 text-xl" /> },
-    { coin: "ADA", icon: <span className="text-blue-600 text-xl font-bold">₳</span> }
+    { coin: "ADA", icon: <span className="text-blue-600 text-xl font-bold">₳</span> },
+    { coin: "SOL", icon: <span className="text-purple-600 text-xl font-bold">◎</span> },
+    { coin: "AVAX", icon: <span className="text-red-600 text-xl font-bold">▲</span> },
+    { coin: "BNB", icon: <span className="text-yellow-500 text-xl font-bold">⬡</span> }
   ],
   bullish_short: [
     { coin: "DOT", icon: <span className="text-pink-600 text-xl font-bold">●</span> },
     { coin: "LINK", icon: <span className="text-blue-700 text-xl font-bold">⬢</span> },
-    { coin: "LTC", icon: <span className="text-gray-500 text-xl font-bold">Ł</span> }
+    { coin: "LTC", icon: <span className="text-gray-500 text-xl font-bold">Ł</span> },
+    { coin: "MATIC", icon: <span className="text-purple-700 text-xl font-bold">⬟</span> },
+    { coin: "UNI", icon: <span className="text-pink-500 text-xl font-bold">🦄</span> },
+    { coin: "XRP", icon: <span className="text-gray-600 text-xl font-bold">✕</span> }
   ],
   bearish_long: [
     { coin: "DOGE", icon: <span className="text-yellow-600 text-xl font-bold">Ð</span> },
     { coin: "SHIB", icon: <span className="text-orange-600 text-xl font-bold">🐕</span> },
-    { coin: "LUNA", icon: <span className="text-blue-800 text-xl font-bold">⊕</span> }
+    { coin: "LUNA", icon: <span className="text-blue-800 text-xl font-bold">⊕</span> },
+    { coin: "APE", icon: <span className="text-blue-700 text-xl font-bold">🦧</span> },
+    { coin: "SAND", icon: <span className="text-cyan-600 text-xl font-bold">⌘</span> },
+    { coin: "MANA", icon: <span className="text-red-500 text-xl font-bold">⬠</span> }
   ],
   bearish_short: [
     { coin: "XLM", icon: <span className="text-gray-600 text-xl font-bold">✦</span> },
     { coin: "XMR", icon: <span className="text-orange-700 text-xl font-bold">ɱ</span> },
-    { coin: "TRX", icon: <span className="text-red-700 text-xl font-bold">⊿</span> }
+    { coin: "TRX", icon: <span className="text-red-700 text-xl font-bold">⊿</span> },
+    { coin: "EOS", icon: <span className="text-gray-700 text-xl font-bold">⬢</span> },
+    { coin: "ATOM", icon: <span className="text-indigo-600 text-xl font-bold">⚛</span> },
+    { coin: "VET", icon: <span className="text-blue-600 text-xl font-bold">⚡</span> }
   ]
 });
 
@@ -783,13 +795,23 @@ export default function InfluencerSearchPage() {
                             <td className="px-1 py-2 border-r border-gray-300">
                               <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
                                 <div className="p-1.5">
-                                  <div className="flex flex-col items-center justify-center gap-1">
-                                    {recommendations.bullish_short.map((rec, idx) => (
-                                      <div key={idx} className="flex items-center justify-center gap-1">
-                                        <div className="h-4 flex items-center justify-center">{rec.icon}</div>
-                                        <span className="text-xs font-semibold text-gray-800">{rec.coin}</span>
-                                      </div>
-                                    ))}
+                                  <div className="flex items-center justify-center gap-4">
+                                    {/* First Column - Coin Icons */}
+                                    <div className="flex flex-col items-center justify-center gap-1">
+                                      {recommendations.bullish_short.map((rec, idx) => (
+                                        <div key={idx} className="h-4 flex items-center justify-center">
+                                          {rec.icon}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {/* Second Column - Coin Symbols */}
+                                    <div className="flex flex-col items-start justify-center gap-1">
+                                      {recommendations.bullish_short.map((rec, idx) => (
+                                        <span key={idx} className="text-xs font-semibold text-gray-800">
+                                          {rec.coin}
+                                        </span>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -798,13 +820,23 @@ export default function InfluencerSearchPage() {
                             <td className="px-1 py-2 border-r border-gray-300">
                               <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
                                 <div className="p-1.5">
-                                  <div className="flex flex-col items-center justify-center gap-1">
-                                    {recommendations.bullish_long.map((rec, idx) => (
-                                      <div key={idx} className="flex items-center justify-center gap-1">
-                                        <div className="h-4 flex items-center justify-center">{rec.icon}</div>
-                                        <span className="text-xs font-semibold text-gray-800">{rec.coin}</span>
-                                      </div>
-                                    ))}
+                                  <div className="flex items-center justify-center gap-4">
+                                    {/* First Column - Coin Icons */}
+                                    <div className="flex flex-col items-center justify-center gap-1">
+                                      {recommendations.bullish_long.map((rec, idx) => (
+                                        <div key={idx} className="h-4 flex items-center justify-center">
+                                          {rec.icon}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {/* Second Column - Coin Symbols */}
+                                    <div className="flex flex-col items-start justify-center gap-1">
+                                      {recommendations.bullish_long.map((rec, idx) => (
+                                        <span key={idx} className="text-xs font-semibold text-gray-800">
+                                          {rec.coin}
+                                        </span>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -813,13 +845,23 @@ export default function InfluencerSearchPage() {
                             <td className="px-1 py-2 border-r border-gray-300">
                               <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
                                 <div className="p-1.5">
-                                  <div className="flex flex-col items-center justify-center gap-1">
-                                    {recommendations.bearish_short.map((rec, idx) => (
-                                      <div key={idx} className="flex items-center justify-center gap-1">
-                                        <div className="h-4 flex items-center justify-center">{rec.icon}</div>
-                                        <span className="text-xs font-semibold text-gray-800">{rec.coin}</span>
-                                      </div>
-                                    ))}
+                                  <div className="flex items-center justify-center gap-4">
+                                    {/* First Column - Coin Icons */}
+                                    <div className="flex flex-col items-center justify-center gap-1">
+                                      {recommendations.bearish_short.map((rec, idx) => (
+                                        <div key={idx} className="h-4 flex items-center justify-center">
+                                          {rec.icon}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {/* Second Column - Coin Symbols */}
+                                    <div className="flex flex-col items-start justify-center gap-1">
+                                      {recommendations.bearish_short.map((rec, idx) => (
+                                        <span key={idx} className="text-xs font-semibold text-gray-800">
+                                          {rec.coin}
+                                        </span>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -828,13 +870,23 @@ export default function InfluencerSearchPage() {
                             <td className="px-1 py-2">
                               <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
                                 <div className="p-1.5">
-                                  <div className="flex flex-col items-center justify-center gap-1">
-                                    {recommendations.bearish_long.map((rec, idx) => (
-                                      <div key={idx} className="flex items-center justify-center gap-1">
-                                        <div className="h-4 flex items-center justify-center">{rec.icon}</div>
-                                        <span className="text-xs font-semibold text-gray-800">{rec.coin}</span>
-                                      </div>
-                                    ))}
+                                  <div className="flex items-center justify-center gap-4">
+                                    {/* First Column - Coin Icons */}
+                                    <div className="flex flex-col items-center justify-center gap-1">
+                                      {recommendations.bearish_long.map((rec, idx) => (
+                                        <div key={idx} className="h-4 flex items-center justify-center">
+                                          {rec.icon}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {/* Second Column - Coin Symbols */}
+                                    <div className="flex flex-col items-start justify-center gap-1">
+                                      {recommendations.bearish_long.map((rec, idx) => (
+                                        <span key={idx} className="text-xs font-semibold text-gray-800">
+                                          {rec.coin}
+                                        </span>
+                                      ))}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
