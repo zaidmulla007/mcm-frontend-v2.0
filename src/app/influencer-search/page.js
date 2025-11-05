@@ -8,6 +8,21 @@ import { FaStar, FaStarHalfAlt, FaInfoCircle, FaArrowUp, FaArrowDown, FaBitcoin 
 import { FaEthereum } from "react-icons/fa6";
 import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
+// Helper function to format numbers
+const formatNumber = (num) => {
+  if (!num || num === 0) return '0';
+
+  const absNum = Math.abs(num);
+
+  if (absNum >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  } else if (absNum >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+
+  return num.toString();
+};
+
 // Hardcoded Recent Recommendations data
 const getRecentRecommendations = () => ({
   bullish_long: [
@@ -659,7 +674,7 @@ export default function InfluencerSearchPage() {
                                       className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center flex"
                                       style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
                                     >
-                                      <span className="text-white text-sm font-bold">
+                                      <span className="text-white text-xl font-bold">
                                         {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
                                       </span>
                                     </div>
@@ -764,7 +779,7 @@ export default function InfluencerSearchPage() {
                               <div className="flex flex-col items-center justify-center p-1 bg-orange-50 rounded-lg">
                                 <span className="text-xs font-medium text-gray-600 uppercase mb-0.5">Subscribers</span>
                                 <span className="text-sm font-semibold text-orange-800">
-                                  {influencer.subs ? influencer.subs.toLocaleString() : '0'}
+                                  {formatNumber(influencer.subs)}
                                 </span>
                               </div>
                             </td>
