@@ -374,25 +374,6 @@ export default function MCMSignalPage() {
         </div>
       </section>
 
-      {/* Platform Toggle */}
-      <section className="max-w-5xl mx-auto px-4 py-4">
-        <div className="flex justify-center gap-3">
-          {platforms.map((platform) => (
-            <button
-              key={platform.value}
-              onClick={() => setSelectedPlatform(platform.value)}
-              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${selectedPlatform === platform.value
-                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
-                : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
-                }`}
-            >
-              {platform.logo}
-              <span>{platform.label}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
       {/* Filter Controls */}
       <section>
         <div className="max-w-7xl mx-auto px-4 mb-6 w-full">

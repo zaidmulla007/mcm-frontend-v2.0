@@ -9,7 +9,6 @@ import { useTimezone } from "../contexts/TimezoneContext";
 const navLinks = [
   { name: "Landing Page", href: "/home", icon: FaGlobe },
   { name: "Home", href: "/landing-page", icon: FaHome },
-  { name: "Influencers Rank", href: "/influencers", icon: FaChartLine },
   { name: "Leaderboard", href: "/influencer-search", icon: FaChartBar },
   // { name: "leaderboard2", href: "/influencerssearch", icon: FaChartBar },
   { name: "MCM Signal", href: "/mcm-final", icon: FaChartLine },
@@ -147,8 +146,13 @@ export default function ClientHeader() {
         {/* Navigation */}
         <nav className="hidden md:flex gap-8 flex-1 justify-center">
           {navLinks.map((link) => {
+            // Special case for Leaderboard: make it active for influencer detail pages
+            const isLeaderboardActive = link.href === "/influencer-search" &&
+              (pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/"));
+
             const isActive = pathname === link.href ||
-              (link.href !== "/home" && pathname.startsWith(link.href));
+              (link.href !== "/home" && pathname.startsWith(link.href)) ||
+              isLeaderboardActive;
             const IconComponent = link.icon;
 
             return (
