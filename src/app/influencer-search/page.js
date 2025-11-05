@@ -661,7 +661,7 @@ export default function InfluencerSearchPage() {
                                         alt={influencer.name || "Influencer"}
                                         width={40}
                                         height={40}
-                                        className="w-11 h-11 rounded-full object-cover"
+                                        className="w-12 h-12 rounded-full object-cover"
                                         onError={(e) => {
                                           e.target.style.display = 'none';
                                           e.target.nextSibling.style.display = 'flex';
