@@ -536,13 +536,13 @@ export default function InfluencerSearchPage() {
                     <th rowSpan="2" className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300">
                       Details
                     </th>
-                    <th colSpan="2" className="px-1 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-300">
+                    <th colSpan="2" className="px-1 py-2 bg-green-50 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-300">
                       <span className="inline-flex items-center gap-1.5 justify-center">
                         <FaArrowUp className="text-green-600 text-sm" />
                         <span>Bullish</span>
                       </span>
                     </th>
-                    <th colSpan="2" className="px-1 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                    <th colSpan="2" className="px-1 py-2 bg-red-50 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
                       <span className="inline-flex items-center gap-1.5 justify-center">
                         <FaArrowDown className="text-red-600 text-sm" />
                         <span>Bearish</span>
