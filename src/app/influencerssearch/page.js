@@ -8,297 +8,57 @@ import { FaStar, FaStarHalfAlt, FaInfoCircle, FaArrowUp, FaArrowDown, FaBitcoin 
 import { FaEthereum } from "react-icons/fa6";
 import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
-const platforms = [
-  {
-    label: "YouTube",
-    value: "youtube",
-    logo: (
-      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-      </svg>
-    )
-  },
-  {
-    label: "Telegram",
-    value: "telegram",
-    logo: (
-      <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-      </svg>
-    )
-  },
-];
+// Helper function to format numbers
+const formatNumber = (num) => {
+  if (!num || num === 0) return '0';
+
+  const absNum = Math.abs(num);
+
+  if (absNum >= 1000000) {
+    return (num / 1000000).toFixed(1) + 'M';
+  } else if (absNum >= 1000) {
+    return (num / 1000).toFixed(1) + 'K';
+  }
+
+  return num.toString();
+};
 
 // Hardcoded Recent Recommendations data
 const getRecentRecommendations = () => ({
-  "24_hrs": [
-    { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-2xl" />, direction: "bullish", term: "long" },
-    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" },
-    { coin: "Cardano", icon: <span className="text-blue-600 text-2xl font-bold">₳</span>, direction: "bullish", term: "short" },
-    { coin: "Solana", icon: <span className="text-purple-600 text-2xl font-bold">◎</span>, direction: "bullish", term: "long" },
-    { coin: "Ripple", icon: <span className="text-gray-700 text-2xl font-bold">✕</span>, direction: "bearish", term: "long" }
+  bullish_long: [
+    { coin: "BTC", icon: <FaBitcoin className="text-orange-500 text-xl" /> },
+    { coin: "ETH", icon: <FaEthereum className="text-blue-500 text-xl" /> },
+    { coin: "ADA", icon: <span className="text-blue-600 text-xl font-bold">₳</span> },
+    { coin: "SOL", icon: <span className="text-purple-600 text-xl font-bold">◎</span> },
+    { coin: "AVAX", icon: <span className="text-red-600 text-xl font-bold">▲</span> },
+    { coin: "BNB", icon: <span className="text-yellow-500 text-xl font-bold">⬡</span> }
   ],
-  "7_days": [
-    { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-2xl" />, direction: "bullish", term: "long" },
-    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" },
-    { coin: "Cardano", icon: <span className="text-blue-600 text-2xl font-bold">₳</span>, direction: "bullish", term: "short" },
-    { coin: "Solana", icon: <span className="text-purple-600 text-2xl font-bold">◎</span>, direction: "bullish", term: "long" },
-    { coin: "Ripple", icon: <span className="text-gray-700 text-2xl font-bold">✕</span>, direction: "bearish", term: "long" }
+  bullish_short: [
+    { coin: "DOT", icon: <span className="text-pink-600 text-xl font-bold">●</span> },
+    { coin: "LINK", icon: <span className="text-blue-700 text-xl font-bold">⬢</span> },
+    { coin: "LTC", icon: <span className="text-gray-500 text-xl font-bold">Ł</span> },
+    { coin: "MATIC", icon: <span className="text-purple-700 text-xl font-bold">⬟</span> },
+    { coin: "UNI", icon: <span className="text-pink-500 text-xl font-bold">🦄</span> },
+    { coin: "XRP", icon: <span className="text-gray-600 text-xl font-bold">✕</span> }
   ],
-  "30_days": [
-    { coin: "Bitcoin", icon: <FaBitcoin className="text-orange-500 text-2xl" />, direction: "bullish", term: "long" },
-    { coin: "Ethereum", icon: <FaEthereum className="text-blue-500 text-2xl" />, direction: "bearish", term: "short" },
-    { coin: "Cardano", icon: <span className="text-blue-600 text-2xl font-bold">₳</span>, direction: "bullish", term: "short" },
-    { coin: "Solana", icon: <span className="text-purple-600 text-2xl font-bold">◎</span>, direction: "bullish", term: "long" },
-    { coin: "Ripple", icon: <span className="text-gray-700 text-2xl font-bold">✕</span>, direction: "bearish", term: "long" }
+  bearish_long: [
+    { coin: "DOGE", icon: <span className="text-yellow-600 text-xl font-bold">Ð</span> },
+    { coin: "SHIB", icon: <span className="text-orange-600 text-xl font-bold">🐕</span> },
+    { coin: "LUNA", icon: <span className="text-blue-800 text-xl font-bold">⊕</span> },
+    { coin: "APE", icon: <span className="text-blue-700 text-xl font-bold">🦧</span> },
+    { coin: "SAND", icon: <span className="text-cyan-600 text-xl font-bold">⌘</span> },
+    { coin: "MANA", icon: <span className="text-red-500 text-xl font-bold">⬠</span> }
+  ],
+  bearish_short: [
+    { coin: "XLM", icon: <span className="text-gray-600 text-xl font-bold">✦</span> },
+    { coin: "XMR", icon: <span className="text-orange-700 text-xl font-bold">ɱ</span> },
+    { coin: "TRX", icon: <span className="text-red-700 text-xl font-bold">⊿</span> },
+    { coin: "EOS", icon: <span className="text-gray-700 text-xl font-bold">⬢</span> },
+    { coin: "ATOM", icon: <span className="text-indigo-600 text-xl font-bold">⚛</span> },
+    { coin: "VET", icon: <span className="text-blue-600 text-xl font-bold">⚡</span> }
   ]
 });
 
-// Component to render arrow based on direction and term
-const RecommendationArrow = ({ direction, term }) => {
-  const isFullArrow = term === "long";
-  const arrowClass = direction === "bullish" ? "text-green-500" : "text-red-500";
-  const ArrowIcon = direction === "bullish" ? FaArrowUp : FaArrowDown;
-
-  return (
-    <ArrowIcon
-      className={`${arrowClass} ${isFullArrow ? 'text-xl' : 'text-sm'}`}
-    />
-  );
-};
-
-// InfluencerCard Component
-function InfluencerCard({ influencer, selectedPlatform, mcmData, selectedTimeframe }) {
-  const recommendations = getRecentRecommendations();
-
-  // Extract all available yearly ratings dynamically
-  const scatterData = [];
-  const years = [];
-
-  // Find all year fields in the data
-  Object.keys(mcmData).forEach(key => {
-    const match = key.match(/star_rating\.yearly\.(\d{4})\./);
-    if (match) {
-      const year = parseInt(match[1]);
-      if (!years.includes(year)) {
-        years.push(year);
-      }
-    }
-  });
-
-  // Sort years in ascending order
-  years.sort((a, b) => a - b);
-
-  // Build scatter data for each year
-  years.forEach((year, yearIndex) => {
-    const fieldKey = `star_rating.yearly.${year}.${selectedTimeframe}`;
-    if (mcmData[fieldKey] && mcmData[fieldKey].current_rating) {
-      scatterData.push({
-        year: yearIndex,
-        yearLabel: year,
-        rating: mcmData[fieldKey].current_rating,
-        finalScore: mcmData[fieldKey].current_final_score
-      });
-    }
-  });
-
-  return (
-    <motion.div
-      layout
-      layoutId={`card-${influencer.id}`}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{
-        layout: {
-          type: "spring",
-          stiffness: 100,
-          damping: 18,
-          mass: 1.5
-        },
-        opacity: { duration: 0.3 },
-        y: { duration: 0.3 }
-      }}
-      className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow"
-    >
-      <div className="flex gap-6">
-        {/* Left Side - Influencer Info */}
-        <div className="w-1/3 border-r border-gray-200 pr-6">
-          <Link
-            href={
-              selectedPlatform === "youtube"
-                ? `/influencers/${influencer.id}`
-                : `/telegram-influencer/${influencer.id}`
-            }
-            className="block"
-          >
-            <div className="flex flex-col items-center">
-              {influencer.channel_thumbnails?.high?.url ? (
-                <Image
-                  src={influencer.channel_thumbnails.high.url}
-                  alt={influencer.name || "Influencer"}
-                  width={130}
-                  height={130}
-                  className="w-36 h-36 rounded-full object-cover mb-4 border-4 border-gray-100"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'flex';
-                  }}
-                />
-              ) : null}
-              <div
-                className="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center mb-4 border-4 border-gray-100"
-                style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
-              >
-                <span className="text-white text-3xl font-bold">
-                  {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
-                </span>
-              </div>
-              <div className="text-center">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <span className="text-3xl font-bold text-gray-900">{influencer.name?.replace(/_/g, " ") || "Unknown"}</span>
-                  {selectedPlatform === "youtube" ? (
-                    <svg className="w-10 h-10 text-red-600" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                    </svg>
-                  ) : (
-                    <svg className="w-10 h-10 text-blue-500" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                    </svg>
-                  )}
-                </div>
-                {/* Yearly Rating Chart */}
-                <div className="mt-4">
-                  {scatterData.length > 0 ? (
-                    <div className="space-y-2">
-                      {scatterData.map((point, idx) => {
-                        const fullStars = Math.floor(point.rating);
-                        const hasHalfStar = point.rating % 1 >= 0.5;
-                        const totalStars = 5;
-                        const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
-
-                        return (
-                          <div
-                            key={idx}
-                            className="flex items-center justify-center gap-2"
-                            title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
-                          >
-                            <span className="text-xl text-gray-600 font-xl mt-1">{point.yearLabel}</span>
-                            <div className="flex items-center gap-0.5">
-                              {[...Array(fullStars)].map((_, i) => (
-                                <FaStar key={`full-${i}`} className="text-yellow-500 w-3 h-3" />
-                              ))}
-                              {hasHalfStar && (
-                                <FaStarHalfAlt key="half" className="text-yellow-500 w-3 h-3" />
-                              )}
-                              {[...Array(emptyStars)].map((_, i) => (
-                                <FaStar key={`empty-${i}`} className="text-gray-400 w-3 h-3" />
-                              ))}
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="text-sm text-gray-400">
-                      loading...
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </Link>
-        </div>
-
-        {/* Right Side - Metrics on top, All Time Ranges on bottom */}
-        <div className="flex-1 flex flex-col">
-          {/* Metrics Grid - NOW ON TOP */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            <div className="bg-purple-50 rounded-xl p-4 text-center border border-purple-200">
-              <div className="text-xs text-purple-600 font-medium mb-1">ROI</div>
-              <div className="text-2xl font-bold text-purple-800">
-                {influencer.prob_weighted_returns !== undefined
-                  ? influencer.prob_weighted_returns.toFixed(1)
-                  : '0.0'}
-              </div>
-            </div>
-            <div className="bg-blue-50 rounded-xl p-4 text-center border border-blue-200">
-              <div className="text-xs text-blue-600 font-medium mb-1">Win %</div>
-              <div className="text-2xl font-bold text-blue-800">
-                {influencer.win_percentage !== undefined
-                  ? `${Math.round(influencer.win_percentage)}%`
-                  : '0%'}
-              </div>
-            </div>
-            <div className="bg-green-50 rounded-xl p-4 text-center border border-green-200">
-              <div className="text-xs text-green-600 font-medium mb-1">Total calls</div>
-              <div className="text-2xl font-bold text-green-800">
-                {influencer.price_counts ? influencer.price_counts.toLocaleString() : '0'}
-              </div>
-            </div>
-            <div className="bg-indigo-50 rounded-xl p-4 text-center border border-indigo-200">
-              <div className="text-xs text-indigo-600 font-medium mb-1">subs count</div>
-              <div className="text-2xl font-bold text-indigo-800">
-                {influencer.subs ? (influencer.subs >= 1000000 ? `${(influencer.subs / 1000000).toFixed(1)}M` : influencer.subs >= 1000 ? `${(influencer.subs / 1000).toFixed(1)}K` : influencer.subs) : '0'}
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Recommendations - All Time Ranges in Horizontal Layout */}
-          <div className="grid grid-cols-3 gap-3">
-            {/* Last 24 hrs */}
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-              <div className="text-xs font-semibold text-gray-700 mb-2 text-center">Last 24 hrs</div>
-              <div className="flex flex-col items-center gap-3">
-                {recommendations["24_hrs"].map((rec, idx) => (
-                  <div key={idx} className="flex flex-col items-center">
-                    <div className="flex items-center gap-2 h-8">
-                      {rec.icon}
-                      <RecommendationArrow direction={rec.direction} term={rec.term} />
-                    </div>
-                    <span className="text-xs text-gray-600 mt-1 font-medium">{rec.coin}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Last 7 days */}
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-              <div className="text-xs font-semibold text-gray-700 mb-2 text-center">Last 7 days</div>
-              <div className="flex flex-col items-center gap-3">
-                {recommendations["7_days"].map((rec, idx) => (
-                  <div key={idx} className="flex flex-col items-center">
-                    <div className="flex items-center gap-2 h-8">
-                      {rec.icon}
-                      <RecommendationArrow direction={rec.direction} term={rec.term} />
-                    </div>
-                    <span className="text-xs text-gray-600 mt-1 font-medium">{rec.coin}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Last 30 days */}
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
-              <div className="text-xs font-semibold text-gray-700 mb-2 text-center">Last 30 days</div>
-              <div className="flex flex-col items-center gap-3">
-                {recommendations["30_days"].map((rec, idx) => (
-                  <div key={idx} className="flex flex-col items-center">
-                    <div className="flex items-center gap-2 h-8">
-                      {rec.icon}
-                      <RecommendationArrow direction={rec.direction} term={rec.term} />
-                    </div>
-                    <span className="text-xs text-gray-600 mt-1 font-medium">{rec.coin}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
-}
 
 export default function InfluencerSearchPage() {
   const router = useRouter();
@@ -670,185 +430,479 @@ export default function InfluencerSearchPage() {
   const paginatedInfluencers = filteredInfluencers.slice(startIndex, endIndex);
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 font-sans">
-      {/* Header */}
-      <header className="">
-        <div className="mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-center bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Leaderboard</h1>
-        </div>
-      </header>
-
-      {/* Platform Toggle - Between header and filters */}
-      <section className="mx-auto px-4 py-4">
-        <div className="flex justify-center gap-3">
-          {platforms.map((platform) => (
-            <button
-              key={platform.value}
-              onClick={() => setSelectedPlatform(platform.value)}
-              className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${
-                selectedPlatform === platform.value
-                  ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
-              }`}
-            >
-              {platform.logo}
-              <span>{platform.label}</span>
-            </button>
-          ))}
-        </div>
-      </section>
-
-      {/* Filter Section */}
-      <section className="mx-auto px-4 py-4">
-        <div className="max-w-4xl mx-auto px-4 mb-6 w-full bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Rating</label>
-              <select
-                value={selectedRating}
-                onChange={(e) => setSelectedRating(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {ratingOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.value === "all" ? "All Ratings" : "⭐".repeat(option.stars)}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Timeframe</label>
-              <select
-                value={selectedTimeframe}
-                onChange={(e) => setSelectedTimeframe(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {timeframeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
-              <select
-                value={selectedYear}
-                onChange={(e) => handleYearChange(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                {yearOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ROI</label>
-              <select
-                value={roiFilter}
-                onChange={(e) => setRoiFilter(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All ROI</option>
-                <option value="above_0.8">Above 0.8</option>
-                <option value="0.5_to_0.8">0.5 - 0.8</option>
-                <option value="below_0.5">Below 0.5</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Win Rate</label>
-              <select
-                value={winRateFilter}
-                onChange={(e) => setWinRateFilter(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Win Rates</option>
-                <option value="above_70">Above 70%</option>
-                <option value="50_to_70">50% - 70%</option>
-                <option value="below_50">Below 50%</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Total Calls</label>
-              <select
-                value={totalCallsFilter}
-                onChange={(e) => setTotalCallsFilter(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Calls</option>
-                <option value="above_1000">Above 1000</option>
-                <option value="500_to_1000">500 - 1000</option>
-                <option value="below_500">Below 500</option>
-              </select>
-            </div>
-          </div>
-        </div>
-      </section>
-
+    <div className="min-h-screen bg-gray-100 text-gray-900 font-sans mt-5">
       {/* Main Content */}
       <main className="mx-auto px-4 pb-8 overflow-x-hidden">
         <div className="min-w-0">
-            {/* Cards Grid Section */}
-            <div className="space-y-4">
-              {initialLoad ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <div key={`skeleton-card-${i}`} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <div className="flex gap-6">
-                      <div className="w-1/3">
-                        <div className="flex items-center mb-4">
-                          <div className="w-16 h-16 bg-gray-200 rounded-full mr-4"></div>
-                          <div className="h-6 bg-gray-200 rounded w-32"></div>
-                        </div>
-                      </div>
-                      <div className="flex-1">
-                        <div className="h-20 bg-gray-200 rounded mb-4"></div>
-                        <div className="h-16 bg-gray-200 rounded"></div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : filteredInfluencers.length === 0 ? (
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-12">
-                  <div className="flex flex-col items-center justify-center">
-                    <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p className="text-lg font-semibold text-gray-600 mb-2">No influencers found</p>
-                    <p className="text-sm text-gray-500">No influencers match the selected filters. Try adjusting your filter criteria.</p>
-                  </div>
+          {/* Leaderboard Section */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
+              {/* Filter Section inside Influencers */}
+              <div className="max-w-2xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Source</label>
+                  <select
+                    value={selectedPlatform}
+                    onChange={(e) => setSelectedPlatform(e.target.value)}
+                    className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                  >
+                    <option value="youtube">YouTube</option>
+                    <option value="telegram">Telegram</option>
+                  </select>
                 </div>
-              ) : (
-                <AnimatePresence mode="popLayout">
-                  {paginatedInfluencers.map((influencer, index) => {
-                    const mcmRatingsMap = selectedPlatform === "youtube" ? youtubeMcmRatings : telegramMcmRatings;
-                    const mcmData = mcmRatingsMap[influencer.id] || {};
 
-                    return (
-                      <InfluencerCard
-                        key={influencer.id}
-                        influencer={influencer}
-                        selectedPlatform={selectedPlatform}
-                        mcmData={mcmData}
-                        selectedTimeframe={selectedTimeframe}
-                      />
-                    );
-                  })}
-                </AnimatePresence>
-              )}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Rating</label>
+                  <select
+                    value={selectedRating}
+                    onChange={(e) => setSelectedRating(e.target.value)}
+                    className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                  >
+                    {ratingOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.value === "all" ? "All Ratings" : "⭐".repeat(option.stars)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Timeframe</label>
+                  <select
+                    value={selectedTimeframe}
+                    onChange={(e) => setSelectedTimeframe(e.target.value)}
+                    className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                  >
+                    {timeframeOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Year</label>
+                  <select
+                    value={selectedYear}
+                    onChange={(e) => handleYearChange(e.target.value)}
+                    className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                  >
+                    {yearOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full relative">
+                <thead className="bg-gray-50">
+                  <tr className="border-b-2 border-gray-200">
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-44 border-r border-gray-300">Influencer</th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20 border-r border-gray-300">ROI</th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24 border-r border-gray-300">Win Rate</th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24 border-r border-gray-300">Total Calls</th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24 border-r border-gray-300">Subscribers</th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                      <span className="inline-flex items-center gap-1.5">
+                        <FaArrowUp className="text-green-600 text-sm" />
+                        <span>Bullish Short Term</span>
+                      </span>
+                    </th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                      <span className="inline-flex items-center gap-1.5">
+                        <FaArrowUp className="text-green-600 text-sm" />
+                        <span>Bullish Long Term</span>
+                      </span>
+                    </th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
+                      <span className="inline-flex items-center gap-1.5">
+                        <FaArrowDown className="text-red-600 text-sm" />
+                        <span>Bearish Short Term</span>
+                      </span>
+                    </th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-1.5">
+                        <FaArrowDown className="text-red-600 text-sm" />
+                        <span>Bearish Long Term</span>
+                      </span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200 relative" style={{ isolation: 'isolate' }}>
+                  {initialLoad ? (
+                    Array.from({ length: 10 }).map((_, i) => (
+                      <tr key={`skeleton-row-${i}`}>
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
+                          <div className="flex items-center mb-1">
+                            <div className="w-8 h-8 bg-gray-200 rounded-full mr-2"></div>
+                            <div className="h-4 bg-gray-200 rounded w-32"></div>
+                          </div>
+                          <div className="ml-10 h-12 bg-gray-200 rounded w-40"></div>
+                        </td>
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
+                          <div className="h-12 bg-gray-200 rounded w-20"></div>
+                        </td>
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
+                          <div className="h-12 bg-gray-200 rounded w-20"></div>
+                        </td>
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
+                          <div className="h-12 bg-gray-200 rounded w-20"></div>
+                        </td>
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
+                          <div className="h-12 bg-gray-200 rounded w-20"></div>
+                        </td>
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
+                          <div className="h-24 bg-gray-200 rounded w-28"></div>
+                        </td>
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
+                          <div className="h-24 bg-gray-200 rounded w-28"></div>
+                        </td>
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
+                          <div className="h-24 bg-gray-200 rounded w-28"></div>
+                        </td>
+                        <td className="px-1 py-2 whitespace-nowrap">
+                          <div className="h-24 bg-gray-200 rounded w-28"></div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : filteredInfluencers.length === 0 ? (
+                    <tr>
+                      <td colSpan="9" className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <p className="text-lg font-semibold text-gray-600 mb-2">No influencers found</p>
+                          <p className="text-sm text-gray-500">No influencers match the selected filters. Try adjusting your filter criteria.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    <AnimatePresence mode="popLayout">
+                      {/* Paginated influencers */}
+                      {paginatedInfluencers.map((influencer, index) => {
+                        const globalRank = startIndex + index + 1;
+
+                        // Get MCM ratings from API
+                        const mcmRatingsMap = selectedPlatform === "youtube" ? youtubeMcmRatings : telegramMcmRatings;
+                        const mcmData = mcmRatingsMap[influencer.id] || {};
+
+                        // Extract all available yearly ratings dynamically
+                        const scatterData = [];
+                        const years = [];
+
+                        // Find all year fields in the data
+                        Object.keys(mcmData).forEach(key => {
+                          const match = key.match(/star_rating\.yearly\.(\d{4})\./);
+                          if (match) {
+                            const year = parseInt(match[1]);
+                            if (!years.includes(year)) {
+                              years.push(year);
+                            }
+                          }
+                        });
+
+                        // Sort years in ascending order
+                        years.sort((a, b) => a - b);
+
+                        // Build scatter data for each year
+                        years.forEach((year, yearIndex) => {
+                          const fieldKey = `star_rating.yearly.${year}.${selectedTimeframe}`;
+                          if (mcmData[fieldKey] && mcmData[fieldKey].current_rating) {
+                            scatterData.push({
+                              year: yearIndex,
+                              yearLabel: year,
+                              rating: mcmData[fieldKey].current_rating,
+                              finalScore: mcmData[fieldKey].current_final_score
+                            });
+                          }
+                        });
+
+                        const recommendations = getRecentRecommendations();
+
+                        return (
+                          <motion.tr
+                            key={influencer.id}
+                            layout
+                            layoutId={`leaderboard-${influencer.id}`}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            transition={{
+                              layout: {
+                                type: "spring",
+                                stiffness: 100,
+                                damping: 18,
+                                mass: 1.5
+                              },
+                              opacity: { duration: 0.5 },
+                              x: { duration: 0.5 }
+                            }}
+                            className="hover:bg-gray-50 cursor-pointer"
+                            style={{ position: 'relative', zIndex: 1 }}
+                            onClick={() => {
+                              router.push(
+                                selectedPlatform === "youtube"
+                                  ? `/influencers/${influencer.id}`
+                                  : `/telegram-influencer/${influencer.id}`
+                              );
+                            }}
+                          >
+                            <td className="px-1 py-2 border-r border-gray-300">
+                              <Link
+                                href={
+                                  selectedPlatform === "youtube"
+                                    ? `/influencers/${influencer.id}`
+                                    : `/telegram-influencer/${influencer.id}`
+                                }
+                                className="block"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <div className="flex flex-col items-center gap-0.5">
+                                  {/* Profile Image */}
+                                  <div className="flex-shrink-0">
+                                    {influencer.channel_thumbnails?.high?.url ? (
+                                      <Image
+                                        src={influencer.channel_thumbnails.high.url}
+                                        alt={influencer.name || "Influencer"}
+                                        width={40}
+                                        height={40}
+                                        className="w-12 h-12 rounded-full object-cover"
+                                        onError={(e) => {
+                                          e.target.style.display = 'none';
+                                          e.target.nextSibling.style.display = 'flex';
+                                        }}
+                                      />
+                                    ) : null}
+
+                                    {/* Name Initial Fallback */}
+                                    <div
+                                      className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center flex"
+                                      style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
+                                    >
+                                      <span className="text-white text-xl font-bold">
+                                        {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Name and Ratings */}
+                                  <div className="w-full">
+                                    {/* Name + Platform Icon */}
+                                    <div className="flex items-center justify-center gap-0.5 mb-0.5">
+                                      <span className="text-sm font-semibold text-gray-900 truncate">
+                                        {influencer.name?.replace(/_/g, " ") || "Unknown"}
+                                      </span>
+
+                                      {selectedPlatform === "youtube" ? (
+                                        <svg className="w-4 h-4 text-red-600 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                        </svg>
+                                      ) : (
+                                        <svg className="w-4 h-4 text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+                                          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.234-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                                        </svg>
+                                      )}
+                                    </div>
+
+                                    {/* Yearly Rating Chart */}
+                                    <div className="flex justify-center">
+                                      {scatterData.length > 0 ? (
+                                        <div className="space-y-0">
+                                          {scatterData.filter(point => point.yearLabel !== 2021).map((point, idx) => {
+                                            const fullStars = Math.floor(point.rating);
+                                            const hasHalfStar = point.rating % 1 >= 0.5;
+                                            const totalStars = 5;
+                                            const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+
+                                            return (
+                                              <div
+                                                key={idx}
+                                                className="flex items-center gap-0.5"
+                                                title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
+                                              >
+                                                <span className="text-xs text-gray-600 font-medium w-8">
+                                                  {point.yearLabel}
+                                                </span>
+                                                <div className="flex items-center gap-0.5">
+                                                  {[...Array(fullStars)].map((_, i) => (
+                                                    <FaStar key={`full-${i}`} className="text-yellow-500 w-2.5 h-2.5" />
+                                                  ))}
+                                                  {hasHalfStar && (
+                                                    <FaStarHalfAlt key="half" className="text-yellow-500 w-2.5 h-2.5" />
+                                                  )}
+                                                  {[...Array(emptyStars)].map((_, i) => (
+                                                    <FaStar key={`empty-${i}`} className="text-gray-400 w-2.5 h-2.5" />
+                                                  ))}
+                                                </div>
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      ) : (
+                                        <div className="text-xs text-gray-400">loading...</div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              </Link>
+                            </td>
+                            {/* ROI Column */}
+                            <td className="px-1 py-2 border-r border-gray-300">
+                              <div className="flex flex-col items-center justify-center p-1 bg-purple-50 rounded-lg">
+                                <span className="text-sm font-semibold text-purple-800">
+                                  {influencer.prob_weighted_returns !== undefined
+                                    ? influencer.prob_weighted_returns.toFixed(1)
+                                    : '0.0'}
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* Win Rate Column */}
+                            <td className="px-1 py-2 border-r border-gray-300">
+                              <div className="flex flex-col items-center justify-center p-1 bg-blue-50 rounded-lg">
+                                <span className="text-sm font-semibold text-blue-800">
+                                  {influencer.win_percentage !== undefined
+                                    ? `${Math.round(influencer.win_percentage)}%`
+                                    : '0%'}
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* Total Calls Column */}
+                            <td className="px-1 py-2 border-r border-gray-300">
+                              <div className="flex flex-col items-center justify-center p-1 bg-green-50 rounded-lg">
+                                <span className="text-sm font-semibold text-green-800">
+                                  {influencer.price_counts ? influencer.price_counts.toLocaleString() : '0'}
+                                </span>
+                              </div>
+                            </td>
+                            {/* Subscribers Column */}
+                            <td className="px-1 py-2 border-r border-gray-300">
+                              <div className="flex flex-col items-center justify-center p-1 bg-orange-50 rounded-lg">
+                                <span className="text-sm font-semibold text-orange-800">
+                                  {formatNumber(influencer.subs)}
+                                </span>
+                              </div>
+                            </td>
+                            {/* Bullish Short Term Column */}
+                            <td className="px-1 py-2 border-r border-gray-300">
+                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
+                                <div className="p-1.5">
+                                  <div className="flex items-center justify-center gap-4">
+                                    {/* First Column - Coin Icons */}
+                                    <div className="flex flex-col items-center justify-center gap-1">
+                                      {recommendations.bullish_short.map((rec, idx) => (
+                                        <div key={idx} className="h-4 flex items-center justify-center">
+                                          {rec.icon}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {/* Second Column - Coin Symbols */}
+                                    <div className="flex flex-col items-start justify-center gap-1">
+                                      {recommendations.bullish_short.map((rec, idx) => (
+                                        <span key={idx} className="text-xs font-semibold text-gray-800">
+                                          {rec.coin}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            {/* Bullish Long Term Column */}
+                            <td className="px-1 py-2 border-r border-gray-300">
+                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
+                                <div className="p-1.5">
+                                  <div className="flex items-center justify-center gap-4">
+                                    {/* First Column - Coin Icons */}
+                                    <div className="flex flex-col items-center justify-center gap-1">
+                                      {recommendations.bullish_long.map((rec, idx) => (
+                                        <div key={idx} className="h-4 flex items-center justify-center">
+                                          {rec.icon}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {/* Second Column - Coin Symbols */}
+                                    <div className="flex flex-col items-start justify-center gap-1">
+                                      {recommendations.bullish_long.map((rec, idx) => (
+                                        <span key={idx} className="text-xs font-semibold text-gray-800">
+                                          {rec.coin}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            {/* Bearish Short Term Column */}
+                            <td className="px-1 py-2 border-r border-gray-300">
+                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
+                                <div className="p-1.5">
+                                  <div className="flex items-center justify-center gap-4">
+                                    {/* First Column - Coin Icons */}
+                                    <div className="flex flex-col items-center justify-center gap-1">
+                                      {recommendations.bearish_short.map((rec, idx) => (
+                                        <div key={idx} className="h-4 flex items-center justify-center">
+                                          {rec.icon}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {/* Second Column - Coin Symbols */}
+                                    <div className="flex flex-col items-start justify-center gap-1">
+                                      {recommendations.bearish_short.map((rec, idx) => (
+                                        <span key={idx} className="text-xs font-semibold text-gray-800">
+                                          {rec.coin}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                            {/* Bearish Long Term Column */}
+                            <td className="px-1 py-2">
+                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
+                                <div className="p-1.5">
+                                  <div className="flex items-center justify-center gap-4">
+                                    {/* First Column - Coin Icons */}
+                                    <div className="flex flex-col items-center justify-center gap-1">
+                                      {recommendations.bearish_long.map((rec, idx) => (
+                                        <div key={idx} className="h-4 flex items-center justify-center">
+                                          {rec.icon}
+                                        </div>
+                                      ))}
+                                    </div>
+                                    {/* Second Column - Coin Symbols */}
+                                    <div className="flex flex-col items-start justify-center gap-1">
+                                      {recommendations.bearish_long.map((rec, idx) => (
+                                        <span key={idx} className="text-xs font-semibold text-gray-800">
+                                          {rec.coin}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </motion.tr>
+                        );
+                      })}
+                    </AnimatePresence>
+                  )}
+                </tbody>
+              </table>
             </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="mt-8 bg-white rounded-lg shadow-sm border border-gray-200 px-6 py-4 flex items-center justify-between">
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
                 <div className="text-sm text-gray-700">
                   Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
                   <span className="font-medium">{Math.min(endIndex, filteredInfluencers.length)}</span> of{" "}
@@ -910,6 +964,7 @@ export default function InfluencerSearchPage() {
                 </div>
               </div>
             )}
+          </div>
         </div>
       </main>
     </div>

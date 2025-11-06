@@ -10,7 +10,7 @@ const navLinks = [
   { name: "Landing Page", href: "/home", icon: FaGlobe },
   { name: "Home", href: "/landing-page", icon: FaHome },
   { name: "Leaderboard", href: "/influencer-search", icon: FaChartBar },
-  // { name: "leaderboard2", href: "/influencerssearch", icon: FaChartBar },
+  { name: "leaderboard2", href: "/influencerssearch", icon: FaChartBar },
   { name: "MCM Signal", href: "/mcm-final", icon: FaChartLine },
   // { name: "Plans", href: "/plans", icon: FaTrophy },
   // { name: "Blog", href: "/blog", icon: FaBlog },
