@@ -1133,7 +1133,7 @@ export default function MCMSignalPage() {
                         <table className="w-full text-sm">
                           <thead className="bg-gray-100">
                             <tr>
-                              <th className="px-4 py-3 text-left font-semibold border-r border-gray-300">Metric</th>
+                              <th className="px-4 py-3 text-left font-semibold border-r border-gray-300">Summary</th>
                               <th className="px-4 py-3 text-center font-semibold border-r border-gray-300">24 Hrs</th>
                               <th className="px-4 py-3 text-center font-semibold border-r border-gray-300">7 Days</th>
                               <th className="px-4 py-3 text-center font-semibold border-r border-gray-300">30 Days</th>
@@ -1224,7 +1224,7 @@ export default function MCMSignalPage() {
                           <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Coin Name</th>
                           <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Base Price</th>
                           <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">24 Hrs Price</th>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">24 Hrs % change</th>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">24 Hrs % Returns</th>
                           <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">7 Days % change</th>
                           <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">30 Days % change</th>
                           <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">60 Days % change</th>
