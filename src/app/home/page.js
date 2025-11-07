@@ -4,6 +4,10 @@ import YoutubeTelegramDataTableGuage from "../components/YoutubeTelegramDataTabl
 import InfluencerFlashCard from "../components/InfluencerFlashCard";
 import TestimonialsSection from "../components/TestimonialsSection";
 import YouTubeTelegramDataTable from "../components/YouTubeTelegramDataTable";
+import YouTubeTelegramDataTableStack from "../components/YoutubeTelegramDataTableStack";
+import YouTubeTelegramDataTableMatrix from "../components/YoutubeTelegramDataTableMatrix";
+import YouTubeTelegramDataTableChips from "../components/YoutubeTelegramDataTableChips";
+import YouTubeTelegramDataSparklines from "../components/YouTubeTelegramDataTableSparklines";
 import CTASection from "../components/CTASection";
 import { useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
@@ -410,6 +414,19 @@ export default function HomePage() {
         {/* YouTube Telegram Data Table Guage Component */}
         <div className="mt-16">
           <YouTubeTelegramDataTable useLocalTime={useLocalTime} />
+        </div>
+
+        <div className="mt-16">
+          <YouTubeTelegramDataTableStack useLocalTime={useLocalTime} />
+        </div>
+        <div className="mt-16">
+          <YouTubeTelegramDataSparklines useLocalTime={useLocalTime} />
+        </div>
+        <div className="mt-16">
+          <YouTubeTelegramDataTableChips useLocalTime={useLocalTime} />
+        </div>
+        <div className="mt-16">
+          <YouTubeTelegramDataTableMatrix useLocalTime={useLocalTime} />
         </div>
 
         {/* Influencer Flash News Text */}

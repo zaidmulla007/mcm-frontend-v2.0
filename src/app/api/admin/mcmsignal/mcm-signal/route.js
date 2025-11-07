@@ -30,6 +30,16 @@ export async function GET(request) {
         if (searchParams.get('rule_24_min_posts')) params.append('rule_24_min_posts', searchParams.get('rule_24_min_posts'));
         if (searchParams.get('rule_24_sentiment_pct')) params.append('rule_24_sentiment_pct', searchParams.get('rule_24_sentiment_pct'));
 
+        // Advanced Settings - Short Term
+        if (searchParams.get('short_term_min_count')) params.append('short_term_min_count', searchParams.get('short_term_min_count'));
+        if (searchParams.get('short_term_min_percent')) params.append('short_term_min_percent', searchParams.get('short_term_min_percent'));
+        if (searchParams.get('short_term_influencer_min_rating')) params.append('short_term_influencer_min_rating', searchParams.get('short_term_influencer_min_rating'));
+
+        // Advanced Settings - Long Term
+        if (searchParams.get('long_term_min_count')) params.append('long_term_min_count', searchParams.get('long_term_min_count'));
+        if (searchParams.get('long_term_min_percent')) params.append('long_term_min_percent', searchParams.get('long_term_min_percent'));
+        if (searchParams.get('long_term_influencer_min_rating')) params.append('long_term_influencer_min_rating', searchParams.get('long_term_influencer_min_rating'));
+
         const apiUrl = `http://37.27.120.45:5901/api/admin/mcmsignal/mcm-signal?${params.toString()}`;
 
         const response = await fetch(apiUrl, {

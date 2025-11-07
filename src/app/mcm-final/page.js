@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 
 const platforms = [
   {
@@ -41,6 +41,9 @@ export default function MCMSignalPage() {
   const [periods, setPeriods] = useState([]);
   const [expandedPeriods, setExpandedPeriods] = useState({});
 
+  // AbortController ref to cancel previous requests
+  const abortControllerRef = useRef(null);
+
   // Platform toggle state
   const [selectedPlatform, setSelectedPlatform] = useState("YTTG");
 
@@ -75,8 +78,10 @@ export default function MCMSignalPage() {
   const [avgInfluenceScore, setAvgInfluenceScore] = useState("");
   const [shortTermMinCount, setShortTermMinCount] = useState("");
   const [shortTermMinPercent, setShortTermMinPercent] = useState("");
+  const [shortTermInfluencerMinRating, setShortTermInfluencerMinRating] = useState("");
   const [longTermMinCount, setLongTermMinCount] = useState("");
   const [longTermMinPercent, setLongTermMinPercent] = useState("");
+  const [longTermInfluencerMinRating, setLongTermInfluencerMinRating] = useState("");
 
   // Influencer selection state
   const [selectedInfluencer, setSelectedInfluencer] = useState("all");
@@ -126,6 +131,22 @@ export default function MCMSignalPage() {
 
   // Fetch MCM Signal Data
   const fetchMCMSignalData = useCallback(async () => {
+    // Abort previous request if it exists
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create new abort controller for this request
+    abortControllerRef.current = new AbortController();
+
+    // Clear previous data immediately to free memory
+    setCoinsData([]);
+    setPeriods([]);
+    setStatistics(null);
+    setFilters(null);
+    setSummary(null);
+    setExpandedPeriods({});
+
     setLoading(true);
     setError(null);
     try {
@@ -165,8 +186,35 @@ export default function MCMSignalPage() {
       if (rule4MinPosts) params.append('rule_24_min_posts', rule4MinPosts);
       if (rule4Sentiment) params.append('rule_24_sentiment_pct', rule4Sentiment);
 
-      const res = await fetch(`/api/admin/mcmsignal/mcm-signal?${params.toString()}`);
+      // Advanced Settings - Short Term (always send, default to 0 if empty)
+      params.append('short_term_min_count', shortTermMinCount || '0');
+      params.append('short_term_min_percent', shortTermMinPercent || '0');
+      params.append('short_term_influencer_min_rating', shortTermInfluencerMinRating || '0');
+
+      // Advanced Settings - Long Term (always send, default to 0 if empty)
+      params.append('long_term_min_count', longTermMinCount || '0');
+      params.append('long_term_min_percent', longTermMinPercent || '0');
+      params.append('long_term_influencer_min_rating', longTermInfluencerMinRating || '0');
+
+      // Debug: Log the complete URL being sent
+      console.log('API Request URL:', `/api/admin/mcmsignal/mcm-signal?${params.toString()}`);
+      console.log('Advanced Settings Values:', {
+        shortTermMinCount,
+        shortTermMinPercent,
+        shortTermInfluencerMinRating,
+        longTermMinCount,
+        longTermMinPercent,
+        longTermInfluencerMinRating
+      });
+
+      const res = await fetch(`/api/admin/mcmsignal/mcm-signal?${params.toString()}`, {
+        signal: abortControllerRef.current.signal
+      });
       const data = await res.json();
+
+      // Debug: Log the response
+      console.log('API Response:', data);
+      console.log('Received influencerFilters:', data.filters?.influencerFilters);
 
       if (data.success) {
         setFilters(data.filters);
@@ -208,6 +256,11 @@ export default function MCMSignalPage() {
         setExpandedPeriods({});
       }
     } catch (err) {
+      // Don't set error if request was aborted (user clicked submit again)
+      if (err.name === 'AbortError') {
+        console.log('Previous request was cancelled');
+        return;
+      }
       console.error('Error fetching MCM Signal data:', err);
       setError("Failed to fetch data");
       setCoinsData([]);
@@ -219,14 +272,14 @@ export default function MCMSignalPage() {
     } finally {
       setLoading(false);
     }
-  }, [dateFrom, dateTo, sentimentType, coinType, source, selectedPlatform, timePeriodFilter, rule1MinPosts, rule1Sentiment, rule2MinPosts, rule2Sentiment, rule3MinPosts, rule3Sentiment, rule4MinPosts, rule4Sentiment]);
+  }, [dateFrom, dateTo, sentimentType, coinType, source, selectedPlatform, timePeriodFilter, rule1MinPosts, rule1Sentiment, rule2MinPosts, rule2Sentiment, rule3MinPosts, rule3Sentiment, rule4MinPosts, rule4Sentiment, shortTermMinCount, shortTermMinPercent, shortTermInfluencerMinRating, longTermMinCount, longTermMinPercent, longTermInfluencerMinRating]);
 
   // Removed auto-fetch on filter changes - now only fetches on submit
 
   // Reset current page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [dateFrom, dateTo, sentimentType, coinType, source, selectedPlatform, timePeriodFilter, rule1MinPosts, rule1Sentiment, rule2MinPosts, rule2Sentiment, rule3MinPosts, rule3Sentiment, rule4MinPosts, rule4Sentiment]);
+  }, [dateFrom, dateTo, sentimentType, coinType, source, selectedPlatform, timePeriodFilter, rule1MinPosts, rule1Sentiment, rule2MinPosts, rule2Sentiment, rule3MinPosts, rule3Sentiment, rule4MinPosts, rule4Sentiment, shortTermMinCount, shortTermMinPercent, shortTermInfluencerMinRating, longTermMinCount, longTermMinPercent, longTermInfluencerMinRating]);
 
   // Handle form submission
   const handleSubmit = (e) => {
@@ -399,6 +452,7 @@ export default function MCMSignalPage() {
                   >
                     <option value="Bullish">Bullish</option>
                     <option value="Bearish">Bearish</option>
+                    <option value="bullishandbearish">Bullish + Bearish</option>
                   </select>
                 </div>
 
@@ -624,19 +678,6 @@ export default function MCMSignalPage() {
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-4">
                   <h4 className="font-semibold text-gray-900 text-base">Advanced Settings</h4>
-                  <span className="text-xs text-red-600 font-semibold">(To be discussed) Not Done</span>
-                </div>
-
-                {/* AVG Influence Score */}
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm text-gray-700 font-medium">AVG Influence Score (Min)</label>
-                  <input
-                    type="text"
-                    value={avgInfluenceScore}
-                    onChange={(e) => setAvgInfluenceScore(e.target.value)}
-                    placeholder="Leave blank if not needed"
-                    className="bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
                 </div>
 
                 {/* Short Term */}
@@ -662,6 +703,16 @@ export default function MCMSignalPage() {
                       className="bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                   </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-700">Min Influencer Star Rating</label>
+                    <input
+                      type="text"
+                      value={shortTermInfluencerMinRating}
+                      onChange={(e) => setShortTermInfluencerMinRating(e.target.value)}
+                      placeholder="Optional"
+                      className="bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
                 </div>
 
                 {/* Long Term */}
@@ -683,6 +734,16 @@ export default function MCMSignalPage() {
                       type="text"
                       value={longTermMinPercent}
                       onChange={(e) => setLongTermMinPercent(e.target.value)}
+                      placeholder="Optional"
+                      className="bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-gray-700">Min Influencer Star Rating</label>
+                    <input
+                      type="text"
+                      value={longTermInfluencerMinRating}
+                      onChange={(e) => setLongTermInfluencerMinRating(e.target.value)}
                       placeholder="Optional"
                       className="bg-white border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
@@ -1062,72 +1123,8 @@ export default function MCMSignalPage() {
                 {/* Period Content - Expandable */}
                 {expandedPeriods[period.periodKey] && (
                   <div className="p-6">
-                    {/* Signals Table for this period */}
-                    <div className="mb-6">
-                      <h4 className="font-semibold text-gray-900 mb-3">Signals</h4>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead className="bg-blue-600 text-white">
-                            <tr>
-                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Date</th>
-                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Symbol</th>
-                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Coin Name</th>
-                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Base Price</th>
-                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">24 Hrs Price</th>
-                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">24 Hrs %</th>
-                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">7 Days %</th>
-                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">30 Days %</th>
-                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">60 Days %</th>
-                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">90 Days %</th>
-                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">180 Days %</th>
-                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap">1 Year %</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {period.signals?.map((signal, idx) => (
-                              <tr
-                                key={signal.Symbol + signal.Date + idx}
-                                className={`border-b border-gray-300 hover:bg-blue-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
-                              >
-                                <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">{signal.Date || 'N/A'}</td>
-                                <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">{signal.Symbol || 'N/A'}</td>
-                                <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">{signal['Coin Name'] || 'N/A'}</td>
-                                <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
-                                  ${signal['Base Price'] ? Math.round(parseFloat(signal['Base Price'])).toLocaleString('en-US') : 'N/A'}
-                                </td>
-                                <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
-                                  ${signal['24 Hrs Price'] ? Math.round(parseFloat(signal['24 Hrs Price'])).toLocaleString('en-US') : 'N/A'}
-                                </td>
-                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['24 Hrs % returns'] || 0) > 0 ? 'text-green-600' : (signal['24 Hrs % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['24 Hrs % returns'] != null ? `${signal['24 Hrs % returns'] > 0 ? '+' : ''}${Math.round(signal['24 Hrs % returns'])}%` : 'N/A'}
-                                </td>
-                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['7 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['7 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['7 Days % returns'] != null ? `${signal['7 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['7 Days % returns'])}%` : 'N/A'}
-                                </td>
-                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['30 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['30 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['30 Days % returns'] != null ? `${signal['30 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['30 Days % returns'])}%` : 'N/A'}
-                                </td>
-                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['60 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['60 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['60 Days % returns'] != null ? `${signal['60 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['60 Days % returns'])}%` : 'N/A'}
-                                </td>
-                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['90 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['90 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['90 Days % returns'] != null ? `${signal['90 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['90 Days % returns'])}%` : 'N/A'}
-                                </td>
-                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['180 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['180 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['180 Days % returns'] != null ? `${signal['180 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['180 Days % returns'])}%` : 'N/A'}
-                                </td>
-                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap ${(signal['1 Year % returns'] || 0) > 0 ? 'text-green-600' : (signal['1 Year % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
-                                  {signal['1 Year % returns'] != null ? `${signal['1 Year % returns'] > 0 ? '+' : ''}${Math.round(signal['1 Year % returns'])}%` : 'N/A'}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    </div>
-
                     {/* Statistics Table for this period */}
-                    <div>
+                    <div className="mb-6">
                       <h4 className="font-semibold text-gray-900 mb-3">Statistics for {period.period}</h4>
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
@@ -1188,6 +1185,70 @@ export default function MCMSignalPage() {
                         </table>
                       </div>
                     </div>
+
+                    {/* Signals Table for this period */}
+                    <div>
+                      <h4 className="font-semibold text-gray-900 mb-3">Signals</h4>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-xs">
+                          <thead className="bg-gray-100 text-black">
+                            <tr>
+                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300 ">Date</th>
+                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">Symbol</th>
+                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">Coin Name</th>
+                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300 ">Base Price</th>
+                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">24 Hrs Price</th>
+                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">24 Hrs %</th>
+                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">7 Days %</th>
+                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">30 Days %</th>
+                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">60 Days %</th>
+                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">90 Days %</th>
+                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">180 Days %</th>
+                              <th className="px-3 py-2 text-center font-semibold whitespace-nowrap">1 Year %</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {period.signals?.map((signal, idx) => (
+                              <tr
+                                key={signal.Symbol + signal.Date + idx}
+                                className={`border-b border-gray-300 hover:bg-blue-50 transition-colors ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+                              >
+                                <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">{signal.Date || 'N/A'}</td>
+                                <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">{signal.Symbol || 'N/A'}</td>
+                                <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">{signal['Coin Name'] || 'N/A'}</td>
+                                <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
+                                  ${signal['Base Price'] ? Math.round(parseFloat(signal['Base Price'])).toLocaleString('en-US') : 'N/A'}
+                                </td>
+                                <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
+                                  ${signal['24 Hrs Price'] ? Math.round(parseFloat(signal['24 Hrs Price'])).toLocaleString('en-US') : 'N/A'}
+                                </td>
+                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['24 Hrs % returns'] || 0) > 0 ? 'text-green-600' : (signal['24 Hrs % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                  {signal['24 Hrs % returns'] != null ? `${signal['24 Hrs % returns'] > 0 ? '+' : ''}${Math.round(signal['24 Hrs % returns'])}%` : 'N/A'}
+                                </td>
+                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['7 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['7 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                  {signal['7 Days % returns'] != null ? `${signal['7 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['7 Days % returns'])}%` : 'N/A'}
+                                </td>
+                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['30 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['30 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                  {signal['30 Days % returns'] != null ? `${signal['30 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['30 Days % returns'])}%` : 'N/A'}
+                                </td>
+                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['60 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['60 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                  {signal['60 Days % returns'] != null ? `${signal['60 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['60 Days % returns'])}%` : 'N/A'}
+                                </td>
+                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['90 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['90 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                  {signal['90 Days % returns'] != null ? `${signal['90 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['90 Days % returns'])}%` : 'N/A'}
+                                </td>
+                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(signal['180 Days % returns'] || 0) > 0 ? 'text-green-600' : (signal['180 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                  {signal['180 Days % returns'] != null ? `${signal['180 Days % returns'] > 0 ? '+' : ''}${Math.round(signal['180 Days % returns'])}%` : 'N/A'}
+                                </td>
+                                <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap ${(signal['1 Year % returns'] || 0) > 0 ? 'text-green-600' : (signal['1 Year % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'}`}>
+                                  {signal['1 Year % returns'] != null ? `${signal['1 Year % returns'] > 0 ? '+' : ''}${Math.round(signal['1 Year % returns'])}%` : 'N/A'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1196,118 +1257,7 @@ export default function MCMSignalPage() {
         </section>
       )}
 
-      {/* First Table - Coins Historical Price Data - Only show for daily data */}
-      {periods.length === 0 && (
-        <section className="max-w-full mx-auto px-4 mb-8">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Historical Price Performance</h3>
-          {loading ? (
-            <div className="bg-white rounded-lg shadow-lg p-4">
-              <div className="animate-pulse space-y-4">
-                <div className="h-10 bg-gray-200 rounded"></div>
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="h-16 bg-gray-100 rounded"></div>
-                ))}
-              </div>
-            </div>
-          ) : error ? (
-            <div className="text-center text-red-600 py-8">{error}</div>
-          ) : (
-            <>
-              {sortedCoinsData.length > 0 ? (
-                <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-300">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead className="bg-blue-600 text-white">
-                        <tr>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Date</th>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Sentiment</th>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Coin Name</th>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">Base Price</th>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">24 Hrs Price</th>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">24 Hrs % Returns</th>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">7 Days % change</th>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">30 Days % change</th>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">60 Days % change</th>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">90 Days % change</th>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-blue-500">180 Days % change</th>
-                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap">1 Year % change</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {sortedCoinsData.map((coin, index) => (
-                          <tr
-                            key={coin.Symbol + coin.Date + index}
-                            className={`border-b border-gray-300 hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
-                              }`}
-                          >
-                            <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">
-                              {coin.Date || 'N/A'}
-                            </td>
-                            <td className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200">
-                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${filters?.sentimentType === 'bullish'
-                                ? 'bg-green-100 text-green-800'
-                                : filters?.sentimentType === 'bearish'
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-gray-100 text-gray-800'
-                                }`}>
-                                {filters?.sentimentType ? filters.sentimentType.charAt(0).toUpperCase() + filters.sentimentType.slice(1) : 'N/A'}
-                              </span>
-                            </td>
-                            <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">
-                              {coin['Coin Name'] || 'N/A'}
-                            </td>
-                            <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
-                              ${coin['Base Price'] ? Math.round(parseFloat(coin['Base Price'])).toLocaleString('en-US') : 'N/A'}
-                            </td>
-                            <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
-                              ${coin['24 Hrs Price'] ? Math.round(parseFloat(coin['24 Hrs Price'])).toLocaleString('en-US') : 'N/A'}
-                            </td>
-                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['24 Hrs % returns'] || 0) > 0 ? 'text-green-600' : (coin['24 Hrs % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
-                              }`}>
-                              {coin['24 Hrs % returns'] != null ? `${coin['24 Hrs % returns'] > 0 ? '+' : ''}${Math.round(coin['24 Hrs % returns'])}%` : 'N/A'}
-                            </td>
-                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['7 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['7 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
-                              }`}>
-                              {coin['7 Days % returns'] != null ? `${coin['7 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['7 Days % returns'])}%` : 'N/A'}
-                            </td>
-                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['30 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['30 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
-                              }`}>
-                              {coin['30 Days % returns'] != null ? `${coin['30 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['30 Days % returns'])}%` : 'N/A'}
-                            </td>
-                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['60 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['60 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
-                              }`}>
-                              {coin['60 Days % returns'] != null ? `${coin['60 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['60 Days % returns'])}%` : 'N/A'}
-                            </td>
-                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['90 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['90 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
-                              }`}>
-                              {coin['90 Days % returns'] != null ? `${coin['90 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['90 Days % returns'])}%` : 'N/A'}
-                            </td>
-                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['180 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['180 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
-                              }`}>
-                              {coin['180 Days % returns'] != null ? `${coin['180 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['180 Days % returns'])}%` : 'N/A'}
-                            </td>
-                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap ${(coin['1 Year % returns'] || 0) > 0 ? 'text-green-600' : (coin['1 Year % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
-                              }`}>
-                              {coin['1 Year % returns'] != null ? `${coin['1 Year % returns'] > 0 ? '+' : ''}${Math.round(coin['1 Year % returns'])}%` : 'N/A'}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              ) : !loading && (
-                <div className="bg-white rounded-lg shadow-lg p-12 text-center border border-gray-300">
-                  <div className="text-gray-400 text-lg">No coins found</div>
-                  <div className="text-gray-500 text-sm mt-2">Try adjusting your filters</div>
-                </div>
-              )}
-            </>
-          )}
-        </section>
-      )}
-
-      {/* Second Table - Performance Metrics - Only show for daily data */}
+      {/* First Table - Performance Metrics - Only show for daily data */}
       {periods.length === 0 && (
         <section className="max-w-full mx-auto px-4 mb-8">
           <h3 className="text-xl font-bold text-gray-900 mb-4">Performance Metrics</h3>
@@ -1379,6 +1329,121 @@ export default function MCMSignalPage() {
                 </table>
               </div>
             </div>
+          )}
+        </section>
+      )}
+
+      {/* Second Table - Coins Historical Price Data - Only show for daily data */}
+      {periods.length === 0 && (
+        <section className="max-w-full mx-auto px-4 mb-8">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Historical Price Performance</h3>
+          {loading ? (
+            <div className="bg-white rounded-lg shadow-lg p-4">
+              <div className="animate-pulse space-y-4">
+                <div className="h-10 bg-gray-200 rounded"></div>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-16 bg-gray-100 rounded"></div>
+                ))}
+              </div>
+            </div>
+          ) : error ? (
+            <div className="text-center text-red-600 py-8">{error}</div>
+          ) : (
+            <>
+              {sortedCoinsData.length > 0 ? (
+                <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-300">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-xs">
+                      <thead className="bg-gray-100 text-black">
+                        <tr>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300 ">Date</th>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">Sentiment</th>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">Coin Name</th>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">Base Price</th>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">24 Hrs Price</th>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">24 Hrs % Returns</th>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">7 Days % change</th>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">30 Days % change</th>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">60 Days % change</th>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300 ">90 Days % change</th>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-300">180 Days % change</th>
+                          <th className="px-3 py-2 text-center font-semibold whitespace-nowrap ">1 Year % change</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sortedCoinsData.map((coin, index) => (
+                          <tr
+                            key={coin.Symbol + coin.Date + index}
+                            className={`border-b border-gray-300 hover:bg-blue-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'
+                              }`}
+                          >
+                            <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">
+                              {coin.Date || 'N/A'}
+                            </td>
+                            <td className="px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200">
+                              <span className={`px-2 py-1 rounded-full text-xs font-semibold ${(filters?.sentimentType === 'bullishandbearish' ? coin.Sentiment?.toLowerCase() : filters?.sentimentType) === 'bullish'
+                                  ? 'bg-green-100 text-green-800'
+                                  : (filters?.sentimentType === 'bullishandbearish' ? coin.Sentiment?.toLowerCase() : filters?.sentimentType) === 'bearish'
+                                    ? 'bg-red-100 text-red-800'
+                                    : 'bg-gray-100 text-gray-800'
+                                }`}>
+                                {filters?.sentimentType === 'bullishandbearish'
+                                  ? (coin.Sentiment || 'N/A')
+                                  : filters?.sentimentType
+                                    ? filters.sentimentType.charAt(0).toUpperCase() + filters.sentimentType.slice(1)
+                                    : 'N/A'}
+                              </span>
+                            </td>
+                            <td className="px-3 py-2 text-center text-gray-700 whitespace-nowrap border-r border-gray-200">
+                              {coin['Coin Name'] || 'N/A'}
+                            </td>
+                            <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
+                              ${coin['Base Price'] ? Math.round(parseFloat(coin['Base Price'])).toLocaleString('en-US') : 'N/A'}
+                            </td>
+                            <td className="px-3 py-2 text-center text-gray-700 font-mono whitespace-nowrap border-r border-gray-200">
+                              ${coin['24 Hrs Price'] ? Math.round(parseFloat(coin['24 Hrs Price'])).toLocaleString('en-US') : 'N/A'}
+                            </td>
+                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['24 Hrs % returns'] || 0) > 0 ? 'text-green-600' : (coin['24 Hrs % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                              }`}>
+                              {coin['24 Hrs % returns'] != null ? `${coin['24 Hrs % returns'] > 0 ? '+' : ''}${Math.round(coin['24 Hrs % returns'])}%` : 'N/A'}
+                            </td>
+                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['7 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['7 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                              }`}>
+                              {coin['7 Days % returns'] != null ? `${coin['7 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['7 Days % returns'])}%` : 'N/A'}
+                            </td>
+                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['30 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['30 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                              }`}>
+                              {coin['30 Days % returns'] != null ? `${coin['30 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['30 Days % returns'])}%` : 'N/A'}
+                            </td>
+                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['60 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['60 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                              }`}>
+                              {coin['60 Days % returns'] != null ? `${coin['60 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['60 Days % returns'])}%` : 'N/A'}
+                            </td>
+                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['90 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['90 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                              }`}>
+                              {coin['90 Days % returns'] != null ? `${coin['90 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['90 Days % returns'])}%` : 'N/A'}
+                            </td>
+                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap border-r border-gray-200 ${(coin['180 Days % returns'] || 0) > 0 ? 'text-green-600' : (coin['180 Days % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                              }`}>
+                              {coin['180 Days % returns'] != null ? `${coin['180 Days % returns'] > 0 ? '+' : ''}${Math.round(coin['180 Days % returns'])}%` : 'N/A'}
+                            </td>
+                            <td className={`px-3 py-2 text-center font-semibold whitespace-nowrap ${(coin['1 Year % returns'] || 0) > 0 ? 'text-green-600' : (coin['1 Year % returns'] || 0) < 0 ? 'text-red-600' : 'text-gray-600'
+                              }`}>
+                              {coin['1 Year % returns'] != null ? `${coin['1 Year % returns'] > 0 ? '+' : ''}${Math.round(coin['1 Year % returns'])}%` : 'N/A'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : !loading && (
+                <div className="bg-white rounded-lg shadow-lg p-12 text-center border border-gray-300">
+                  <div className="text-gray-400 text-lg">No coins found</div>
+                  <div className="text-gray-500 text-sm mt-2">Try adjusting your filters</div>
+                </div>
+              )}
+            </>
           )}
         </section>
       )}
