@@ -801,12 +801,12 @@ export default function InfluencerSearchPage() {
                                   <div key={idx} className="flex items-center gap-1 px-0.5 py-0 border-b border-gray-100 last:border-b-0">
                                     {/* Date */}
                                     <div className="min-w-[50px]">
-                                      <span className="text-[7px] text-gray-500 leading-tight">{rec.date}</span>
+                                      <span className="text-[7px] text-black-900 leading-tight">{rec.date}</span>
                                     </div>
 
                                     {/* Time */}
                                     <div className="min-w-[35px]">
-                                      <span className="text-[7px] text-gray-500 leading-tight">{rec.time}</span>
+                                      <span className="text-[7px] text-black-900 leading-tight">{rec.time}</span>
                                     </div>
 
                                     {/* Coin Icon and Name */}
@@ -860,7 +860,7 @@ export default function InfluencerSearchPage() {
 
                                     {/* Summary Analysis */}
                                     <div className="flex-1 min-w-[180px]">
-                                      <span className="text-[8px] text-gray-600 italic leading-tight">
+                                      <span className="text-[8px] text-black-900 italic leading-tight">
                                         {rec.summary}
                                       </span>
                                     </div>
