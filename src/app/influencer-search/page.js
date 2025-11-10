@@ -559,32 +559,32 @@ export default function InfluencerSearchPage() {
                     <th className="px-1 py-1 border-r border-gray-300"></th>
                     <th className="px-1 py-1 border-r border-gray-300"></th>
                     <th className="px-0.5 py-0.5">
-                      <div className="flex items-center gap-1 px-0.5">
-                        <div className="min-w-[50px] text-[7px] font-semibold text-gray-700 text-left pl-1">
+                      <div className="flex items-center gap-1 px-0.5 w-full">
+                        <div className="w-[6%] text-[7px] font-semibold text-gray-700 text-left pl-1">
                           Date
                         </div>
-                        <div className="min-w-[35px] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[4%] text-[7px] font-semibold text-gray-700 text-left">
                           Time
                         </div>
-                        <div className="min-w-[45px] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[5%] text-[7px] font-semibold text-gray-700 text-left">
                           Coin
                         </div>
-                        <div className="min-w-[120px] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[15%] text-[7px] font-semibold text-gray-700 text-left">
                           Sentiment (Short/Long) Term
                         </div>
-                        <div className="min-w-[70px] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[8%] text-[7px] font-semibold text-gray-700 text-left">
                           Base Price
                         </div>
-                        <div className="min-w-[70px] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[8%] text-[7px] font-semibold text-gray-700 text-left">
                           Current Price
                         </div>
-                        <div className="min-w-[60px] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[6%] text-[7px] font-semibold text-gray-700 text-left">
                           1hr %
                         </div>
-                        <div className="min-w-[60px] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[6%] text-[7px] font-semibold text-gray-700 text-left">
                           24hr %
                         </div>
-                        <div className="flex-1 min-w-[180px] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="flex-1 text-[7px] font-semibold text-gray-700 text-left">
                           Summary Analysis
                         </div>
                       </div>
@@ -798,19 +798,19 @@ export default function InfluencerSearchPage() {
                             <td className="px-0.5 py-0 align-top">
                               <div className="flex flex-col gap-0">
                                 {recommendations.map((rec, idx) => (
-                                  <div key={idx} className="flex items-center gap-1 px-0.5 py-0 border-b border-gray-100 last:border-b-0">
+                                  <div key={idx} className="flex items-center gap-1 px-0.5 py-0 border-b border-gray-100 last:border-b-0 w-full">
                                     {/* Date */}
-                                    <div className="min-w-[50px]">
+                                    <div className="w-[6%]">
                                       <span className="text-[7px] text-black-900 leading-tight">{rec.date}</span>
                                     </div>
 
                                     {/* Time */}
-                                    <div className="min-w-[35px]">
+                                    <div className="w-[4%]">
                                       <span className="text-[7px] text-black-900 leading-tight">{rec.time}</span>
                                     </div>
 
                                     {/* Coin Icon and Name */}
-                                    <div className="flex items-center gap-0.5 min-w-[45px]">
+                                    <div className="flex items-center gap-0.5 w-[5%]">
                                       <div className="flex items-center justify-center w-3">
                                         {rec.icon}
                                       </div>
@@ -820,7 +820,7 @@ export default function InfluencerSearchPage() {
                                     </div>
 
                                     {/* Sentiment with Term */}
-                                    <div className="min-w-[120px]">
+                                    <div className="w-[15%]">
                                       {rec.type === "bullish" ? (
                                         <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-green-100 text-green-700 rounded-full text-[8px] font-medium capitalize">
                                           <FaArrowUp className="text-[6px]" />
@@ -835,31 +835,31 @@ export default function InfluencerSearchPage() {
                                     </div>
 
                                     {/* Base Price */}
-                                    <div className="min-w-[70px]">
+                                    <div className="w-[8%]">
                                       <span className="text-[8px] font-semibold text-gray-900">{rec.basePrice}</span>
                                     </div>
 
                                     {/* Current Price */}
-                                    <div className="min-w-[70px]">
+                                    <div className="w-[8%]">
                                       <span className="text-[8px] font-semibold text-gray-900">{rec.currentPrice}</span>
                                     </div>
 
                                     {/* 1hr % */}
-                                    <div className="min-w-[60px]">
+                                    <div className="w-[6%]">
                                       <span className={`text-[8px] font-semibold ${rec.percentage_1hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                                         {rec.percentage_1hr}
                                       </span>
                                     </div>
 
                                     {/* 24hr % */}
-                                    <div className="min-w-[60px]">
+                                    <div className="w-[6%]">
                                       <span className={`text-[8px] font-semibold ${rec.percentage_24hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                                         {rec.percentage_24hr}
                                       </span>
                                     </div>
 
                                     {/* Summary Analysis */}
-                                    <div className="flex-1 min-w-[180px]">
+                                    <div className="flex-1">
                                       <span className="text-[8px] text-black-900 italic leading-tight">
                                         {rec.summary}
                                       </span>
