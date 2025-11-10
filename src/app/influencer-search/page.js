@@ -472,7 +472,7 @@ export default function InfluencerSearchPage() {
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 font-sans mt-5">
       {/* Main Content */}
-      <main className="w-full max-w-[100vw] mx-auto px-4 pb-8 overflow-x-hidden">
+      <main className="mx-auto px-4 pb-8 overflow-x-hidden">
         <div className="min-w-0">
           {/* Leaderboard Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
