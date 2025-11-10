@@ -226,7 +226,7 @@ export default function InfluencerProfilePage() {
   const availableYears = Object.keys(yearlyData).sort().reverse();
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans pb-16">
+    <div className="min-h-screen bg-white text-black-900 font-sans pb-16">
       {/* Profile Header */}
       <InfluencerProfileHeader
         channelData={channelData}
@@ -245,7 +245,7 @@ export default function InfluencerProfilePage() {
               className={`px-6 py-3 text-sm font-semibold border-b-2 transition whitespace-nowrap
                 ${tab === t.value
                   ? "border-blue-600 text-blue-600"
-                  : "border-transparent text-gray-600 hover:text-gray-900"
+                  : "border-transparent text-black-600 hover:text-black-900"
                 }`}
             >
               {t.label}
@@ -1236,7 +1236,7 @@ export default function InfluencerProfilePage() {
             {/* Bio & Sentiment */}
             {/* About Section */}
             <div className="bg-white rounded-xl p-6 mb-2 border border-gray-200">
-              <h3 className="text-lg font-bold mb-2 text-[#0c0023]">
+              <h3 className="font-bold mb-2 text-[#0c0023]">
                 About {channelData.influencer_name || channelData.channel_title}
               </h3>
 
@@ -1288,7 +1288,7 @@ export default function InfluencerProfilePage() {
 
             {/* Summary Dropdown Section */}
             <div className="bg-white rounded-xl p-6 mb-2 border border-gray-200">
-              <h3 className="text-lg font-bold mb-2 text-[#0c0023]">
+              <h3 className="font-bold mb-2 text-[#0c0023]">
                 Channel Summary Analysis
               </h3>
 

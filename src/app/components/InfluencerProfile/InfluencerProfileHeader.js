@@ -121,12 +121,12 @@ export default function InfluencerProfileHeader({ channelData }) {
 
               <a
                 href={`https://www.youtube.com/channel/${channelData.channel_id}`}
-                className="text-blue-700 hover:underline text-base mb-2 flex items-center gap-2"
+                className="text-blue-800 font-semibold hover:underline text-base mb-2 flex items-center gap-2"
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <svg
-                  className="w-4 h-4 text-red-500 flex-shrink-0 ml-1"
+                  className="w-4 h-4 text-red-600 flex-shrink-0 ml-1"
                   viewBox="0 0 24 24"
                   fill="currentColor"
                 >
@@ -138,11 +138,11 @@ export default function InfluencerProfileHeader({ channelData }) {
                   : "Unknown Subscribers"}
               </a>
               {/* Analysis Dates */}
-              <div className="flex flex-col sm:flex-row gap-4 text-sm text-gray-600">
+              <div className="flex flex-col sm:flex-row gap-4 text-sm font-semibold  text-black-900">
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
                     <span>📅 Analysis Start Date:</span>
-                    <span className="text-gray-900">
+                    <span className="text-black-900">
                       {channelData.Overall?.start_date
                         ? new Date(
                           channelData.Overall.start_date
@@ -172,9 +172,9 @@ export default function InfluencerProfileHeader({ channelData }) {
                   </div>
                 </div> */}
                 <div className="flex flex-col gap-1">
-                  <div className="text-sm text-gray-600 flex items-center gap-2">
+                  <div className="text-sm font-semibold text-black-900 flex items-center gap-2">
                     <span>🔄 Last System Updated:</span>
-                    <span className="text-gray-900">{channelData.last_updated
+                    <span className="text-black-900">{channelData.last_updated
                       ? `${new Date(channelData.last_updated).toLocaleDateString("en-GB", {
                         day: "2-digit",
                         month: "2-digit",
