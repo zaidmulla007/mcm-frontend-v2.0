@@ -476,69 +476,6 @@ export default function InfluencerSearchPage() {
         <div className="min-w-0">
           {/* Leaderboard Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="px-4 py-2 border-b border-gray-200">
-              {/* Filter Section inside Influencers */}
-              <div className="max-w-2xl mx-auto">
-                <div className="flex justify-center gap-4">
-                  <div className="w-48">
-                    <label className="block text-[10px] font-semibold text-gray-600 uppercase mb-1 text-center">Source</label>
-                    <select
-                      value={selectedPlatform}
-                      onChange={(e) => setSelectedPlatform(e.target.value)}
-                      className="w-full border border-indigo-200 bg-indigo-50 rounded-full px-3 py-1.5 text-xs font-medium text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
-                    >
-                      <option value="youtube">YouTube</option>
-                      <option value="telegram">Telegram</option>
-                    </select>
-                  </div>
-
-                  <div className="w-48">
-                    <label className="block text-[10px] font-semibold text-gray-600 uppercase mb-1 text-center">Rating</label>
-                    <select
-                      value={selectedRating}
-                      onChange={(e) => setSelectedRating(e.target.value)}
-                      className="w-full border border-indigo-200 bg-indigo-50 rounded-full px-3 py-1.5 text-xs font-medium text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
-                    >
-                      {ratingOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.value === "all" ? "All Ratings" : "⭐".repeat(option.stars)}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* <div>
-                    <label className="block text-[10px] font-semibold text-gray-600 uppercase mb-1 text-center">Holding Period</label>
-                    <select
-                      value={selectedTimeframe}
-                      onChange={(e) => setSelectedTimeframe(e.target.value)}
-                      className="w-full border border-indigo-200 bg-indigo-50 rounded-full px-3 py-1.5 text-xs font-medium text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
-                    >
-                      {timeframeOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-semibold text-gray-600 uppercase mb-1 text-center">Year</label>
-                    <select
-                      value={selectedYear}
-                      onChange={(e) => handleYearChange(e.target.value)}
-                      className="w-full border border-indigo-200 bg-indigo-50 rounded-full px-3 py-1.5 text-xs font-medium text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
-                    >
-                      {yearOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </div> */}
-                </div>
-              </div>
-            </div>
             <div className="overflow-x-auto">
               <table className="w-full relative">
                 <thead>
@@ -554,10 +491,41 @@ export default function InfluencerSearchPage() {
                       Latest Recommendations
                     </th>
                   </tr>
-                  {/* Sub-header row for Recommendations columns */}
+                  {/* Sub-header row with Filters and Recommendations columns */}
                   <tr className="bg-gray-100 border-b border-gray-300">
-                    <th className="px-1 py-1 border-r border-gray-300"></th>
-                    <th className="px-1 py-1 border-r border-gray-300"></th>
+                    {/* Influencer Filter */}
+                    <th className="px-1 py-0.5 border-r border-gray-300">
+                      <div className="flex justify-center">
+                        <div className="w-full max-w-[120px]">
+                          <select
+                            value={selectedPlatform}
+                            onChange={(e) => setSelectedPlatform(e.target.value)}
+                            className="w-full border border-indigo-200 bg-indigo-50 rounded-full px-2 py-0.5 text-[10px] font-medium text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                          >
+                            <option value="youtube">YouTube</option>
+                            <option value="telegram">Telegram</option>
+                          </select>
+                        </div>
+                      </div>
+                    </th>
+                    {/* MCM Rating Filter */}
+                    <th className="px-1 py-0.5 border-r border-gray-300">
+                      <div className="flex justify-center">
+                        <div className="w-full max-w-[120px]">
+                          <select
+                            value={selectedRating}
+                            onChange={(e) => setSelectedRating(e.target.value)}
+                            className="w-full border border-indigo-200 bg-indigo-50 rounded-full px-2 py-0.5 text-[10px] font-medium text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                          >
+                            {ratingOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.value === "all" ? "All Ratings" : "⭐".repeat(option.stars)}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </th>
                     <th className="px-0.5 py-0.5">
                       <div className="flex items-center gap-1 px-0.5 w-full">
                         <div className="w-[6%] text-[7px] font-semibold text-gray-700 text-left pl-1">
@@ -572,16 +540,16 @@ export default function InfluencerSearchPage() {
                         <div className="w-[9%] text-[7px] font-semibold text-gray-700 text-left">
                           Sentiment (ST/LT)
                         </div>
-                        <div className="w-[8%] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[6%] text-[7px] font-semibold text-gray-700 text-left">
                           Base Price
                         </div>
-                        <div className="w-[8%] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[6%] text-[7px] font-semibold text-gray-700 text-left">
                           Current Price
                         </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[4%] text-[7px] font-semibold text-gray-700 text-left">
                           1hr %
                         </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[4%] text-[7px] font-semibold text-gray-700 text-left">
                           24hr %
                         </div>
                         <div className="flex-1 text-[7px] font-semibold text-gray-700 text-left">
@@ -801,12 +769,12 @@ export default function InfluencerSearchPage() {
                                   <div key={idx} className="flex items-center gap-1 px-0.5 py-0 border-b border-gray-100 last:border-b-0 w-full">
                                     {/* Date */}
                                     <div className="w-[6%]">
-                                      <span className="text-[7px] text-black-900 leading-tight">{rec.date}</span>
+                                      <span className="text-[7px] text-black-900 font-semibold leading-tight">{rec.date}</span>
                                     </div>
 
                                     {/* Time */}
                                     <div className="w-[4%]">
-                                      <span className="text-[7px] text-black-900 leading-tight">{rec.time}</span>
+                                      <span className="text-[7px] text-black-900 font-semibold leading-tight">{rec.time}</span>
                                     </div>
 
                                     {/* Coin Icon and Name */}
@@ -835,24 +803,24 @@ export default function InfluencerSearchPage() {
                                     </div>
 
                                     {/* Base Price */}
-                                    <div className="w-[8%]">
+                                    <div className="w-[6%]">
                                       <span className="text-[8px] font-semibold text-gray-900">{rec.basePrice}</span>
                                     </div>
 
                                     {/* Current Price */}
-                                    <div className="w-[8%]">
+                                    <div className="w-[6%]">
                                       <span className="text-[8px] font-semibold text-gray-900">{rec.currentPrice}</span>
                                     </div>
 
                                     {/* 1hr % */}
-                                    <div className="w-[6%]">
+                                    <div className="w-[4%]">
                                       <span className={`text-[8px] font-semibold ${rec.percentage_1hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                                         {rec.percentage_1hr}
                                       </span>
                                     </div>
 
                                     {/* 24hr % */}
-                                    <div className="w-[6%]">
+                                    <div className="w-[4%]">
                                       <span className={`text-[8px] font-semibold ${rec.percentage_24hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                                         {rec.percentage_24hr}
                                       </span>
@@ -860,7 +828,7 @@ export default function InfluencerSearchPage() {
 
                                     {/* Summary Analysis */}
                                     <div className="flex-1">
-                                      <span className="text-[8px] text-black-900 italic leading-tight">
+                                      <span className="text-[8px] text-black-900 font-semibold leading-tight">
                                         {rec.summary}
                                       </span>
                                     </div>
