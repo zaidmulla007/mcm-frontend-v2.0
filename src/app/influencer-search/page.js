@@ -778,19 +778,19 @@ export default function InfluencerSearchPage() {
                           Base Price
                         </div>
                         <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
+                          1hr Price
+                        </div>
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
+                          1hr Change
+                        </div>
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
+                          24hr Price
+                        </div>
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
+                          24hr Change
+                        </div>
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
                           Current Price
-                        </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
-                          1hr %
-                        </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
-                          1hr ROI
-                        </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
-                          24hrs %
-                        </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
-                          24hrs ROI
                         </div>
                         <div className="flex-1 text-[7px] font-semibold text-black-700 text-left">
                           Summary Analysis
@@ -933,7 +933,7 @@ export default function InfluencerSearchPage() {
                               >
                                 <div className="flex flex-col items-center gap-2">
                                   {/* Profile Image */}
-                                  <div className="flex-shrink-0">
+                                  <div className="flex-shrink-0 relative">
                                     {influencer.channel_thumbnails?.high?.url ? (
                                       <Image
                                         src={influencer.channel_thumbnails.high.url}
@@ -956,6 +956,19 @@ export default function InfluencerSearchPage() {
                                       <span className="text-white text-base font-bold">
                                         {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
                                       </span>
+                                    </div>
+
+                                    {/* Platform Badge at bottom-right */}
+                                    <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full flex items-center justify-center shadow-md"
+                                         style={{
+                                           backgroundColor: selectedPlatform === "youtube" ? "#FF0000" : "#0088cc",
+                                           border: "2px solid white"
+                                         }}>
+                                      {selectedPlatform === "youtube" ? (
+                                        <FaYoutube className="text-white text-[10px]" />
+                                      ) : (
+                                        <FaTelegram className="text-white text-[10px]" />
+                                      )}
                                     </div>
                                   </div>
 
@@ -1068,43 +1081,43 @@ export default function InfluencerSearchPage() {
                                         <span className="text-[8px] font-semibold text-gray-900">{rec.basePrice}</span>
                                       </div>
 
-                                      {/* Current Price */}
-                                      <div className="w-[6%]">
-                                        <span className="text-[8px] font-semibold text-gray-900">{rec.currentPrice}</span>
-                                      </div>
-
-                                      {/* 1hr % */}
+                                      {/* 1hr Price */}
                                       <div className="w-[6%]">
                                         <span className={`text-[8px] font-semibold ${rec.percentage_1hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                                           {rec.percentage_1hr}
                                         </span>
                                       </div>
 
-                                      {/* 1hr ROI */}
+                                      {/* 1hr Change */}
                                       <div className="w-[6%]">
                                         <span className="text-[8px] font-semibold text-gray-900">
                                           {rec.roi_1hr || 'N/A'}
                                         </span>
                                       </div>
 
-                                      {/* 24hr % */}
+                                      {/* 24hr Price */}
                                       <div className="w-[6%]">
                                         <span className={`text-[8px] font-semibold ${rec.percentage_24hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                                           {rec.percentage_24hr}
                                         </span>
                                       </div>
 
-                                      {/* 24hr ROI */}
+                                      {/* 24hr Change */}
                                       <div className="w-[6%]">
                                         <span className="text-[8px] font-semibold text-gray-900">
                                           {rec.roi_24hr || 'N/A'}
                                         </span>
                                       </div>
 
+                                      {/* Current Price */}
+                                      <div className="w-[6%]">
+                                        <span className="text-[8px] font-semibold text-gray-900">{rec.currentPrice}</span>
+                                      </div>
+
                                       {/* Summary Analysis */}
                                       <div className="flex-1">
                                         <span className="text-[8px] text-black-900 font-semibold leading-tight line-clamp-1" title={rec.summary}>
-                                          {rec.summary}
+                                          {rec.summary ? rec.summary.charAt(0).toUpperCase() + rec.summary.slice(1) : ''}
                                         </span>
                                       </div>
                                     </div>
