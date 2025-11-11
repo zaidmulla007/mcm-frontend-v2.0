@@ -750,11 +750,6 @@ export default function InfluencerSearchPage() {
                                   <div className="relative">
                                     {/* Graph container with axes */}
                                     <div className="relative">
-                                      {/* Y-axis line */}
-                                      <div className="absolute left-0 top-0 bottom-5 w-0.5 bg-gray-400"></div>
-
-                                      {/* X-axis line */}
-                                      <div className="absolute left-0 right-0 bottom-5 h-0.5 bg-gray-400"></div>
 
                                       {/* Data columns with stars */}
                                       <div className="flex items-end gap-4 pl-2 h-32 pb-5">

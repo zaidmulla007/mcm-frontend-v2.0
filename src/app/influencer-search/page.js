@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaStar, FaStarHalfAlt, FaInfoCircle, FaArrowUp, FaArrowDown, FaBitcoin, FaYoutube, FaTelegram } from "react-icons/fa";
 import { FaEthereum } from "react-icons/fa6";
 import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
+import { useTop10LivePrice } from "../../hooks/useTop10LivePrice";
 
 // Helper function to format numbers
 const formatNumber = (num) => {
@@ -23,89 +24,83 @@ const formatNumber = (num) => {
   return num.toString();
 };
 
-// Hardcoded Recent Recommendations data - Last 4 recommendations per influencer
-const getRecentRecommendations = () => [
-  {
-    date: "2024-01-15",
-    time: "14:30",
-    coin: "BTC",
-    icon: <FaBitcoin className="text-orange-500 text-sm" />,
-    type: "bullish",
-    term: "long",
-    basePrice: "$45,230",
-    currentPrice: "$47,890",
-    percentage_1hr: "+2.3%",
-    roi_1hr: "1.2x",
-    percentage_24hr: "+5.8%",
-    roi_24hr: "1.5x",
-    percentage_7days: "+12.4%",
-    percentage_30days: "+18.7%",
-    percentage_60days: "+28.5%",
-    percentage_90days: "+35.2%",
-    percentage_180days: "+52.8%",
-    summary: "Strong bullish momentum with consistent upward trend. Market sentiment remains positive."
-  },
-  {
-    date: "2024-01-15",
-    time: "12:45",
-    coin: "ETH",
-    icon: <FaEthereum className="text-blue-500 text-sm" />,
-    type: "bullish",
-    term: "short",
-    basePrice: "$2,340",
-    currentPrice: "$2,520",
-    percentage_1hr: "+1.8%",
-    roi_1hr: "1.1x",
-    percentage_24hr: "+7.7%",
-    roi_24hr: "1.8x",
-    percentage_7days: "+15.2%",
-    percentage_30days: "+22.1%",
-    percentage_60days: "+32.4%",
-    percentage_90days: "+41.6%",
-    percentage_180days: "+58.9%",
-    summary: "Excellent short-term gains. Price action showing strong support levels."
-  },
-  {
-    date: "2024-01-14",
-    time: "18:20",
-    coin: "ADA",
-    icon: <span className="text-blue-600 text-sm font-bold">₳</span>,
-    type: "bearish",
-    term: "short",
-    basePrice: "$0.58",
-    currentPrice: "$0.52",
-    percentage_1hr: "-1.5%",
-    roi_1hr: "0.9x",
-    percentage_24hr: "-10.3%",
-    roi_24hr: "0.7x",
-    percentage_7days: "-18.6%",
-    percentage_30days: "-25.4%",
-    percentage_60days: "-32.7%",
-    percentage_90days: "-38.9%",
-    percentage_180days: "-45.2%",
-    summary: "Bearish trend confirmed. Consider taking profits or implementing stop-loss strategies."
-  },
-  {
-    date: "2024-01-14",
-    time: "09:15",
-    coin: "SOL",
-    icon: <span className="text-purple-600 text-sm font-bold">◎</span>,
-    type: "bearish",
-    term: "long",
-    basePrice: "$105.30",
-    currentPrice: "$98.20",
-    percentage_1hr: "-0.8%",
-    roi_1hr: "0.95x",
-    percentage_24hr: "-6.7%",
-    roi_24hr: "0.8x",
-    percentage_7days: "-12.9%",
-    percentage_30days: "-19.3%",
-    percentage_60days: "-26.8%",
-    percentage_90days: "-33.5%",
-    percentage_180days: "-42.1%",
-    summary: "Long-term bearish outlook. Market facing resistance at key levels."
+// Helper function to format recommendations from API data
+const formatRecommendations = (lastPostsData, livePrices = {}) => {
+  if (!lastPostsData || lastPostsData.length === 0) {
+    return [];
   }
-];
+
+  return lastPostsData.map(post => {
+    const coinData = post.coin;
+
+    // Determine sentiment type and term
+    const sentiment = coinData.sentiment || "";
+    const outlook = coinData.outlook || coinData.cryptoRecommendationType || "";
+
+    let type = "bullish";
+    let term = "long";
+
+    if (sentiment.toLowerCase().includes("bearish")) {
+      type = "bearish";
+    }
+
+    if (outlook.toLowerCase().includes("short") || outlook === "short-term") {
+      term = "short";
+    }
+
+    // Format prices
+    const basePrice = coinData.binance?.base_price || coinData.price || "N/A";
+
+    // Get live price from WebSocket data
+    const symbol = coinData.symbol?.toUpperCase();
+    const livePrice = livePrices[symbol];
+    const currentPrice = livePrice && livePrice !== "-"
+      ? `$${typeof livePrice === 'number' ? livePrice.toFixed(2) : livePrice}`
+      : "N/A";
+
+    // Format percentage returns
+    const percentage_1hr = coinData.binance?.["1_hour_price_returns"]
+      ? (() => {
+          const value = (coinData.binance["1_hour_price_returns"] * 100).toFixed(2);
+          return value > 0 ? `+${value}%` : `${value}%`;
+        })()
+      : "N/A";
+
+    const percentage_24hr = coinData.binance?.["24_hour_price_returns"]
+      ? (() => {
+          const value = (coinData.binance["24_hour_price_returns"] * 100).toFixed(2);
+          return value > 0 ? `+${value}%` : `${value}%`;
+        })()
+      : "N/A";
+
+    // Get coin icon from image_small
+    const coinIcon = coinData.image_small ? (
+      <img src={coinData.image_small} alt={coinData.symbol} className="w-3 h-3" />
+    ) : (
+      <span className="text-gray-500 text-xs">{coinData.symbol?.[0] || "?"}</span>
+    );
+
+    return {
+      date: post.date,
+      time: post.time,
+      coin: coinData.symbol || "N/A",
+      icon: coinIcon,
+      type: type,
+      term: term,
+      basePrice: typeof basePrice === 'number' ? `$${basePrice.toFixed(2)}` : basePrice,
+      currentPrice: currentPrice, // Already formatted above
+      percentage_1hr: percentage_1hr,
+      roi_1hr: post.roi_1hr && typeof post.roi_1hr === 'number' ? `${post.roi_1hr.toFixed(4)}` : "N/A",
+      percentage_24hr: percentage_24hr,
+      roi_24hr: post.roi_24hr && typeof post.roi_24hr === 'number' ? `${post.roi_24hr.toFixed(4)}` : "N/A",
+      summary: coinData.explanation || coinData.tradingCall || "No summary available",
+      sentiment: sentiment,
+      outlook: outlook,
+      link: post.link,
+      videoID: post.videoID
+    };
+  });
+};
 
 
 export default function InfluencerSearchPage() {
@@ -115,8 +110,13 @@ export default function InfluencerSearchPage() {
   const [telegramInfluencers, setTelegramInfluencers] = useState([]);
   const [youtubeMcmRatings, setYoutubeMcmRatings] = useState({});
   const [telegramMcmRatings, setTelegramMcmRatings] = useState({});
+  const [youtubeLastPosts, setYoutubeLastPosts] = useState({});
+  const [telegramLastPosts, setTelegramLastPosts] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // Use live price hook
+  const { top10Data, isConnected } = useTop10LivePrice();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -144,6 +144,122 @@ export default function InfluencerSearchPage() {
   const [roiFilter, setRoiFilter] = useState("all");
   const [winRateFilter, setWinRateFilter] = useState("all");
   const [totalCallsFilter, setTotalCallsFilter] = useState("all");
+
+  // Visible recommendations state - tracks how many items to show per influencer (default: 3)
+  const [visibleRecommendations, setVisibleRecommendations] = useState({});
+
+  // Sorting state for recommendations (default: desc to show recent posts first)
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'desc' });
+
+  // Sort handler function
+  const handleSort = (key) => {
+    setSortConfig(prevConfig => {
+      // If clicking the same column, toggle direction
+      if (prevConfig.key === key) {
+        return {
+          key: key,
+          direction: prevConfig.direction === 'desc' ? 'asc' : 'desc'
+        };
+      }
+      // If clicking a new column, start with desc (recent first)
+      return {
+        key: key,
+        direction: 'desc'
+      };
+    });
+  };
+
+  // Function to sort recommendations globally and reorder influencers
+  const sortRecommendationsAndInfluencers = (influencers) => {
+    if (!sortConfig.key) return { sortedInfluencers: influencers, groupedRecommendations: {} };
+
+    // Create a flat list of all recommendations with influencer reference
+    const allRecommendations = [];
+    const influencerMap = {};
+
+    influencers.forEach(influencer => {
+      influencerMap[influencer.id] = influencer;
+      const lastPostsData = selectedPlatform === "youtube" ? youtubeLastPosts : telegramLastPosts;
+      const lastPostsForInfluencer = lastPostsData[influencer.id] || [];
+
+      // Create live prices map
+      const livePricesMap = {};
+      top10Data.forEach(coin => {
+        livePricesMap[coin.symbol.toUpperCase()] = coin.price;
+      });
+
+      const recommendations = formatRecommendations(lastPostsForInfluencer, livePricesMap);
+
+      recommendations.forEach(rec => {
+        allRecommendations.push({
+          ...rec,
+          influencerId: influencer.id
+        });
+      });
+    });
+
+    // Sort all recommendations
+    const sortedRecommendations = [...allRecommendations].sort((a, b) => {
+      let aValue, bValue;
+
+      if (sortConfig.key === 'date' || sortConfig.key === 'time') {
+        // Parse date - support both YYYY-MM-DD and DD/MM/YYYY formats
+        const parseDateTime = (dateStr, timeStr) => {
+          let year, month, day;
+
+          // Check if date format is YYYY-MM-DD
+          if (dateStr.includes('-')) {
+            [year, month, day] = dateStr.split('-');
+          } else {
+            // Assume DD/MM/YYYY format
+            [day, month, year] = dateStr.split('/');
+          }
+
+          const [hours, minutes] = timeStr.split(':');
+          return new Date(year, month - 1, day, hours, minutes);
+        };
+        aValue = parseDateTime(a.date, a.time);
+        bValue = parseDateTime(b.date, b.time);
+      }
+
+      if (aValue < bValue) {
+        return sortConfig.direction === 'asc' ? -1 : 1;
+      }
+      if (aValue > bValue) {
+        return sortConfig.direction === 'asc' ? 1 : -1;
+      }
+      return 0;
+    });
+
+    // Group sorted recommendations back by influencer
+    const groupedRecommendations = {};
+    sortedRecommendations.forEach(rec => {
+      if (!groupedRecommendations[rec.influencerId]) {
+        groupedRecommendations[rec.influencerId] = [];
+      }
+      groupedRecommendations[rec.influencerId].push(rec);
+    });
+
+    // Reorder influencers based on their first (earliest/latest) recommendation
+    const influencerOrder = [];
+    const seenInfluencers = new Set();
+
+    sortedRecommendations.forEach(rec => {
+      if (!seenInfluencers.has(rec.influencerId)) {
+        seenInfluencers.add(rec.influencerId);
+        influencerOrder.push(influencerMap[rec.influencerId]);
+      }
+    });
+
+    // Add influencers with no recommendations at the end
+    influencers.forEach(influencer => {
+      if (!seenInfluencers.has(influencer.id)) {
+        influencerOrder.push(influencer);
+      }
+    });
+
+    return { sortedInfluencers: influencerOrder, groupedRecommendations };
+  };
 
   // API parameters using filter states
   const apiParams = useMemo(() => ({
@@ -184,6 +300,39 @@ export default function InfluencerSearchPage() {
           ratingsMap[item.channel_id] = item;
         });
         setYoutubeMcmRatings(ratingsMap);
+      }
+
+      // Fetch last posts for recommendations
+      if (data.success && Array.isArray(data.results) && data.results.length > 0) {
+        const channelIds = data.results.map(item => item.channel_id).join(',');
+        const lastPostsRes = await fetch(`/api/youtube-data/last-posts?channel_ids=${encodeURIComponent(channelIds)}`);
+        const lastPostsData = await lastPostsRes.json();
+
+        if (lastPostsData.success && Array.isArray(lastPostsData.results)) {
+          const postsMap = {};
+          lastPostsData.results.forEach(item => {
+            if (!postsMap[item.channelID]) {
+              postsMap[item.channelID] = [];
+            }
+            // Flatten mentioned coins into individual recommendations
+            if (item.mentioned && Array.isArray(item.mentioned)) {
+              item.mentioned.forEach(coin => {
+                postsMap[item.channelID].push({
+                  date: item.date,
+                  time: item.time,
+                  coin: coin,
+                  videoID: item.videoID,
+                  link: item.link,
+                  publishedAt: item.publishedAt,
+                  title: item.title,
+                  roi_1hr: item["1_hour_roi"],
+                  roi_24hr: item["24_hours_roi"]
+                });
+              });
+            }
+          });
+          setYoutubeLastPosts(postsMap);
+        }
       }
     } catch (err) {
       setError("Failed to fetch YouTube data");
@@ -228,6 +377,39 @@ export default function InfluencerSearchPage() {
           ratingsMap[item.channel_id] = item;
         });
         setTelegramMcmRatings(ratingsMap);
+      }
+
+      // Fetch last posts for recommendations
+      if (data.success && Array.isArray(data.results) && data.results.length > 0) {
+        const channelIds = data.results.map(item => item.channel_id).join(',');
+        const lastPostsRes = await fetch(`/api/telegram-data/last-posts?channel_ids=${encodeURIComponent(channelIds)}`);
+        const lastPostsData = await lastPostsRes.json();
+
+        if (lastPostsData.success && Array.isArray(lastPostsData.results)) {
+          const postsMap = {};
+          lastPostsData.results.forEach(item => {
+            if (!postsMap[item.channelID]) {
+              postsMap[item.channelID] = [];
+            }
+            // Flatten mentioned coins into individual recommendations
+            if (item.mentioned && Array.isArray(item.mentioned)) {
+              item.mentioned.forEach(coin => {
+                postsMap[item.channelID].push({
+                  date: item.date,
+                  time: item.time,
+                  coin: coin,
+                  messageID: item.messageID,
+                  link: item.link,
+                  publishedAt: item.publishedAt,
+                  channel_name: item.channel_name,
+                  roi_1hr: item["1_hour_roi"],
+                  roi_24hr: item["24_hours_roi"]
+                });
+              });
+            }
+          });
+          setTelegramLastPosts(postsMap);
+        }
       }
     } catch (err) {
       setError("Failed to fetch Telegram data");
@@ -471,11 +653,23 @@ export default function InfluencerSearchPage() {
     }
   };
 
-  // Pagination for ALL influencers
-  const totalPages = Math.ceil(filteredInfluencers.length / itemsPerPage);
+  // Limit to top 10 influencers only
+  const top10Influencers = filteredInfluencers.slice(0, 10);
+
+  // Apply global sorting to recommendations and reorder influencers if sorting is active
+  const sortedData = useMemo(() => {
+    return sortRecommendationsAndInfluencers(top10Influencers);
+  }, [top10Influencers, sortConfig, youtubeLastPosts, telegramLastPosts, selectedPlatform, top10Data]);
+
+  // Use sorted influencers if sorting is active, otherwise use original order
+  const displayInfluencers = sortConfig.key ? sortedData.sortedInfluencers : top10Influencers;
+  const globalSortedRecommendations = sortedData.groupedRecommendations;
+
+  // Pagination for top 10 influencers
+  const totalPages = Math.ceil(displayInfluencers.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const paginatedInfluencers = filteredInfluencers.slice(startIndex, endIndex);
+  const paginatedInfluencers = displayInfluencers.slice(startIndex, endIndex);
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 font-sans mt-5">
@@ -556,11 +750,23 @@ export default function InfluencerSearchPage() {
                     </th>
                     <th className="px-0.5 py-0.5">
                       <div className="flex items-center gap-1 px-0.5 w-full">
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left pl-1">
+                        <div
+                          className="w-[6%] text-[7px] font-semibold text-black-700 text-left pl-1 cursor-pointer hover:bg-gray-200 flex items-center gap-0.5"
+                          onClick={() => handleSort('date')}
+                        >
                           Date
+                          <span className="text-[8px]">
+                            {sortConfig.key === 'date' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                          </span>
                         </div>
-                        <div className="w-[4%] text-[7px] font-semibold text-black-700 text-left">
+                        <div
+                          className="w-[6%] text-[7px] font-semibold text-black-700 text-left cursor-pointer hover:bg-gray-200 flex items-center gap-0.5"
+                          onClick={() => handleSort('time')}
+                        >
                           Time
+                          <span className="text-[8px]">
+                            {sortConfig.key === 'time' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                          </span>
                         </div>
                         <div className="w-[5%] text-[7px] font-semibold text-black-700 text-left">
                           Coin
@@ -574,16 +780,16 @@ export default function InfluencerSearchPage() {
                         <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
                           Current Price
                         </div>
-                        <div className="w-[4%] text-[7px] font-semibold text-black-700 text-left">
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
                           1hr %
                         </div>
-                        <div className="w-[4%] text-[7px] font-semibold text-black-700 text-left">
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
                           1hr ROI
                         </div>
-                        <div className="w-[4%] text-[7px] font-semibold text-black-700 text-left">
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
                           24hrs %
                         </div>
-                        <div className="w-[4%] text-[7px] font-semibold text-black-700 text-left">
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
                           24hrs ROI
                         </div>
                         <div className="flex-1 text-[7px] font-semibold text-black-700 text-left">
@@ -668,7 +874,23 @@ export default function InfluencerSearchPage() {
                           }
                         });
 
-                        const recommendations = getRecentRecommendations();
+                        // Get recommendations for this influencer
+                        // Use globally sorted recommendations if sorting is active, otherwise use unsorted
+                        let recommendations;
+                        if (sortConfig.key && globalSortedRecommendations[influencer.id]) {
+                          recommendations = globalSortedRecommendations[influencer.id];
+                        } else {
+                          const lastPostsData = selectedPlatform === "youtube" ? youtubeLastPosts : telegramLastPosts;
+                          const lastPostsForInfluencer = lastPostsData[influencer.id] || [];
+
+                          // Create live prices map from top10Data
+                          const livePricesMap = {};
+                          top10Data.forEach(coin => {
+                            livePricesMap[coin.symbol.toUpperCase()] = coin.price;
+                          });
+
+                          recommendations = formatRecommendations(lastPostsForInfluencer, livePricesMap);
+                        }
 
                         return (
                           <motion.tr
@@ -799,89 +1021,138 @@ export default function InfluencerSearchPage() {
                             {/* Recommendations Column */}
                             <td className="px-0.5 py-0 align-top">
                               <div className="flex flex-col gap-0">
-                                {recommendations.map((rec, idx) => (
-                                  <div key={idx} className="flex items-center gap-1 px-0.5 py-0 border-b border-gray-100 last:border-b-0 w-full">
-                                    {/* Date */}
-                                    <div className="w-[6%]">
-                                      <span className="text-[7px] text-black-900 font-semibold leading-tight">{rec.date}</span>
-                                    </div>
+                                {/* Display recommendations based on visible count (default 3, increment by 3) */}
+                                {(() => {
+                                  const visibleCount = visibleRecommendations[influencer.id] || 3;
+                                  const displayedRecommendations = recommendations.slice(0, visibleCount);
 
-                                    {/* Time */}
-                                    <div className="w-[4%]">
-                                      <span className="text-[7px] text-black-900 font-semibold leading-tight">{rec.time}</span>
-                                    </div>
-
-                                    {/* Coin Icon and Name */}
-                                    <div className="flex items-center gap-0.5 w-[5%]">
-                                      <div className="flex items-center justify-center w-3">
-                                        {rec.icon}
+                                  return displayedRecommendations.map((rec, idx) => (
+                                    <div key={idx} className="flex items-center gap-1 px-0.5 py-0 border-b border-gray-100 last:border-b-0 w-full">
+                                      {/* Date */}
+                                      <div className="w-[6%]">
+                                        <span className="text-[7px] text-black-900 font-semibold leading-tight">{rec.date}</span>
                                       </div>
-                                      <span className="text-[9px] font-bold text-gray-900">
-                                        {rec.coin}
-                                      </span>
-                                    </div>
 
-                                    {/* Sentiment with Term */}
-                                    <div className="w-[9%]">
-                                      {rec.type === "bullish" ? (
-                                        <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-green-100 text-green-700 rounded-full text-[8px] font-medium capitalize">
-                                          <FaArrowUp className="text-[6px]" />
-                                          Bullish {rec.term === "short" ? "ST" : "LT"}
+                                      {/* Time */}
+                                      <div className="w-[6%]">
+                                        <span className="text-[7px] text-black-900 font-semibold leading-tight">{rec.time}</span>
+                                      </div>
+
+                                      {/* Coin Icon and Name */}
+                                      <div className="flex items-center gap-0.5 w-[5%]">
+                                        <div className="flex items-center justify-center w-3">
+                                          {rec.icon}
+                                        </div>
+                                        <span className="text-[9px] font-bold text-gray-900">
+                                          {rec.coin}
                                         </span>
-                                      ) : (
-                                        <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-red-100 text-red-700 rounded-full text-[8px] font-medium capitalize">
-                                          <FaArrowDown className="text-[6px]" />
-                                          Bearish {rec.term === "short" ? "ST" : "LT"}
+                                      </div>
+
+                                      {/* Sentiment with Term */}
+                                      <div className="w-[9%]">
+                                        {rec.type === "bullish" ? (
+                                          <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-green-100 text-green-700 rounded-full text-[8px] font-medium capitalize">
+                                            <FaArrowUp className="text-[6px]" />
+                                            Bullish {rec.term === "short" ? "ST" : "LT"}
+                                          </span>
+                                        ) : (
+                                          <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-red-100 text-red-700 rounded-full text-[8px] font-medium capitalize">
+                                            <FaArrowDown className="text-[6px]" />
+                                            Bearish {rec.term === "short" ? "ST" : "LT"}
+                                          </span>
+                                        )}
+                                      </div>
+
+                                      {/* Base Price */}
+                                      <div className="w-[6%]">
+                                        <span className="text-[8px] font-semibold text-gray-900">{rec.basePrice}</span>
+                                      </div>
+
+                                      {/* Current Price */}
+                                      <div className="w-[6%]">
+                                        <span className="text-[8px] font-semibold text-gray-900">{rec.currentPrice}</span>
+                                      </div>
+
+                                      {/* 1hr % */}
+                                      <div className="w-[6%]">
+                                        <span className={`text-[8px] font-semibold ${rec.percentage_1hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                                          {rec.percentage_1hr}
                                         </span>
-                                      )}
-                                    </div>
+                                      </div>
 
-                                    {/* Base Price */}
-                                    <div className="w-[6%]">
-                                      <span className="text-[8px] font-semibold text-gray-900">{rec.basePrice}</span>
-                                    </div>
+                                      {/* 1hr ROI */}
+                                      <div className="w-[6%]">
+                                        <span className="text-[8px] font-semibold text-gray-900">
+                                          {rec.roi_1hr || 'N/A'}
+                                        </span>
+                                      </div>
 
-                                    {/* Current Price */}
-                                    <div className="w-[6%]">
-                                      <span className="text-[8px] font-semibold text-gray-900">{rec.currentPrice}</span>
-                                    </div>
+                                      {/* 24hr % */}
+                                      <div className="w-[6%]">
+                                        <span className={`text-[8px] font-semibold ${rec.percentage_24hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                                          {rec.percentage_24hr}
+                                        </span>
+                                      </div>
 
-                                    {/* 1hr % */}
-                                    <div className="w-[4%]">
-                                      <span className={`text-[8px] font-semibold ${rec.percentage_1hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                                        {rec.percentage_1hr}
-                                      </span>
-                                    </div>
+                                      {/* 24hr ROI */}
+                                      <div className="w-[6%]">
+                                        <span className="text-[8px] font-semibold text-gray-900">
+                                          {rec.roi_24hr || 'N/A'}
+                                        </span>
+                                      </div>
 
-                                    {/* 1hr ROI */}
-                                    <div className="w-[4%]">
-                                      <span className="text-[8px] font-semibold text-gray-900">
-                                        {rec.roi_1hr || 'N/A'}
-                                      </span>
+                                      {/* Summary Analysis */}
+                                      <div className="flex-1">
+                                        <span className="text-[8px] text-black-900 font-semibold leading-tight line-clamp-1" title={rec.summary}>
+                                          {rec.summary}
+                                        </span>
+                                      </div>
                                     </div>
+                                  ));
+                                })()}
 
-                                    {/* 24hr % */}
-                                    <div className="w-[4%]">
-                                      <span className={`text-[8px] font-semibold ${rec.percentage_24hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                                        {rec.percentage_24hr}
-                                      </span>
-                                    </div>
+                                {/* Show More/Less button - incremental by 3 */}
+                                {recommendations.length > 3 && (() => {
+                                  const visibleCount = visibleRecommendations[influencer.id] || 3;
+                                  const totalCount = recommendations.length;
+                                  const showingAll = visibleCount >= totalCount;
 
-                                    {/* 24hr ROI */}
-                                    <div className="w-[4%]">
-                                      <span className="text-[8px] font-semibold text-gray-900">
-                                        {rec.roi_24hr || 'N/A'}
-                                      </span>
-                                    </div>
+                                  const handleToggle = (e) => {
+                                    e.stopPropagation();
+                                    setVisibleRecommendations(prev => {
+                                      const currentVisible = prev[influencer.id] || 3;
 
-                                    {/* Summary Analysis */}
-                                    <div className="flex-1">
-                                      <span className="text-[8px] text-black-900 font-semibold leading-tight">
-                                        {rec.summary}
-                                      </span>
+                                      if (showingAll) {
+                                        // Showing all, so reset to 3 (hide all except top 3)
+                                        return {
+                                          ...prev,
+                                          [influencer.id]: 3
+                                        };
+                                      } else {
+                                        // Not showing all, so increase by 3
+                                        const newCount = Math.min(totalCount, currentVisible + 3);
+                                        return {
+                                          ...prev,
+                                          [influencer.id]: newCount
+                                        };
+                                      }
+                                    });
+                                  };
+
+                                  return (
+                                    <div className="flex items-center justify-center py-0.5 border-t border-gray-200">
+                                      <button
+                                        onClick={handleToggle}
+                                        className="flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+                                        title={showingAll ? "Show less" : `Show more (${totalCount - visibleCount} remaining)`}
+                                      >
+                                        <span className="text-[10px] font-bold">
+                                          {showingAll ? "−" : "+"}
+                                        </span>
+                                      </button>
                                     </div>
-                                  </div>
-                                ))}
+                                  );
+                                })()}
                               </div>
                             </td>
                           </motion.tr>
