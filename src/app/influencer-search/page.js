@@ -705,7 +705,7 @@ export default function InfluencerSearchPage() {
 
                                   {/* Name Below Image */}
                                   <div className="text-center">
-                                    <span className="text-xs font-semibold text-gray-900">
+                                    <span className="text-xs font-semibold text-black-500">
                                       {influencer.name?.replace(/_/g, " ") || "Unknown"}
                                     </span>
                                   </div>
@@ -747,7 +747,7 @@ export default function InfluencerSearchPage() {
                                                 ))}
                                               </div>
                                               {/* Year label at bottom (below x-axis) */}
-                                              <span className="text-[8px] text-gray-600 font-medium absolute whitespace-nowrap" style={{ bottom: '-12px' }}>
+                                              <span className="text-[8px] text-black-500 font-semibold absolute whitespace-nowrap" style={{ bottom: '-12px' }}>
                                                 {point.yearLabel}
                                               </span>
                                             </div>
