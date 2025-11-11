@@ -569,8 +569,8 @@ export default function InfluencerSearchPage() {
                         <div className="w-[5%] text-[7px] font-semibold text-gray-700 text-left">
                           Coin
                         </div>
-                        <div className="w-[15%] text-[7px] font-semibold text-gray-700 text-left">
-                          Sentiment (Short/Long) Term
+                        <div className="w-[9%] text-[7px] font-semibold text-gray-700 text-left">
+                          Sentiment (ST/LT)
                         </div>
                         <div className="w-[8%] text-[7px] font-semibold text-gray-700 text-left">
                           Base Price
@@ -707,16 +707,16 @@ export default function InfluencerSearchPage() {
                                 className="block"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <div className="flex items-center gap-2">
+                                <div className="flex flex-col items-center gap-2">
                                   {/* Profile Image */}
                                   <div className="flex-shrink-0">
                                     {influencer.channel_thumbnails?.high?.url ? (
                                       <Image
                                         src={influencer.channel_thumbnails.high.url}
                                         alt={influencer.name || "Influencer"}
-                                        width={32}
-                                        height={32}
-                                        className="w-8 h-8 rounded-full object-cover"
+                                        width={48}
+                                        height={48}
+                                        className="w-12 h-12 rounded-full object-cover"
                                         onError={(e) => {
                                           e.target.style.display = 'none';
                                           e.target.nextSibling.style.display = 'flex';
@@ -726,17 +726,17 @@ export default function InfluencerSearchPage() {
 
                                     {/* Name Initial Fallback */}
                                     <div
-                                      className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center flex"
+                                      className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center flex"
                                       style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
                                     >
-                                      <span className="text-white text-sm font-bold">
+                                      <span className="text-white text-base font-bold">
                                         {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
                                       </span>
                                     </div>
                                   </div>
 
-                                  {/* Name Only */}
-                                  <div className="text-left">
+                                  {/* Name Below Image */}
+                                  <div className="text-center">
                                     <span className="text-xs font-semibold text-gray-900">
                                       {influencer.name?.replace(/_/g, " ") || "Unknown"}
                                     </span>
@@ -820,16 +820,16 @@ export default function InfluencerSearchPage() {
                                     </div>
 
                                     {/* Sentiment with Term */}
-                                    <div className="w-[15%]">
+                                    <div className="w-[9%]">
                                       {rec.type === "bullish" ? (
                                         <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-green-100 text-green-700 rounded-full text-[8px] font-medium capitalize">
                                           <FaArrowUp className="text-[6px]" />
-                                          Bullish {rec.term} Term
+                                          Bullish {rec.term === "short" ? "ST" : "LT"}
                                         </span>
                                       ) : (
                                         <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-red-100 text-red-700 rounded-full text-[8px] font-medium capitalize">
                                           <FaArrowDown className="text-[6px]" />
-                                          Bearish {rec.term} Term
+                                          Bearish {rec.term === "short" ? "ST" : "LT"}
                                         </span>
                                       )}
                                     </div>
