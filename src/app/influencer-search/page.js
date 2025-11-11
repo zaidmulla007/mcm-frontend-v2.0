@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaStar, FaStarHalfAlt, FaInfoCircle, FaArrowUp, FaArrowDown, FaBitcoin } from "react-icons/fa";
+import { FaStar, FaStarHalfAlt, FaInfoCircle, FaArrowUp, FaArrowDown, FaBitcoin, FaYoutube, FaTelegram } from "react-icons/fa";
 import { FaEthereum } from "react-icons/fa6";
 import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
@@ -35,7 +35,9 @@ const getRecentRecommendations = () => [
     basePrice: "$45,230",
     currentPrice: "$47,890",
     percentage_1hr: "+2.3%",
+    roi_1hr: "1.2x",
     percentage_24hr: "+5.8%",
+    roi_24hr: "1.5x",
     percentage_7days: "+12.4%",
     percentage_30days: "+18.7%",
     percentage_60days: "+28.5%",
@@ -53,7 +55,9 @@ const getRecentRecommendations = () => [
     basePrice: "$2,340",
     currentPrice: "$2,520",
     percentage_1hr: "+1.8%",
+    roi_1hr: "1.1x",
     percentage_24hr: "+7.7%",
+    roi_24hr: "1.8x",
     percentage_7days: "+15.2%",
     percentage_30days: "+22.1%",
     percentage_60days: "+32.4%",
@@ -71,7 +75,9 @@ const getRecentRecommendations = () => [
     basePrice: "$0.58",
     currentPrice: "$0.52",
     percentage_1hr: "-1.5%",
+    roi_1hr: "0.9x",
     percentage_24hr: "-10.3%",
+    roi_24hr: "0.7x",
     percentage_7days: "-18.6%",
     percentage_30days: "-25.4%",
     percentage_60days: "-32.7%",
@@ -89,7 +95,9 @@ const getRecentRecommendations = () => [
     basePrice: "$105.30",
     currentPrice: "$98.20",
     percentage_1hr: "-0.8%",
+    roi_1hr: "0.95x",
     percentage_24hr: "-6.7%",
+    roi_24hr: "0.8x",
     percentage_7days: "-12.9%",
     percentage_30days: "-19.3%",
     percentage_60days: "-26.8%",
@@ -481,31 +489,51 @@ export default function InfluencerSearchPage() {
                 <thead>
                   {/* Main header row */}
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-42">
+                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
                       Influencer
                     </th>
-                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-40">
+                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
                       MCM Rating
                     </th>
-                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider">
-                      Latest Recommendations
+                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider relative">
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Latest Posts</span>
+                        <span className="relative group cursor-pointer z-[9999]">
+                          <span className="text-blue-600 text-sm">ⓘ</span>
+                          <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                            ST : Short Term<br />LT : Long Term
+                          </span>
+                        </span>
+                      </div>
                     </th>
                   </tr>
                   {/* Sub-header row with Filters and Recommendations columns */}
                   <tr className="bg-gray-100 border-b border-gray-300">
                     {/* Influencer Filter */}
                     <th className="px-1 py-0.5 border-r border-gray-300">
-                      <div className="flex justify-center">
-                        <div className="w-full max-w-[120px]">
-                          <select
-                            value={selectedPlatform}
-                            onChange={(e) => setSelectedPlatform(e.target.value)}
-                            className="w-full border border-indigo-200 bg-indigo-50 rounded-full px-2 py-0.5 text-[10px] font-medium text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
-                          >
-                            <option value="youtube">YouTube</option>
-                            <option value="telegram">Telegram</option>
-                          </select>
-                        </div>
+                      <div className="flex justify-center gap-2">
+                        <button
+                          onClick={() => setSelectedPlatform("youtube")}
+                          className={`flex items-center justify-center px-3 py-1 rounded-full transition-all ${
+                            selectedPlatform === "youtube"
+                              ? "bg-red-500 text-white shadow-md"
+                              : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                          }`}
+                          title="YouTube"
+                        >
+                          <FaYoutube className="text-lg" />
+                        </button>
+                        <button
+                          onClick={() => setSelectedPlatform("telegram")}
+                          className={`flex items-center justify-center px-3 py-1 rounded-full transition-all ${
+                            selectedPlatform === "telegram"
+                              ? "bg-blue-500 text-white shadow-md"
+                              : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                          }`}
+                          title="Telegram"
+                        >
+                          <FaTelegram className="text-lg" />
+                        </button>
                       </div>
                     </th>
                     {/* MCM Rating Filter */}
@@ -550,7 +578,13 @@ export default function InfluencerSearchPage() {
                           1hr %
                         </div>
                         <div className="w-[4%] text-[7px] font-semibold text-black-700 text-left">
-                          24hr %
+                          1hr ROI
+                        </div>
+                        <div className="w-[4%] text-[7px] font-semibold text-black-700 text-left">
+                          24hrs %
+                        </div>
+                        <div className="w-[4%] text-[7px] font-semibold text-black-700 text-left">
+                          24hrs ROI
                         </div>
                         <div className="flex-1 text-[7px] font-semibold text-black-700 text-left">
                           Summary Analysis
@@ -684,7 +718,7 @@ export default function InfluencerSearchPage() {
                                         alt={influencer.name || "Influencer"}
                                         width={48}
                                         height={48}
-                                        className="w-12 h-12 rounded-full object-cover"
+                                        className="w-13 h-13 rounded-full object-cover"
                                         onError={(e) => {
                                           e.target.style.display = 'none';
                                           e.target.nextSibling.style.display = 'flex';
@@ -819,10 +853,24 @@ export default function InfluencerSearchPage() {
                                       </span>
                                     </div>
 
+                                    {/* 1hr ROI */}
+                                    <div className="w-[4%]">
+                                      <span className="text-[8px] font-semibold text-gray-900">
+                                        {rec.roi_1hr || 'N/A'}
+                                      </span>
+                                    </div>
+
                                     {/* 24hr % */}
                                     <div className="w-[4%]">
                                       <span className={`text-[8px] font-semibold ${rec.percentage_24hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
                                         {rec.percentage_24hr}
+                                      </span>
+                                    </div>
+
+                                    {/* 24hr ROI */}
+                                    <div className="w-[4%]">
+                                      <span className="text-[8px] font-semibold text-gray-900">
+                                        {rec.roi_24hr || 'N/A'}
                                       </span>
                                     </div>
 

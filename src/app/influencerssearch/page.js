@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaStar, FaStarHalfAlt, FaInfoCircle, FaArrowUp, FaArrowDown, FaBitcoin } from "react-icons/fa";
+import { FaStar, FaStarHalfAlt, FaInfoCircle, FaArrowUp, FaArrowDown, FaBitcoin, FaPlus, FaMinus } from "react-icons/fa";
 import { FaEthereum } from "react-icons/fa6";
 import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
@@ -96,6 +96,32 @@ export default function InfluencerSearchPage() {
   const [roiFilter, setRoiFilter] = useState("all");
   const [winRateFilter, setWinRateFilter] = useState("all");
   const [totalCallsFilter, setTotalCallsFilter] = useState("all");
+
+  // Coin pagination state - track visible count for each category per influencer
+  const [visibleCoins, setVisibleCoins] = useState({});
+
+  // Helper function to get visible coin count for a category
+  const getVisibleCount = (influencerId, category) => {
+    return visibleCoins[`${influencerId}-${category}`] || 3;
+  };
+
+  // Helper function to show next 3 coins
+  const showMoreCoins = (influencerId, category, totalCoins) => {
+    const currentVisible = getVisibleCount(influencerId, category);
+    const newVisible = Math.min(currentVisible + 3, totalCoins);
+    setVisibleCoins(prev => ({
+      ...prev,
+      [`${influencerId}-${category}`]: newVisible
+    }));
+  };
+
+  // Helper function to collapse back to 3 coins
+  const showLessCoins = (influencerId, category) => {
+    setVisibleCoins(prev => ({
+      ...prev,
+      [`${influencerId}-${category}`]: 3
+    }));
+  };
 
   // API parameters using filter states
   const apiParams = useMemo(() => ({
@@ -440,96 +466,113 @@ export default function InfluencerSearchPage() {
               {/* Filter Section inside Influencers */}
               <div className="max-w-2xl mx-auto">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Source</label>
-                  <select
-                    value={selectedPlatform}
-                    onChange={(e) => setSelectedPlatform(e.target.value)}
-                    className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
-                  >
-                    <option value="youtube">YouTube</option>
-                    <option value="telegram">Telegram</option>
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Source</label>
+                    <select
+                      value={selectedPlatform}
+                      onChange={(e) => setSelectedPlatform(e.target.value)}
+                      className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                    >
+                      <option value="youtube">YouTube</option>
+                      <option value="telegram">Telegram</option>
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Rating</label>
-                  <select
-                    value={selectedRating}
-                    onChange={(e) => setSelectedRating(e.target.value)}
-                    className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
-                  >
-                    {ratingOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.value === "all" ? "All Ratings" : "⭐".repeat(option.stars)}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Rating</label>
+                    <select
+                      value={selectedRating}
+                      onChange={(e) => setSelectedRating(e.target.value)}
+                      className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                    >
+                      {ratingOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.value === "all" ? "All Ratings" : "⭐".repeat(option.stars)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Timeframe</label>
-                  <select
-                    value={selectedTimeframe}
-                    onChange={(e) => setSelectedTimeframe(e.target.value)}
-                    className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
-                  >
-                    {timeframeOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Holding Period</label>
+                    <select
+                      value={selectedTimeframe}
+                      onChange={(e) => setSelectedTimeframe(e.target.value)}
+                      className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                    >
+                      {timeframeOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Year</label>
-                  <select
-                    value={selectedYear}
-                    onChange={(e) => handleYearChange(e.target.value)}
-                    className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
-                  >
-                    {yearOptions.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Year</label>
+                    <select
+                      value={selectedYear}
+                      onChange={(e) => handleYearChange(e.target.value)}
+                      className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                    >
+                      {yearOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
-              </div>
               </div>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full relative">
-                <thead className="bg-gray-50">
-                  <tr className="border-b-2 border-gray-200">
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-44 border-r border-gray-300">Influencer</th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20 border-r border-gray-300">ROI</th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24 border-r border-gray-300">Win Rate</th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24 border-r border-gray-300">Total Calls</th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24 border-r border-gray-300">Subscribers</th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
-                      <span className="inline-flex items-center gap-1.5">
+                <thead>
+                  {/* Main header row */}
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th rowSpan="2" className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300">
+                      Influencer
+                    </th>
+                    <th rowSpan="2" className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300">
+                      MCM Ranking
+                    </th>
+                    <th colSpan="2" className="px-1 py-2 bg-green-50 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider border-r border-gray-300">
+                      <span className="inline-flex items-center gap-1.5 justify-center">
                         <FaArrowUp className="text-green-600 text-sm" />
-                        <span>Bullish Short Term</span>
+                        <span>Bullish</span>
                       </span>
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
-                      <span className="inline-flex items-center gap-1.5">
+                    <th colSpan="2" className="px-1 py-2 bg-red-50 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-1.5 justify-center">
+                        <FaArrowDown className="text-red-600 text-sm" />
+                        <span>Bearish</span>
+                      </span>
+                    </th>
+                  </tr>
+                  {/* Sub-header row for Long Term / Short Term */}
+                  <tr className="bg-gray-100 border-b-2 border-gray-200">
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300">
+                      <span className="inline-flex items-center gap-1 justify-center">
                         <FaArrowUp className="text-green-600 text-sm" />
-                        <span>Bullish Long Term</span>
+                        <span>Short Term</span>
                       </span>
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider border-r border-gray-300">
-                      <span className="inline-flex items-center gap-1.5">
-                        <FaArrowDown className="text-red-600 text-sm" />
-                        <span>Bearish Short Term</span>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300">
+                      <span className="inline-flex items-center gap-1 justify-center">
+                        <FaArrowUp className="text-green-600 text-sm" />
+                        <span>Long Term</span>
                       </span>
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      <span className="inline-flex items-center gap-1.5">
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300">
+                      <span className="inline-flex items-center gap-1 justify-center">
                         <FaArrowDown className="text-red-600 text-sm" />
-                        <span>Bearish Long Term</span>
+                        <span>Short Term</span>
+                      </span>
+                    </th>
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      <span className="inline-flex items-center gap-1 justify-center">
+                        <FaArrowDown className="text-red-600 text-sm" />
+                        <span>Long Term</span>
                       </span>
                     </th>
                   </tr>
@@ -538,42 +581,39 @@ export default function InfluencerSearchPage() {
                   {initialLoad ? (
                     Array.from({ length: 10 }).map((_, i) => (
                       <tr key={`skeleton-row-${i}`}>
-                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
+                        {/* Influencer column skeleton */}
+                        <td className="px-1 py-2 whitespace-nowrap">
                           <div className="flex items-center mb-1">
                             <div className="w-8 h-8 bg-gray-200 rounded-full mr-2"></div>
                             <div className="h-4 bg-gray-200 rounded w-32"></div>
                           </div>
                           <div className="ml-10 h-12 bg-gray-200 rounded w-40"></div>
                         </td>
-                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
-                          <div className="h-12 bg-gray-200 rounded w-20"></div>
-                        </td>
-                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
-                          <div className="h-12 bg-gray-200 rounded w-20"></div>
-                        </td>
-                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
-                          <div className="h-12 bg-gray-200 rounded w-20"></div>
-                        </td>
-                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
-                          <div className="h-12 bg-gray-200 rounded w-20"></div>
-                        </td>
-                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
-                          <div className="h-24 bg-gray-200 rounded w-28"></div>
-                        </td>
-                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
-                          <div className="h-24 bg-gray-200 rounded w-28"></div>
-                        </td>
-                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-300">
-                          <div className="h-24 bg-gray-200 rounded w-28"></div>
-                        </td>
+                        {/* Details column skeleton */}
                         <td className="px-1 py-2 whitespace-nowrap">
-                          <div className="h-24 bg-gray-200 rounded w-28"></div>
+                          <div className="h-32 bg-gray-200 rounded w-full"></div>
+                        </td>
+                        {/* Bullish Long Term skeleton */}
+                        <td className="px-1 py-2 whitespace-nowrap bg-green-50">
+                          <div className="h-48 bg-gray-200 rounded w-full"></div>
+                        </td>
+                        {/* Bullish Short Term skeleton */}
+                        <td className="px-1 py-2 whitespace-nowrap bg-green-50">
+                          <div className="h-48 bg-gray-200 rounded w-full"></div>
+                        </td>
+                        {/* Bearish Long Term skeleton */}
+                        <td className="px-1 py-2 whitespace-nowrap bg-red-50">
+                          <div className="h-48 bg-gray-200 rounded w-full"></div>
+                        </td>
+                        {/* Bearish Short Term skeleton */}
+                        <td className="px-1 py-2 whitespace-nowrap bg-red-50">
+                          <div className="h-48 bg-gray-200 rounded w-full"></div>
                         </td>
                       </tr>
                     ))
                   ) : filteredInfluencers.length === 0 ? (
                     <tr>
-                      <td colSpan="9" className="px-6 py-12 text-center">
+                      <td colSpan="6" className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -654,7 +694,8 @@ export default function InfluencerSearchPage() {
                               );
                             }}
                           >
-                            <td className="px-1 py-2 border-r border-gray-300">
+                            {/* Influencer Column */}
+                            <td className="px-1 py-2 border-r border-gray-200">
                               <Link
                                 href={
                                   selectedPlatform === "youtube"
@@ -664,16 +705,16 @@ export default function InfluencerSearchPage() {
                                 className="block"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <div className="flex flex-col items-center gap-0.5">
+                                <div className="flex flex-col items-center gap-2">
                                   {/* Profile Image */}
                                   <div className="flex-shrink-0">
                                     {influencer.channel_thumbnails?.high?.url ? (
                                       <Image
                                         src={influencer.channel_thumbnails.high.url}
                                         alt={influencer.name || "Influencer"}
-                                        width={40}
-                                        height={40}
-                                        className="w-12 h-12 rounded-full object-cover"
+                                        width={50}
+                                        height={50}
+                                        className="w-17 h-17 rounded-full object-cover"
                                         onError={(e) => {
                                           e.target.style.display = 'none';
                                           e.target.nextSibling.style.display = 'flex';
@@ -683,212 +724,289 @@ export default function InfluencerSearchPage() {
 
                                     {/* Name Initial Fallback */}
                                     <div
-                                      className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center flex"
+                                      className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center flex"
                                       style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
                                     >
-                                      <span className="text-white text-xl font-bold">
+                                      <span className="text-white text-2xl font-bold">
                                         {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
                                       </span>
                                     </div>
                                   </div>
 
-                                  {/* Name and Ratings */}
-                                  <div className="w-full">
-                                    {/* Name + Platform Icon */}
-                                    <div className="flex items-center justify-center gap-0.5 mb-0.5">
-                                      <span className="text-sm font-semibold text-gray-900 truncate">
-                                        {influencer.name?.replace(/_/g, " ") || "Unknown"}
-                                      </span>
-
-                                      {selectedPlatform === "youtube" ? (
-                                        <svg className="w-4 h-4 text-red-600 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                                        </svg>
-                                      ) : (
-                                        <svg className="w-4 h-4 text-blue-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                                          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.234-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                                        </svg>
-                                      )}
-                                    </div>
-
-                                    {/* Yearly Rating Chart */}
-                                    <div className="flex justify-center">
-                                      {scatterData.length > 0 ? (
-                                        <div className="space-y-0">
-                                          {scatterData.filter(point => point.yearLabel !== 2021).map((point, idx) => {
-                                            const fullStars = Math.floor(point.rating);
-                                            const hasHalfStar = point.rating % 1 >= 0.5;
-                                            const totalStars = 5;
-                                            const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
-
-                                            return (
-                                              <div
-                                                key={idx}
-                                                className="flex items-center gap-0.5"
-                                                title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
-                                              >
-                                                <span className="text-xs text-gray-600 font-medium w-8">
-                                                  {point.yearLabel}
-                                                </span>
-                                                <div className="flex items-center gap-0.5">
-                                                  {[...Array(fullStars)].map((_, i) => (
-                                                    <FaStar key={`full-${i}`} className="text-yellow-500 w-2.5 h-2.5" />
-                                                  ))}
-                                                  {hasHalfStar && (
-                                                    <FaStarHalfAlt key="half" className="text-yellow-500 w-2.5 h-2.5" />
-                                                  )}
-                                                  {[...Array(emptyStars)].map((_, i) => (
-                                                    <FaStar key={`empty-${i}`} className="text-gray-400 w-2.5 h-2.5" />
-                                                  ))}
-                                                </div>
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-                                      ) : (
-                                        <div className="text-xs text-gray-400">loading...</div>
-                                      )}
-                                    </div>
+                                  {/* Name Only */}
+                                  <div className="text-center">
+                                    <span className="text-sm font-semibold text-gray-900">
+                                      {influencer.name?.replace(/_/g, " ") || "Unknown"}
+                                    </span>
                                   </div>
                                 </div>
                               </Link>
                             </td>
-                            {/* ROI Column */}
-                            <td className="px-1 py-2 border-r border-gray-300">
-                              <div className="flex flex-col items-center justify-center p-1 bg-purple-50 rounded-lg">
-                                <span className="text-sm font-semibold text-purple-800">
-                                  {influencer.prob_weighted_returns !== undefined
-                                    ? influencer.prob_weighted_returns.toFixed(1)
-                                    : '0.0'}
-                                </span>
-                              </div>
-                            </td>
 
-                            {/* Win Rate Column */}
-                            <td className="px-1 py-2 border-r border-gray-300">
-                              <div className="flex flex-col items-center justify-center p-1 bg-blue-50 rounded-lg">
-                                <span className="text-sm font-semibold text-blue-800">
-                                  {influencer.win_percentage !== undefined
-                                    ? `${Math.round(influencer.win_percentage)}%`
-                                    : '0%'}
-                                </span>
-                              </div>
-                            </td>
+                            {/* MCM Ranking Column - Yearly Rating Graph with Stars */}
+                            <td className="px-3 py-2 border-r border-gray-200">
+                              <div className="flex justify-center items-center h-full py-2">
+                                {scatterData.length > 0 ? (
+                                  <div className="relative">
+                                    {/* Graph container with axes */}
+                                    <div className="relative">
+                                      {/* Y-axis line */}
+                                      <div className="absolute left-0 top-0 bottom-5 w-0.5 bg-gray-400"></div>
 
-                            {/* Total Calls Column */}
-                            <td className="px-1 py-2 border-r border-gray-300">
-                              <div className="flex flex-col items-center justify-center p-1 bg-green-50 rounded-lg">
-                                <span className="text-sm font-semibold text-green-800">
-                                  {influencer.price_counts ? influencer.price_counts.toLocaleString() : '0'}
-                                </span>
-                              </div>
-                            </td>
-                            {/* Subscribers Column */}
-                            <td className="px-1 py-2 border-r border-gray-300">
-                              <div className="flex flex-col items-center justify-center p-1 bg-orange-50 rounded-lg">
-                                <span className="text-sm font-semibold text-orange-800">
-                                  {formatNumber(influencer.subs)}
-                                </span>
-                              </div>
-                            </td>
-                            {/* Bullish Short Term Column */}
-                            <td className="px-1 py-2 border-r border-gray-300">
-                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
-                                <div className="p-1.5">
-                                  <div className="flex items-center justify-center gap-4">
-                                    {/* First Column - Coin Icons */}
-                                    <div className="flex flex-col items-center justify-center gap-1">
-                                      {recommendations.bullish_short.map((rec, idx) => (
-                                        <div key={idx} className="h-4 flex items-center justify-center">
-                                          {rec.icon}
-                                        </div>
-                                      ))}
-                                    </div>
-                                    {/* Second Column - Coin Symbols */}
-                                    <div className="flex flex-col items-start justify-center gap-1">
-                                      {recommendations.bullish_short.map((rec, idx) => (
-                                        <span key={idx} className="text-xs font-semibold text-gray-800">
-                                          {rec.coin}
-                                        </span>
-                                      ))}
+                                      {/* X-axis line */}
+                                      <div className="absolute left-0 right-0 bottom-5 h-0.5 bg-gray-400"></div>
+
+                                      {/* Data columns with stars */}
+                                      <div className="flex items-end gap-4 pl-2 h-32 pb-5">
+                                        {scatterData.filter(point => point.yearLabel !== 2021).map((point, idx) => {
+                                          const fullStars = Math.floor(point.rating);
+                                          const hasHalfStar = point.rating % 1 >= 0.5;
+                                          const totalStars = 5;
+                                          const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+
+                                          return (
+                                            <div
+                                              key={idx}
+                                              className="flex flex-col items-center relative"
+                                              title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
+                                            >
+                                              {/* Stars displayed vertically (bottom to top) */}
+                                              <div className="flex flex-col-reverse gap-0.5 mb-1">
+                                                {[...Array(fullStars)].map((_, i) => (
+                                                  <FaStar key={`full-${i}`} className="text-yellow-500 w-3.5 h-3.5" />
+                                                ))}
+                                                {hasHalfStar && (
+                                                  <FaStarHalfAlt key="half" className="text-yellow-500 w-3.5 h-3.5" />
+                                                )}
+                                                {[...Array(emptyStars)].map((_, i) => (
+                                                  <FaStar key={`empty-${i}`} className="text-gray-300 w-3.5 h-3.5" />
+                                                ))}
+                                              </div>
+                                              {/* Year label at bottom (below x-axis) */}
+                                              <span className="text-[10px] text-gray-600 font-medium absolute" style={{ bottom: '-18px' }}>
+                                                {point.yearLabel}
+                                              </span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
+                                ) : (
+                                  <div className="text-xs text-gray-400">loading...</div>
+                                )}
                               </div>
                             </td>
+
                             {/* Bullish Long Term Column */}
-                            <td className="px-1 py-2 border-r border-gray-300">
-                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
-                                <div className="p-1.5">
-                                  <div className="flex items-center justify-center gap-4">
-                                    {/* First Column - Coin Icons */}
-                                    <div className="flex flex-col items-center justify-center gap-1">
-                                      {recommendations.bullish_long.map((rec, idx) => (
-                                        <div key={idx} className="h-4 flex items-center justify-center">
-                                          {rec.icon}
+                            <td className="px-2 py-3 align-top border-r border-gray-200">
+                              <div className="flex flex-col gap-3">
+                                {Array.from({ length: getVisibleCount(influencer.id, 'bullish_long') }).map((_, idx) => {
+                                  const coin = recommendations.bullish_long[idx];
+                                  const isLastVisible = idx === getVisibleCount(influencer.id, 'bullish_long') - 1;
+                                  const hasMore = getVisibleCount(influencer.id, 'bullish_long') < recommendations.bullish_long.length;
+                                  const allDisplayed = getVisibleCount(influencer.id, 'bullish_long') >= recommendations.bullish_long.length;
+
+                                  return (
+                                    <div key={idx} className="flex items-center justify-between min-h-[32px]">
+                                      {coin ? (
+                                        <div className="flex items-center gap-2">
+                                          <div className="flex items-center justify-center w-6">
+                                            {coin.icon}
+                                          </div>
+                                          <span className="text-sm font-semibold text-gray-800">
+                                            {coin.coin}
+                                          </span>
                                         </div>
-                                      ))}
+                                      ) : <div className="h-6"></div>}
+
+                                      {isLastVisible && hasMore && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            showMoreCoins(influencer.id, 'bullish_long', recommendations.bullish_long.length);
+                                          }}
+                                          className="text-green-600 hover:text-green-800 hover:bg-green-100 rounded-full p-1 transition-colors ml-2"
+                                          title="Show more"
+                                        >
+                                          <FaPlus className="text-sm" />
+                                        </button>
+                                      )}
+
+                                      {isLastVisible && allDisplayed && getVisibleCount(influencer.id, 'bullish_long') > 3 && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            showLessCoins(influencer.id, 'bullish_long');
+                                          }}
+                                          className="text-green-600 hover:text-green-800 hover:bg-green-100 rounded-full p-1 transition-colors ml-2"
+                                          title="Show less"
+                                        >
+                                          <FaMinus className="text-sm" />
+                                        </button>
+                                      )}
                                     </div>
-                                    {/* Second Column - Coin Symbols */}
-                                    <div className="flex flex-col items-start justify-center gap-1">
-                                      {recommendations.bullish_long.map((rec, idx) => (
-                                        <span key={idx} className="text-xs font-semibold text-gray-800">
-                                          {rec.coin}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
+                                  );
+                                })}
                               </div>
                             </td>
-                            {/* Bearish Short Term Column */}
-                            <td className="px-1 py-2 border-r border-gray-300">
-                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
-                                <div className="p-1.5">
-                                  <div className="flex items-center justify-center gap-4">
-                                    {/* First Column - Coin Icons */}
-                                    <div className="flex flex-col items-center justify-center gap-1">
-                                      {recommendations.bearish_short.map((rec, idx) => (
-                                        <div key={idx} className="h-4 flex items-center justify-center">
-                                          {rec.icon}
+
+                            {/* Bullish Short Term Column */}
+                            <td className="px-2 py-3 align-top border-r border-gray-200">
+                              <div className="flex flex-col gap-3">
+                                {Array.from({ length: getVisibleCount(influencer.id, 'bullish_short') }).map((_, idx) => {
+                                  const coin = recommendations.bullish_short[idx];
+                                  const isLastVisible = idx === getVisibleCount(influencer.id, 'bullish_short') - 1;
+                                  const hasMore = getVisibleCount(influencer.id, 'bullish_short') < recommendations.bullish_short.length;
+                                  const allDisplayed = getVisibleCount(influencer.id, 'bullish_short') >= recommendations.bullish_short.length;
+
+                                  return (
+                                    <div key={idx} className="flex items-center justify-between min-h-[32px]">
+                                      {coin ? (
+                                        <div className="flex items-center gap-2">
+                                          <div className="flex items-center justify-center w-6">
+                                            {coin.icon}
+                                          </div>
+                                          <span className="text-sm font-semibold text-gray-800">
+                                            {coin.coin}
+                                          </span>
                                         </div>
-                                      ))}
+                                      ) : <div className="h-6"></div>}
+
+                                      {isLastVisible && hasMore && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            showMoreCoins(influencer.id, 'bullish_short', recommendations.bullish_short.length);
+                                          }}
+                                          className="text-green-600 hover:text-green-800 hover:bg-green-100 rounded-full p-1 transition-colors ml-2"
+                                          title="Show more"
+                                        >
+                                          <FaPlus className="text-sm" />
+                                        </button>
+                                      )}
+
+                                      {isLastVisible && allDisplayed && getVisibleCount(influencer.id, 'bullish_short') > 3 && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            showLessCoins(influencer.id, 'bullish_short');
+                                          }}
+                                          className="text-green-600 hover:text-green-800 hover:bg-green-100 rounded-full p-1 transition-colors ml-2"
+                                          title="Show less"
+                                        >
+                                          <FaMinus className="text-sm" />
+                                        </button>
+                                      )}
                                     </div>
-                                    {/* Second Column - Coin Symbols */}
-                                    <div className="flex flex-col items-start justify-center gap-1">
-                                      {recommendations.bearish_short.map((rec, idx) => (
-                                        <span key={idx} className="text-xs font-semibold text-gray-800">
-                                          {rec.coin}
-                                        </span>
-                                      ))}
-                                    </div>
-                                  </div>
-                                </div>
+                                  );
+                                })}
                               </div>
                             </td>
+
                             {/* Bearish Long Term Column */}
-                            <td className="px-1 py-2">
-                              <div className="border-2 border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
-                                <div className="p-1.5">
-                                  <div className="flex items-center justify-center gap-4">
-                                    {/* First Column - Coin Icons */}
-                                    <div className="flex flex-col items-center justify-center gap-1">
-                                      {recommendations.bearish_long.map((rec, idx) => (
-                                        <div key={idx} className="h-4 flex items-center justify-center">
-                                          {rec.icon}
+                            <td className="px-2 py-3 align-top border-r border-gray-200">
+                              <div className="flex flex-col gap-3">
+                                {Array.from({ length: getVisibleCount(influencer.id, 'bearish_long') }).map((_, idx) => {
+                                  const coin = recommendations.bearish_long[idx];
+                                  const isLastVisible = idx === getVisibleCount(influencer.id, 'bearish_long') - 1;
+                                  const hasMore = getVisibleCount(influencer.id, 'bearish_long') < recommendations.bearish_long.length;
+                                  const allDisplayed = getVisibleCount(influencer.id, 'bearish_long') >= recommendations.bearish_long.length;
+
+                                  return (
+                                    <div key={idx} className="flex items-center justify-between min-h-[32px]">
+                                      {coin ? (
+                                        <div className="flex items-center gap-2">
+                                          <div className="flex items-center justify-center w-6">
+                                            {coin.icon}
+                                          </div>
+                                          <span className="text-sm font-semibold text-gray-800">
+                                            {coin.coin}
+                                          </span>
                                         </div>
-                                      ))}
+                                      ) : <div className="h-6"></div>}
+
+                                      {isLastVisible && hasMore && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            showMoreCoins(influencer.id, 'bearish_long', recommendations.bearish_long.length);
+                                          }}
+                                          className="text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full p-1 transition-colors ml-2"
+                                          title="Show more"
+                                        >
+                                          <FaPlus className="text-sm" />
+                                        </button>
+                                      )}
+
+                                      {isLastVisible && allDisplayed && getVisibleCount(influencer.id, 'bearish_long') > 3 && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            showLessCoins(influencer.id, 'bearish_long');
+                                          }}
+                                          className="text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full p-1 transition-colors ml-2"
+                                          title="Show less"
+                                        >
+                                          <FaMinus className="text-sm" />
+                                        </button>
+                                      )}
                                     </div>
-                                    {/* Second Column - Coin Symbols */}
-                                    <div className="flex flex-col items-start justify-center gap-1">
-                                      {recommendations.bearish_long.map((rec, idx) => (
-                                        <span key={idx} className="text-xs font-semibold text-gray-800">
-                                          {rec.coin}
-                                        </span>
-                                      ))}
+                                  );
+                                })}
+                              </div>
+                            </td>
+
+                            {/* Bearish Short Term Column */}
+                            <td className="px-2 py-3  align-top">
+                              <div className="flex flex-col gap-3">
+                                {Array.from({ length: getVisibleCount(influencer.id, 'bearish_short') }).map((_, idx) => {
+                                  const coin = recommendations.bearish_short[idx];
+                                  const isLastVisible = idx === getVisibleCount(influencer.id, 'bearish_short') - 1;
+                                  const hasMore = getVisibleCount(influencer.id, 'bearish_short') < recommendations.bearish_short.length;
+                                  const allDisplayed = getVisibleCount(influencer.id, 'bearish_short') >= recommendations.bearish_short.length;
+
+                                  return (
+                                    <div key={idx} className="flex items-center justify-between min-h-[32px]">
+                                      {coin ? (
+                                        <div className="flex items-center gap-2">
+                                          <div className="flex items-center justify-center w-6">
+                                            {coin.icon}
+                                          </div>
+                                          <span className="text-sm font-semibold text-gray-800">
+                                            {coin.coin}
+                                          </span>
+                                        </div>
+                                      ) : <div className="h-6"></div>}
+
+                                      {isLastVisible && hasMore && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            showMoreCoins(influencer.id, 'bearish_short', recommendations.bearish_short.length);
+                                          }}
+                                          className="text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full p-1 transition-colors ml-2"
+                                          title="Show more"
+                                        >
+                                          <FaPlus className="text-sm" />
+                                        </button>
+                                      )}
+
+                                      {isLastVisible && allDisplayed && getVisibleCount(influencer.id, 'bearish_short') > 3 && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            showLessCoins(influencer.id, 'bearish_short');
+                                          }}
+                                          className="text-red-600 hover:text-red-800 hover:bg-red-100 rounded-full p-1 transition-colors ml-2"
+                                          title="Show less"
+                                        >
+                                          <FaMinus className="text-sm" />
+                                        </button>
+                                      )}
                                     </div>
-                                  </div>
-                                </div>
+                                  );
+                                })}
                               </div>
                             </td>
                           </motion.tr>
