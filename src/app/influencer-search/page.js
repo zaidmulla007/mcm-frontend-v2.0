@@ -528,31 +528,31 @@ export default function InfluencerSearchPage() {
                     </th>
                     <th className="px-0.5 py-0.5">
                       <div className="flex items-center gap-1 px-0.5 w-full">
-                        <div className="w-[6%] text-[7px] font-semibold text-gray-700 text-left pl-1">
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left pl-1">
                           Date
                         </div>
-                        <div className="w-[4%] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[4%] text-[7px] font-semibold text-black-700 text-left">
                           Time
                         </div>
-                        <div className="w-[5%] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[5%] text-[7px] font-semibold text-black-700 text-left">
                           Coin
                         </div>
-                        <div className="w-[9%] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[9%] text-[7px] font-semibold text-black-700 text-left">
                           Sentiment (ST/LT)
                         </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
                           Base Price
                         </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
                           Current Price
                         </div>
-                        <div className="w-[4%] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[4%] text-[7px] font-semibold text-black-700 text-left">
                           1hr %
                         </div>
-                        <div className="w-[4%] text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="w-[4%] text-[7px] font-semibold text-black-700 text-left">
                           24hr %
                         </div>
-                        <div className="flex-1 text-[7px] font-semibold text-gray-700 text-left">
+                        <div className="flex-1 text-[7px] font-semibold text-black-700 text-left">
                           Summary Analysis
                         </div>
                       </div>
