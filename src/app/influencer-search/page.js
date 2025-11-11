@@ -481,13 +481,13 @@ export default function InfluencerSearchPage() {
                 <thead>
                   {/* Main header row */}
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-1 py-1 text-center text-[10px] font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300 w-42">
+                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-42">
                       Influencer
                     </th>
-                    <th className="px-1 py-1 text-center text-[10px] font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300 w-40">
+                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-40">
                       MCM Rating
                     </th>
-                    <th className="px-1 py-1 text-center text-[10px] font-medium text-gray-700 uppercase tracking-wider">
+                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider">
                       Latest Recommendations
                     </th>
                   </tr>
