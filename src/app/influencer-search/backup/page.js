@@ -9,6 +9,13 @@ export default function BackupListPage() {
   // Backup versions for Latest Posts (influencer-search)
   const latestPostsBackups = [
     {
+      id: "latest-posts-v2",
+      name: "Latest Posts V2",
+      date: "2025-11-13",
+      description: "Enhanced version with date sorting (DD-MM-YYYY format), influencers sorted by most recent post, center-aligned columns, improved header visibility, and optimized UI spacing",
+      path: "/influencer-search/backup/latest-posts-v2"
+    },
+    {
       id: "latest-posts-v1",
       name: "Latest Posts V1",
       date: "2025-11-12",
@@ -19,6 +26,13 @@ export default function BackupListPage() {
 
   // Backup versions for Influencer Stats (influencerssearch)
   const influencerStatsBackups = [
+    {
+      id: "influencer-stats-v2",
+      name: "Influencer Stats V2",
+      date: "2025-11-13",
+      description: "Enhanced version with improved sentiment categorization, optimized data display, and performance improvements",
+      path: "/influencerssearch/backup/influencer-stats-v2"
+    },
     {
       id: "influencer-stats-v1",
       name: "Influencer Stats V1",
