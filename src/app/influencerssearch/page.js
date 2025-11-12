@@ -496,7 +496,7 @@ export default function InfluencerSearchPage() {
                     <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300 w-[15%]">
                       MCM Ranking
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300 w-[20%]">
+                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300 w-[15%]">
                       Details
                     </th>
                     <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider w-[55%]">
@@ -524,7 +524,7 @@ export default function InfluencerSearchPage() {
                           <div className="h-16 bg-gray-200 rounded w-full"></div>
                         </td>
                         {/* Summary column skeleton */}
-                        <td className="px-3 py-1 whitespace-nowrap w-[55%]">
+                        <td className="px-3 py-1 whitespace-nowrap w-[75%]">
                           <div className="h-16 bg-gray-200 rounded w-full"></div>
                         </td>
                       </tr>
@@ -709,11 +709,12 @@ export default function InfluencerSearchPage() {
                             </td>
 
                             {/* Metrics Column */}
-                            <td className="px-2 py-1 align-top border-r border-gray-300 w-1/5">
-                              {/* 2x3 Metrics Grid */}
-                              <div className="grid grid-cols-2 gap-1">
+                            <td className="px-2 py-1 border-r border-gray-300 w-[15%]">
+                              <div className="flex items-center justify-center h-full">
+                                {/* 2x3 Metrics Grid */}
+                                <div className="grid grid-cols-2 gap-1">
                                 {/* ROI */}
-                                <div className="bg-blue-50 rounded p-1.5">
+                                <div className="bg-blue-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
                                   <div className="text-[9px] text-gray-600 font-medium">ROI</div>
                                   <div className="text-xs font-bold text-blue-700">
                                     {influencer.prob_weighted_returns
@@ -723,7 +724,7 @@ export default function InfluencerSearchPage() {
                                 </div>
 
                                 {/* Win Rate */}
-                                <div className="bg-green-50 rounded p-1.5">
+                                <div className="bg-green-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
                                   <div className="text-[9px] text-gray-600 font-medium">Win Rate</div>
                                   <div className="text-xs font-bold text-green-700">
                                     {influencer.win_percentage
@@ -733,7 +734,7 @@ export default function InfluencerSearchPage() {
                                 </div>
 
                                 {/* Recommendations */}
-                                <div className="bg-purple-50 rounded p-1.5">
+                                <div className="bg-purple-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
                                   <div className="text-[9px] text-gray-600 font-medium">No.of Posts</div>
                                   <div className="text-xs font-bold text-purple-700">
                                     {influencer.price_counts
@@ -743,7 +744,7 @@ export default function InfluencerSearchPage() {
                                 </div>
 
                                 {/* Subscribers */}
-                                <div className="bg-orange-50 rounded p-1.5">
+                                <div className="bg-orange-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
                                   <div className="text-[9px] text-gray-600 font-medium">Subscribers</div>
                                   <div className="text-xs font-bold text-orange-700">
                                     {influencer.subs
@@ -752,10 +753,11 @@ export default function InfluencerSearchPage() {
                                   </div>
                                 </div>
                               </div>
+                              </div>
                             </td>
 
                             {/* Summary Column */}
-                            <td className="px-3 py-1 align-top w-2/5">
+                            <td className="px-3 py-1 align-top w-[75%]">
                               {influencer.gemini_summary && influencer.gemini_summary !== '' ? (
                                 <div className="bg-gray-50 rounded p-2">
                                   {(() => {
@@ -766,7 +768,7 @@ export default function InfluencerSearchPage() {
                                         : influencer.gemini_summary;
 
                                     const isExpanded = expandedSummaries[influencer.id];
-                                    const MAX_LENGTH = 300; // characters to show before "Read More"
+                                    const MAX_LENGTH = 690; // characters to show before "Read More"
                                     const shouldTruncate = summaryText.length > MAX_LENGTH;
                                     const displayText = (shouldTruncate && !isExpanded)
                                       ? summaryText.substring(0, MAX_LENGTH) + '...'
