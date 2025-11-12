@@ -63,16 +63,16 @@ const formatRecommendations = (lastPostsData, livePrices = {}) => {
     // Format percentage returns
     const percentage_1hr = coinData.binance?.["1_hour_price_returns"]
       ? (() => {
-          const value = (coinData.binance["1_hour_price_returns"] * 100).toFixed(2);
-          return value > 0 ? `+${value}%` : `${value}%`;
-        })()
+        const value = (coinData.binance["1_hour_price_returns"] * 100).toFixed(2);
+        return value > 0 ? `+${value}%` : `${value}%`;
+      })()
       : "N/A";
 
     const percentage_24hr = coinData.binance?.["24_hour_price_returns"]
       ? (() => {
-          const value = (coinData.binance["24_hour_price_returns"] * 100).toFixed(2);
-          return value > 0 ? `+${value}%` : `${value}%`;
-        })()
+        const value = (coinData.binance["24_hour_price_returns"] * 100).toFixed(2);
+        return value > 0 ? `+${value}%` : `${value}%`;
+      })()
       : "N/A";
 
     // Get coin icon from image_small
@@ -204,6 +204,37 @@ export default function InfluencerSearchPage() {
     } catch (error) {
       // If conversion fails, return original time
       return timeStr;
+    }
+  };
+
+  // Function to format date based on timezone preference
+  const formatDate = (dateStr) => {
+    try {
+      let year, month, day;
+
+      // Check if date format is YYYY-MM-DD
+      if (dateStr.includes('-')) {
+        [year, month, day] = dateStr.split('-');
+      } else {
+        // Assume DD/MM/YYYY format
+        [day, month, year] = dateStr.split('/');
+      }
+
+      // Create date string
+      const dateStrFormatted = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+
+      if (useLocalTime) {
+        // Convert to local time and return format: "11/30/2023"
+        const momentDate = moment.utc(dateStrFormatted).tz(userTimezone);
+        return momentDate.format('MM/DD/YYYY');
+      } else {
+        // Return UTC date in format: "11/30/2023"
+        const momentDate = moment.utc(dateStrFormatted);
+        return momentDate.format('MM/DD/YYYY');
+      }
+    } catch (error) {
+      // If conversion fails, return original date
+      return dateStr;
     }
   };
 
@@ -711,6 +742,7 @@ export default function InfluencerSearchPage() {
 
   // Limit to top 10 influencers only
   const top10Influencers = filteredInfluencers.slice(0, 10);
+  const [selectedDateFilter, setSelectedDateFilter] = useState("latest");
 
   // Apply global sorting to recommendations and reorder influencers if sorting is active
   const sortedData = useMemo(() => {
@@ -763,6 +795,9 @@ export default function InfluencerSearchPage() {
                     <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
                       MCM Rating
                     </th>
+                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
+                      Date
+                    </th>
                     <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider relative">
                       <div className="flex items-center justify-center gap-1">
                         <span>Latest Posts</span>
@@ -782,22 +817,20 @@ export default function InfluencerSearchPage() {
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => setSelectedPlatform("youtube")}
-                          className={`flex items-center justify-center px-3 py-1 rounded-full transition-all ${
-                            selectedPlatform === "youtube"
-                              ? "bg-red-500 text-white shadow-md"
-                              : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                          }`}
+                          className={`flex items-center justify-center px-3 py-1 rounded-full transition-all ${selectedPlatform === "youtube"
+                            ? "bg-red-500 text-white shadow-md"
+                            : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                            }`}
                           title="YouTube"
                         >
                           <FaYoutube className="text-lg" />
                         </button>
                         <button
                           onClick={() => setSelectedPlatform("telegram")}
-                          className={`flex items-center justify-center px-3 py-1 rounded-full transition-all ${
-                            selectedPlatform === "telegram"
-                              ? "bg-blue-500 text-white shadow-md"
-                              : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                          }`}
+                          className={`flex items-center justify-center px-3 py-1 rounded-full transition-all ${selectedPlatform === "telegram"
+                            ? "bg-blue-500 text-white shadow-md"
+                            : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                            }`}
                           title="Telegram"
                         >
                           <FaTelegram className="text-lg" />
@@ -806,7 +839,7 @@ export default function InfluencerSearchPage() {
                     </th>
                     {/* MCM Rating Filter */}
                     <th className="px-1 py-0.5 border-r border-gray-300">
-                      <div className="flex justify-center">
+                      {/* <div className="flex justify-center">
                         <div className="w-full max-w-[120px]">
                           <select
                             value={selectedRating}
@@ -820,53 +853,74 @@ export default function InfluencerSearchPage() {
                             ))}
                           </select>
                         </div>
+                      </div> */}
+                    </th>
+                    {/* Date and Time Column with Timezone Toggle */}
+                    <th className="px-1 py-0.5 border-r border-gray-300">
+                      <div className="flex justify-center">
+                        <select
+                          value={selectedDateFilter}
+                          onChange={(e) => setSelectedDateFilter(e.target.value)}
+                          className="w-full max-w-[130px] border border-gray-300 bg-gray-50 rounded-full px-2 py-0.5 text-[9px] font-medium text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 cursor-pointer transition-all"
+                        >
+                          <option value="latest">Latest Posts</option>
+                          {Array.from({ length: 7 }).map((_, i) => {
+                            // Calculate UTC date for yesterday minus i days
+                            const date = new Date();
+                            date.setUTCDate(date.getUTCDate() - (i + 1));
+                            const day = String(date.getUTCDate()).padStart(2, "0");
+                            const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+                            const year = date.getUTCFullYear();
+                            const formatted = `${day}-${month}-${year}`;
+                            return (
+                              <option key={formatted} value={formatted}>
+                                {formatted}
+                              </option>
+                            );
+                          })}
+                        </select>
                       </div>
                     </th>
+
+
                     <th className="px-0.5 py-0.5">
                       <div className="flex items-center gap-1 px-0.5 w-full">
-                        <div
-                          className="w-[6%] text-[7px] font-semibold text-black-700 text-left pl-1 cursor-pointer hover:bg-gray-200 flex items-center gap-0.5"
-                          onClick={() => handleSort('date')}
-                        >
-                          Date
-                          <span className="text-[8px]">
-                            {sortConfig.key === 'date' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
-                          </span>
-                        </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left flex flex-col gap-0.5">
+                        <div className="w-[25%] flex flex-col items-center gap-1">
                           <div
-                            className="cursor-pointer hover:bg-gray-200 flex items-center gap-0.5"
-                            onClick={() => handleSort('time')}
+                            className="text-[7px] font-semibold text-black-700 cursor-pointer hover:bg-gray-200 flex items-center gap-0.5 px-1 py-0.5 rounded"
+                            onClick={() => handleSort('datetime')}
                           >
-                            Time
+                            Date & Time
                             <span className="text-[8px]">
-                              {sortConfig.key === 'time' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                              {sortConfig.key === 'datetime'
+                                ? sortConfig.direction === 'asc'
+                                  ? '↑'
+                                  : '↓'
+                                : '↕'}
                             </span>
                           </div>
+
+                          {/* Timezone Toggle Buttons */}
                           <div className="flex gap-1">
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
+                              onClick={() => {
                                 if (useLocalTime) toggleTimezone();
                               }}
-                              className={`text-[6px] px-1 py-0.5 rounded transition ${
-                                !useLocalTime
-                                  ? 'bg-blue-100 text-blue-600'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
+                              className={`text-[6px] px-1 py-0.5 rounded transition ${!useLocalTime
+                                ? 'bg-blue-100 text-blue-600'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
                             >
                               UTC
                             </button>
                             <button
-                              onClick={(e) => {
-                                e.stopPropagation();
+                              onClick={() => {
                                 if (!useLocalTime) toggleTimezone();
                               }}
-                              className={`text-[6px] px-1 py-0.5 rounded transition flex flex-col items-center ${
-                                useLocalTime
-                                  ? 'bg-blue-100 text-blue-600'
-                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                              }`}
+                              className={`text-[6px] px-1 py-0.5 rounded transition flex flex-col items-center ${useLocalTime
+                                ? 'bg-blue-100 text-blue-600'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
                             >
                               <span>Local</span>
                               {useLocalTime && userCity && (
@@ -875,24 +929,24 @@ export default function InfluencerSearchPage() {
                             </button>
                           </div>
                         </div>
-                        <div className="w-[5%] text-[7px] font-semibold text-black-700 text-left">
+                        <div className="w-[10%] text-[7px] font-semibold text-black-700 text-left">
                           Coin
                         </div>
-                        <div className="w-[9%] text-[7px] font-semibold text-black-700 text-left">
+                        <div className="w-[15%] text-[7px] font-semibold text-black-700 text-left">
                           Sentiment (ST/LT)
                         </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
-                          Price at post date 
+                        <div className="w-[15%] text-[7px] font-semibold text-black-700 text-left">
+                          Price at post date
                         </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
+                        <div className="w-[15%] text-[7px] font-semibold text-black-700 text-left">
                           Current Price
                         </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
-                          Change Price
+                        <div className="w-[15%] text-[7px] font-semibold text-black-700 text-left">
+                          Returns %
                         </div>
-                        <div className="flex-1 text-[7px] font-semibold text-black-700 text-left">
+                        {/* <div className="flex-1 text-[7px] font-semibold text-black-700 text-left">
                           Summary Analysis
-                        </div>
+                        </div> */}
                       </div>
                     </th>
                   </tr>
@@ -913,6 +967,10 @@ export default function InfluencerSearchPage() {
                         <td className="px-1 py-2 whitespace-nowrap border-r border-gray-200">
                           <div className="h-32 bg-gray-200 rounded w-full"></div>
                         </td>
+                        {/* Date column skeleton */}
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-200">
+                          <div className="h-12 bg-gray-200 rounded w-full"></div>
+                        </td>
                         {/* Recommendations skeleton */}
                         <td className="px-1 py-2 whitespace-nowrap">
                           <div className="h-48 bg-gray-200 rounded w-full"></div>
@@ -921,7 +979,7 @@ export default function InfluencerSearchPage() {
                     ))
                   ) : filteredInfluencers.length === 0 ? (
                     <tr>
-                      <td colSpan="3" className="px-6 py-12 text-center">
+                      <td colSpan="4" className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1038,7 +1096,7 @@ export default function InfluencerSearchPage() {
                                         alt={influencer.name || "Influencer"}
                                         width={48}
                                         height={48}
-                                        className="w-13 h-13 rounded-full object-cover"
+                                        className="w-11 h-11 rounded-full object-cover"
                                         onError={(e) => {
                                           e.target.style.display = 'none';
                                           e.target.nextSibling.style.display = 'flex';
@@ -1058,10 +1116,10 @@ export default function InfluencerSearchPage() {
 
                                     {/* Platform Badge at bottom-right */}
                                     <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full flex items-center justify-center shadow-md"
-                                         style={{
-                                           backgroundColor: selectedPlatform === "youtube" ? "#FF0000" : "#0088cc",
-                                           border: "2px solid white"
-                                         }}>
+                                      style={{
+                                        backgroundColor: selectedPlatform === "youtube" ? "#FF0000" : "#0088cc",
+                                        border: "2px solid white"
+                                      }}>
                                       {selectedPlatform === "youtube" ? (
                                         <FaYoutube className="text-white text-[10px]" />
                                       ) : (
@@ -1129,6 +1187,24 @@ export default function InfluencerSearchPage() {
                               </div>
                             </td>
 
+                            {/* Date and Time Column */}
+                            <td className="px-1 py-1 border-r border-gray-200">
+                              <div className="flex flex-col items-center gap-1">
+                                {recommendations.length > 0 ? (
+                                  <>
+                                    <span className="text-[8px] font-semibold text-black-900">
+                                      {formatDate(recommendations[0].date)}
+                                    </span>
+                                    <span className="text-[8px] font-semibold text-black-900">
+                                      {formatTime(recommendations[0].date, recommendations[0].time)}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="text-[8px] text-gray-400">No data</span>
+                                )}
+                              </div>
+                            </td>
+
                             {/* Recommendations Column */}
                             <td className="px-0.5 py-0 align-top">
                               <div className="flex flex-col gap-0">
@@ -1139,18 +1215,20 @@ export default function InfluencerSearchPage() {
 
                                   return displayedRecommendations.map((rec, idx) => (
                                     <div key={idx} className="flex items-center gap-1 px-0.5 py-0 border-b border-gray-100 last:border-b-0 w-full">
-                                      {/* Date */}
-                                      <div className="w-[6%]">
-                                        <span className="text-[7px] text-black-900 font-semibold leading-tight">{rec.date}</span>
-                                      </div>
 
-                                      {/* Time */}
-                                      <div className="w-[6%]">
-                                        <span className="text-[7px] text-black-900 font-semibold leading-tight">{formatTime(rec.date, rec.time)}</span>
+                                      <div className="flex flex-col items-center gap-1 w-[25%]">
+                                        {recommendations.length > 0 ? (
+                                          <>
+                                            <span className="text-[8px] font-semibold text-black-900">
+                                              {formatDate(recommendations[0].date)} {formatTime(recommendations[0].date, recommendations[0].time)}
+                                            </span>
+                                          </>
+                                        ) : (
+                                          <span className="text-[8px] text-gray-400">No data</span>
+                                        )}
                                       </div>
-
                                       {/* Coin Icon and Name */}
-                                      <div className="flex items-center gap-0.5 w-[5%]">
+                                      <div className="flex items-center gap-0.5 w-[10%]">
                                         <div className="flex items-center justify-center w-3">
                                           {rec.icon}
                                         </div>
@@ -1160,32 +1238,32 @@ export default function InfluencerSearchPage() {
                                       </div>
 
                                       {/* Sentiment with Term */}
-                                      <div className="w-[9%]">
+                                      <div className="w-[15%]">
                                         {rec.type === "bullish" ? (
                                           <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-green-100 text-green-700 rounded-full text-[8px] font-medium capitalize">
                                             <FaArrowUp className="text-[6px]" />
-                                             {rec.term === "short" ? "ST" : "LT"}
+                                            Bullish {rec.term === "short" ? "ST" : "LT"}
                                           </span>
                                         ) : (
                                           <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-red-100 text-red-700 rounded-full text-[8px] font-medium capitalize">
                                             <FaArrowDown className="text-[6px]" />
-                                             {rec.term === "short" ? "ST" : "LT"}
+                                            bearish {rec.term === "short" ? "ST" : "LT"}
                                           </span>
                                         )}
                                       </div>
 
                                       {/* PRICE AT POST DATE (formerly Base Price) */}
-                                      <div className="w-[6%]">
+                                      <div className="w-[15%]">
                                         <span className="text-[8px] font-semibold text-gray-900">{rec.basePrice}</span>
                                       </div>
 
                                       {/* CURRENT PRICE */}
-                                      <div className="w-[6%]">
+                                      <div className="w-[15%]">
                                         <span className="text-[8px] font-semibold text-gray-900">{rec.currentPrice}</span>
                                       </div>
 
                                       {/* Change Price (PRICE AT POST DATE - CURRENT PRICE) */}
-                                      <div className="w-[6%]">
+                                      <div className="w-[15%]">
                                         {(() => {
                                           // Parse base price and current price
                                           const basePrice = rec.basePrice && rec.basePrice !== 'N/A'
@@ -1196,15 +1274,19 @@ export default function InfluencerSearchPage() {
                                             : null;
 
                                           if (basePrice !== null && currentPrice !== null) {
-                                            const changePrice = basePrice - currentPrice;
+                                            let changePrice = currentPrice - basePrice;
+
+                                            let sentiment = rec.type || "";
+                                            if (sentiment.toLowerCase().includes("bearish")) {
+                                              changePrice *= -1;
+                                            }
                                             const isPositive = changePrice > 0;
                                             const isNegative = changePrice < 0;
 
                                             return (
-                                              <span className={`text-[8px] font-semibold ${
-                                                isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900'
-                                              }`}>
-                                                {isPositive ? '+' : ''}{changePrice.toFixed(2)}
+                                              <span className={`text-[8px] font-semibold ${isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900'
+                                                }`}>
+                                                {isPositive ? '+' : ''}{changePrice.toFixed(2)}%
                                               </span>
                                             );
                                           } else {
@@ -1214,11 +1296,11 @@ export default function InfluencerSearchPage() {
                                       </div>
 
                                       {/* Summary Analysis */}
-                                      <div className="flex-1">
+                                      {/* <div className="flex-1">
                                         <span className="text-[8px] text-black-900 font-semibold leading-tight line-clamp-1" title={rec.summary}>
                                           {rec.summary ? rec.summary.charAt(0).toUpperCase() + rec.summary.slice(1) : ''}
                                         </span>
-                                      </div>
+                                      </div> */}
                                     </div>
                                   ));
                                 })()}

@@ -492,7 +492,7 @@ export default function InfluencerSearchPage() {
                       MCM Ranking
                     </th>
                     <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300 w-[20%]">
-                      Metrics
+                      Details
                     </th>
                     <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider w-[55%]">
                       Summary

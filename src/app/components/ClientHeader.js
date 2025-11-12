@@ -15,7 +15,7 @@ const navLinks = [
   { name: "Backups", href: "/influencer-search/backup", icon: FaHistory },
   // { name: "Plans", href: "/plans", icon: FaTrophy },
   // { name: "Blog", href: "/blog", icon: FaBlog },
-  { name: "Site Map", href: "/about", icon: FaInfoCircle },
+  // { name: "Site Map", href: "/about", icon: FaInfoCircle },
 ];
 
 function AuthButtons() {
