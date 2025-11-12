@@ -3,18 +3,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef, Suspense } from "react";
-import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaChartLine, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar } from "react-icons/fa";
+import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaChartLine, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory } from "react-icons/fa";
 import { useTimezone } from "../contexts/TimezoneContext";
 
 const navLinks = [
   { name: "Landing Page", href: "/home", icon: FaGlobe },
   { name: "Home", href: "/landing-page", icon: FaHome },
   { name: "Latest Posts", href: "/influencer-search", icon: FaChartBar },
-  { name: "Leaderboard", href: "/influencerssearch", icon: FaChartBar },
+  { name: "Influencer's Stats", href: "/influencerssearch", icon: FaChartBar },
   { name: "MCM Signal", href: "/mcm-final", icon: FaChartLine },
+  { name: "Backups", href: "/influencer-search/backup", icon: FaHistory },
   // { name: "Plans", href: "/plans", icon: FaTrophy },
   // { name: "Blog", href: "/blog", icon: FaBlog },
-  // { name: "About", href: "/about", icon: FaInfoCircle },
+  { name: "Site Map", href: "/about", icon: FaInfoCircle },
 ];
 
 function AuthButtons() {

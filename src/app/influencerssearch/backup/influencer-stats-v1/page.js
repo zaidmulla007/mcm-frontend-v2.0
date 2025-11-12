@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaStar, FaStarHalfAlt, FaInfoCircle, FaArrowUp, FaArrowDown, FaBitcoin, FaPlus, FaMinus } from "react-icons/fa";
 import { FaEthereum } from "react-icons/fa6";
-import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
+import { getYearOptions, getDynamicTimeframeOptions } from "../../../../../utils/dateFilterUtils";
 
 // Helper function to format numbers
 const formatNumber = (num) => {
@@ -457,22 +457,11 @@ export default function InfluencerSearchPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 font-sans mt-5">
-      {/* Backup Link Banner */}
-      <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-blue-800">
-              Need to access previous versions?
-            </span>
-          </div>
-          <Link
-            href="/influencerssearch/backup"
-            className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-          >
-            <FaInfoCircle />
-            View Backups
-          </Link>
-        </div>
+      {/* Backup Version Banner */}
+      <div className="bg-yellow-100 border-b border-yellow-300 px-4 py-2 text-center">
+        <p className="text-sm font-semibold text-yellow-800">
+          Backup Version: Influencer Stats V1 (Created: 2025-11-12)
+        </p>
       </div>
 
       {/* Main Content */}
