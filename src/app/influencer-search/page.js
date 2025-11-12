@@ -8,6 +8,8 @@ import { FaStar, FaStarHalfAlt, FaInfoCircle, FaArrowUp, FaArrowDown, FaBitcoin,
 import { FaEthereum } from "react-icons/fa6";
 import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 import { useTop10LivePrice } from "../../hooks/useTop10LivePrice";
+import { useTimezone } from "../contexts/TimezoneContext";
+import moment from "moment-timezone";
 
 // Helper function to format numbers
 const formatNumber = (num) => {
@@ -118,6 +120,24 @@ export default function InfluencerSearchPage() {
   // Use live price hook
   const { top10Data, isConnected } = useTop10LivePrice();
 
+  // Use timezone context
+  const { useLocalTime, userTimezone, toggleTimezone, setUseLocalTime } = useTimezone();
+
+  // Get user's city from timezone
+  const [userCity, setUserCity] = useState('');
+
+  // Ensure UTC is the default on page load
+  useEffect(() => {
+    setUseLocalTime(false);
+  }, []); // Run only once on mount
+
+  useEffect(() => {
+    if (useLocalTime && userTimezone) {
+      const city = userTimezone.split('/').pop()?.replace(/_/g, ' ') || 'Local';
+      setUserCity(city);
+    }
+  }, [useLocalTime, userTimezone]);
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
@@ -150,6 +170,42 @@ export default function InfluencerSearchPage() {
 
   // Sorting state for recommendations (default: desc to show recent posts first)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'desc' });
+
+  // Function to format time based on timezone preference
+  const formatTime = (dateStr, timeStr) => {
+    try {
+      let year, month, day;
+
+      // Check if date format is YYYY-MM-DD
+      if (dateStr.includes('-')) {
+        [year, month, day] = dateStr.split('-');
+      } else {
+        // Assume DD/MM/YYYY format
+        [day, month, year] = dateStr.split('/');
+      }
+
+      // Handle time format - extract only HH:mm even if seconds are present
+      const timeParts = timeStr.split(':');
+      const hours = timeParts[0];
+      const minutes = timeParts[1];
+
+      // Create UTC date string
+      const dateTimeStr = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T${hours.padStart(2, '0')}:${minutes.padStart(2, '0')}:00Z`;
+
+      if (useLocalTime) {
+        // Convert to local time and return format: "11:30 AM"
+        const momentTime = moment.utc(dateTimeStr).tz(userTimezone);
+        return momentTime.format('hh:mm A');
+      } else {
+        // Return UTC time in format: "06:00 AM UTC"
+        const momentTime = moment.utc(dateTimeStr);
+        return `${momentTime.format('hh:mm A')} UTC`;
+      }
+    } catch (error) {
+      // If conversion fails, return original time
+      return timeStr;
+    }
+  };
 
   // Sort handler function
   const handleSort = (key) => {
@@ -777,14 +833,47 @@ export default function InfluencerSearchPage() {
                             {sortConfig.key === 'date' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
                           </span>
                         </div>
-                        <div
-                          className="w-[6%] text-[7px] font-semibold text-black-700 text-left cursor-pointer hover:bg-gray-200 flex items-center gap-0.5"
-                          onClick={() => handleSort('time')}
-                        >
-                          Time
-                          <span className="text-[8px]">
-                            {sortConfig.key === 'time' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
-                          </span>
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left flex flex-col gap-0.5">
+                          <div
+                            className="cursor-pointer hover:bg-gray-200 flex items-center gap-0.5"
+                            onClick={() => handleSort('time')}
+                          >
+                            Time
+                            <span className="text-[8px]">
+                              {sortConfig.key === 'time' ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                            </span>
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (useLocalTime) toggleTimezone();
+                              }}
+                              className={`text-[6px] px-1 py-0.5 rounded transition ${
+                                !useLocalTime
+                                  ? 'bg-blue-100 text-blue-600'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              }`}
+                            >
+                              UTC
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (!useLocalTime) toggleTimezone();
+                              }}
+                              className={`text-[6px] px-1 py-0.5 rounded transition flex flex-col items-center ${
+                                useLocalTime
+                                  ? 'bg-blue-100 text-blue-600'
+                                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                              }`}
+                            >
+                              <span>Local</span>
+                              {useLocalTime && userCity && (
+                                <span className="text-[5px] opacity-80 mt-0.5">{userCity}</span>
+                              )}
+                            </button>
+                          </div>
                         </div>
                         <div className="w-[5%] text-[7px] font-semibold text-black-700 text-left">
                           Coin
@@ -793,22 +882,13 @@ export default function InfluencerSearchPage() {
                           Sentiment (ST/LT)
                         </div>
                         <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
-                          Base Price
-                        </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
-                          1hr Price
-                        </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
-                          1hr Change
-                        </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
-                          24hr Price
-                        </div>
-                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
-                          24hr Change
+                          Price at post date 
                         </div>
                         <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
                           Current Price
+                        </div>
+                        <div className="w-[6%] text-[7px] font-semibold text-black-700 text-left">
+                          Change Price
                         </div>
                         <div className="flex-1 text-[7px] font-semibold text-black-700 text-left">
                           Summary Analysis
@@ -1066,7 +1146,7 @@ export default function InfluencerSearchPage() {
 
                                       {/* Time */}
                                       <div className="w-[6%]">
-                                        <span className="text-[7px] text-black-900 font-semibold leading-tight">{rec.time}</span>
+                                        <span className="text-[7px] text-black-900 font-semibold leading-tight">{formatTime(rec.date, rec.time)}</span>
                                       </div>
 
                                       {/* Coin Icon and Name */}
@@ -1084,52 +1164,53 @@ export default function InfluencerSearchPage() {
                                         {rec.type === "bullish" ? (
                                           <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-green-100 text-green-700 rounded-full text-[8px] font-medium capitalize">
                                             <FaArrowUp className="text-[6px]" />
-                                            Bullish {rec.term === "short" ? "ST" : "LT"}
+                                             {rec.term === "short" ? "ST" : "LT"}
                                           </span>
                                         ) : (
                                           <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-red-100 text-red-700 rounded-full text-[8px] font-medium capitalize">
                                             <FaArrowDown className="text-[6px]" />
-                                            Bearish {rec.term === "short" ? "ST" : "LT"}
+                                             {rec.term === "short" ? "ST" : "LT"}
                                           </span>
                                         )}
                                       </div>
 
-                                      {/* Base Price */}
+                                      {/* PRICE AT POST DATE (formerly Base Price) */}
                                       <div className="w-[6%]">
                                         <span className="text-[8px] font-semibold text-gray-900">{rec.basePrice}</span>
                                       </div>
 
-                                      {/* 1hr Price */}
-                                      <div className="w-[6%]">
-                                        <span className={`text-[8px] font-semibold ${rec.percentage_1hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                                          {rec.percentage_1hr}
-                                        </span>
-                                      </div>
-
-                                      {/* 1hr Change */}
-                                      <div className="w-[6%]">
-                                        <span className="text-[8px] font-semibold text-gray-900">
-                                          {rec.roi_1hr || 'N/A'}
-                                        </span>
-                                      </div>
-
-                                      {/* 24hr Price */}
-                                      <div className="w-[6%]">
-                                        <span className={`text-[8px] font-semibold ${rec.percentage_24hr.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-                                          {rec.percentage_24hr}
-                                        </span>
-                                      </div>
-
-                                      {/* 24hr Change */}
-                                      <div className="w-[6%]">
-                                        <span className="text-[8px] font-semibold text-gray-900">
-                                          {rec.roi_24hr || 'N/A'}
-                                        </span>
-                                      </div>
-
-                                      {/* Current Price */}
+                                      {/* CURRENT PRICE */}
                                       <div className="w-[6%]">
                                         <span className="text-[8px] font-semibold text-gray-900">{rec.currentPrice}</span>
+                                      </div>
+
+                                      {/* Change Price (PRICE AT POST DATE - CURRENT PRICE) */}
+                                      <div className="w-[6%]">
+                                        {(() => {
+                                          // Parse base price and current price
+                                          const basePrice = rec.basePrice && rec.basePrice !== 'N/A'
+                                            ? parseFloat(rec.basePrice.replace('$', '').replace(',', ''))
+                                            : null;
+                                          const currentPrice = rec.currentPrice && rec.currentPrice !== 'N/A'
+                                            ? parseFloat(rec.currentPrice.replace('$', '').replace(',', ''))
+                                            : null;
+
+                                          if (basePrice !== null && currentPrice !== null) {
+                                            const changePrice = basePrice - currentPrice;
+                                            const isPositive = changePrice > 0;
+                                            const isNegative = changePrice < 0;
+
+                                            return (
+                                              <span className={`text-[8px] font-semibold ${
+                                                isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900'
+                                              }`}>
+                                                {isPositive ? '+' : ''}{changePrice.toFixed(2)}
+                                              </span>
+                                            );
+                                          } else {
+                                            return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
+                                          }
+                                        })()}
                                       </div>
 
                                       {/* Summary Analysis */}
