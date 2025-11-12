@@ -85,6 +85,7 @@ const formatRecommendations = (lastPostsData, livePrices = {}) => {
     return {
       date: post.date,
       time: post.time,
+      publishedAt: post.publishedAt, // Store publishedAt for sorting
       coin: coinData.symbol || "N/A",
       icon: coinIcon,
       type: type,
@@ -103,8 +104,20 @@ const formatRecommendations = (lastPostsData, livePrices = {}) => {
     };
   });
 
-  // Sort by date and time in descending order (most recent first)
+  // Sort by publishedAt in descending order (most recent first)
   formattedPosts.sort((a, b) => {
+    // If both have publishedAt, use it for sorting
+    if (a.publishedAt && b.publishedAt) {
+      const dateA = new Date(a.publishedAt);
+      const dateB = new Date(b.publishedAt);
+      return dateB - dateA; // Most recent first (descending order)
+    }
+
+    // If only one has publishedAt, prioritize it
+    if (a.publishedAt && !b.publishedAt) return -1;
+    if (!a.publishedAt && b.publishedAt) return 1;
+
+    // Fallback to date/time parsing if publishedAt is not available
     const parseDateTime = (dateStr, timeStr) => {
       let year, month, day;
 
@@ -253,13 +266,13 @@ export default function InfluencerSearchPage() {
       const dateStrFormatted = `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
 
       if (useLocalTime) {
-        // Convert to local time and return format: "11/30/2023"
+        // Convert to local time and return format: "DD-MM-YYYY"
         const momentDate = moment.utc(dateStrFormatted).tz(userTimezone);
-        return momentDate.format('MM/DD/YYYY');
+        return momentDate.format('DD-MM-YYYY');
       } else {
-        // Return UTC date in format: "11/30/2023"
+        // Return UTC date in format: "DD-MM-YYYY"
         const momentDate = moment.utc(dateStrFormatted);
-        return momentDate.format('MM/DD/YYYY');
+        return momentDate.format('DD-MM-YYYY');
       }
     } catch (error) {
       // If conversion fails, return original date
@@ -782,41 +795,43 @@ export default function InfluencerSearchPage() {
   let displayInfluencers = sortConfig.key ? sortedData.sortedInfluencers : top10Influencers;
   const globalSortedRecommendations = sortedData.groupedRecommendations;
 
-  // Sort influencers by most recent post date/time when in "Top 10 Recent Posts" mode
-  if (viewMode === "top10_recent_posts") {
-    displayInfluencers = [...displayInfluencers].sort((a, b) => {
-      const lastPostsData = selectedPlatform === "youtube" ? youtubeLastPosts : telegramLastPosts;
-      const postsA = lastPostsData[a.id] || [];
-      const postsB = lastPostsData[b.id] || [];
+  // Sort influencers by most recent post date/time (applies to all view modes)
+  displayInfluencers = [...displayInfluencers].sort((a, b) => {
+    const lastPostsData = selectedPlatform === "youtube" ? youtubeLastPosts : telegramLastPosts;
+    const postsA = lastPostsData[a.id] || [];
+    const postsB = lastPostsData[b.id] || [];
 
-      if (postsA.length === 0 && postsB.length === 0) return 0;
-      if (postsA.length === 0) return 1;
-      if (postsB.length === 0) return -1;
+    if (postsA.length === 0 && postsB.length === 0) return 0;
+    if (postsA.length === 0) return 1;
+    if (postsB.length === 0) return -1;
 
-      // Find the most recent publishedAt from each influencer's posts
-      const getMostRecentPublishedAt = (posts) => {
-        if (!posts || posts.length === 0) return null;
+    // Find the most recent publishedAt from each influencer's posts
+    const getMostRecentPublishedAt = (posts) => {
+      if (!posts || posts.length === 0) return null;
 
-        // Sort by publishedAt and get the most recent one
-        const sortedPosts = [...posts].sort((x, y) => {
-          const dateX = new Date(x.publishedAt);
-          const dateY = new Date(y.publishedAt);
-          return dateY - dateX; // Most recent first
-        });
+      // Find the most recent publishedAt date
+      let mostRecentDate = null;
+      posts.forEach(post => {
+        if (post.publishedAt) {
+          const postDate = new Date(post.publishedAt);
+          if (!mostRecentDate || postDate > mostRecentDate) {
+            mostRecentDate = postDate;
+          }
+        }
+      });
 
-        return new Date(sortedPosts[0].publishedAt);
-      };
+      return mostRecentDate;
+    };
 
-      const dateA = getMostRecentPublishedAt(postsA);
-      const dateB = getMostRecentPublishedAt(postsB);
+    const dateA = getMostRecentPublishedAt(postsA);
+    const dateB = getMostRecentPublishedAt(postsB);
 
-      if (!dateA && !dateB) return 0;
-      if (!dateA) return 1;
-      if (!dateB) return -1;
+    if (!dateA && !dateB) return 0;
+    if (!dateA) return 1;
+    if (!dateB) return -1;
 
-      return dateB - dateA; // Most recent first
-    });
-  }
+    return dateB - dateA; // Most recent first (descending order)
+  });
 
   // Pagination for top 10 influencers
   const totalPages = Math.ceil(displayInfluencers.length / itemsPerPage);
@@ -980,7 +995,7 @@ export default function InfluencerSearchPage() {
 
 
                     <th className="px-0.5 py-0.5">
-                      <div className="flex items-center gap-1 px-0.5 w-full">
+                      <div className="flex items-center justify-center gap-1 px-0.5 w-full">
                         <div className="w-[25%] flex flex-col items-center gap-1">
                           <div
                             className="text-[7px] font-semibold text-black-700 cursor-pointer hover:bg-gray-200 flex items-center gap-0.5 px-1 py-0.5 rounded"
@@ -1018,19 +1033,19 @@ export default function InfluencerSearchPage() {
                             </button>
                           </div>
                         </div>
-                        <div className="w-[10%] text-[7px] font-semibold text-black-700 text-left">
+                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-center">
                           Coin
                         </div>
-                        <div className="w-[15%] text-[7px] font-semibold text-black-700 text-left">
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-center">
                           Sentiment (ST/LT)
                         </div>
-                        <div className="w-[15%] text-[7px] font-semibold text-black-700 text-left">
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-center">
                           Price at post date
                         </div>
-                        <div className="w-[15%] text-[7px] font-semibold text-black-700 text-left">
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-center">
                           Current Price
                         </div>
-                        <div className="w-[15%] text-[7px] font-semibold text-black-700 text-left">
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-center">
                          % change from post date
                         </div>
                         {/* <div className="flex-1 text-[7px] font-semibold text-black-700 text-left">
@@ -1199,7 +1214,7 @@ export default function InfluencerSearchPage() {
                                       style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
                                     >
                                       <span className="text-white text-base font-bold">
-                                        {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
+                                        {influencer.name?.[0]?.toUpperCase() || "?"}
                                       </span>
                                     </div>
 
@@ -1303,7 +1318,7 @@ export default function InfluencerSearchPage() {
                                   const displayedRecommendations = recommendations.slice(0, visibleCount);
 
                                   return displayedRecommendations.map((rec, idx) => (
-                                    <div key={idx} className="flex items-center gap-1 px-0.5 py-0 border-b border-gray-100 last:border-b-0 w-full">
+                                    <div key={idx} className="flex items-center justify-center gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full">
 
                                       <div className="flex flex-col items-center gap-1 w-[25%]">
                                         {rec.date && rec.time ? (
@@ -1317,7 +1332,7 @@ export default function InfluencerSearchPage() {
                                         )}
                                       </div>
                                       {/* Coin Icon and Name */}
-                                      <div className="flex items-center gap-0.5 w-[10%]">
+                                      <div className="flex items-center justify-center gap-0.5 w-[10%]">
                                         <div className="flex items-center justify-center w-3">
                                           {rec.icon}
                                         </div>
@@ -1327,7 +1342,7 @@ export default function InfluencerSearchPage() {
                                       </div>
 
                                       {/* Sentiment with Term */}
-                                      <div className="w-[15%]">
+                                      <div className="w-[15%] flex justify-center">
                                         {rec.type === "bullish" ? (
                                           <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-green-100 text-green-700 rounded-full text-[8px] font-medium capitalize">
                                             <FaArrowUp className="text-[6px]" />
@@ -1342,16 +1357,16 @@ export default function InfluencerSearchPage() {
                                       </div>
 
                                       {/* PRICE AT POST DATE (formerly Base Price) */}
-                                      <div className="w-[15%]">
+                                      <div className="w-[15%] flex justify-center">
                                         <span className="text-[8px] font-semibold text-gray-900">{rec.basePrice}</span>
                                       </div>
 
                                       {/* CURRENT PRICE */}
-                                      <div className="w-[15%]">
+                                      <div className="w-[15%] flex justify-center">
                                         <span className="text-[8px] font-semibold text-blue-500">{rec.currentPrice}</span>
                                       </div>
                                       {/* Change Price (PRICE AT POST DATE - CURRENT PRICE) */}
-                                      <div className="w-[15%]">
+                                      <div className="w-[15%] flex justify-center">
                                         {(() => {
                                           // Parse base price and current price
                                           const basePrice = rec.basePrice && rec.basePrice !== 'N/A'
@@ -1440,19 +1455,23 @@ export default function InfluencerSearchPage() {
                                   };
 
                                   return (
-                                    <div className="flex items-center py-0.5 border-t border-gray-200 w-full">
+                                    <div className="flex items-center justify-center gap-1 px-0.5 py-2 border-t border-gray-200 w-full">
                                       <div className="w-[25%]"></div>
                                       <div className="w-[10%] flex justify-center">
                                         <button
                                           onClick={handleToggle}
-                                          className="flex items-center justify-center w-4 h-4 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+                                          className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-colors shadow-md"
                                           title={showingAll ? "Show less" : `Show more (${totalCount - visibleCount} remaining)`}
                                         >
-                                          <span className="text-[10px] font-bold">
+                                          <span className="text-[12px] font-bold">
                                             {showingAll ? "−" : "+"}
                                           </span>
                                         </button>
                                       </div>
+                                      <div className="w-[15%]"></div>
+                                      <div className="w-[15%]"></div>
+                                      <div className="w-[15%]"></div>
+                                      <div className="w-[15%]"></div>
                                     </div>
                                   );
                                 })()}
