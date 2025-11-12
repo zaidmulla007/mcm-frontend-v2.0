@@ -60,6 +60,9 @@ export default function InfluencerSearchPage() {
   const [winRateFilter, setWinRateFilter] = useState("all");
   const [totalCallsFilter, setTotalCallsFilter] = useState("all");
 
+  // State to track expanded summaries
+  const [expandedSummaries, setExpandedSummaries] = useState({});
+
   // API parameters using filter states
   const apiParams = useMemo(() => ({
     rating: selectedRating,
@@ -755,13 +758,42 @@ export default function InfluencerSearchPage() {
                             <td className="px-3 py-1 align-top w-2/5">
                               {influencer.gemini_summary && influencer.gemini_summary !== '' ? (
                                 <div className="bg-gray-50 rounded p-2">
-                                  <div className="text-[11px] text-gray-700 leading-snug whitespace-pre-line">
-                                    {Array.isArray(influencer.gemini_summary)
+                                  {(() => {
+                                    const summaryText = Array.isArray(influencer.gemini_summary)
                                       ? influencer.gemini_summary.join(', ')
                                       : typeof influencer.gemini_summary === 'object'
                                         ? Object.values(influencer.gemini_summary).join(', ')
-                                        : influencer.gemini_summary}
-                                  </div>
+                                        : influencer.gemini_summary;
+
+                                    const isExpanded = expandedSummaries[influencer.id];
+                                    const MAX_LENGTH = 300; // characters to show before "Read More"
+                                    const shouldTruncate = summaryText.length > MAX_LENGTH;
+                                    const displayText = (shouldTruncate && !isExpanded)
+                                      ? summaryText.substring(0, MAX_LENGTH) + '...'
+                                      : summaryText;
+
+                                    return (
+                                      <>
+                                        <div className="text-[11px] text-gray-700 leading-snug whitespace-pre-line">
+                                          {displayText}
+                                        </div>
+                                        {shouldTruncate && (
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              setExpandedSummaries(prev => ({
+                                                ...prev,
+                                                [influencer.id]: !prev[influencer.id]
+                                              }));
+                                            }}
+                                            className="text-blue-600 hover:text-blue-800 text-[10px] font-semibold mt-1 inline-block"
+                                          >
+                                            {isExpanded ? 'Read Less' : 'Read More'}
+                                          </button>
+                                        )}
+                                      </>
+                                    );
+                                  })()}
                                 </div>
                               ) : (
                                 <div className="text-xs text-gray-400 text-center">No summary available</div>
