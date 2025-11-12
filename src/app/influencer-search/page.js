@@ -862,9 +862,15 @@ export default function InfluencerSearchPage() {
                     <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
                       MCM Rating
                     </th>
+<<<<<<< HEAD
                     {/* <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
                       Date
                     </th> */}
+=======
+                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
+                      Date
+                    </th>
+>>>>>>> b572b80ca7979d64d957c8e1e1f9a960326f4201
                     <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider relative">
                       <div className="flex items-center justify-center gap-1">
                         <span>Latest Posts</span>
@@ -921,6 +927,7 @@ export default function InfluencerSearchPage() {
                           </select>
                         </div>
                       </div> */}
+<<<<<<< HEAD
                     </th>
                     {/* Date and Time Column with Timezone Toggle */}
                     {/* <th className="px-1 py-0.5 border-r border-gray-300">
@@ -948,11 +955,41 @@ export default function InfluencerSearchPage() {
                         </select>
                       </div>
                     </th> */}
+=======
+                    </th>
+                    {/* Date and Time Column with Timezone Toggle */}
+                    <th className="px-1 py-0.5 border-r border-gray-300">
+                      <div className="flex justify-center">
+                        <select
+                          value={selectedDateFilter}
+                          onChange={(e) => setSelectedDateFilter(e.target.value)}
+                          className="w-full max-w-[130px] border border-gray-300 bg-gray-50 rounded-full px-2 py-0.5 text-[9px] font-medium text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 cursor-pointer transition-all"
+                        >
+                          <option value="latest">Latest Posts</option>
+                          {Array.from({ length: 7 }).map((_, i) => {
+                            // Calculate UTC date for yesterday minus i days
+                            const date = new Date();
+                            date.setUTCDate(date.getUTCDate() - (i + 1));
+                            const day = String(date.getUTCDate()).padStart(2, "0");
+                            const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+                            const year = date.getUTCFullYear();
+                            const formatted = `${day}-${month}-${year}`;
+                            return (
+                              <option key={formatted} value={formatted}>
+                                {formatted}
+                              </option>
+                            );
+                          })}
+                        </select>
+                      </div>
+                    </th>
+>>>>>>> b572b80ca7979d64d957c8e1e1f9a960326f4201
 
 
                     <th className="px-0.5 py-0.5">
                       <div className="flex items-center gap-1 px-0.5 w-full">
                         <div className="w-[25%] flex flex-col items-center gap-1">
+<<<<<<< HEAD
                           <div className="text-[7px] font-semibold text-black-700 flex items-center gap-0.5 px-1 py-0.5">
                             Date & Time
                           </div>
@@ -964,15 +1001,49 @@ export default function InfluencerSearchPage() {
                               className={`px-1.5 py-0.5 text-[9px] rounded transition-all flex-1 ${!useLocalTime
                                 ? 'bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-white'
                                 : 'text-gray-700'
+=======
+                          <div
+                            className="text-[7px] font-semibold text-black-700 cursor-pointer hover:bg-gray-200 flex items-center gap-0.5 px-1 py-0.5 rounded"
+                            onClick={() => handleSort('datetime')}
+                          >
+                            Date & Time
+                            <span className="text-[8px]">
+                              {sortConfig.key === 'datetime'
+                                ? sortConfig.direction === 'asc'
+                                  ? '↑'
+                                  : '↓'
+                                : '↕'}
+                            </span>
+                          </div>
+
+                          {/* Timezone Toggle Buttons */}
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => {
+                                if (useLocalTime) toggleTimezone();
+                              }}
+                              className={`text-[6px] px-1 py-0.5 rounded transition ${!useLocalTime
+                                ? 'bg-blue-100 text-blue-600'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+>>>>>>> b572b80ca7979d64d957c8e1e1f9a960326f4201
                                 }`}
                             >
                               UTC
                             </button>
                             <button
+<<<<<<< HEAD
                               onClick={() => toggleTimezone()}
                               className={`px-1.5 py-0.5 text-[9px] rounded transition-all flex-1 ${useLocalTime
                                 ? 'bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-white'
                                 : 'text-gray-700'
+=======
+                              onClick={() => {
+                                if (!useLocalTime) toggleTimezone();
+                              }}
+                              className={`text-[6px] px-1 py-0.5 rounded transition flex flex-col items-center ${useLocalTime
+                                ? 'bg-blue-100 text-blue-600'
+                                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+>>>>>>> b572b80ca7979d64d957c8e1e1f9a960326f4201
                                 }`}
                             >
                               Local Time
@@ -992,7 +1063,11 @@ export default function InfluencerSearchPage() {
                           Current Price
                         </div>
                         <div className="w-[15%] text-[7px] font-semibold text-black-700 text-left">
+<<<<<<< HEAD
                           % change from post date
+=======
+                          Returns %
+>>>>>>> b572b80ca7979d64d957c8e1e1f9a960326f4201
                         </div>
                         {/* <div className="flex-1 text-[7px] font-semibold text-black-700 text-left">
                           Summary Analysis
@@ -1238,7 +1313,11 @@ export default function InfluencerSearchPage() {
                             </td>
 
                             {/* Date and Time Column */}
+<<<<<<< HEAD
                             {/* <td className="px-1 py-1 border-r border-gray-200">
+=======
+                            <td className="px-1 py-1 border-r border-gray-200">
+>>>>>>> b572b80ca7979d64d957c8e1e1f9a960326f4201
                               <div className="flex flex-col items-center gap-1">
                                 {recommendations.length > 0 ? (
                                   <>
@@ -1253,7 +1332,11 @@ export default function InfluencerSearchPage() {
                                   <span className="text-[8px] text-gray-400">No data</span>
                                 )}
                               </div>
+<<<<<<< HEAD
                             </td> */}
+=======
+                            </td>
+>>>>>>> b572b80ca7979d64d957c8e1e1f9a960326f4201
 
                             {/* Recommendations Column */}
                             <td className="px-0.5 py-0 align-top">
@@ -1304,6 +1387,7 @@ export default function InfluencerSearchPage() {
 
                                       {/* PRICE AT POST DATE (formerly Base Price) */}
                                       <div className="w-[15%]">
+<<<<<<< HEAD
                                         <span className="text-[8px] font-semibold text-gray-900">
                                           {rec.basePrice && rec.basePrice !== 'N/A'
                                             ? `$${parseFloat(
@@ -1314,10 +1398,14 @@ export default function InfluencerSearchPage() {
                                             })}`
                                             : 'N/A'}
                                         </span>
+=======
+                                        <span className="text-[8px] font-semibold text-gray-900">{rec.basePrice}</span>
+>>>>>>> b572b80ca7979d64d957c8e1e1f9a960326f4201
                                       </div>
 
                                       {/* CURRENT PRICE */}
                                       <div className="w-[15%]">
+<<<<<<< HEAD
                                         <span className="text-[8px] font-semibold text-blue-500">
                                           {rec.currentPrice && rec.currentPrice !== 'N/A'
                                             ? `$${parseFloat(
@@ -1328,6 +1416,9 @@ export default function InfluencerSearchPage() {
                                             })}`
                                             : 'N/A'}
                                         </span>
+=======
+                                        <span className="text-[8px] font-semibold text-gray-900">{rec.currentPrice}</span>
+>>>>>>> b572b80ca7979d64d957c8e1e1f9a960326f4201
                                       </div>
                                       {/* Change Price (PRICE AT POST DATE - CURRENT PRICE) */}
                                       <div className="w-[15%]">
@@ -1347,14 +1438,18 @@ export default function InfluencerSearchPage() {
                                             if (sentiment.toLowerCase().includes("bearish")) {
                                               changePrice *= -1;
                                             }
+<<<<<<< HEAD
 
                                             // Calculate percentage change based on current price
                                             const percentageChange = (changePrice / currentPrice) * 100;
 
+=======
+>>>>>>> b572b80ca7979d64d957c8e1e1f9a960326f4201
                                             const isPositive = changePrice > 0;
                                             const isNegative = changePrice < 0;
 
                                             return (
+<<<<<<< HEAD
                                               <span
                                                 className={`text-[8px] font-semibold ${isPositive
                                                   ? 'text-green-600'
@@ -1369,6 +1464,11 @@ export default function InfluencerSearchPage() {
                                                   maximumFractionDigits: 2,
                                                 })}
                                                 %
+=======
+                                              <span className={`text-[8px] font-semibold ${isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900'
+                                                }`}>
+                                                {isPositive ? '+' : ''}{changePrice.toFixed(2)}%
+>>>>>>> b572b80ca7979d64d957c8e1e1f9a960326f4201
                                               </span>
                                             );
                                           } else {
