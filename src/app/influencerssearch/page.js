@@ -234,6 +234,7 @@ export default function InfluencerSearchPage() {
         ai_overall_score: ch.ai_overall_score || 0,
         final_score: ch.final_score || 0,
         current_rating: ch.current_rating || 0,
+        gemini_summary: ch.gemini_summary || '',
       }));
     } else if (selectedPlatform === "telegram") {
       influencers = telegramInfluencers.map((tg) => ({
@@ -250,6 +251,7 @@ export default function InfluencerSearchPage() {
         ai_overall_score: tg.ai_overall_score || 0,
         final_score: tg.final_score || 0,
         current_rating: tg.current_rating || 0,
+        gemini_summary: tg.gemini_summary || '',
       }));
     } else {
       influencers = [];
@@ -492,7 +494,7 @@ export default function InfluencerSearchPage() {
                       MCM Ranking
                     </th>
                     <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300 w-[20%]">
-                      Metrics
+                      Details
                     </th>
                     <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider w-[55%]">
                       Summary
@@ -751,12 +753,14 @@ export default function InfluencerSearchPage() {
 
                             {/* Summary Column */}
                             <td className="px-3 py-1 align-top w-2/5">
-                              {influencer.gemini_overall && Object.keys(influencer.gemini_overall).length > 0 ? (
+                              {influencer.gemini_summary && influencer.gemini_summary !== '' ? (
                                 <div className="bg-gray-50 rounded p-2">
-                                  <div className="text-[11px] text-gray-700 leading-snug">
-                                    {typeof influencer.gemini_overall === 'string'
-                                      ? influencer.gemini_overall
-                                      : JSON.stringify(influencer.gemini_overall)}
+                                  <div className="text-[11px] text-gray-700 leading-snug whitespace-pre-line">
+                                    {Array.isArray(influencer.gemini_summary)
+                                      ? influencer.gemini_summary.join(', ')
+                                      : typeof influencer.gemini_summary === 'object'
+                                        ? Object.values(influencer.gemini_summary).join(', ')
+                                        : influencer.gemini_summary}
                                   </div>
                                 </div>
                               ) : (
