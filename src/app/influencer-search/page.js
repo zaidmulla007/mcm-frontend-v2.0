@@ -27,12 +27,73 @@ const formatNumber = (num) => {
 };
 
 // Helper function to format recommendations from API data
-const formatRecommendations = (lastPostsData, livePrices = {}) => {
+const formatRecommendations = (lastPostsData, livePrices = {}, volumeData = {}) => {
   if (!lastPostsData || lastPostsData.length === 0) {
     return [];
   }
 
+  // Check if data contains grouped posts
+  const hasGroupedPosts = lastPostsData.some(post => post.isGrouped);
+
   const formattedPosts = lastPostsData.map(post => {
+    // Handle grouped posts (multiple coins per post)
+    if (post.isGrouped && post.coins) {
+      return {
+        date: post.date,
+        time: post.time,
+        publishedAt: post.publishedAt,
+        link: post.link,
+        videoID: post.videoID,
+        messageID: post.messageID,
+        title: post.title,
+        channel_name: post.channel_name,
+        isGrouped: true,
+        coins: post.coins.map(coinData => {
+          // Format each coin in the group
+          const sentiment = coinData.sentiment || "";
+          const outlook = coinData.outlook || coinData.cryptoRecommendationType || "";
+
+          let type = "bullish";
+          let term = "long";
+
+          if (sentiment.toLowerCase().includes("bearish")) {
+            type = "bearish";
+          }
+
+          if (outlook.toLowerCase().includes("short") || outlook === "short-term") {
+            term = "short";
+          }
+
+          const basePrice = coinData.binance?.base_price || coinData.price || "N/A";
+          const symbol = coinData.symbol?.toUpperCase();
+          const livePrice = livePrices[symbol];
+          const currentPrice = livePrice && livePrice !== "-"
+            ? `$${typeof livePrice === 'number' ? livePrice.toFixed(2) : livePrice}`
+            : "N/A";
+          const volume = volumeData[symbol] || "N/A";
+
+          const coinIcon = coinData.image_small ? (
+            <img src={coinData.image_small} alt={coinData.symbol} className="w-3 h-3" />
+          ) : (
+            <span className="text-gray-500 text-xs">{coinData.symbol?.[0] || "?"}</span>
+          );
+
+          return {
+            coin: coinData.symbol || "N/A",
+            icon: coinIcon,
+            type: type,
+            term: term,
+            basePrice: typeof basePrice === 'number' ? `$${basePrice.toFixed(2)}` : basePrice,
+            currentPrice: currentPrice,
+            volume: volume,
+            sentiment: sentiment,
+            outlook: outlook,
+          };
+        })
+      };
+    }
+
+    // Handle individual coin posts (non-grouped)
     const coinData = post.coin;
 
     // Determine sentiment type and term
@@ -59,6 +120,9 @@ const formatRecommendations = (lastPostsData, livePrices = {}) => {
     const currentPrice = livePrice && livePrice !== "-"
       ? `$${typeof livePrice === 'number' ? livePrice.toFixed(2) : livePrice}`
       : "N/A";
+
+    // Get volume from volume data
+    const volume = volumeData[symbol] || "N/A";
 
     // Format percentage returns
     const percentage_1hr = coinData.binance?.["1_hour_price_returns"]
@@ -100,45 +164,48 @@ const formatRecommendations = (lastPostsData, livePrices = {}) => {
       sentiment: sentiment,
       outlook: outlook,
       link: post.link,
-      videoID: post.videoID
+      videoID: post.videoID,
+      volume: volume
     };
   });
 
-  // Sort by publishedAt in descending order (most recent first)
-  formattedPosts.sort((a, b) => {
-    // If both have publishedAt, use it for sorting
-    if (a.publishedAt && b.publishedAt) {
-      const dateA = new Date(a.publishedAt);
-      const dateB = new Date(b.publishedAt);
-      return dateB - dateA; // Most recent first (descending order)
-    }
-
-    // If only one has publishedAt, prioritize it
-    if (a.publishedAt && !b.publishedAt) return -1;
-    if (!a.publishedAt && b.publishedAt) return 1;
-
-    // Fallback to date/time parsing if publishedAt is not available
-    const parseDateTime = (dateStr, timeStr) => {
-      let year, month, day;
-
-      // Check if date format is YYYY-MM-DD
-      if (dateStr.includes('-')) {
-        [year, month, day] = dateStr.split('-');
-      } else {
-        // Assume DD/MM/YYYY format
-        [day, month, year] = dateStr.split('/');
+  // Sort by publishedAt - skip sorting for grouped posts (already sorted in getInfluencerPosts)
+  if (!hasGroupedPosts) {
+    formattedPosts.sort((a, b) => {
+      // If both have publishedAt, use it for sorting
+      if (a.publishedAt && b.publishedAt) {
+        const dateA = new Date(a.publishedAt);
+        const dateB = new Date(b.publishedAt);
+        return dateB - dateA; // Most recent first (descending order)
       }
 
-      const [hours, minutes] = timeStr.split(':');
-      return new Date(year, month - 1, day, hours, minutes);
-    };
+      // If only one has publishedAt, prioritize it
+      if (a.publishedAt && !b.publishedAt) return -1;
+      if (!a.publishedAt && b.publishedAt) return 1;
 
-    const dateA = parseDateTime(a.date, a.time);
-    const dateB = parseDateTime(b.date, b.time);
+      // Fallback to date/time parsing if publishedAt is not available
+      const parseDateTime = (dateStr, timeStr) => {
+        let year, month, day;
 
-    // Sort descending (most recent first)
-    return dateB - dateA;
-  });
+        // Check if date format is YYYY-MM-DD
+        if (dateStr.includes('-')) {
+          [year, month, day] = dateStr.split('-');
+        } else {
+          // Assume DD/MM/YYYY format
+          [day, month, year] = dateStr.split('/');
+        }
+
+        const [hours, minutes] = timeStr.split(':');
+        return new Date(year, month - 1, day, hours, minutes);
+      };
+
+      const dateA = parseDateTime(a.date, a.time);
+      const dateB = parseDateTime(b.date, b.time);
+
+      // Sort descending (most recent first)
+      return dateB - dateA;
+    });
+  }
 
   return formattedPosts;
 };
@@ -149,12 +216,11 @@ export default function InfluencerSearchPage() {
   const [selectedPlatform, setSelectedPlatform] = useState("youtube");
   const [youtubeInfluencers, setYoutubeInfluencers] = useState([]);
   const [telegramInfluencers, setTelegramInfluencers] = useState([]);
-  const [youtubeMcmRatings, setYoutubeMcmRatings] = useState({});
-  const [telegramMcmRatings, setTelegramMcmRatings] = useState({});
   const [youtubeLastPosts, setYoutubeLastPosts] = useState({});
   const [telegramLastPosts, setTelegramLastPosts] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [binanceVolumeData, setBinanceVolumeData] = useState({});
 
   // Use live price hook
   const { top10Data, isConnected } = useTop10LivePrice();
@@ -176,6 +242,40 @@ export default function InfluencerSearchPage() {
       setUserCity(city);
     }
   }, [useLocalTime, userTimezone]);
+
+  // Fetch Binance volume data
+  useEffect(() => {
+    const fetchBinanceVolume = async () => {
+      try {
+        // Fetch only USDT pairs by making individual requests or filtering
+        // Since Binance doesn't support filtering in the API, we fetch all and filter
+        const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+        const data = await response.json();
+
+        // Create a map of symbol to volume (only USDT pairs)
+        const volumeMap = {};
+        data.forEach(ticker => {
+          // Only process USDT trading pairs
+          if (ticker.symbol.endsWith('USDT')) {
+            // Remove 'USDT' suffix to get the base symbol (e.g., BTCUSDT -> BTC)
+            const symbol = ticker.symbol.replace('USDT', '');
+            volumeMap[symbol] = ticker.volume;
+          }
+        });
+
+        console.log(`Loaded ${Object.keys(volumeMap).length} USDT pairs from ${data.length} total pairs`);
+        setBinanceVolumeData(volumeMap);
+      } catch (error) {
+        console.error('Error fetching Binance volume data:', error);
+      }
+    };
+
+    fetchBinanceVolume();
+    // Refresh volume data every 5 minutes
+    const interval = setInterval(fetchBinanceVolume, 5 * 60 * 1000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -209,6 +309,9 @@ export default function InfluencerSearchPage() {
 
   // Visible recommendations state - tracks how many items to show per influencer (default: 3)
   const [visibleRecommendations, setVisibleRecommendations] = useState({});
+
+  // State to track expanded posts (for grouped coin display)
+  const [expandedPosts, setExpandedPosts] = useState({});
 
   // Sorting state for recommendations (default: desc to show recent posts first)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'desc' });
@@ -309,7 +412,7 @@ export default function InfluencerSearchPage() {
     influencers.forEach(influencer => {
       influencerMap[influencer.id] = influencer;
       const lastPostsData = selectedPlatform === "youtube" ? youtubeLastPosts : telegramLastPosts;
-      const lastPostsForInfluencer = lastPostsData[influencer.id] || [];
+      const lastPostsForInfluencer = getInfluencerPosts(lastPostsData, influencer.id, selectedDateFilter);
 
       // Create live prices map
       const livePricesMap = {};
@@ -317,7 +420,7 @@ export default function InfluencerSearchPage() {
         livePricesMap[coin.symbol.toUpperCase()] = coin.price;
       });
 
-      const recommendations = formatRecommendations(lastPostsForInfluencer, livePricesMap);
+      const recommendations = formatRecommendations(lastPostsForInfluencer, livePricesMap, binanceVolumeData);
 
       recommendations.forEach(rec => {
         allRecommendations.push({
@@ -420,16 +523,8 @@ export default function InfluencerSearchPage() {
         setYoutubeInfluencers([]);
       }
 
-      // Fetch MCM ratings
-      const mcmRes = await fetch(`/api/youtube-data/mcm-ratings?timeframe=${apiParams.timeframe}`);
-      const mcmData = await mcmRes.json();
-      if (mcmData.success && Array.isArray(mcmData.results)) {
-        const ratingsMap = {};
-        mcmData.results.forEach(item => {
-          ratingsMap[item.channel_id] = item;
-        });
-        setYoutubeMcmRatings(ratingsMap);
-      }
+      // MCM ratings are now included in the main API response (star_rating_yearly)
+      // No need for separate API call
 
       // Fetch last posts for recommendations
       if (data.success && Array.isArray(data.results) && data.results.length > 0) {
@@ -437,30 +532,9 @@ export default function InfluencerSearchPage() {
         const lastPostsRes = await fetch(`/api/youtube-data/last-posts?channel_ids=${encodeURIComponent(channelIds)}`);
         const lastPostsData = await lastPostsRes.json();
 
-        if (lastPostsData.success && Array.isArray(lastPostsData.results)) {
-          const postsMap = {};
-          lastPostsData.results.forEach(item => {
-            if (!postsMap[item.channelID]) {
-              postsMap[item.channelID] = [];
-            }
-            // Flatten mentioned coins into individual recommendations
-            if (item.mentioned && Array.isArray(item.mentioned)) {
-              item.mentioned.forEach(coin => {
-                postsMap[item.channelID].push({
-                  date: item.date,
-                  time: item.time,
-                  coin: coin,
-                  videoID: item.videoID,
-                  link: item.link,
-                  publishedAt: item.publishedAt,
-                  title: item.title,
-                  roi_1hr: item["1_hour_roi"],
-                  roi_24hr: item["24_hours_roi"]
-                });
-              });
-            }
-          });
-          setYoutubeLastPosts(postsMap);
+        if (lastPostsData.success) {
+          // Store the complete response including day1, day2, etc. keys
+          setYoutubeLastPosts(lastPostsData);
         }
       }
     } catch (err) {
@@ -497,16 +571,8 @@ export default function InfluencerSearchPage() {
         setTelegramInfluencers([]);
       }
 
-      // Fetch MCM ratings
-      const mcmRes = await fetch(`/api/telegram-data/mcm-ratings?timeframe=${apiParams.timeframe}`);
-      const mcmData = await mcmRes.json();
-      if (mcmData.success && Array.isArray(mcmData.results)) {
-        const ratingsMap = {};
-        mcmData.results.forEach(item => {
-          ratingsMap[item.channel_id] = item;
-        });
-        setTelegramMcmRatings(ratingsMap);
-      }
+      // MCM ratings are now included in the main API response (star_rating_yearly)
+      // No need for separate API call
 
       // Fetch last posts for recommendations
       if (data.success && Array.isArray(data.results) && data.results.length > 0) {
@@ -514,30 +580,9 @@ export default function InfluencerSearchPage() {
         const lastPostsRes = await fetch(`/api/telegram-data/last-posts?channel_ids=${encodeURIComponent(channelIds)}`);
         const lastPostsData = await lastPostsRes.json();
 
-        if (lastPostsData.success && Array.isArray(lastPostsData.results)) {
-          const postsMap = {};
-          lastPostsData.results.forEach(item => {
-            if (!postsMap[item.channelID]) {
-              postsMap[item.channelID] = [];
-            }
-            // Flatten mentioned coins into individual recommendations
-            if (item.mentioned && Array.isArray(item.mentioned)) {
-              item.mentioned.forEach(coin => {
-                postsMap[item.channelID].push({
-                  date: item.date,
-                  time: item.time,
-                  coin: coin,
-                  messageID: item.messageID,
-                  link: item.link,
-                  publishedAt: item.publishedAt,
-                  channel_name: item.channel_name,
-                  roi_1hr: item["1_hour_roi"],
-                  roi_24hr: item["24_hours_roi"]
-                });
-              });
-            }
-          });
-          setTelegramLastPosts(postsMap);
+        if (lastPostsData.success) {
+          // Store the complete response including day1, day2, etc. keys
+          setTelegramLastPosts(lastPostsData);
         }
       }
     } catch (err) {
@@ -630,6 +675,7 @@ export default function InfluencerSearchPage() {
         ai_overall_score: ch.ai_overall_score || 0,
         final_score: ch.final_score || 0,
         current_rating: ch.current_rating || 0,
+        star_rating_yearly: ch.star_rating_yearly || {},
       }));
     } else if (selectedPlatform === "telegram") {
       influencers = telegramInfluencers.map((tg) => ({
@@ -646,6 +692,7 @@ export default function InfluencerSearchPage() {
         ai_overall_score: tg.ai_overall_score || 0,
         final_score: tg.final_score || 0,
         current_rating: tg.current_rating || 0,
+        star_rating_yearly: tg.star_rating_yearly || {},
       }));
     } else {
       influencers = [];
@@ -786,10 +833,148 @@ export default function InfluencerSearchPage() {
   const top10Influencers = filteredInfluencers.slice(0, 10);
   const [selectedDateFilter, setSelectedDateFilter] = useState("latest");
 
+  // Function to map selected date to day key (day1, day2, day3, etc.)
+  const getDateToDayKey = (selectedDate) => {
+    if (selectedDate === "latest") return null;
+
+    // Parse the selected date (format: DD-MM-YYYY)
+    const [day, month, year] = selectedDate.split('-').map(Number);
+
+    // Create UTC date for the selected date
+    const selectedDateTime = new Date(Date.UTC(year, month - 1, day));
+
+    // Get current UTC date (today in UTC)
+    const today = new Date();
+    const todayUTC = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate()));
+
+    // Calculate the difference in days
+    const diffTime = todayUTC - selectedDateTime;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+    // Map to day key: today UTC = day1, yesterday UTC = day2, etc.
+    if (diffDays <= 0) return "day1";
+    return `day${diffDays + 1}`;
+  };
+
+  // Function to extract posts for an influencer from the API response structure
+  const getInfluencerPosts = (lastPostsData, channelId, selectedDateFilter) => {
+    if (!lastPostsData) return [];
+
+    const dayKey = getDateToDayKey(selectedDateFilter);
+    const posts = [];
+
+    if (dayKey === null) {
+      // "Latest Posts" - aggregate data from all days, flatten coins
+      const dayKeys = Object.keys(lastPostsData).filter(key => key.startsWith('day'));
+      dayKeys.forEach(key => {
+        const dayData = lastPostsData[key];
+        if (Array.isArray(dayData)) {
+          dayData.forEach(channelEntry => {
+            if (channelEntry.channelID === channelId && channelEntry.data !== "No Posts" && Array.isArray(channelEntry.data)) {
+              channelEntry.data.forEach(item => {
+                if (item.mentioned && Array.isArray(item.mentioned)) {
+                  item.mentioned.forEach(coin => {
+                    posts.push({
+                      date: item.date,
+                      time: item.time,
+                      coin: coin,
+                      videoID: item.videoID,
+                      messageID: item.messageID,
+                      link: item.link,
+                      publishedAt: item.publishedAt,
+                      title: item.title,
+                      channel_name: item.channel_name,
+                      roi_1hr: item["1_hour_roi"],
+                      roi_24hr: item["24_hours_roi"]
+                    });
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+    } else {
+      // Specific day selected - group coins by post
+      const dayData = lastPostsData[dayKey];
+      if (Array.isArray(dayData)) {
+        dayData.forEach(channelEntry => {
+          if (channelEntry.channelID === channelId && channelEntry.data !== "No Posts" && Array.isArray(channelEntry.data)) {
+            channelEntry.data.forEach(item => {
+              if (item.mentioned && Array.isArray(item.mentioned)) {
+                // Group all coins for this post
+                posts.push({
+                  date: item.date,
+                  time: item.time,
+                  coins: item.mentioned, // Array of coin objects
+                  videoID: item.videoID,
+                  messageID: item.messageID,
+                  link: item.link,
+                  publishedAt: item.publishedAt,
+                  title: item.title,
+                  channel_name: item.channel_name,
+                  roi_1hr: item["1_hour_roi"],
+                  roi_24hr: item["24_hours_roi"],
+                  isGrouped: true // Flag to indicate this is a grouped post
+                });
+              }
+            });
+          }
+        });
+      }
+
+      // Sort posts in ascending order (oldest first) by publishedAt or date/time
+      posts.sort((a, b) => {
+        const getTimestamp = (post) => {
+          // Try publishedAt first
+          if (post.publishedAt) {
+            const timestamp = new Date(post.publishedAt).getTime();
+            if (!isNaN(timestamp)) return timestamp;
+          }
+
+          // Fallback: parse date and time
+          if (post.date && post.time) {
+            try {
+              // Parse date (format: YYYY-MM-DD or DD-MM-YYYY)
+              let year, month, day;
+              const dateParts = post.date.split('-');
+              if (dateParts[0].length === 4) {
+                [year, month, day] = dateParts.map(Number);
+              } else {
+                [day, month, year] = dateParts.map(Number);
+              }
+
+              // Parse time - handle 24-hour format
+              const timeParts = post.time.split(':');
+              let hours = parseInt(timeParts[0]);
+              let minutes = parseInt(timeParts[1]);
+              const seconds = timeParts[2] ? parseInt(timeParts[2]) : 0;
+
+              const timestamp = new Date(year, month - 1, day, hours, minutes, seconds).getTime();
+
+              // Debug logging
+              console.log(`Post time: ${post.time}, parsed as: ${hours}:${minutes}:${seconds}, timestamp: ${timestamp}, date: ${new Date(timestamp).toLocaleString()}`);
+
+              return timestamp;
+            } catch (e) {
+              console.error('Error parsing time:', post.time, e);
+              return 0;
+            }
+          }
+          return 0;
+        };
+
+        return getTimestamp(a) - getTimestamp(b);
+      });
+    }
+
+    return posts;
+  };
+
   // Apply global sorting to recommendations and reorder influencers if sorting is active
   const sortedData = useMemo(() => {
     return sortRecommendationsAndInfluencers(top10Influencers);
-  }, [top10Influencers, sortConfig, youtubeLastPosts, telegramLastPosts, selectedPlatform, top10Data]);
+  }, [top10Influencers, sortConfig, youtubeLastPosts, telegramLastPosts, selectedPlatform, top10Data, binanceVolumeData, selectedDateFilter]);
 
   // Use sorted influencers if sorting is active, otherwise use original order
   let displayInfluencers = sortConfig.key ? sortedData.sortedInfluencers : top10Influencers;
@@ -798,8 +983,8 @@ export default function InfluencerSearchPage() {
   // Sort influencers by most recent post date/time (applies to all view modes)
   displayInfluencers = [...displayInfluencers].sort((a, b) => {
     const lastPostsData = selectedPlatform === "youtube" ? youtubeLastPosts : telegramLastPosts;
-    const postsA = lastPostsData[a.id] || [];
-    const postsB = lastPostsData[b.id] || [];
+    const postsA = getInfluencerPosts(lastPostsData, a.id, selectedDateFilter);
+    const postsB = getInfluencerPosts(lastPostsData, b.id, selectedDateFilter);
 
     if (postsA.length === 0 && postsB.length === 0) return 0;
     if (postsA.length === 0) return 1;
@@ -865,37 +1050,68 @@ export default function InfluencerSearchPage() {
           {/* Leaderboard Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             {/* View Mode Toggle Buttons */}
-            <div className="flex justify-center gap-3 px-4 py-3 border-b border-gray-200 bg-gray-50">
-              <button
-                onClick={() => setViewMode("top10_influencer_latest")}
-                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${viewMode === "top10_influencer_latest"
+            <div className="flex justify-between items-center gap-3 px-4 py-3 border-b border-gray-200 bg-gray-50">
+              {/* Timezone Toggle on Left */}
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-medium text-gray-600">Timezone</span>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => toggleTimezone()}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${!useLocalTime
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                  >
+                    UTC
+                  </button>
+                  <button
+                    onClick={() => toggleTimezone()}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${useLocalTime
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                  >
+                    {useLocalTime && userCity ? userCity : 'Local Time'}
+                  </button>
+                </div>
+              </div>
+
+              {/* View Mode Buttons in Center */}
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setViewMode("top10_influencer_latest")}
+                  className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${viewMode === "top10_influencer_latest"
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-              >
-                Top 10 Influencer Latest Posts
-              </button>
-              <button
-                onClick={() => setViewMode("top10_recent_posts")}
-                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${viewMode === "top10_recent_posts"
+                    }`}
+                >
+                  Influencers
+                </button>
+                <button
+                  onClick={() => setViewMode("top10_recent_posts")}
+                  className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${viewMode === "top10_recent_posts"
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-              >
-                Top 10 Recent Posts
-              </button>
-              <button
-                onClick={() => setViewMode("coins")}
-                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${viewMode === "coins"
+                    }`}
+                >
+                  Recent Posts
+                </button>
+                <button
+                  onClick={() => setViewMode("coins")}
+                  className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${viewMode === "coins"
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                  }`}
-              >
-                Coins
-              </button>
+                    }`}
+                >
+                  Coins
+                </button>
+              </div>
+
+              {/* Empty space on right for balance */}
+              <div className="w-40"></div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div>
               <table className="w-full relative">
                 <thead>
                   {/* Main header row */}
@@ -909,15 +1125,18 @@ export default function InfluencerSearchPage() {
                     {/* <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
                       Date
                     </th> */}
-                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider relative">
-                      <div className="flex items-center justify-center gap-1">
-                        <span>Latest Posts</span>
-                        <span className="relative group cursor-pointer z-[9999]">
-                          <span className="text-blue-600 text-sm">ⓘ</span>
-                          <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                            ST : Short Term<br />LT : Long Term
-                          </span>
-                        </span>
+                    <th className="px-1 py-1 text-[10px] font-medium text-black-900 uppercase tracking-wider relative">
+                      <div className="flex items-center justify-between w-full">
+                        <span className="px-1">Date & Time</span>
+                        <div className="flex items-center justify-center gap-1 flex-1">
+                          <span>Latest Posts</span>
+                          {/* <span className="relative group cursor-pointer z-[9999]">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                              N/A : Not Available
+                            </span>
+                          </span> */}
+                        </div>
                       </div>
                     </th>
                   </tr>
@@ -950,21 +1169,19 @@ export default function InfluencerSearchPage() {
                     </th>
                     {/* MCM Rating Filter */}
                     <th className="px-1 py-0.5 border-r border-gray-300">
-                      {/* <div className="flex justify-center">
-                        <div className="w-full max-w-[120px]">
-                          <select
-                            value={selectedRating}
-                            onChange={(e) => setSelectedRating(e.target.value)}
-                            className="w-full border border-indigo-200 bg-indigo-50 rounded-full px-2 py-0.5 text-[10px] font-medium text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
-                          >
-                            {ratingOptions.map((option) => (
-                              <option key={option.value} value={option.value}>
-                                {option.value === "all" ? "All Ratings" : "⭐".repeat(option.stars)}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      </div> */}
+                      <div className="flex justify-center">
+                        <select
+                          value={selectedTimeframe}
+                          onChange={(e) => setSelectedTimeframe(e.target.value)}
+                          className="w-full border border-indigo-200 bg-indigo-50 rounded-full px-2 py-0.5 text-[10px] font-medium text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                        >
+                          {timeframeOptions.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </th>
                     {/* Date and Time Column with Timezone Toggle */}
                     {/* <th className="px-1 py-0.5 border-r border-gray-300">
@@ -995,58 +1212,73 @@ export default function InfluencerSearchPage() {
 
 
                     <th className="px-0.5 py-0.5">
-                      <div className="flex items-center justify-center gap-1 px-0.5 w-full">
-                        <div className="w-[25%] flex flex-col items-center gap-1">
-                          <div
-                            className="text-[7px] font-semibold text-black-700 cursor-pointer hover:bg-gray-200 flex items-center gap-0.5 px-1 py-0.5 rounded"
-                            onClick={() => handleSort('datetime')}
+                      <div className="flex items-center justify-start gap-1 px-0.5 w-full">
+                        <div className="w-[15%] flex flex-col items-start gap-1">
+                          <select
+                            value={selectedDateFilter}
+                            onChange={(e) => setSelectedDateFilter(e.target.value)}
+                            className="w-3/4 border border-gray-300 bg-gray-50 rounded-full px-2 py-0.5 text-[9px] font-medium text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 cursor-pointer transition-all"
                           >
-                            Date & Time
-                            <span className="text-[8px]">
-                              {/* {sortConfig.key === 'datetime'
-                                ? sortConfig.direction === 'asc'
-                                  ? '↑'
-                                  : '↓'
-                                : '↕'} */}
-                            </span>
-                          </div>
-
-                          {/* Timezone Toggle Buttons */}
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() => toggleTimezone()}
-                              className={`px-1.5 py-0.5 text-[9px] rounded transition-all flex-1 ${!useLocalTime
-                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-white'
-                                : 'text-gray-700'
-                                }`}
-                            >
-                              UTC
-                            </button>
-                            <button
-                              onClick={() => toggleTimezone()}
-                              className={`px-1.5 py-0.5 text-[9px] rounded transition-all flex-1 ${useLocalTime
-                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-white'
-                                : 'text-gray-700'
-                                }`}
-                            >
-                              Local Time
-                            </button>
-                          </div>
+                            <option value="latest">Latest Posts</option>
+                            {Array.from({ length: 7 }).map((_, i) => {
+                              // Start from yesterday UTC (i + 1 days ago)
+                              const date = new Date();
+                              date.setUTCDate(date.getUTCDate() - (i + 1));
+                              const day = String(date.getUTCDate()).padStart(2, "0");
+                              const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+                              const year = date.getUTCFullYear();
+                              const formatted = `${day}-${month}-${year}`;
+                              return (
+                                <option key={formatted} value={formatted}>
+                                  {formatted}
+                                </option>
+                              );
+                            })}
+                          </select>
                         </div>
-                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-center">
+                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           Coin
                         </div>
-                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-center">
-                          Sentiment (ST/LT)
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
+                          <div className="flex items-center justify-start gap-1">
+                            <span>Sentiment (ST/LT)</span>
+                            <span className="relative group cursor-pointer z-[9999]">
+                              <span className="text-blue-600 text-sm">ⓘ</span>
+                              <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                ST : Short Term<br />LT : Long Term
+                              </span>
+                            </span>
+                          </div>
                         </div>
-                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-center">
-                          Price at post date
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
+                          <span>Post Date Price</span>
+                          {/* <span className="relative group cursor-pointer z-[9999]">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                              N/A : Not Available
+                            </span>
+                          </span> */}
                         </div>
-                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-center">
-                          Current Price
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
+                          <div className="flex flex-col items-start">
+                            <span>Current Price</span>
+                            <span className="text-[8px] font-normal text-black-600">(Binance)</span>
+                          </div>
                         </div>
-                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-center">
-                         % change from post date
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
+                          <span>Post Date % Change</span>
+                          {/* <span className="relative group cursor-pointer z-[9999]">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                              N/A : Not Available
+                            </span>
+                          </span> */}
+                        </div>
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
+                          <div className="flex flex-col items-start">
+                            <span>Volume</span>
+                            <span className="text-[8px] font-normal text-black-600">(Binance)</span>
+                          </div>
                         </div>
                         {/* <div className="flex-1 text-[7px] font-semibold text-black-700 text-left">
                           Summary Analysis
@@ -1099,37 +1331,25 @@ export default function InfluencerSearchPage() {
                       {paginatedInfluencers.map((influencer, index) => {
                         const globalRank = startIndex + index + 1;
 
-                        // Get MCM ratings from API
-                        const mcmRatingsMap = selectedPlatform === "youtube" ? youtubeMcmRatings : telegramMcmRatings;
-                        const mcmData = mcmRatingsMap[influencer.id] || {};
+                        // Get star ratings from influencer's star_rating_yearly (from main API)
+                        const starRatingYearly = influencer.star_rating_yearly || {};
 
-                        // Extract all available yearly ratings dynamically
+                        // Extract all available yearly ratings dynamically, starting from 2022
                         const scatterData = [];
-                        const years = [];
-
-                        // Find all year fields in the data
-                        Object.keys(mcmData).forEach(key => {
-                          const match = key.match(/star_rating\.yearly\.(\d{4})\./);
-                          if (match) {
-                            const year = parseInt(match[1]);
-                            if (!years.includes(year)) {
-                              years.push(year);
-                            }
-                          }
-                        });
-
-                        // Sort years in ascending order
-                        years.sort((a, b) => a - b);
+                        const years = Object.keys(starRatingYearly)
+                          .map(year => parseInt(year))
+                          .filter(year => year >= 2022) // Filter to start from 2022
+                          .sort((a, b) => a - b); // Sort in ascending order
 
                         // Build scatter data for each year
                         years.forEach((year, yearIndex) => {
-                          const fieldKey = `star_rating.yearly.${year}.${selectedTimeframe}`;
-                          if (mcmData[fieldKey] && mcmData[fieldKey].current_rating) {
+                          const yearData = starRatingYearly[year];
+                          if (yearData && yearData.current_rating) {
                             scatterData.push({
                               year: yearIndex,
                               yearLabel: year,
-                              rating: mcmData[fieldKey].current_rating,
-                              finalScore: mcmData[fieldKey].current_final_score
+                              rating: yearData.current_rating,
+                              finalScore: yearData.current_final_score
                             });
                           }
                         });
@@ -1141,7 +1361,7 @@ export default function InfluencerSearchPage() {
                           recommendations = globalSortedRecommendations[influencer.id];
                         } else {
                           const lastPostsData = selectedPlatform === "youtube" ? youtubeLastPosts : telegramLastPosts;
-                          const lastPostsForInfluencer = lastPostsData[influencer.id] || [];
+                          const lastPostsForInfluencer = getInfluencerPosts(lastPostsData, influencer.id, selectedDateFilter);
 
                           // Create live prices map from top10Data
                           const livePricesMap = {};
@@ -1149,7 +1369,7 @@ export default function InfluencerSearchPage() {
                             livePricesMap[coin.symbol.toUpperCase()] = coin.price;
                           });
 
-                          recommendations = formatRecommendations(lastPostsForInfluencer, livePricesMap);
+                          recommendations = formatRecommendations(lastPostsForInfluencer, livePricesMap, binanceVolumeData);
                         }
 
                         return (
@@ -1244,14 +1464,14 @@ export default function InfluencerSearchPage() {
 
                             {/* MCM Ranking Column - Yearly Rating Graph with Stars */}
                             <td className="px-3 py-1 border-r border-gray-200">
-                              <div className="flex justify-center items-center py-1">
+                              <div className="flex justify-start items-center py-1">
                                 {scatterData.length > 0 ? (
                                   <div className="relative">
                                     {/* Graph container with axes */}
                                     <div className="relative">
                                       {/* Data columns with stars */}
                                       <div className="flex items-end gap-3 pl-1 h-16 pb-3">
-                                        {scatterData.filter(point => point.yearLabel !== 2021).map((point, idx) => {
+                                        {scatterData.map((point, idx) => {
                                           const fullStars = Math.floor(point.rating);
                                           const hasHalfStar = point.rating % 1 >= 0.5;
                                           const totalStars = 5;
@@ -1315,115 +1535,327 @@ export default function InfluencerSearchPage() {
                                 {/* Display recommendations based on visible count (default 3, increment by 3) */}
                                 {(() => {
                                   const visibleCount = visibleRecommendations[influencer.id] || 3;
-                                  const displayedRecommendations = recommendations.slice(0, visibleCount);
 
-                                  return displayedRecommendations.map((rec, idx) => (
-                                    <div key={idx} className="flex items-center justify-center gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full">
+                                  // Check if recommendations contain grouped posts (date filter applied)
+                                  const hasGroupedPosts = recommendations.some(rec => rec.isGrouped);
 
-                                      <div className="flex flex-col items-center gap-1 w-[25%]">
-                                        {rec.date && rec.time ? (
-                                          <>
-                                            <span className="text-[8px] font-semibold text-black-900">
-                                              {formatDate(rec.date)} {formatTime(rec.date, rec.time)}
-                                            </span>
-                                          </>
-                                        ) : (
-                                          <span className="text-[8px] text-gray-400">No data</span>
-                                        )}
-                                      </div>
-                                      {/* Coin Icon and Name */}
-                                      <div className="flex items-center justify-center gap-0.5 w-[10%]">
-                                        <div className="flex items-center justify-center w-3">
-                                          {rec.icon}
+                                  // Sort recommendations: rows with data first, N/A rows at bottom
+                                  // Skip sorting for grouped posts to preserve chronological order
+                                  const sortedRecommendations = hasGroupedPosts ? recommendations : [...recommendations].sort((a, b) => {
+                                    const aHasData = a.basePrice !== 'N/A' || a.currentPrice !== 'N/A';
+                                    const bHasData = b.basePrice !== 'N/A' || b.currentPrice !== 'N/A';
+
+                                    if (aHasData && !bHasData) return -1;
+                                    if (!aHasData && bHasData) return 1;
+                                    return 0;
+                                  });
+
+                                  const displayedRecommendations = sortedRecommendations.slice(0, visibleCount);
+
+                                  return displayedRecommendations.map((rec, idx) => {
+                                    // Handle grouped posts (when specific date is selected)
+                                    if (rec.isGrouped && rec.coins) {
+                                      const postKey = `${influencer.id}-${rec.videoID || rec.messageID}-${idx}`;
+                                      const isExpanded = expandedPosts[postKey] || false;
+                                      const coinsToShow = isExpanded ? rec.coins : rec.coins.slice(0, 3);
+                                      const hasMoreCoins = rec.coins.length > 3;
+
+                                      return (
+                                        <div key={idx} className="border-b border-gray-200 last:border-b-0">
+                                          {/* Post header with date/time */}
+                                          <div className="flex items-center justify-start gap-1 px-0.5 py-2 bg-gray-50">
+                                            <div className="flex flex-col items-start gap-1 w-[15%] px-1">
+                                              {rec.date && rec.time ? (
+                                                <span className="text-[8px] font-semibold text-black-900">
+                                                  {formatDate(rec.date)} {formatTime(rec.date, rec.time)}
+                                                </span>
+                                              ) : (
+                                                <span className="text-[8px] text-gray-400">No data</span>
+                                              )}
+                                            </div>
+                                            <div className="flex-1 text-[8px] text-gray-600">
+                                              {rec.title || 'Post'} ({rec.coins.length} coins mentioned)
+                                            </div>
+                                          </div>
+
+                                          {/* Coins in this post */}
+                                          {coinsToShow.map((coinData, coinIdx) => (
+                                            <div key={coinIdx} className="flex items-center justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full">
+                                              {/* Empty date column for alignment */}
+                                              <div className="w-[15%] px-1"></div>
+
+                                              {/* Coin Icon and Name */}
+                                              <div className="flex items-center justify-start gap-0.5 w-[10%]">
+                                                <div className="flex items-center justify-center w-3">
+                                                  {coinData.icon}
+                                                </div>
+                                                <span className="text-[9px] font-bold text-gray-900">
+                                                  {coinData.coin}
+                                                </span>
+                                              </div>
+
+                                              {/* Sentiment with Term */}
+                                              <div className="w-[15%] flex justify-start">
+                                                {coinData.type === "bullish" ? (
+                                                  <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-green-100 text-green-700 rounded-full text-[8px] font-medium capitalize">
+                                                    <FaArrowUp className="text-[6px]" />
+                                                    Bullish {coinData.term === "short" ? "ST" : "LT"}
+                                                  </span>
+                                                ) : (
+                                                  <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-red-100 text-red-700 rounded-full text-[8px] font-medium capitalize">
+                                                    <FaArrowDown className="text-[6px]" />
+                                                    bearish {coinData.term === "short" ? "ST" : "LT"}
+                                                  </span>
+                                                )}
+                                              </div>
+
+                                              {/* Base Price */}
+                                              <div className="w-[15%] flex justify-start">
+                                                <span className="text-[8px] font-semibold text-gray-900">
+                                                  {(() => {
+                                                    const value = parseFloat(coinData.basePrice?.replace(/[^0-9.-]/g, ''));
+                                                    if (isNaN(value)) return coinData.basePrice;
+                                                    if (Math.abs(value) >= 1000) {
+                                                      return Math.round(value).toLocaleString('en-US');
+                                                    }
+                                                    return value.toFixed(2);
+                                                  })()}
+                                                </span>
+                                              </div>
+
+                                              {/* Current Price */}
+                                              <div className="w-[15%] flex justify-start">
+                                                <span className="text-[8px] font-semibold text-blue-500">
+                                                  {(() => {
+                                                    const value = parseFloat(coinData.currentPrice?.replace(/[^0-9.-]/g, ''));
+                                                    if (isNaN(value)) return coinData.currentPrice;
+                                                    if (Math.abs(value) >= 1000) {
+                                                      return Math.round(value).toLocaleString('en-US');
+                                                    }
+                                                    return value.toFixed(2);
+                                                  })()}
+                                                </span>
+                                              </div>
+
+                                              {/* Price Change % */}
+                                              <div className="w-[15%] flex justify-start">
+                                                {(() => {
+                                                  const basePrice = coinData.basePrice && coinData.basePrice !== 'N/A'
+                                                    ? parseFloat(coinData.basePrice.replace('$', '').replace(',', ''))
+                                                    : null;
+                                                  const currentPrice = coinData.currentPrice && coinData.currentPrice !== 'N/A'
+                                                    ? parseFloat(coinData.currentPrice.replace('$', '').replace(',', ''))
+                                                    : null;
+
+                                                  if (basePrice !== null && currentPrice !== null) {
+                                                    let changePrice = currentPrice - basePrice;
+                                                    if (coinData.type?.toLowerCase().includes("bearish")) {
+                                                      changePrice *= -1;
+                                                    }
+                                                    const percentageChange = (changePrice / currentPrice) * 100;
+                                                    const isPositive = changePrice > 0;
+                                                    const isNegative = changePrice < 0;
+
+                                                    return (
+                                                      <span className={`text-[8px] font-semibold ${isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900'}`}>
+                                                        {isPositive ? '+' : ''}
+                                                        {percentageChange.toLocaleString(undefined, {
+                                                          minimumFractionDigits: 2,
+                                                          maximumFractionDigits: 2,
+                                                        })}%
+                                                      </span>
+                                                    );
+                                                  }
+                                                  return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
+                                                })()}
+                                              </div>
+
+                                              {/* Volume */}
+                                              <div className="w-[15%] flex justify-start">
+                                                <span className="text-[8px] font-semibold text-blue-500">
+                                                  {(() => {
+                                                    const volume = coinData.volume;
+                                                    if (volume && volume !== 'N/A') {
+                                                      const value = parseFloat(volume);
+                                                      if (!isNaN(value)) {
+                                                        return value.toLocaleString('en-US', {
+                                                          minimumFractionDigits: 2,
+                                                          maximumFractionDigits: 2
+                                                        });
+                                                      }
+                                                    }
+                                                    return 'N/A';
+                                                  })()}
+                                                </span>
+                                              </div>
+                                            </div>
+                                          ))}
+
+                                          {/* Expand/Collapse button for posts with more than 3 coins */}
+                                          {hasMoreCoins && (
+                                            <div className="flex items-center justify-start gap-1 px-0.5 py-1 bg-gray-50">
+                                              <div className="w-[15%]"></div>
+                                              <button
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setExpandedPosts(prev => ({
+                                                    ...prev,
+                                                    [postKey]: !prev[postKey]
+                                                  }));
+                                                }}
+                                                className="flex items-center gap-1 text-[8px] text-blue-600 hover:text-blue-800 font-semibold"
+                                              >
+                                                {isExpanded ? '− Show less' : `+ Show ${rec.coins.length - 3} more coins`}
+                                              </button>
+                                            </div>
+                                          )}
                                         </div>
-                                        <span className="text-[9px] font-bold text-gray-900">
-                                          {rec.coin}
-                                        </span>
-                                      </div>
+                                      );
+                                    }
 
-                                      {/* Sentiment with Term */}
-                                      <div className="w-[15%] flex justify-center">
-                                        {rec.type === "bullish" ? (
-                                          <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-green-100 text-green-700 rounded-full text-[8px] font-medium capitalize">
-                                            <FaArrowUp className="text-[6px]" />
-                                            Bullish {rec.term === "short" ? "ST" : "LT"}
+                                    // Handle individual coin posts (Latest Posts mode)
+                                    return (
+                                      <div key={idx} className="flex items-center justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full">
+                                        <div className="flex flex-col items-start gap-1 w-[15%] px-1">
+                                          {rec.date && rec.time ? (
+                                            <>
+                                              <span className="text-[8px] font-semibold text-black-900">
+                                                {formatDate(rec.date)} {formatTime(rec.date, rec.time)}
+                                              </span>
+                                            </>
+                                          ) : (
+                                            <span className="text-[8px] text-gray-400">No data</span>
+                                          )}
+                                        </div>
+                                        {/* Coin Icon and Name */}
+                                        <div className="flex items-center justify-start gap-0.5 w-[10%]">
+                                          <div className="flex items-center justify-center w-3">
+                                            {rec.icon}
+                                          </div>
+                                          <span className="text-[9px] font-bold text-gray-900">
+                                            {rec.coin}
                                           </span>
-                                        ) : (
-                                          <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-red-100 text-red-700 rounded-full text-[8px] font-medium capitalize">
-                                            <FaArrowDown className="text-[6px]" />
-                                            bearish {rec.term === "short" ? "ST" : "LT"}
+                                        </div>
+
+                                        {/* Sentiment with Term */}
+                                        <div className="w-[15%] flex justify-start">
+                                          {rec.type === "bullish" ? (
+                                            <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-green-100 text-green-700 rounded-full text-[8px] font-medium capitalize">
+                                              <FaArrowUp className="text-[6px]" />
+                                              Bullish {rec.term === "short" ? "ST" : "LT"}
+                                            </span>
+                                          ) : (
+                                            <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-red-100 text-red-700 rounded-full text-[8px] font-medium capitalize">
+                                              <FaArrowDown className="text-[6px]" />
+                                              bearish {rec.term === "short" ? "ST" : "LT"}
+                                            </span>
+                                          )}
+                                        </div>
+
+                                        {/* PRICE AT POST DATE (formerly Base Price) */}
+                                        <div className="w-[15%] flex justify-start">
+                                          <span className="text-[8px] font-semibold text-gray-900">
+                                            {(() => {
+                                              const value = parseFloat(rec.basePrice?.replace(/[^0-9.-]/g, ''));
+                                              if (isNaN(value)) return rec.basePrice;
+
+                                              // Large numbers: comma separated, no decimals
+                                              if (Math.abs(value) >= 1000) {
+                                                return Math.round(value).toLocaleString('en-US');
+                                              }
+
+                                              // Small numbers: show with 2 decimals
+                                              return value.toFixed(2);
+                                            })()}
                                           </span>
-                                        )}
-                                      </div>
+                                        </div>
 
-                                      {/* PRICE AT POST DATE (formerly Base Price) */}
-                                      <div className="w-[15%] flex justify-center">
-                                        <span className="text-[8px] font-semibold text-gray-900">{rec.basePrice}</span>
-                                      </div>
+                                        {/* CURRENT PRICE */}
+                                        <div className="w-[15%] flex justify-start">
+                                          <span className="text-[8px] font-semibold text-blue-500">
+                                            {(() => {
+                                              const value = parseFloat(rec.currentPrice?.replace(/[^0-9.-]/g, ''));
+                                              if (isNaN(value)) return rec.currentPrice;
 
-                                      {/* CURRENT PRICE */}
-                                      <div className="w-[15%] flex justify-center">
-                                        <span className="text-[8px] font-semibold text-blue-500">{rec.currentPrice}</span>
-                                      </div>
-                                      {/* Change Price (PRICE AT POST DATE - CURRENT PRICE) */}
-                                      <div className="w-[15%] flex justify-center">
-                                        {(() => {
-                                          // Parse base price and current price
-                                          const basePrice = rec.basePrice && rec.basePrice !== 'N/A'
-                                            ? parseFloat(rec.basePrice.replace('$', '').replace(',', ''))
-                                            : null;
-                                          const currentPrice = rec.currentPrice && rec.currentPrice !== 'N/A'
-                                            ? parseFloat(rec.currentPrice.replace('$', '').replace(',', ''))
-                                            : null;
+                                              if (Math.abs(value) >= 1000) {
+                                                return Math.round(value).toLocaleString('en-US');
+                                              }
 
-                                          if (basePrice !== null && currentPrice !== null) {
-                                            let changePrice = currentPrice - basePrice;
+                                              return value.toFixed(2);
+                                            })()}
+                                          </span>
+                                        </div>
 
-                                            let sentiment = rec.type || "";
-                                            if (sentiment.toLowerCase().includes("bearish")) {
-                                              changePrice *= -1;
-                                            }
+                                        {/* Change Price (PRICE AT POST DATE - CURRENT PRICE) */}
+                                        <div className="w-[15%] flex justify-start">
+                                          {(() => {
+                                            // Parse base price and current price
+                                            const basePrice = rec.basePrice && rec.basePrice !== 'N/A'
+                                              ? parseFloat(rec.basePrice.replace('$', '').replace(',', ''))
+                                              : null;
+                                            const currentPrice = rec.currentPrice && rec.currentPrice !== 'N/A'
+                                              ? parseFloat(rec.currentPrice.replace('$', '').replace(',', ''))
+                                              : null;
 
-                                            // Calculate percentage change based on current price
-                                            const percentageChange = (changePrice / currentPrice) * 100;
+                                            if (basePrice !== null && currentPrice !== null) {
+                                              let changePrice = currentPrice - basePrice;
 
-                                            const isPositive = changePrice > 0;
-                                            const isNegative = changePrice < 0;
+                                              let sentiment = rec.type || "";
+                                              if (sentiment.toLowerCase().includes("bearish")) {
+                                                changePrice *= -1;
+                                              }
 
-                                            return (
-                                              <span
-                                                className={`text-[8px] font-semibold ${isPositive
+                                              // Calculate percentage change based on current price
+                                              const percentageChange = (changePrice / currentPrice) * 100;
+
+                                              const isPositive = changePrice > 0;
+                                              const isNegative = changePrice < 0;
+
+                                              return (
+                                                <span
+                                                  className={`text-[8px] font-semibold ${isPositive
                                                     ? 'text-green-600'
                                                     : isNegative
                                                       ? 'text-red-600'
                                                       : 'text-gray-900'
-                                                  }`}
-                                              >
-                                          
-                                                {isPositive ? '+' : ''}
-                                                {percentageChange.toLocaleString(undefined, {
-                                                  minimumFractionDigits: 2,
-                                                  maximumFractionDigits: 2,
-                                                })}
-                                                %
-                                              </span>
-                                            );
-                                          } else {
-                                            return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
-                                          }
-                                        })()}
+                                                    }`}
+                                                >
+
+                                                  {isPositive ? '+' : ''}
+                                                  {percentageChange.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                  })}
+                                                  %
+                                                </span>
+                                              );
+                                            } else {
+                                              return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
+                                            }
+                                          })()}
+                                        </div>
+
+                                        {/* Volume (24h) */}
+                                        <div className="w-[15%] flex justify-start">
+                                          <span className="text-[8px] font-semibold text-blue-500">
+                                            {(() => {
+                                              const volume = rec.volume;
+                                              if (volume && volume !== 'N/A') {
+                                                const value = parseFloat(volume);
+                                                if (!isNaN(value)) {
+                                                  return value.toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2
+                                                  });
+                                                }
+                                              }
+                                              return 'N/A';
+                                            })()}
+                                          </span>
+                                        </div>
                                       </div>
-
-
-
-                                      {/* Summary Analysis */}
-                                      {/* <div className="flex-1">
-                                        <span className="text-[8px] text-black-900 font-semibold leading-tight line-clamp-1" title={rec.summary}>
-                                          {rec.summary ? rec.summary.charAt(0).toUpperCase() + rec.summary.slice(1) : ''}
-                                        </span>
-                                      </div> */}
-                                    </div>
-                                  ));
+                                    );
+                                  });
                                 })()}
 
                                 {/* Show More/Less button - positioned below coin column */}
@@ -1468,6 +1900,7 @@ export default function InfluencerSearchPage() {
                                           </span>
                                         </button>
                                       </div>
+                                      <div className="w-[15%]"></div>
                                       <div className="w-[15%]"></div>
                                       <div className="w-[15%]"></div>
                                       <div className="w-[15%]"></div>

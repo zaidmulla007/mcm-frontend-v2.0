@@ -28,8 +28,6 @@ export default function InfluencerSearchPage() {
   const [selectedPlatform, setSelectedPlatform] = useState("youtube");
   const [youtubeInfluencers, setYoutubeInfluencers] = useState([]);
   const [telegramInfluencers, setTelegramInfluencers] = useState([]);
-  const [youtubeMcmRatings, setYoutubeMcmRatings] = useState({});
-  const [telegramMcmRatings, setTelegramMcmRatings] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -93,16 +91,8 @@ export default function InfluencerSearchPage() {
         setYoutubeInfluencers([]);
       }
 
-      // Fetch MCM ratings
-      const mcmRes = await fetch(`/api/youtube-data/mcm-ratings?timeframe=${apiParams.timeframe}`);
-      const mcmData = await mcmRes.json();
-      if (mcmData.success && Array.isArray(mcmData.results)) {
-        const ratingsMap = {};
-        mcmData.results.forEach(item => {
-          ratingsMap[item.channel_id] = item;
-        });
-        setYoutubeMcmRatings(ratingsMap);
-      }
+      // MCM ratings are now included in the main API response (star_rating_yearly)
+      // No need for separate API call
     } catch (err) {
       setError("Failed to fetch YouTube data");
       setYoutubeInfluencers([]);
@@ -137,16 +127,8 @@ export default function InfluencerSearchPage() {
         setTelegramInfluencers([]);
       }
 
-      // Fetch MCM ratings
-      const mcmRes = await fetch(`/api/telegram-data/mcm-ratings?timeframe=${apiParams.timeframe}`);
-      const mcmData = await mcmRes.json();
-      if (mcmData.success && Array.isArray(mcmData.results)) {
-        const ratingsMap = {};
-        mcmData.results.forEach(item => {
-          ratingsMap[item.channel_id] = item;
-        });
-        setTelegramMcmRatings(ratingsMap);
-      }
+      // MCM ratings are now included in the main API response (star_rating_yearly)
+      // No need for separate API call
     } catch (err) {
       setError("Failed to fetch Telegram data");
       setTelegramInfluencers([]);
@@ -238,6 +220,7 @@ export default function InfluencerSearchPage() {
         final_score: ch.final_score || 0,
         current_rating: ch.current_rating || 0,
         gemini_summary: ch.gemini_summary || '',
+        star_rating_yearly: ch.star_rating_yearly || {},
       }));
     } else if (selectedPlatform === "telegram") {
       influencers = telegramInfluencers.map((tg) => ({
@@ -255,6 +238,7 @@ export default function InfluencerSearchPage() {
         final_score: tg.final_score || 0,
         current_rating: tg.current_rating || 0,
         gemini_summary: tg.gemini_summary || '',
+        star_rating_yearly: tg.star_rating_yearly || {},
       }));
     } else {
       influencers = [];
@@ -547,37 +531,25 @@ export default function InfluencerSearchPage() {
                       {paginatedInfluencers.map((influencer, index) => {
                         const globalRank = startIndex + index + 1;
 
-                        // Get MCM ratings from API
-                        const mcmRatingsMap = selectedPlatform === "youtube" ? youtubeMcmRatings : telegramMcmRatings;
-                        const mcmData = mcmRatingsMap[influencer.id] || {};
+                        // Get star ratings from influencer's star_rating_yearly (from main API)
+                        const starRatingYearly = influencer.star_rating_yearly || {};
 
-                        // Extract all available yearly ratings dynamically
+                        // Extract all available yearly ratings dynamically, starting from 2022
                         const scatterData = [];
-                        const years = [];
-
-                        // Find all year fields in the data
-                        Object.keys(mcmData).forEach(key => {
-                          const match = key.match(/star_rating\.yearly\.(\d{4})\./);
-                          if (match) {
-                            const year = parseInt(match[1]);
-                            if (!years.includes(year)) {
-                              years.push(year);
-                            }
-                          }
-                        });
-
-                        // Sort years in ascending order
-                        years.sort((a, b) => a - b);
+                        const years = Object.keys(starRatingYearly)
+                          .map(year => parseInt(year))
+                          .filter(year => year >= 2022) // Filter to start from 2022
+                          .sort((a, b) => a - b); // Sort in ascending order
 
                         // Build scatter data for each year
                         years.forEach((year, yearIndex) => {
-                          const fieldKey = `star_rating.yearly.${year}.${selectedTimeframe}`;
-                          if (mcmData[fieldKey] && mcmData[fieldKey].current_rating) {
+                          const yearData = starRatingYearly[year];
+                          if (yearData && yearData.current_rating) {
                             scatterData.push({
                               year: yearIndex,
                               yearLabel: year,
-                              rating: mcmData[fieldKey].current_rating,
-                              finalScore: mcmData[fieldKey].current_final_score
+                              rating: yearData.current_rating,
+                              finalScore: yearData.current_final_score
                             });
                           }
                         });
@@ -668,7 +640,7 @@ export default function InfluencerSearchPage() {
                                     <div className="relative">
                                       {/* Data columns with stars */}
                                       <div className="flex items-end gap-3 pl-1 h-16 pb-3">
-                                        {scatterData.filter(point => point.yearLabel !== 2021).map((point, idx) => {
+                                        {scatterData.map((point, idx) => {
                                           const fullStars = Math.floor(point.rating);
                                           const hasHalfStar = point.rating % 1 >= 0.5;
                                           const totalStars = 5;
