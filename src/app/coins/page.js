@@ -203,15 +203,15 @@ export default function CoinsPage() {
                   MCM Ranking
                 </button>
                 <button
+                  className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md"
+                >
+                  Coins
+                </button>
+                <button
                   onClick={() => router.push("/influencer-search")}
                   className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-200 text-gray-700 hover:bg-gray-300"
                 >
                   Posts
-                </button>
-                <button
-                  className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md"
-                >
-                  Coins
                 </button>
               </div>
             </div>
@@ -352,9 +352,9 @@ export default function CoinsPage() {
                             <span className="text-sm font-semibold text-blue-600">
                               {currentPrice !== 'N/A'
                                 ? `$${parseFloat(currentPrice).toLocaleString('en-US', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 8
-                                  })}`
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 8
+                                })}`
                                 : 'N/A'}
                             </span>
                           </td>
@@ -364,9 +364,9 @@ export default function CoinsPage() {
                             <span className="text-sm font-semibold text-blue-600">
                               {volume !== 'N/A'
                                 ? parseFloat(volume).toLocaleString('en-US', {
-                                    minimumFractionDigits: 0,
-                                    maximumFractionDigits: 0
-                                  })
+                                  minimumFractionDigits: 0,
+                                  maximumFractionDigits: 0
+                                })
                                 : 'N/A'}
                             </span>
                           </td>
@@ -375,26 +375,24 @@ export default function CoinsPage() {
                           <td className="px-4 py-3 text-center">
                             {priceChange !== null && priceChangePercent !== null ? (
                               <div className="flex flex-col items-center gap-1">
-                                <span className={`text-sm font-semibold ${
-                                  parseFloat(priceChange) > 0
+                                <span className={`text-sm font-semibold ${parseFloat(priceChange) > 0
                                     ? 'text-green-600'
                                     : parseFloat(priceChange) < 0
-                                    ? 'text-red-600'
-                                    : 'text-gray-900'
-                                }`}>
+                                      ? 'text-red-600'
+                                      : 'text-gray-900'
+                                  }`}>
                                   {parseFloat(priceChange) > 0 ? '+' : ''}
                                   {parseFloat(priceChange).toLocaleString('en-US', {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2
                                   })}
                                 </span>
-                                <span className={`text-xs font-semibold ${
-                                  parseFloat(priceChange) > 0
+                                <span className={`text-xs font-semibold ${parseFloat(priceChange) > 0
                                     ? 'text-green-600'
                                     : parseFloat(priceChange) < 0
-                                    ? 'text-red-600'
-                                    : 'text-gray-900'
-                                }`}>
+                                      ? 'text-red-600'
+                                      : 'text-gray-900'
+                                  }`}>
                                   ({parseFloat(priceChange) > 0 ? '+' : ''}{priceChangePercent}%)
                                 </span>
                               </div>
