@@ -165,7 +165,9 @@ const formatRecommendations = (lastPostsData, livePrices = {}, volumeData = {}) 
       outlook: outlook,
       link: post.link,
       videoID: post.videoID,
-      volume: volume
+      volume: volume,
+      title: post.title,
+      channel_name: post.channel_name
     };
   });
 
@@ -252,14 +254,18 @@ export default function InfluencerSearchPage() {
         const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
         const data = await response.json();
 
-        // Create a map of symbol to volume (only USDT pairs)
+        // Create a map of symbol to volume, priceChange, and priceChangePercent (only USDT pairs)
         const volumeMap = {};
         data.forEach(ticker => {
           // Only process USDT trading pairs
           if (ticker.symbol.endsWith('USDT')) {
             // Remove 'USDT' suffix to get the base symbol (e.g., BTCUSDT -> BTC)
             const symbol = ticker.symbol.replace('USDT', '');
-            volumeMap[symbol] = ticker.volume;
+            volumeMap[symbol] = {
+              volume: ticker.volume,
+              priceChange: ticker.priceChange,
+              priceChangePercent: ticker.priceChangePercent
+            };
           }
         });
 
@@ -312,6 +318,9 @@ export default function InfluencerSearchPage() {
 
   // State to track expanded posts (for grouped coin display)
   const [expandedPosts, setExpandedPosts] = useState({});
+
+  // State to track expanded titles
+  const [expandedTitles, setExpandedTitles] = useState({});
 
   // Sorting state for recommendations (default: desc to show recent posts first)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'desc' });
@@ -864,35 +873,68 @@ export default function InfluencerSearchPage() {
     const posts = [];
 
     if (dayKey === null) {
-      // "Latest Posts" - aggregate data from all days, flatten coins
-      const dayKeys = Object.keys(lastPostsData).filter(key => key.startsWith('day'));
-      dayKeys.forEach(key => {
-        const dayData = lastPostsData[key];
-        if (Array.isArray(dayData)) {
-          dayData.forEach(channelEntry => {
-            if (channelEntry.channelID === channelId && channelEntry.data !== "No Posts" && Array.isArray(channelEntry.data)) {
-              channelEntry.data.forEach(item => {
-                if (item.mentioned && Array.isArray(item.mentioned)) {
-                  item.mentioned.forEach(coin => {
-                    posts.push({
-                      date: item.date,
-                      time: item.time,
-                      coin: coin,
-                      videoID: item.videoID,
-                      messageID: item.messageID,
-                      link: item.link,
-                      publishedAt: item.publishedAt,
-                      title: item.title,
-                      channel_name: item.channel_name,
-                      roi_1hr: item["1_hour_roi"],
-                      roi_24hr: item["24_hours_roi"]
-                    });
-                  });
-                }
-              });
+      // "Latest Posts" - use results array directly from API response, group coins by post
+      if (lastPostsData.results && Array.isArray(lastPostsData.results)) {
+        lastPostsData.results.forEach(item => {
+          if (item.channelID === channelId && item.mentioned && Array.isArray(item.mentioned)) {
+            // Group all coins for this post
+            posts.push({
+              date: item.date,
+              time: item.time,
+              coins: item.mentioned, // Array of coin objects
+              videoID: item.videoID,
+              messageID: item.messageID,
+              link: item.link,
+              publishedAt: item.publishedAt,
+              title: item.title,
+              channel_name: item.channel_name,
+              roi_1hr: item["1_hour_roi"],
+              roi_24hr: item["24_hours_roi"],
+              isGrouped: true // Flag to indicate this is a grouped post
+            });
+          }
+        });
+      }
+
+      // Sort posts in ascending order (oldest first) by publishedAt or date/time
+      posts.sort((a, b) => {
+        const getTimestamp = (post) => {
+          // Try publishedAt first
+          if (post.publishedAt) {
+            const timestamp = new Date(post.publishedAt).getTime();
+            if (!isNaN(timestamp)) return timestamp;
+          }
+
+          // Fallback: parse date and time
+          if (post.date && post.time) {
+            try {
+              // Parse date (format: YYYY-MM-DD or DD-MM-YYYY)
+              let year, month, day;
+              const dateParts = post.date.split('-');
+              if (dateParts[0].length === 4) {
+                [year, month, day] = dateParts.map(Number);
+              } else {
+                [day, month, year] = dateParts.map(Number);
+              }
+
+              // Parse time - handle 24-hour format
+              const timeParts = post.time.split(':');
+              let hours = parseInt(timeParts[0]);
+              let minutes = parseInt(timeParts[1]);
+              const seconds = timeParts[2] ? parseInt(timeParts[2]) : 0;
+
+              const timestamp = new Date(year, month - 1, day, hours, minutes, seconds).getTime();
+
+              return timestamp;
+            } catch (e) {
+              console.error('Error parsing time:', post.time, e);
+              return 0;
             }
-          });
-        }
+          }
+          return 0;
+        };
+
+        return getTimestamp(a) - getTimestamp(b);
       });
     } else {
       // Specific day selected - group coins by post
@@ -1085,7 +1127,7 @@ export default function InfluencerSearchPage() {
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                 >
-                  Influencers
+                  MCM Ranking
                 </button>
                 <button
                   onClick={() => setViewMode("top10_recent_posts")}
@@ -1094,14 +1136,11 @@ export default function InfluencerSearchPage() {
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                 >
-                  Recent Posts
+                  Posts
                 </button>
                 <button
-                  onClick={() => setViewMode("coins")}
-                  className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${viewMode === "coins"
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
+                  onClick={() => router.push("/coins")}
+                  className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-200 text-gray-700 hover:bg-gray-300"
                 >
                   Coins
                 </button>
@@ -1129,7 +1168,7 @@ export default function InfluencerSearchPage() {
                       <div className="flex items-center justify-between w-full">
                         <span className="px-1">Date & Time</span>
                         <div className="flex items-center justify-center gap-1 flex-1">
-                          <span>Latest Posts</span>
+                          <span>Latest Posts Based on MCM Ranking</span>
                           {/* <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
@@ -1237,27 +1276,27 @@ export default function InfluencerSearchPage() {
                           </select>
                         </div>
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
-                          Coin
+                          Coin's
                         </div>
                         <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
-                          <div className="flex items-center justify-start gap-1">
-                            <span>Sentiment (ST/LT)</span>
-                            <span className="relative group cursor-pointer z-[9999]">
-                              <span className="text-blue-600 text-sm">ⓘ</span>
-                              <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                ST : Short Term<br />LT : Long Term
+                          <div className="flex flex-col items-start gap-0.5">
+                            <span>Sentiment</span>
+                            <div className="flex items-center justify-start gap-1">
+                              <span>ST/LT</span>
+                              <span className="relative group cursor-pointer z-[9999]">
+                                <span className="text-blue-600 text-sm">ⓘ</span>
+                                <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                  ST : Short Term<br />LT : Long Term
+                                </span>
                               </span>
-                            </span>
+                            </div>
                           </div>
                         </div>
                         <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
-                          <span>Post Date Price</span>
-                          {/* <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                              N/A : Not Available
-                            </span>
-                          </span> */}
+                          <div className="flex flex-col items-start">
+                            <span>Post Date</span>
+                            <span>Price</span>
+                          </div>
                         </div>
                         <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
@@ -1266,7 +1305,7 @@ export default function InfluencerSearchPage() {
                           </div>
                         </div>
                         <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
-                          <span>Post Date % Change</span>
+                          <span>Post Date<br />% Change</span>
                           {/* <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
@@ -1276,13 +1315,13 @@ export default function InfluencerSearchPage() {
                         </div>
                         <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
-                            <span>Volume</span>
-                            <span className="text-[8px] font-normal text-black-600">(Binance)</span>
+                            <span>Price Change</span>
+                            <span className="text-[8px] font-normal text-black-600">(24hrs Binance)</span>
                           </div>
                         </div>
-                        {/* <div className="flex-1 text-[7px] font-semibold text-black-700 text-left">
-                          Summary Analysis
-                        </div> */}
+                        <div className="w-[20%] text-[10px] font-bold text-black-900 text-center">
+                          <span>Title</span>
+                        </div>
                       </div>
                     </th>
                   </tr>
@@ -1554,166 +1593,203 @@ export default function InfluencerSearchPage() {
 
                                   return displayedRecommendations.map((rec, idx) => {
                                     // Handle grouped posts (when specific date is selected)
+                                    // Display them exactly like Latest Posts - individual rows for each coin
                                     if (rec.isGrouped && rec.coins) {
-                                      const postKey = `${influencer.id}-${rec.videoID || rec.messageID}-${idx}`;
-                                      const isExpanded = expandedPosts[postKey] || false;
-                                      const coinsToShow = isExpanded ? rec.coins : rec.coins.slice(0, 3);
-                                      const hasMoreCoins = rec.coins.length > 3;
+                                      // Flatten coins into individual rows, same as Latest Posts
+                                      return rec.coins.map((coinData, coinIdx) => {
+                                        const latestPostKey = `${influencer.id}-grouped-${idx}-${coinIdx}`;
+                                        const isTitleExpanded = expandedTitles[latestPostKey] || false;
+                                        const title = rec.title || '';
+                                        const titleLimit = 50;
+                                        const showReadMore = title.length > titleLimit;
 
-                                      return (
-                                        <div key={idx} className="border-b border-gray-200 last:border-b-0">
-                                          {/* Post header with date/time */}
-                                          <div className="flex items-center justify-start gap-1 px-0.5 py-2 bg-gray-50">
+                                        return (
+                                          <div key={`${idx}-${coinIdx}`} className="flex items-center justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full">
+                                            {/* Date and Time */}
                                             <div className="flex flex-col items-start gap-1 w-[15%] px-1">
                                               {rec.date && rec.time ? (
-                                                <span className="text-[8px] font-semibold text-black-900">
-                                                  {formatDate(rec.date)} {formatTime(rec.date, rec.time)}
-                                                </span>
+                                                <>
+                                                  <span className="text-[8px] font-semibold text-black-900">
+                                                    {formatDate(rec.date)} {formatTime(rec.date, rec.time)}
+                                                  </span>
+                                                </>
                                               ) : (
                                                 <span className="text-[8px] text-gray-400">No data</span>
                                               )}
                                             </div>
-                                            <div className="flex-1 text-[8px] text-gray-600">
-                                              {rec.title || 'Post'} ({rec.coins.length} coins mentioned)
+
+                                            {/* Coin Icon and Name */}
+                                            <div className="flex items-center justify-start gap-0.5 w-[10%]">
+                                              <div className="flex items-center justify-center w-3">
+                                                {coinData.icon}
+                                              </div>
+                                              <span className="text-[9px] font-bold text-gray-900">
+                                                {coinData.coin}
+                                              </span>
                                             </div>
-                                          </div>
+                                            {/* Sentiment Badge (Circular with Arrow LEFT + ST/LT RIGHT) */}
+                                            <div className="w-[15%] flex justify-start">
+                                              <div
+                                                className={`w-10 h-10 rounded-full flex items-center justify-center ${coinData.type === "bullish"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : "bg-red-100 text-red-700"
+                                                  }`}
+                                              >
+                                                <div className="flex items-center gap-1">
+                                                  {/* Arrow */}
+                                                  {coinData.type === "bullish" ? (
+                                                    <FaArrowUp className="text-[8px]" />
+                                                  ) : (
+                                                    <FaArrowDown className="text-[8px]" />
+                                                  )}
 
-                                          {/* Coins in this post */}
-                                          {coinsToShow.map((coinData, coinIdx) => (
-                                            <div key={coinIdx} className="flex items-center justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full">
-                                              {/* Empty date column for alignment */}
-                                              <div className="w-[15%] px-1"></div>
-
-                                              {/* Coin Icon and Name */}
-                                              <div className="flex items-center justify-start gap-0.5 w-[10%]">
-                                                <div className="flex items-center justify-center w-3">
-                                                  {coinData.icon}
+                                                  {/* ST / LT */}
+                                                  <span className="text-[8px] font-semibold">
+                                                    {coinData.term === "short" ? "ST" : "LT"}
+                                                  </span>
                                                 </div>
-                                                <span className="text-[9px] font-bold text-gray-900">
-                                                  {coinData.coin}
-                                                </span>
                                               </div>
+                                            </div>
 
-                                              {/* Sentiment with Term */}
-                                              <div className="w-[15%] flex justify-start">
-                                                {coinData.type === "bullish" ? (
-                                                  <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-green-100 text-green-700 rounded-full text-[8px] font-medium capitalize">
-                                                    <FaArrowUp className="text-[6px]" />
-                                                    Bullish {coinData.term === "short" ? "ST" : "LT"}
-                                                  </span>
-                                                ) : (
-                                                  <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-red-100 text-red-700 rounded-full text-[8px] font-medium capitalize">
-                                                    <FaArrowDown className="text-[6px]" />
-                                                    bearish {coinData.term === "short" ? "ST" : "LT"}
-                                                  </span>
-                                                )}
-                                              </div>
 
-                                              {/* Base Price */}
-                                              <div className="w-[15%] flex justify-start">
-                                                <span className="text-[8px] font-semibold text-gray-900">
-                                                  {(() => {
-                                                    const value = parseFloat(coinData.basePrice?.replace(/[^0-9.-]/g, ''));
-                                                    if (isNaN(value)) return coinData.basePrice;
-                                                    if (Math.abs(value) >= 1000) {
-                                                      return Math.round(value).toLocaleString('en-US');
-                                                    }
-                                                    return value.toFixed(2);
-                                                  })()}
-                                                </span>
-                                              </div>
-
-                                              {/* Current Price */}
-                                              <div className="w-[15%] flex justify-start">
-                                                <span className="text-[8px] font-semibold text-blue-500">
-                                                  {(() => {
-                                                    const value = parseFloat(coinData.currentPrice?.replace(/[^0-9.-]/g, ''));
-                                                    if (isNaN(value)) return coinData.currentPrice;
-                                                    if (Math.abs(value) >= 1000) {
-                                                      return Math.round(value).toLocaleString('en-US');
-                                                    }
-                                                    return value.toFixed(2);
-                                                  })()}
-                                                </span>
-                                              </div>
-
-                                              {/* Price Change % */}
-                                              <div className="w-[15%] flex justify-start">
+                                            {/* Base Price */}
+                                            <div className="w-[15%] flex justify-start">
+                                              <span className="text-[8px] font-semibold text-gray-900">
                                                 {(() => {
-                                                  const basePrice = coinData.basePrice && coinData.basePrice !== 'N/A'
-                                                    ? parseFloat(coinData.basePrice.replace('$', '').replace(',', ''))
-                                                    : null;
-                                                  const currentPrice = coinData.currentPrice && coinData.currentPrice !== 'N/A'
-                                                    ? parseFloat(coinData.currentPrice.replace('$', '').replace(',', ''))
-                                                    : null;
+                                                  const value = parseFloat(coinData.basePrice?.replace(/[^0-9.-]/g, ''));
+                                                  if (isNaN(value)) return coinData.basePrice;
+                                                  if (Math.abs(value) >= 1000) {
+                                                    return Math.round(value).toLocaleString('en-US');
+                                                  }
+                                                  return value.toFixed(2);
+                                                })()}
+                                              </span>
+                                            </div>
 
-                                                  if (basePrice !== null && currentPrice !== null) {
-                                                    let changePrice = currentPrice - basePrice;
-                                                    if (coinData.type?.toLowerCase().includes("bearish")) {
-                                                      changePrice *= -1;
-                                                    }
-                                                    const percentageChange = (changePrice / currentPrice) * 100;
-                                                    const isPositive = changePrice > 0;
-                                                    const isNegative = changePrice < 0;
+                                            {/* Current Price */}
+                                            <div className="w-[15%] flex justify-start">
+                                              <span className="text-[8px] font-semibold text-blue-500">
+                                                {(() => {
+                                                  const value = parseFloat(coinData.currentPrice?.replace(/[^0-9.-]/g, ''));
+                                                  if (isNaN(value)) return coinData.currentPrice;
+                                                  if (Math.abs(value) >= 1000) {
+                                                    return Math.round(value).toLocaleString('en-US');
+                                                  }
+                                                  return value.toFixed(2);
+                                                })()}
+                                              </span>
+                                            </div>
+
+                                            {/* Price Change % */}
+                                            <div className="w-[15%] flex justify-start">
+                                              {(() => {
+                                                const basePrice = coinData.basePrice && coinData.basePrice !== 'N/A'
+                                                  ? parseFloat(coinData.basePrice.replace('$', '').replace(',', ''))
+                                                  : null;
+                                                const currentPrice = coinData.currentPrice && coinData.currentPrice !== 'N/A'
+                                                  ? parseFloat(coinData.currentPrice.replace('$', '').replace(',', ''))
+                                                  : null;
+
+                                                if (basePrice !== null && currentPrice !== null) {
+                                                  let changePrice = currentPrice - basePrice;
+                                                  if (coinData.type?.toLowerCase().includes("bearish")) {
+                                                    changePrice *= -1;
+                                                  }
+                                                  const percentageChange = (changePrice / currentPrice) * 100;
+                                                  const isPositive = changePrice > 0;
+                                                  const isNegative = changePrice < 0;
+
+                                                  return (
+                                                    <span className={`text-[8px] font-semibold ${isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900'}`}>
+                                                      {isPositive ? '+' : ''}
+                                                      {percentageChange.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                      })}%
+                                                    </span>
+                                                  );
+                                                }
+                                                return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
+                                              })()}
+                                            </div>
+
+                                            {/* Price Change (24hrs) */}
+                                            <div className="w-[15%] flex flex-col justify-start">
+                                              {(() => {
+                                                const volumeData = coinData.volume;
+                                                if (volumeData && volumeData !== 'N/A' && typeof volumeData === 'object') {
+                                                  const priceChange = parseFloat(volumeData.priceChange);
+                                                  const priceChangePercent = parseFloat(volumeData.priceChangePercent);
+
+                                                  if (!isNaN(priceChange) && !isNaN(priceChangePercent)) {
+                                                    const isPositive = priceChange > 0;
+                                                    const isNegative = priceChange < 0;
+                                                    const colorClass = isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900';
 
                                                     return (
-                                                      <span className={`text-[8px] font-semibold ${isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900'}`}>
-                                                        {isPositive ? '+' : ''}
-                                                        {percentageChange.toLocaleString(undefined, {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2,
-                                                        })}%
-                                                      </span>
+                                                      <>
+                                                        <span className={`text-[8px] font-semibold ${colorClass}`}>
+                                                          {isPositive ? '+' : ''}{priceChange.toLocaleString('en-US', {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2
+                                                          })}
+                                                        </span>
+                                                        <span className={`text-[8px] font-semibold ${colorClass}`}>
+                                                          ({isPositive ? '+' : ''}{priceChangePercent}%)
+                                                        </span>
+                                                      </>
                                                     );
                                                   }
-                                                  return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
-                                                })()}
-                                              </div>
+                                                }
+                                                return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
+                                              })()}
+                                            </div>
 
-                                              {/* Volume */}
-                                              <div className="w-[15%] flex justify-start">
-                                                <span className="text-[8px] font-semibold text-blue-500">
-                                                  {(() => {
-                                                    const volume = coinData.volume;
-                                                    if (volume && volume !== 'N/A') {
-                                                      const value = parseFloat(volume);
-                                                      if (!isNaN(value)) {
-                                                        return value.toLocaleString('en-US', {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2
-                                                        });
-                                                      }
+                                            {/* Title Column - separate */}
+                                            <div className="w-[20%] flex justify-start">
+                                              {title && (
+                                                <span className="text-[8px] text-gray-600">
+                                                  <a
+                                                    href={rec.link}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="hover:text-blue-600 hover:underline cursor-pointer"
+                                                  >
+                                                    {showReadMore && !isTitleExpanded
+                                                      ? `${title.substring(0, titleLimit)}...`
+                                                      : title
                                                     }
-                                                    return 'N/A';
-                                                  })()}
+                                                  </a>
+                                                  {showReadMore && (
+                                                    <button
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setExpandedTitles(prev => ({
+                                                          ...prev,
+                                                          [latestPostKey]: !prev[latestPostKey]
+                                                        }));
+                                                      }}
+                                                      className="ml-1 text-blue-600 hover:text-blue-800 font-semibold"
+                                                    >
+                                                      {isTitleExpanded ? 'Read less' : 'Read more'}
+                                                    </button>
+                                                  )}
                                                 </span>
-                                              </div>
+                                              )}
                                             </div>
-                                          ))}
-
-                                          {/* Expand/Collapse button for posts with more than 3 coins */}
-                                          {hasMoreCoins && (
-                                            <div className="flex items-center justify-start gap-1 px-0.5 py-1 bg-gray-50">
-                                              <div className="w-[15%]"></div>
-                                              <button
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  setExpandedPosts(prev => ({
-                                                    ...prev,
-                                                    [postKey]: !prev[postKey]
-                                                  }));
-                                                }}
-                                                className="flex items-center gap-1 text-[8px] text-blue-600 hover:text-blue-800 font-semibold"
-                                              >
-                                                {isExpanded ? '− Show less' : `+ Show ${rec.coins.length - 3} more coins`}
-                                              </button>
-                                            </div>
-                                          )}
-                                        </div>
-                                      );
+                                          </div>
+                                        );
+                                      });
                                     }
 
                                     // Handle individual coin posts (Latest Posts mode)
+                                    const latestPostKey = `${influencer.id}-latest-${idx}`;
+                                    const isTitleExpanded = expandedTitles[latestPostKey] || false;
+                                    const title = rec.title || '';
+                                    const titleLimit = 50;
+                                    const showReadMore = title.length > titleLimit;
+
                                     return (
                                       <div key={idx} className="flex items-center justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full">
                                         <div className="flex flex-col items-start gap-1 w-[15%] px-1">
@@ -1737,20 +1813,30 @@ export default function InfluencerSearchPage() {
                                           </span>
                                         </div>
 
-                                        {/* Sentiment with Term */}
+                                        {/* Sentiment with Term - Circular Badge */}
                                         <div className="w-[15%] flex justify-start">
-                                          {rec.type === "bullish" ? (
-                                            <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-green-100 text-green-700 rounded-full text-[8px] font-medium capitalize">
-                                              <FaArrowUp className="text-[6px]" />
-                                              Bullish {rec.term === "short" ? "ST" : "LT"}
-                                            </span>
-                                          ) : (
-                                            <span className="inline-flex items-center gap-0.5 px-1 py-0 bg-red-100 text-red-700 rounded-full text-[8px] font-medium capitalize">
-                                              <FaArrowDown className="text-[6px]" />
-                                              bearish {rec.term === "short" ? "ST" : "LT"}
-                                            </span>
-                                          )}
+                                          <div
+                                            className={`w-10 h-10 rounded-full flex items-center justify-center ${rec.type === "bullish"
+                                                ? "bg-green-100 text-green-700"
+                                                : "bg-red-100 text-red-700"
+                                              }`}
+                                          >
+                                            <div className="flex items-center gap-1">
+                                              {/* Arrow */}
+                                              {rec.type === "bullish" ? (
+                                                <FaArrowUp className="text-[7px]" />
+                                              ) : (
+                                                <FaArrowDown className="text-[7px]" />
+                                              )}
+
+                                              {/* ST / LT */}
+                                              <span className="text-[8px] font-semibold">
+                                                {rec.term === "short" ? "ST" : "LT"}
+                                              </span>
+                                            </div>
+                                          </div>
                                         </div>
+
 
                                         {/* PRICE AT POST DATE (formerly Base Price) */}
                                         <div className="w-[15%] flex justify-start">
@@ -1835,23 +1921,70 @@ export default function InfluencerSearchPage() {
                                           })()}
                                         </div>
 
-                                        {/* Volume (24h) */}
-                                        <div className="w-[15%] flex justify-start">
-                                          <span className="text-[8px] font-semibold text-blue-500">
-                                            {(() => {
-                                              const volume = rec.volume;
-                                              if (volume && volume !== 'N/A') {
-                                                const value = parseFloat(volume);
-                                                if (!isNaN(value)) {
-                                                  return value.toLocaleString('en-US', {
-                                                    minimumFractionDigits: 2,
-                                                    maximumFractionDigits: 2
-                                                  });
-                                                }
+                                        {/* Price Change (24hrs) */}
+                                        <div className="w-[15%] flex flex-col justify-start">
+                                          {(() => {
+                                            const volumeData = rec.volume;
+                                            if (volumeData && volumeData !== 'N/A' && typeof volumeData === 'object') {
+                                              const priceChange = parseFloat(volumeData.priceChange);
+                                              const priceChangePercent = parseFloat(volumeData.priceChangePercent);
+
+                                              if (!isNaN(priceChange) && !isNaN(priceChangePercent)) {
+                                                const isPositive = priceChange > 0;
+                                                const isNegative = priceChange < 0;
+                                                const colorClass = isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900';
+
+                                                return (
+                                                  <>
+                                                    <span className={`text-[8px] font-semibold ${colorClass}`}>
+                                                      {isPositive ? '+' : ''}{priceChange.toLocaleString('en-US', {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2
+                                                      })}
+                                                    </span>
+                                                    <span className={`text-[8px] font-semibold ${colorClass}`}>
+                                                      ({isPositive ? '+' : ''}{priceChangePercent}%)
+                                                    </span>
+                                                  </>
+                                                );
                                               }
-                                              return 'N/A';
-                                            })()}
-                                          </span>
+                                            }
+                                            return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
+                                          })()}
+                                        </div>
+
+                                        {/* Title Column - separate */}
+                                        <div className="w-[20%] flex justify-start">
+                                          {title && (
+                                            <span className="text-[8px] text-gray-600">
+                                              <a
+                                                href={rec.link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="hover:text-blue-600 hover:underline cursor-pointer"
+                                              >
+                                                {showReadMore && !isTitleExpanded
+                                                  ? `${title.substring(0, titleLimit)}...`
+                                                  : title
+                                                }
+                                              </a>
+                                              {showReadMore && (
+                                                <button
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setExpandedTitles(prev => ({
+                                                      ...prev,
+                                                      [latestPostKey]: !prev[latestPostKey]
+                                                    }));
+                                                  }}
+                                                  className="ml-1 text-blue-600 hover:text-blue-800 font-semibold"
+                                                >
+                                                  {isTitleExpanded ? 'Read less' : 'Read more'}
+                                                </button>
+                                              )}
+                                            </span>
+                                          )}
                                         </div>
                                       </div>
                                     );
@@ -1889,7 +2022,7 @@ export default function InfluencerSearchPage() {
                                   return (
                                     <div className="flex items-center justify-center gap-1 px-0.5 py-2 border-t border-gray-200 w-full">
                                       <div className="w-[25%]"></div>
-                                      <div className="w-[10%] flex justify-center">
+                                      <div className="w-[10%] flex justify-left">
                                         <button
                                           onClick={handleToggle}
                                           className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-colors shadow-md"
