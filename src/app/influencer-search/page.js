@@ -227,6 +227,26 @@ export default function InfluencerSearchPage() {
   // Use live price hook
   const { top10Data, isConnected } = useTop10LivePrice();
 
+  // Create a live prices map that updates when top10Data changes
+  const livePricesMap = useMemo(() => {
+    const pricesMap = {};
+    top10Data.forEach(coin => {
+      pricesMap[coin.symbol.toUpperCase()] = coin.price;
+    });
+    return pricesMap;
+  }, [top10Data]);
+
+  // Helper function to get live price for a symbol
+  const getLivePrice = useCallback((symbol) => {
+    if (!symbol) return "N/A";
+    const upperSymbol = symbol.toUpperCase();
+    const livePrice = livePricesMap[upperSymbol];
+    if (livePrice && livePrice !== "-") {
+      return `$${typeof livePrice === 'number' ? livePrice.toFixed(2) : livePrice}`;
+    }
+    return "N/A";
+  }, [livePricesMap]);
+
   // Use timezone context
   const { useLocalTime, userTimezone, toggleTimezone, setUseLocalTime } = useTimezone();
 
@@ -1095,7 +1115,7 @@ export default function InfluencerSearchPage() {
             <div className="flex justify-between items-center gap-3 px-4 py-3 border-b border-gray-200 bg-gray-50">
               {/* Timezone Toggle on Left */}
               <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-medium text-gray-600">Timezone</span>
+                <span className="text-[10px] font-semibold text-center text-black-600">Timezone</span>
                 <div className="flex gap-2">
                   <button
                     onClick={() => toggleTimezone()}
@@ -1130,6 +1150,12 @@ export default function InfluencerSearchPage() {
                   MCM Ranking
                 </button>
                 <button
+                  onClick={() => router.push("/coins")}
+                  className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-200 text-gray-700 hover:bg-gray-300"
+                >
+                  Coins
+                </button>
+                <button
                   onClick={() => setViewMode("top10_recent_posts")}
                   className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${viewMode === "top10_recent_posts"
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
@@ -1137,12 +1163,6 @@ export default function InfluencerSearchPage() {
                     }`}
                 >
                   Posts
-                </button>
-                <button
-                  onClick={() => router.push("/coins")}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-200 text-gray-700 hover:bg-gray-300"
-                >
-                  Coins
                 </button>
               </div>
 
@@ -1155,16 +1175,16 @@ export default function InfluencerSearchPage() {
                 <thead>
                   {/* Main header row */}
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
+                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900  tracking-wider border-r border-gray-300 w-36">
                       Influencer
                     </th>
-                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
+                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900  tracking-wider border-r border-gray-300 w-36">
                       MCM Rating
                     </th>
                     {/* <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
                       Date
                     </th> */}
-                    <th className="px-1 py-1 text-[10px] font-medium text-black-900 uppercase tracking-wider relative">
+                    <th className="px-1 py-1 text-[10px] font-medium text-black-900 tracking-wider relative">
                       <div className="flex items-center justify-between w-full">
                         <span className="px-1">Date & Time</span>
                         <div className="flex items-center justify-center gap-1 flex-1">
@@ -1210,13 +1230,13 @@ export default function InfluencerSearchPage() {
                     <th className="px-1 py-0.5 border-r border-gray-300">
                       <div className="flex justify-center">
                         <select
-                          value={selectedTimeframe}
-                          onChange={(e) => setSelectedTimeframe(e.target.value)}
+                          value={selectedRating}
+                          onChange={(e) => setSelectedRating(e.target.value)}
                           className="w-full border border-indigo-200 bg-indigo-50 rounded-full px-2 py-0.5 text-[10px] font-medium text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
                         >
-                          {timeframeOptions.map((option) => (
+                          {ratingOptions.map((option) => (
                             <option key={option.value} value={option.value}>
-                              {option.label}
+                              {option.value === "all" ? "All Ratings" : "⭐".repeat(option.stars)}
                             </option>
                           ))}
                         </select>
@@ -1320,7 +1340,8 @@ export default function InfluencerSearchPage() {
                           </div>
                         </div>
                         <div className="w-[20%] text-[10px] font-bold text-black-900 text-center">
-                          <span>Title</span>
+                          <span>{selectedPlatform === "youtube" ? "Post Title" : "Post Link"}</span><br />
+                          <span className="text-[8px] font-normal text-black-600">click to view post</span>
                         </div>
                       </div>
                     </th>
@@ -1352,7 +1373,7 @@ export default function InfluencerSearchPage() {
                         </td>
                       </tr>
                     ))
-                  ) : filteredInfluencers.length === 0 ? (
+                  ) : !loading && filteredInfluencers.length === 0 ? (
                     <tr>
                       <td colSpan="4" className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center justify-center">
@@ -1670,8 +1691,9 @@ export default function InfluencerSearchPage() {
                                             <div className="w-[15%] flex justify-start">
                                               <span className="text-[8px] font-semibold text-blue-500">
                                                 {(() => {
-                                                  const value = parseFloat(coinData.currentPrice?.replace(/[^0-9.-]/g, ''));
-                                                  if (isNaN(value)) return coinData.currentPrice;
+                                                  const livePrice = getLivePrice(coinData.coin);
+                                                  const value = parseFloat(livePrice?.replace(/[^0-9.-]/g, ''));
+                                                  if (isNaN(value)) return livePrice;
                                                   if (Math.abs(value) >= 1000) {
                                                     return Math.round(value).toLocaleString('en-US');
                                                   }
@@ -1686,8 +1708,9 @@ export default function InfluencerSearchPage() {
                                                 const basePrice = coinData.basePrice && coinData.basePrice !== 'N/A'
                                                   ? parseFloat(coinData.basePrice.replace('$', '').replace(',', ''))
                                                   : null;
-                                                const currentPrice = coinData.currentPrice && coinData.currentPrice !== 'N/A'
-                                                  ? parseFloat(coinData.currentPrice.replace('$', '').replace(',', ''))
+                                                const livePriceStr = getLivePrice(coinData.coin);
+                                                const currentPrice = livePriceStr && livePriceStr !== 'N/A'
+                                                  ? parseFloat(livePriceStr.replace('$', '').replace(',', ''))
                                                   : null;
 
                                                 if (basePrice !== null && currentPrice !== null) {
@@ -1747,7 +1770,7 @@ export default function InfluencerSearchPage() {
 
                                             {/* Title Column - separate */}
                                             <div className="w-[20%] flex justify-start">
-                                              {title && (
+                                              {title ? (
                                                 <span className="text-[8px] text-gray-600">
                                                   <a
                                                     href={rec.link}
@@ -1775,6 +1798,18 @@ export default function InfluencerSearchPage() {
                                                       {isTitleExpanded ? 'Read less' : 'Read more'}
                                                     </button>
                                                   )}
+                                                </span>
+                                              ) : (
+                                                <span className="text-[8px] text-gray-600">
+                                                  <a
+                                                    href={rec.link}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                                                  >
+                                                    {rec.link}
+                                                  </a>
                                                 </span>
                                               )}
                                             </div>
@@ -1860,8 +1895,9 @@ export default function InfluencerSearchPage() {
                                         <div className="w-[15%] flex justify-start">
                                           <span className="text-[8px] font-semibold text-blue-500">
                                             {(() => {
-                                              const value = parseFloat(rec.currentPrice?.replace(/[^0-9.-]/g, ''));
-                                              if (isNaN(value)) return rec.currentPrice;
+                                              const livePrice = getLivePrice(rec.coin);
+                                              const value = parseFloat(livePrice?.replace(/[^0-9.-]/g, ''));
+                                              if (isNaN(value)) return livePrice;
 
                                               if (Math.abs(value) >= 1000) {
                                                 return Math.round(value).toLocaleString('en-US');
@@ -1879,8 +1915,9 @@ export default function InfluencerSearchPage() {
                                             const basePrice = rec.basePrice && rec.basePrice !== 'N/A'
                                               ? parseFloat(rec.basePrice.replace('$', '').replace(',', ''))
                                               : null;
-                                            const currentPrice = rec.currentPrice && rec.currentPrice !== 'N/A'
-                                              ? parseFloat(rec.currentPrice.replace('$', '').replace(',', ''))
+                                            const livePriceStr = getLivePrice(rec.coin);
+                                            const currentPrice = livePriceStr && livePriceStr !== 'N/A'
+                                              ? parseFloat(livePriceStr.replace('$', '').replace(',', ''))
                                               : null;
 
                                             if (basePrice !== null && currentPrice !== null) {
@@ -1955,7 +1992,7 @@ export default function InfluencerSearchPage() {
 
                                         {/* Title Column - separate */}
                                         <div className="w-[20%] flex justify-start">
-                                          {title && (
+                                          {title ? (
                                             <span className="text-[8px] text-gray-600">
                                               <a
                                                 href={rec.link}
@@ -1983,6 +2020,18 @@ export default function InfluencerSearchPage() {
                                                   {isTitleExpanded ? 'Read less' : 'Read more'}
                                                 </button>
                                               )}
+                                            </span>
+                                          ) : (
+                                            <span className="text-[8px] text-gray-600">
+                                              <a
+                                                href={rec.link}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => e.stopPropagation()}
+                                                className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                                              >
+                                                {rec.link}
+                                              </a>
                                             </span>
                                           )}
                                         </div>
