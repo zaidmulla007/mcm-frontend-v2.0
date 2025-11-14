@@ -1276,7 +1276,7 @@ export default function InfluencerSearchPage() {
                           </select>
                         </div>
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
-                          Coin's
+                          Coin&apos;s
                         </div>
                         <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start gap-0.5">
@@ -1631,8 +1631,8 @@ export default function InfluencerSearchPage() {
                                             <div className="w-[15%] flex justify-start">
                                               <div
                                                 className={`w-10 h-10 rounded-full flex items-center justify-center ${coinData.type === "bullish"
-                                                    ? "bg-green-100 text-green-700"
-                                                    : "bg-red-100 text-red-700"
+                                                  ? "bg-green-100 text-green-700"
+                                                  : "bg-red-100 text-red-700"
                                                   }`}
                                               >
                                                 <div className="flex items-center gap-1">
@@ -1817,8 +1817,8 @@ export default function InfluencerSearchPage() {
                                         <div className="w-[15%] flex justify-start">
                                           <div
                                             className={`w-10 h-10 rounded-full flex items-center justify-center ${rec.type === "bullish"
-                                                ? "bg-green-100 text-green-700"
-                                                : "bg-red-100 text-red-700"
+                                              ? "bg-green-100 text-green-700"
+                                              : "bg-red-100 text-red-700"
                                               }`}
                                           >
                                             <div className="flex items-center gap-1">
