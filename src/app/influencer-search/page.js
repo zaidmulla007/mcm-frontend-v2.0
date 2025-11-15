@@ -46,6 +46,8 @@ const formatRecommendations = (lastPostsData, livePrices = {}, volumeData = {}) 
         videoID: post.videoID,
         messageID: post.messageID,
         title: post.title,
+        summary: post.summary || "No summary available",
+        type: post.type || "youtube",
         channel_name: post.channel_name,
         isGrouped: true,
         coins: post.coins.map(coinData => {
@@ -160,13 +162,14 @@ const formatRecommendations = (lastPostsData, livePrices = {}, volumeData = {}) 
       roi_1hr: post.roi_1hr && typeof post.roi_1hr === 'number' ? `${post.roi_1hr.toFixed(4)}` : "N/A",
       percentage_24hr: percentage_24hr,
       roi_24hr: post.roi_24hr && typeof post.roi_24hr === 'number' ? `${post.roi_24hr.toFixed(4)}` : "N/A",
-      summary: coinData.explanation || coinData.tradingCall || "No summary available",
+      summary: post.summary || coinData.explanation || coinData.tradingCall || "No summary available",
       sentiment: sentiment,
       outlook: outlook,
       link: post.link,
       videoID: post.videoID,
       volume: volume,
       title: post.title,
+      type: post.type || "youtube",
       channel_name: post.channel_name
     };
   });
@@ -907,6 +910,8 @@ export default function InfluencerSearchPage() {
               link: item.link,
               publishedAt: item.publishedAt,
               title: item.title,
+              summary: item.summary,
+              type: item.type,
               channel_name: item.channel_name,
               roi_1hr: item["1_hour_roi"],
               roi_24hr: item["24_hours_roi"],
@@ -974,6 +979,8 @@ export default function InfluencerSearchPage() {
                   link: item.link,
                   publishedAt: item.publishedAt,
                   title: item.title,
+                  summary: item.summary,
+                  type: item.type,
                   channel_name: item.channel_name,
                   roi_1hr: item["1_hour_roi"],
                   roi_24hr: item["24_hours_roi"],
@@ -1088,24 +1095,6 @@ export default function InfluencerSearchPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 font-sans mt-5">
-      {/* Backup Link Banner */}
-      <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-blue-800">
-              Need to access previous versions?
-            </span>
-          </div>
-          <Link
-            href="/influencer-search/backup"
-            className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-          >
-            <FaInfoCircle />
-            View Backups
-          </Link>
-        </div>
-      </div>
-
       {/* Main Content */}
       <main className="mx-auto px-4 pb-8 overflow-x-hidden">
         <div className="min-w-0">
@@ -1147,7 +1136,7 @@ export default function InfluencerSearchPage() {
                     : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}
                 >
-                  MCM Ranking
+                  Influencers
                 </button>
                 <button
                   onClick={() => router.push("/coins")}
@@ -1156,11 +1145,8 @@ export default function InfluencerSearchPage() {
                   Coins
                 </button>
                 <button
-                  onClick={() => setViewMode("top10_recent_posts")}
-                  className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${viewMode === "top10_recent_posts"
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
+                  onClick={() => router.push("/posts")}
+                  className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-200 text-gray-700 hover:bg-gray-300"
                 >
                   Posts
                 </button>
@@ -1178,8 +1164,17 @@ export default function InfluencerSearchPage() {
                     <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900  tracking-wider border-r border-gray-300 w-36">
                       Influencer
                     </th>
-                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900  tracking-wider border-r border-gray-300 w-36">
-                      MCM Rating
+                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 tracking-wider border-r border-gray-300 w-36">
+                      MCM Rating{" "}
+                      <span className="relative group cursor-pointer z-[9999]">
+                        <span className="text-blue-600 text-sm">ⓘ</span>
+                        <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl text-left w-52 z-[9999]">
+                          Timeframes represent how an influencer’s calls performed over different periods.<br />
+                          We check the price when the call was made,<br />
+                          compare it after each timeframe,<br />
+                          and use those outcomes to rank influencers based on overall performance.
+                        </span>
+                      </span>
                     </th>
                     {/* <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
                       Date
@@ -1226,17 +1221,17 @@ export default function InfluencerSearchPage() {
                         </button>
                       </div>
                     </th>
-                    {/* MCM Rating Filter */}
+                    {/* Timeframe Filter */}
                     <th className="px-1 py-0.5 border-r border-gray-300">
                       <div className="flex justify-center">
                         <select
-                          value={selectedRating}
-                          onChange={(e) => setSelectedRating(e.target.value)}
+                          value={selectedTimeframe}
+                          onChange={(e) => setSelectedTimeframe(e.target.value)}
                           className="w-full border border-indigo-200 bg-indigo-50 rounded-full px-2 py-0.5 text-[10px] font-medium text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
                         >
-                          {ratingOptions.map((option) => (
+                          {timeframeOptions.map((option) => (
                             <option key={option.value} value={option.value}>
-                              {option.value === "all" ? "All Ratings" : "⭐".repeat(option.stars)}
+                              {option.label}
                             </option>
                           ))}
                         </select>
@@ -1321,26 +1316,55 @@ export default function InfluencerSearchPage() {
                         <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
                             <span>Current Price</span>
-                            <span className="text-[8px] font-normal text-black-600">(Binance)</span>
+
+                            <div className="flex items-center gap-1">
+                              <span className="text-[8px] font-normal text-black-600">(Binance)</span>
+
+                              {/* Info Icon with Hover Tooltip */}
+                              <span className="relative group cursor-pointer z-[9999]">
+                                <span className="text-blue-600 text-sm">ⓘ</span>
+
+                                <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                  N/A : Not Available
+                                </span>
+                              </span>
+                            </div>
                           </div>
                         </div>
+
                         <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
-                          <span>Post Date<br />% Change</span>
-                          {/* <span className="relative group cursor-pointer z-[9999]">
+                          <span>
+                            Post Date<br />% Change
+                          </span>
+                          <span className="relative group cursor-pointer z-[9999] ml-1">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
                               N/A : Not Available
                             </span>
-                          </span> */}
+                          </span>
                         </div>
+
                         <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
                             <span>Price Change</span>
-                            <span className="text-[8px] font-normal text-black-600">(24hrs Binance)</span>
+
+                            <div className="flex items-center gap-1">
+                              <span className="text-[8px] font-normal text-black-600">(24hrs Binance)</span>
+
+                              {/* Info Icon + Tooltip */}
+                              <span className="relative group cursor-pointer z-[9999]">
+                                <span className="text-blue-600 text-sm">ⓘ</span>
+
+                                <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                  N/A : Not Available
+                                </span>
+                              </span>
+                            </div>
                           </div>
                         </div>
+
                         <div className="w-[20%] text-[10px] font-bold text-black-900 text-center">
-                          <span>{selectedPlatform === "youtube" ? "Post Title" : "Post Link"}</span><br />
+                          <span>{selectedPlatform === "youtube" ? "Post AI Summary" : "Post AI Summary"}</span><br />
                           <span className="text-[8px] font-normal text-black-600">click to view post</span>
                         </div>
                       </div>
@@ -1348,7 +1372,7 @@ export default function InfluencerSearchPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 relative" style={{ isolation: 'isolate' }}>
-                  {initialLoad ? (
+                  {initialLoad || (selectedPlatform === "youtube" && youtubeInfluencers.length === 0) || (selectedPlatform === "telegram" && telegramInfluencers.length === 0) ? (
                     Array.from({ length: 10 }).map((_, i) => (
                       <tr key={`skeleton-row-${i}`}>
                         {/* Influencer column skeleton */}
@@ -1619,25 +1643,42 @@ export default function InfluencerSearchPage() {
                                       // Flatten coins into individual rows, same as Latest Posts
                                       return rec.coins.map((coinData, coinIdx) => {
                                         const latestPostKey = `${influencer.id}-grouped-${idx}-${coinIdx}`;
-                                        const isTitleExpanded = expandedTitles[latestPostKey] || false;
-                                        const title = rec.title || '';
-                                        const titleLimit = 50;
-                                        const showReadMore = title.length > titleLimit;
+                                        const isSummaryExpanded = expandedTitles[latestPostKey] || false;
+                                        // Use summary for YouTube and Telegram, title for others
+                                        const contentText = (rec.type === 'youtube' || rec.type === 'telegram') ? (rec.summary || '') : (rec.title || '');
+                                        const contentLimit = 50;
+                                        const showReadMore = contentText.length > contentLimit;
+                                        const isFirstCoin = coinIdx === 0;
 
                                         return (
                                           <div key={`${idx}-${coinIdx}`} className="flex items-center justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full">
-                                            {/* Date and Time */}
-                                            <div className="flex flex-col items-start gap-1 w-[15%] px-1">
-                                              {rec.date && rec.time ? (
-                                                <>
-                                                  <span className="text-[8px] font-semibold text-black-900">
-                                                    {formatDate(rec.date)} {formatTime(rec.date, rec.time)}
-                                                  </span>
-                                                </>
-                                              ) : (
-                                                <span className="text-[8px] text-gray-400">No data</span>
-                                              )}
-                                            </div>
+                                            {/* Date and Time - only show for first coin */}
+                                            {isFirstCoin ? (
+                                              <div className="flex flex-col items-start gap-1 w-[15%] px-1" style={{ position: 'relative' }}>
+                                                {rec.date && rec.time ? (
+                                                  <>
+                                                    <span className="text-[8px] font-semibold text-black-900">
+                                                      {formatDate(rec.date)} {formatTime(rec.date, rec.time)}
+                                                    </span>
+                                                  </>
+                                                ) : (
+                                                  <span className="text-[8px] text-gray-400">No data</span>
+                                                )}
+                                                {/* Vertical line for merged cells */}
+                                                {rec.coins.length > 1 && (
+                                                  <div style={{
+                                                    position: 'absolute',
+                                                    right: 0,
+                                                    top: 0,
+                                                    bottom: `-${(rec.coins.length - 1) * 100}%`,
+                                                    width: '1px',
+                                                    backgroundColor: '#e5e7eb'
+                                                  }} />
+                                                )}
+                                              </div>
+                                            ) : (
+                                              <div className="w-[15%]" />
+                                            )}
 
                                             {/* Coin Icon and Name */}
                                             <div className="flex items-center justify-start gap-0.5 w-[10%]">
@@ -1758,7 +1799,7 @@ export default function InfluencerSearchPage() {
                                                           })}
                                                         </span>
                                                         <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                          ({isPositive ? '+' : ''}{priceChangePercent}%)
+                                                          ({isPositive ? '+' : ''}{Number(priceChangePercent).toFixed(2)}%)
                                                         </span>
                                                       </>
                                                     );
@@ -1768,51 +1809,66 @@ export default function InfluencerSearchPage() {
                                               })()}
                                             </div>
 
-                                            {/* Title Column - separate */}
-                                            <div className="w-[20%] flex justify-start">
-                                              {title ? (
-                                                <span className="text-[8px] text-gray-600">
-                                                  <a
-                                                    href={rec.link}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    className="hover:text-blue-600 hover:underline cursor-pointer"
-                                                  >
-                                                    {showReadMore && !isTitleExpanded
-                                                      ? `${title.substring(0, titleLimit)}...`
-                                                      : title
-                                                    }
-                                                  </a>
-                                                  {showReadMore && (
-                                                    <button
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setExpandedTitles(prev => ({
-                                                          ...prev,
-                                                          [latestPostKey]: !prev[latestPostKey]
-                                                        }));
-                                                      }}
-                                                      className="ml-1 text-blue-600 hover:text-blue-800 font-semibold"
+                                            {/* Summary/Title Column - only show for first coin (merged cell) */}
+                                            {isFirstCoin ? (
+                                              <div className="w-[20%] flex justify-start break-words overflow-hidden" style={{ position: 'relative' }}>
+                                                {contentText ? (
+                                                  <span className="text-[8px] text-gray-600 break-words">
+                                                    <a
+                                                      href={rec.link}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                      onClick={(e) => e.stopPropagation()}
+                                                      className="hover:text-blue-600 hover:underline cursor-pointer"
                                                     >
-                                                      {isTitleExpanded ? 'Read less' : 'Read more'}
-                                                    </button>
-                                                  )}
-                                                </span>
-                                              ) : (
-                                                <span className="text-[8px] text-gray-600">
-                                                  <a
-                                                    href={rec.link}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                    className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
-                                                  >
-                                                    {rec.link}
-                                                  </a>
-                                                </span>
-                                              )}
-                                            </div>
+                                                      {showReadMore && !isSummaryExpanded
+                                                        ? `${contentText.substring(0, contentLimit)}...`
+                                                        : contentText
+                                                      }
+                                                    </a>
+                                                    {showReadMore && (
+                                                      <button
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          setExpandedTitles(prev => ({
+                                                            ...prev,
+                                                            [latestPostKey]: !prev[latestPostKey]
+                                                          }));
+                                                        }}
+                                                        className="ml-1 text-blue-600 hover:text-blue-800 font-semibold"
+                                                      >
+                                                        {isSummaryExpanded ? 'Read less' : 'Read more'}
+                                                      </button>
+                                                    )}
+                                                  </span>
+                                                ) : (
+                                                  <span className="text-[8px] text-gray-600">
+                                                    <a
+                                                      href={rec.link}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                      onClick={(e) => e.stopPropagation()}
+                                                      className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
+                                                    >
+                                                      {rec.link}
+                                                    </a>
+                                                  </span>
+                                                )}
+                                                {/* Vertical line for merged cells */}
+                                                {rec.coins.length > 1 && (
+                                                  <div style={{
+                                                    position: 'absolute',
+                                                    right: 0,
+                                                    top: 0,
+                                                    bottom: `-${(rec.coins.length - 1) * 100}%`,
+                                                    width: '1px',
+                                                    backgroundColor: '#e5e7eb'
+                                                  }} />
+                                                )}
+                                              </div>
+                                            ) : (
+                                              <div className="w-[20%]" />
+                                            )}
                                           </div>
                                         );
                                       });
@@ -1820,10 +1876,11 @@ export default function InfluencerSearchPage() {
 
                                     // Handle individual coin posts (Latest Posts mode)
                                     const latestPostKey = `${influencer.id}-latest-${idx}`;
-                                    const isTitleExpanded = expandedTitles[latestPostKey] || false;
-                                    const title = rec.title || '';
-                                    const titleLimit = 50;
-                                    const showReadMore = title.length > titleLimit;
+                                    const isSummaryExpanded = expandedTitles[latestPostKey] || false;
+                                    // Use summary for YouTube and Telegram, title for others
+                                    const contentText = (rec.type === 'youtube' || rec.type === 'telegram') ? (rec.summary || '') : (rec.title || '');
+                                    const contentLimit = 50;
+                                    const showReadMore = contentText.length > contentLimit;
 
                                     return (
                                       <div key={idx} className="flex items-center justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full">
@@ -1990,10 +2047,10 @@ export default function InfluencerSearchPage() {
                                           })()}
                                         </div>
 
-                                        {/* Title Column - separate */}
-                                        <div className="w-[20%] flex justify-start">
-                                          {title ? (
-                                            <span className="text-[8px] text-gray-600">
+                                        {/* Summary/Title Column - separate */}
+                                        <div className="w-[20%] flex justify-start break-words overflow-hidden">
+                                          {contentText ? (
+                                            <span className="text-[8px] text-gray-600 break-words">
                                               <a
                                                 href={rec.link}
                                                 target="_blank"
@@ -2001,9 +2058,9 @@ export default function InfluencerSearchPage() {
                                                 onClick={(e) => e.stopPropagation()}
                                                 className="hover:text-blue-600 hover:underline cursor-pointer"
                                               >
-                                                {showReadMore && !isTitleExpanded
-                                                  ? `${title.substring(0, titleLimit)}...`
-                                                  : title
+                                                {showReadMore && !isSummaryExpanded
+                                                  ? `${contentText.substring(0, contentLimit)}...`
+                                                  : contentText
                                                 }
                                               </a>
                                               {showReadMore && (
@@ -2017,7 +2074,7 @@ export default function InfluencerSearchPage() {
                                                   }}
                                                   className="ml-1 text-blue-600 hover:text-blue-800 font-semibold"
                                                 >
-                                                  {isTitleExpanded ? 'Read less' : 'Read more'}
+                                                  {isSummaryExpanded ? 'Read less' : 'Read more'}
                                                 </button>
                                               )}
                                             </span>

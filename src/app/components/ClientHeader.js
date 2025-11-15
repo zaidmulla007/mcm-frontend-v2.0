@@ -10,7 +10,7 @@ const navLinks = [
   { name: "Landing Page", href: "/home", icon: FaGlobe },
   { name: "Home", href: "/landing-page", icon: FaHome },
   // { name: "Top 10", href: "/influencer-search", icon: FaDrum },
-  { name: "Top 10", href: "/influencer-search", icon: FaBullhorn },
+  { name: "Trending", href: "/influencer-search", icon: FaBullhorn },
   { name: "Influencer's Stats", href: "/influencerssearch", icon: FaChartBar },
   { name: "MCM Signal", href: "/mcm-final", icon: FaChartLine },
   { name: "Backups", href: "/influencer-search/backup", icon: FaHistory },
@@ -148,9 +148,9 @@ export default function ClientHeader() {
         {/* Navigation */}
         <nav className="hidden md:flex gap-8 flex-1 justify-center">
           {navLinks.map((link) => {
-            // Special case for Leaderboard: make it active for influencer detail pages
+            // Special case for Leaderboard: make it active for influencer detail pages, /coins, and /posts
             const isLeaderboardActive = link.href === "/influencer-search" &&
-              (pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/"));
+              (pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/") || pathname === "/coins" || pathname === "/posts");
 
             const isActive = pathname === link.href ||
               (link.href !== "/home" && pathname.startsWith(link.href)) ||
