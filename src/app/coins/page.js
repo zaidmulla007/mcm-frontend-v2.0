@@ -147,14 +147,19 @@ export default function CoinsPage() {
               </div>
               {/* Last Updated */}
               <div className="flex justify-center mt-2">
-                <p className="text-sm text-black-600">
-                  {lastUpdated ? formatDate(lastUpdated) : "N/A"}
+                <p className="text-lg font-semibold text-black-600">
+                  Trending 6 Hrs Coins
                 </p>
               </div>
               {/* Timezone Toggle */}
-              <div className="flex justify-start mt-2">
+              <div className="flex items-start gap-6 mt-2">
+
+                {/* LEFT COLUMN — Timezone + Toggle */}
                 <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-semibold text-center text-black-600">Timezone</span>
+                  <span className="text-xs font-semibold text-black-600">
+                    Timezone
+                  </span>
+
                   <div className="flex gap-2">
                     <button
                       onClick={() => toggleTimezone()}
@@ -165,6 +170,7 @@ export default function CoinsPage() {
                     >
                       UTC
                     </button>
+
                     <button
                       onClick={() => toggleTimezone()}
                       className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${useLocalTime
@@ -176,7 +182,20 @@ export default function CoinsPage() {
                     </button>
                   </div>
                 </div>
+
+                {/* RIGHT COLUMN — Last Updated */}
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-semibold text-black-600">
+                    Last Updated
+                  </span>
+
+                  <p className="text-xs text-black-600 py-1.5">
+                    {lastUpdated ? formatDate(lastUpdated) : "N/A"}
+                  </p>
+                </div>
+
               </div>
+
             </div>
 
             {/* Timeframe Selector */}
