@@ -13,6 +13,7 @@ export default function CoinsPage() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("6hrs");
   const [coinSymbols, setCoinSymbols] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [expandedCells, setExpandedCells] = useState({});
 
   // Use timezone context for local/UTC time switching
   const { formatDate, useLocalTime, toggleTimezone, userTimezone } = useTimezone();
@@ -99,6 +100,29 @@ export default function CoinsPage() {
     return priceChange || null;
   }, [livePriceChangesMap]);
 
+  // Helper function to truncate text to 30 words
+  const truncateText = (text, wordLimit = 30) => {
+    if (!text) return '';
+    const words = text.split(' ');
+    if (words.length <= wordLimit) return text;
+    return words.slice(0, wordLimit).join(' ');
+  };
+
+  // Toggle expand/collapse for a specific cell
+  const toggleExpand = (coinSymbol, columnName) => {
+    const key = `${coinSymbol}-${columnName}`;
+    setExpandedCells(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  // Check if a cell is expanded
+  const isExpanded = (coinSymbol, columnName) => {
+    const key = `${coinSymbol}-${columnName}`;
+    return expandedCells[key] || false;
+  };
+
   // Get top 10 coins from selected timeframe with memoization
   // Only depends on coinsData and selectedTimeframe (not prices) to avoid unnecessary recalculations
   // The live prices are fetched via getLivePrice callbacks during render
@@ -148,7 +172,7 @@ export default function CoinsPage() {
               {/* Last Updated */}
               <div className="flex justify-center mt-2">
                 <p className="text-lg font-semibold text-black-600">
-                  Trending 6 Hrs Coins
+                  Trending Coins (Updated every 6 Hrs)
                 </p>
               </div>
               {/* Timezone Toggle */}
@@ -217,8 +241,8 @@ export default function CoinsPage() {
             </div> */}
 
             {/* Table */}
-            <div>
-              <table className="w-full">
+            <div className="overflow-x-auto">
+              <table className="w-full table-fixed">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
                     <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
@@ -271,22 +295,22 @@ export default function CoinsPage() {
                     </th>
                   </tr>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[10%]">
-                      price targets
+                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
+                      Price targets
                     </th>
-                    <th className="px-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[10%]">
+                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
                       Overall sentiments
                     </th>
-                    <th className="px-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[10%]">
+                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
                       outlook (ST/LT)
                     </th>
-                    <th className="px-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[10%]">
-                      key Reasons 
+                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
+                      key Reasons
                     </th>
-                    <th className="px-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[10%]">
+                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
                       Disagreements
                     </th>
-                    <th className="px-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[10%]">
+                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
                       Risk Factors
                     </th>
                   </tr>
@@ -322,44 +346,6 @@ export default function CoinsPage() {
                       const priceChange = (priceChangePercent !== null && currentPrice !== 'N/A')
                         ? (currentPrice * priceChangePercent / 100)
                         : null;
-
-                      // Generate detailed AI summary based on coin data
-                      const totalBullish = coin.yt_tg_bullish_short_term + coin.yt_tg_bullish_long_term;
-                      const totalBearish = coin.yt_tg_bearish_short_term + coin.yt_tg_bearish_long_term;
-                      const isBullish = totalBullish > totalBearish;
-                      const sentimentStrength = totalBullish === totalBearish ? 'Neutral' :
-                        Math.abs(totalBullish - totalBearish) > 5 ? 'Strong' : 'Mild';
-                      const sentimentDirection = isBullish ? 'Bullish' : 'Bearish';
-
-                      const safePriceChangePercent = parseFloat(priceChangePercent);
-
-                      // Create an array of objects for the AI summary sections
-                      const aiSummarySections = [
-                        {
-                          title: "Overall Sentiment Consensus",
-                          content: `Based on the provided data, the overall sentiment for ${coin.coin_name} leans *${sentimentStrength} ${sentimentDirection}* ${coin.yt_tg_bullish_short_term > coin.yt_tg_bearish_short_term ? 'in the short term' : 'with short-term caution'}, ${coin.yt_tg_bullish_long_term > coin.yt_tg_bearish_long_term ? 'with a positive long-term outlook' : 'with mixed long-term views'}.`
-                        },
-                        {
-                          title: "Key Reasons for Views",
-                          content: `Influencers are ${isBullish ? 'optimistic about price appreciation and emphasize accumulation opportunities' : 'cautious, citing potential corrections and advising careful position management'}. ${coin.total_mentions > 20 ? 'High community engagement suggests strong interest' : coin.total_mentions > 10 ? 'Moderate community engagement indicates steady interest' : 'Limited community engagement reflects lower current attention'}.`
-                        },
-                        {
-                          title: "Common Price Targets & Holding Periods",
-                          content: `${!isNaN(safePriceChangePercent) && safePriceChangePercent !== 0 ? `Current price movement shows a ${safePriceChangePercent > 0 ? 'positive' : 'negative'} change of ${Math.abs(safePriceChangePercent).toFixed(2)}% over 24 hours.` : 'Price movement data is currently unavailable.'} ${coin.yt_tg_bullish_long_term > 0 ? 'Long-term holding strategies are recommended by several influencers.' : ''}`
-                        },
-                        {
-                          title: "Short-term vs. Long-term Outlook",
-                          content: `Short-term: ${coin.yt_tg_bullish_short_term > coin.yt_tg_bearish_short_term ? `${coin.yt_tg_bullish_short_term} bullish calls suggest near-term upside potential` : `${coin.yt_tg_bearish_short_term} bearish calls indicate caution for near-term trading`}. Long-term: ${coin.yt_tg_bullish_long_term > coin.yt_tg_bearish_long_term ? `${coin.yt_tg_bullish_long_term} bullish recommendations favor accumulation strategies` : 'Mixed outlook with divided opinions on long-term holding'}.`
-                        },
-                        {
-                          title: "Notable Disagreements",
-                          content: `${totalBullish > 0 && totalBearish > 0 ? `Significant divergence exists with ${totalBullish} bullish calls versus ${totalBearish} bearish calls, reflecting differing time horizons and risk appetites among influencers.` : 'Relatively unified sentiment among tracked influencers.'}`
-                        },
-                        {
-                          title: "Risk Factors",
-                          content: `Key risks include ${!isNaN(safePriceChangePercent) && safePriceChangePercent < -5 ? 'recent sharp decline indicating potential further downside' : !isNaN(safePriceChangePercent) && safePriceChangePercent > 5 ? 'rapid appreciation raising concerns about potential corrections' : 'market volatility and changing sentiment dynamics'}. Monitoring key support and resistance levels remains critical for both short and long-term positions.`
-                        }
-                      ];
 
                       return (
                         <tr key={`${coin.symbol}-${index}`} className="hover:bg-gray-50">
@@ -497,36 +483,180 @@ export default function CoinsPage() {
                             )}
                           </td>
 
-                          {/* AI Summary Columns - Split into 6 separate columns */}
-                          <td className="px-2 py-3 text-left align-top">
-                            <p className="text-[11px] text-gray-700">
-                              {aiSummarySections[0].content}
-                            </p>
+                          {/* Summary Analysis Columns - Using API Response Data */}
+                          {/* Price Targets */}
+                          <td className="px-1 py-3 text-left align-top">
+                            <div className="text-[11px] text-gray-700 break-words">
+                              {coin.Price_Targets ? (
+                                <>
+                                  <p>
+                                    {isExpanded(coin.symbol, 'Price_Targets')
+                                      ? coin.Price_Targets
+                                      : truncateText(coin.Price_Targets, 30)}
+                                    {coin.Price_Targets.split(' ').length > 30 && (
+                                      <>
+                                        {!isExpanded(coin.symbol, 'Price_Targets') && '...'}
+                                      </>
+                                    )}
+                                  </p>
+                                  {coin.Price_Targets.split(' ').length > 30 && (
+                                    <button
+                                      onClick={() => toggleExpand(coin.symbol, 'Price_Targets')}
+                                      className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
+                                    >
+                                      {isExpanded(coin.symbol, 'Price_Targets') ? 'Read less' : 'Read more'}
+                                    </button>
+                                  )}
+                                </>
+                              ) : (
+                                'N/A'
+                              )}
+                            </div>
                           </td>
-                          <td className="px-2 py-3 text-left align-top">
-                            <p className="text-[11px] text-gray-700">
-                              {aiSummarySections[1].content}
-                            </p>
+                          {/* Overall Sentiments */}
+                          <td className="px-1 py-3 text-left align-top">
+                            <div className="text-[11px] text-gray-700 break-words">
+                              {coin.Overall_Sentiment ? (
+                                <>
+                                  <p>
+                                    {isExpanded(coin.symbol, 'Overall_Sentiment')
+                                      ? coin.Overall_Sentiment
+                                      : truncateText(coin.Overall_Sentiment, 30)}
+                                    {coin.Overall_Sentiment.split(' ').length > 30 && (
+                                      <>
+                                        {!isExpanded(coin.symbol, 'Overall_Sentiment') && '...'}
+                                      </>
+                                    )}
+                                  </p>
+                                  {coin.Overall_Sentiment.split(' ').length > 30 && (
+                                    <button
+                                      onClick={() => toggleExpand(coin.symbol, 'Overall_Sentiment')}
+                                      className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
+                                    >
+                                      {isExpanded(coin.symbol, 'Overall_Sentiment') ? 'Read less' : 'Read more'}
+                                    </button>
+                                  )}
+                                </>
+                              ) : (
+                                'N/A'
+                              )}
+                            </div>
                           </td>
-                          <td className="px-2 py-3 text-left align-top">
-                            <p className="text-[11px] text-gray-700">
-                              {aiSummarySections[2].content}
-                            </p>
+                          {/* Outlook (ST/LT) */}
+                          <td className="px-1 py-3 text-left align-top">
+                            <div className="text-[11px] text-gray-700 break-words">
+                              {coin.Outlook_ST_LT ? (
+                                <>
+                                  <p>
+                                    {isExpanded(coin.symbol, 'Outlook_ST_LT')
+                                      ? coin.Outlook_ST_LT
+                                      : truncateText(coin.Outlook_ST_LT, 30)}
+                                    {coin.Outlook_ST_LT.split(' ').length > 30 && (
+                                      <>
+                                        {!isExpanded(coin.symbol, 'Outlook_ST_LT') && '...'}
+                                      </>
+                                    )}
+                                  </p>
+                                  {coin.Outlook_ST_LT.split(' ').length > 30 && (
+                                    <button
+                                      onClick={() => toggleExpand(coin.symbol, 'Outlook_ST_LT')}
+                                      className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
+                                    >
+                                      {isExpanded(coin.symbol, 'Outlook_ST_LT') ? 'Read less' : 'Read more'}
+                                    </button>
+                                  )}
+                                </>
+                              ) : (
+                                'N/A'
+                              )}
+                            </div>
                           </td>
-                          <td className="px-2 py-3 text-left align-top">
-                            <p className="text-[11px] text-gray-700">
-                              {aiSummarySections[3].content}
-                            </p>
+                          {/* Key Reasons */}
+                          <td className="px-1 py-3 text-left align-top">
+                            <div className="text-[11px] text-gray-700 break-words">
+                              {coin.Key_Reasons ? (
+                                <>
+                                  <p>
+                                    {isExpanded(coin.symbol, 'Key_Reasons')
+                                      ? coin.Key_Reasons
+                                      : truncateText(coin.Key_Reasons, 30)}
+                                    {coin.Key_Reasons.split(' ').length > 30 && (
+                                      <>
+                                        {!isExpanded(coin.symbol, 'Key_Reasons') && '...'}
+                                      </>
+                                    )}
+                                  </p>
+                                  {coin.Key_Reasons.split(' ').length > 30 && (
+                                    <button
+                                      onClick={() => toggleExpand(coin.symbol, 'Key_Reasons')}
+                                      className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
+                                    >
+                                      {isExpanded(coin.symbol, 'Key_Reasons') ? 'Read less' : 'Read more'}
+                                    </button>
+                                  )}
+                                </>
+                              ) : (
+                                'N/A'
+                              )}
+                            </div>
                           </td>
-                          <td className="px-2 py-3 text-left align-top">
-                            <p className="text-[11px] text-gray-700">
-                              {aiSummarySections[4].content}
-                            </p>
+                          {/* Disagreements */}
+                          <td className="px-1 py-3 text-left align-top">
+                            <div className="text-[11px] text-gray-700 break-words">
+                              {coin.Disagreements ? (
+                                <>
+                                  <p>
+                                    {isExpanded(coin.symbol, 'Disagreements')
+                                      ? coin.Disagreements
+                                      : truncateText(coin.Disagreements, 30)}
+                                    {coin.Disagreements.split(' ').length > 30 && (
+                                      <>
+                                        {!isExpanded(coin.symbol, 'Disagreements') && '...'}
+                                      </>
+                                    )}
+                                  </p>
+                                  {coin.Disagreements.split(' ').length > 30 && (
+                                    <button
+                                      onClick={() => toggleExpand(coin.symbol, 'Disagreements')}
+                                      className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
+                                    >
+                                      {isExpanded(coin.symbol, 'Disagreements') ? 'Read less' : 'Read more'}
+                                    </button>
+                                  )}
+                                </>
+                              ) : (
+                                'N/A'
+                              )}
+                            </div>
                           </td>
-                          <td className="px-2 py-3 text-left align-top">
-                            <p className="text-[11px] text-gray-700">
-                              {aiSummarySections[5].content}
-                            </p>
+                          {/* Risk Factors */}
+                          <td className="px-1 py-3 text-left align-top">
+                            <div className="text-[11px] text-gray-700 break-words">
+                              {coin.Risk_Factors ? (
+                                <>
+                                  <p>
+                                    {isExpanded(coin.symbol, 'Risk_Factors')
+                                      ? coin.Risk_Factors
+                                      : truncateText(coin.Risk_Factors, 30)}
+                                    {coin.Risk_Factors.split(' ').length > 30 && (
+                                      <>
+                                        {!isExpanded(coin.symbol, 'Risk_Factors') && '...'}
+                                      </>
+                                    )}
+                                  </p>
+                                  {coin.Risk_Factors.split(' ').length > 30 && (
+                                    <button
+                                      onClick={() => toggleExpand(coin.symbol, 'Risk_Factors')}
+                                      className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
+                                    >
+                                      {isExpanded(coin.symbol, 'Risk_Factors') ? 'Read less' : 'Read more'}
+                                    </button>
+                                  )}
+                                </>
+                              ) : (
+                                'N/A'
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );

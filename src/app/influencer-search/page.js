@@ -550,13 +550,6 @@ export default function InfluencerSearchPage() {
     return { sortedInfluencers: influencerOrder, groupedRecommendations };
   };
 
-  // API parameters using filter states
-  const apiParams = useMemo(() => ({
-    rating: selectedRating,
-    timeframe: selectedTimeframe,
-    year: selectedYear
-  }), [selectedRating, selectedTimeframe, selectedYear]);
-
   // Memoized API call functions
   const fetchYouTubeData = useCallback(async () => {
     // Only show loading on first load
@@ -566,7 +559,7 @@ export default function InfluencerSearchPage() {
     setError(null);
     try {
       // Fetch data from the new combined API endpoint
-      const res = await fetch(`/api/youtube-data/top10-last-posts?type=haplusnonha&limit=10&timeframe=1_hour`);
+      const res = await fetch(`/api/youtube-data/top10-last-posts?type=haplusnonha&limit=10&timeframe=${selectedTimeframe}`);
       const data = await res.json();
 
       // Extract ranking data
@@ -597,7 +590,7 @@ export default function InfluencerSearchPage() {
         isFirstRenderRef.current = false;
       }
     }
-  }, [apiParams]);
+  }, [selectedTimeframe]);
 
   const fetchTelegramData = useCallback(async () => {
     // Only show loading on first load
@@ -607,7 +600,7 @@ export default function InfluencerSearchPage() {
     setError(null);
     try {
       // Fetch data from the new combined API endpoint
-      const res = await fetch(`/api/telegram-data/top10-last-posts?type=haplusnonha&limit=10&timeframe=1_hour`);
+      const res = await fetch(`/api/telegram-data/top10-last-posts?type=haplusnonha&limit=10&timeframe=${selectedTimeframe}`);
       const data = await res.json();
 
       // Extract ranking data
@@ -638,7 +631,7 @@ export default function InfluencerSearchPage() {
         isFirstRenderRef.current = false;
       }
     }
-  }, [apiParams]);
+  }, [selectedTimeframe]);
 
   useEffect(() => {
     // Fetch data when platform or filters change
