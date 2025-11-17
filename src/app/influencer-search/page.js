@@ -239,6 +239,15 @@ export default function InfluencerSearchPage() {
     return pricesMap;
   }, [top10Data]);
 
+  // Create a live price changes map (EXACT same pattern as /coins)
+  const livePriceChangesMap = useMemo(() => {
+    const changesMap = {};
+    top10Data.forEach(coin => {
+      changesMap[coin.symbol.toUpperCase()] = coin.priceChange24h;
+    });
+    return changesMap;
+  }, [top10Data]);
+
   // Helper function to get live price for a symbol
   const getLivePrice = useCallback((symbol) => {
     if (!symbol) return "N/A";
@@ -249,6 +258,14 @@ export default function InfluencerSearchPage() {
     }
     return "N/A";
   }, [livePricesMap]);
+
+  // Helper function to get live price change (EXACT same pattern as /coins)
+  const getLivePriceChange = useCallback((symbol) => {
+    if (!symbol) return null;
+    const upperSymbol = symbol.toUpperCase();
+    const priceChange = livePriceChangesMap[upperSymbol];
+    return priceChange || null;
+  }, [livePriceChangesMap]);
 
   // Use timezone context
   const { useLocalTime, userTimezone, toggleTimezone, setUseLocalTime } = useTimezone();
@@ -1646,39 +1663,37 @@ export default function InfluencerSearchPage() {
                                         const isSummaryExpanded = expandedTitles[latestPostKey] || false;
                                         // Use summary for YouTube and Telegram, title for others
                                         const contentText = (rec.type === 'youtube' || rec.type === 'telegram') ? (rec.summary || '') : (rec.title || '');
-                                        const contentLimit = 50;
+                                        const contentLimit = 200;
                                         const showReadMore = contentText.length > contentLimit;
                                         const isFirstCoin = coinIdx === 0;
 
                                         return (
-                                          <div key={`${idx}-${coinIdx}`} className="flex items-center justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full">
-                                            {/* Date and Time - only show for first coin */}
+                                          <div key={`${idx}-${coinIdx}`} className={`flex justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full ${isSummaryExpanded ? 'items-start' : 'items-center'}`} style={{ position: 'relative', minHeight: isSummaryExpanded ? 'auto' : 'initial', height: isSummaryExpanded ? 'auto' : 'initial' }}>
+                                            {/* Date and Time - only show for first coin with merged cell effect */}
                                             {isFirstCoin ? (
-                                              <div className="flex flex-col items-start gap-1 w-[15%] px-1" style={{ position: 'relative' }}>
+                                              <div
+                                                className="flex flex-col items-center justify-center gap-1 w-[12%] px-1 border-r border-gray-200"
+                                                style={{
+                                                  position: 'absolute',
+                                                  left: 0,
+                                                  top: 0,
+                                                  height: isSummaryExpanded ? 'auto' : `${rec.coins.length * 100}%`,
+                                                  minHeight: `${rec.coins.length * 100}%`,
+                                                  zIndex: 1,
+                                                  backgroundColor: 'white'
+                                                }}
+                                              >
                                                 {rec.date && rec.time ? (
-                                                  <>
-                                                    <span className="text-[8px] font-semibold text-black-900">
-                                                      {formatDate(rec.date)} {formatTime(rec.date, rec.time)}
-                                                    </span>
-                                                  </>
+                                                  <span className="text-[8px] font-semibold text-black-900 text-center">
+                                                    {formatDate(rec.date)} {formatTime(rec.date, rec.time)}
+                                                  </span>
                                                 ) : (
                                                   <span className="text-[8px] text-gray-400">No data</span>
                                                 )}
-                                                {/* Vertical line for merged cells */}
-                                                {rec.coins.length > 1 && (
-                                                  <div style={{
-                                                    position: 'absolute',
-                                                    right: 0,
-                                                    top: 0,
-                                                    bottom: `-${(rec.coins.length - 1) * 100}%`,
-                                                    width: '1px',
-                                                    backgroundColor: '#e5e7eb'
-                                                  }} />
-                                                )}
                                               </div>
-                                            ) : (
-                                              <div className="w-[15%]" />
-                                            )}
+                                            ) : null}
+                                            {/* Spacer for date column */}
+                                            <div className="w-[15%]" />
 
                                             {/* Coin Icon and Name */}
                                             <div className="flex items-center justify-start gap-0.5 w-[10%]">
@@ -1777,72 +1792,101 @@ export default function InfluencerSearchPage() {
                                               })()}
                                             </div>
 
-                                            {/* Price Change (24hrs) */}
+                                            {/* Price Change (24hrs) - LIVE WebSocket data (EXACT same pattern as /coins) */}
                                             <div className="w-[15%] flex flex-col justify-start">
                                               {(() => {
-                                                const volumeData = coinData.volume;
-                                                if (volumeData && volumeData !== 'N/A' && typeof volumeData === 'object') {
-                                                  const priceChange = parseFloat(volumeData.priceChange);
-                                                  const priceChangePercent = parseFloat(volumeData.priceChangePercent);
+                                                // Get live price change percentage from WebSocket
+                                                const priceChangePercent = getLivePriceChange(coinData.coin);
 
-                                                  if (!isNaN(priceChange) && !isNaN(priceChangePercent)) {
-                                                    const isPositive = priceChange > 0;
-                                                    const isNegative = priceChange < 0;
-                                                    const colorClass = isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900';
+                                                // Get current price to calculate absolute change
+                                                const currentPriceStr = coinData.currentPrice;
+                                                const currentPrice = currentPriceStr && currentPriceStr !== 'N/A'
+                                                  ? parseFloat(currentPriceStr.replace('$', ''))
+                                                  : null;
 
-                                                    return (
-                                                      <>
-                                                        <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                          {isPositive ? '+' : ''}{priceChange.toLocaleString('en-US', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2
-                                                          })}
-                                                        </span>
-                                                        <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                          ({isPositive ? '+' : ''}{Number(priceChangePercent).toFixed(2)}%)
-                                                        </span>
-                                                      </>
-                                                    );
-                                                  }
+                                                // Calculate absolute price change from percentage (EXACT same pattern as /coins)
+                                                const priceChange = (priceChangePercent !== null && currentPrice !== null)
+                                                  ? (currentPrice * priceChangePercent / 100)
+                                                  : null;
+
+                                                if (priceChange !== null && priceChangePercent !== null) {
+                                                  const isPositive = priceChange > 0;
+                                                  const isNegative = priceChange < 0;
+                                                  const colorClass = isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900';
+
+                                                  return (
+                                                    <>
+                                                      <span className={`text-[8px] font-semibold ${colorClass}`}>
+                                                        {isPositive ? '+' : ''}{priceChange.toLocaleString('en-US', {
+                                                          minimumFractionDigits: 2,
+                                                          maximumFractionDigits: 2
+                                                        })}
+                                                      </span>
+                                                      <span className={`text-[8px] font-semibold ${colorClass}`}>
+                                                        ({isPositive ? '+' : ''}{priceChangePercent.toFixed(2)}%)
+                                                      </span>
+                                                    </>
+                                                  );
                                                 }
                                                 return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
                                               })()}
                                             </div>
 
-                                            {/* Summary/Title Column - only show for first coin (merged cell) */}
+                                            {/* Summary/Title Column - only show for first coin with merged cell effect */}
                                             {isFirstCoin ? (
-                                              <div className="w-[20%] flex justify-start break-words overflow-hidden" style={{ position: 'relative' }}>
+                                              <div
+                                                className="w-[20%] flex items-center justify-center border-l border-gray-200 px-2"
+                                                style={{
+                                                  position: 'absolute',
+                                                  right: 0,
+                                                  top: 0,
+                                                  height: isSummaryExpanded ? 'auto' : `${rec.coins.length * 100}%`,
+                                                  minHeight: isSummaryExpanded ? 'auto' : `${rec.coins.length * 100}%`,
+                                                  zIndex: 1,
+                                                  backgroundColor: 'white',
+                                                  overflow: isSummaryExpanded ? 'visible' : 'hidden'
+                                                }}
+                                              >
                                                 {contentText ? (
-                                                  <span className="text-[8px] text-gray-600 break-words">
+                                                  <div className="text-[9px] text-gray-700 leading-[1.4]" style={{
+                                                    wordWrap: 'break-word',
+                                                    overflowWrap: 'break-word',
+                                                    whiteSpace: 'normal',
+                                                    textAlign: 'left',
+                                                    display: 'block',
+                                                    width: '100%',
+                                                    padding: isSummaryExpanded ? '8px 0' : '0'
+                                                  }}>
                                                     <a
                                                       href={rec.link}
                                                       target="_blank"
                                                       rel="noopener noreferrer"
                                                       onClick={(e) => e.stopPropagation()}
                                                       className="hover:text-blue-600 hover:underline cursor-pointer"
+                                                      style={{ display: 'inline' }}
                                                     >
-                                                      {showReadMore && !isSummaryExpanded
-                                                        ? `${contentText.substring(0, contentLimit)}...`
-                                                        : contentText
-                                                      }
+                                                      {isSummaryExpanded ? contentText : (showReadMore ? `${contentText.substring(0, contentLimit)}...` : contentText)}
                                                     </a>
                                                     {showReadMore && (
-                                                      <button
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          setExpandedTitles(prev => ({
-                                                            ...prev,
-                                                            [latestPostKey]: !prev[latestPostKey]
-                                                          }));
-                                                        }}
-                                                        className="ml-1 text-blue-600 hover:text-blue-800 font-semibold"
-                                                      >
-                                                        {isSummaryExpanded ? 'Read less' : 'Read more'}
-                                                      </button>
+                                                      <>
+                                                        <br />
+                                                        <button
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setExpandedTitles(prev => ({
+                                                              ...prev,
+                                                              [latestPostKey]: !prev[latestPostKey]
+                                                            }));
+                                                          }}
+                                                          className="mt-1 text-blue-600 hover:text-blue-800 font-semibold text-[8px]"
+                                                        >
+                                                          {isSummaryExpanded ? 'Read less' : 'Read more'}
+                                                        </button>
+                                                      </>
                                                     )}
-                                                  </span>
+                                                  </div>
                                                 ) : (
-                                                  <span className="text-[8px] text-gray-600">
+                                                  <div className="text-[8px] text-gray-600">
                                                     <a
                                                       href={rec.link}
                                                       target="_blank"
@@ -1850,25 +1894,14 @@ export default function InfluencerSearchPage() {
                                                       onClick={(e) => e.stopPropagation()}
                                                       className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
                                                     >
-                                                      {rec.link}
+                                                      click to view post
                                                     </a>
-                                                  </span>
-                                                )}
-                                                {/* Vertical line for merged cells */}
-                                                {rec.coins.length > 1 && (
-                                                  <div style={{
-                                                    position: 'absolute',
-                                                    right: 0,
-                                                    top: 0,
-                                                    bottom: `-${(rec.coins.length - 1) * 100}%`,
-                                                    width: '1px',
-                                                    backgroundColor: '#e5e7eb'
-                                                  }} />
+                                                  </div>
                                                 )}
                                               </div>
-                                            ) : (
-                                              <div className="w-[20%]" />
-                                            )}
+                                            ) : null}
+                                            {/* Spacer for summary column */}
+                                            <div className="w-[20%]" />
                                           </div>
                                         );
                                       });
@@ -1883,7 +1916,7 @@ export default function InfluencerSearchPage() {
                                     const showReadMore = contentText.length > contentLimit;
 
                                     return (
-                                      <div key={idx} className="flex items-center justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full">
+                                      <div key={idx} className={`flex justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full ${isSummaryExpanded ? 'items-start' : 'items-center'}`} style={{ minHeight: isSummaryExpanded ? 'auto' : 'initial' }}>
                                         <div className="flex flex-col items-start gap-1 w-[15%] px-1">
                                           {rec.date && rec.time ? (
                                             <>
@@ -2015,40 +2048,48 @@ export default function InfluencerSearchPage() {
                                           })()}
                                         </div>
 
-                                        {/* Price Change (24hrs) */}
+                                        {/* Price Change (24hrs) - LIVE WebSocket data (EXACT same pattern as /coins) */}
                                         <div className="w-[15%] flex flex-col justify-start">
                                           {(() => {
-                                            const volumeData = rec.volume;
-                                            if (volumeData && volumeData !== 'N/A' && typeof volumeData === 'object') {
-                                              const priceChange = parseFloat(volumeData.priceChange);
-                                              const priceChangePercent = parseFloat(volumeData.priceChangePercent);
+                                            // Get live price change percentage from WebSocket
+                                            const priceChangePercent = getLivePriceChange(rec.coin);
 
-                                              if (!isNaN(priceChange) && !isNaN(priceChangePercent)) {
-                                                const isPositive = priceChange > 0;
-                                                const isNegative = priceChange < 0;
-                                                const colorClass = isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900';
+                                            // Get current price to calculate absolute change
+                                            const currentPriceStr = rec.currentPrice;
+                                            const currentPrice = currentPriceStr && currentPriceStr !== 'N/A'
+                                              ? parseFloat(currentPriceStr.replace('$', ''))
+                                              : null;
 
-                                                return (
-                                                  <>
-                                                    <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                      {isPositive ? '+' : ''}{priceChange.toLocaleString('en-US', {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2
-                                                      })}
-                                                    </span>
-                                                    <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                      ({isPositive ? '+' : ''}{priceChangePercent}%)
-                                                    </span>
-                                                  </>
-                                                );
-                                              }
+                                            // Calculate absolute price change from percentage (EXACT same pattern as /coins)
+                                            const priceChange = (priceChangePercent !== null && currentPrice !== null)
+                                              ? (currentPrice * priceChangePercent / 100)
+                                              : null;
+
+                                            if (priceChange !== null && priceChangePercent !== null) {
+                                              const isPositive = priceChange > 0;
+                                              const isNegative = priceChange < 0;
+                                              const colorClass = isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900';
+
+                                              return (
+                                                <>
+                                                  <span className={`text-[8px] font-semibold ${colorClass}`}>
+                                                    {isPositive ? '+' : ''}{priceChange.toLocaleString('en-US', {
+                                                      minimumFractionDigits: 2,
+                                                      maximumFractionDigits: 2
+                                                    })}
+                                                  </span>
+                                                  <span className={`text-[8px] font-semibold ${colorClass}`}>
+                                                    ({isPositive ? '+' : ''}{priceChangePercent.toFixed(2)}%)
+                                                  </span>
+                                                </>
+                                              );
                                             }
                                             return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
                                           })()}
                                         </div>
 
                                         {/* Summary/Title Column - separate */}
-                                        <div className="w-[20%] flex justify-start break-words overflow-hidden">
+                                        <div className={`w-[20%] flex justify-start break-words ${isSummaryExpanded ? 'overflow-visible' : 'overflow-hidden'}`}>
                                           {contentText ? (
                                             <span className="text-[8px] text-gray-600 break-words">
                                               <a

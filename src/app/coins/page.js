@@ -40,14 +40,6 @@ export default function CoinsPage() {
     return changesMap;
   }, [coinsLiveData]);
 
-  const liveVolumesMap = useMemo(() => {
-    const volumesMap = {};
-    coinsLiveData.forEach(coin => {
-      volumesMap[coin.symbol.toUpperCase()] = coin.volume;
-    });
-    return volumesMap;
-  }, [coinsLiveData]);
-
   // Fetch coins data from API
   useEffect(() => {
     const fetchCoinsData = async () => {
@@ -106,16 +98,6 @@ export default function CoinsPage() {
     const priceChange = livePriceChangesMap[upperSymbol];
     return priceChange || null;
   }, [livePriceChangesMap]);
-
-  const getLiveVolume = useCallback((symbol) => {
-    if (!symbol) return "N/A";
-    const upperSymbol = symbol.toUpperCase();
-    const volume = liveVolumesMap[upperSymbol];
-    if (volume && volume !== "-") {
-      return typeof volume === 'number' ? volume : parseFloat(volume);
-    }
-    return "N/A";
-  }, [liveVolumesMap]);
 
   // Get top 10 coins from selected timeframe with memoization
   // Only depends on coinsData and selectedTimeframe (not prices) to avoid unnecessary recalculations
@@ -220,16 +202,13 @@ export default function CoinsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-4 py-3 text-left text-xs font-bold text-black-900  tracking-wider">
-                      Coin
+                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[5%]">
+                      Coins
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-black-900  tracking-wider">
-                      Total Posts
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-black-900  tracking-wider">
-                      <div className="flex flex-col items-center gap-0.5">
+                    <th className="pl-2 pr-0.5 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[5%]">
+                      <div className="flex flex-col items-start gap-0.5">
                         <span>Sentiment</span>
-                        <div className="flex items-center justify-center gap-1">
+                        <div className="flex items-center justify-start gap-1">
                           <span>ST/LT</span>
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
@@ -240,7 +219,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-black-900  tracking-wider">
+                    <th className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[7%]">
                       <div className="flex flex-col items-center">
                         <span>Current Price</span>
                         <div className="flex items-center gap-1">
@@ -255,22 +234,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-black-900  tracking-wider">
-                      <div className="flex flex-col items-center">
-                        <span>Volume</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-normal">(24hrs Binance)</span>
-                          {/* Info Icon + Tooltip */}
-                          <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                              N/A : Not Available
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </th>
-                    <th className="px-4 py-3 text-center text-xs font-bold text-black-900  tracking-wider">
+                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%]">
                       <div className="flex flex-col items-center">
                         <span>Price Change</span>
                         <div className="flex items-center gap-1">
@@ -285,12 +249,15 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[66%]">
+                      AI Summary
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan="6" className="px-6 py-12 text-center">
+                      <td colSpan="5" className="px-6 py-12 text-center">
                         <div className="flex justify-center items-center">
                           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                         </div>
@@ -298,13 +265,13 @@ export default function CoinsPage() {
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan="6" className="px-6 py-12 text-center text-red-600">
+                      <td colSpan="5" className="px-6 py-12 text-center text-red-600">
                         {error}
                       </td>
                     </tr>
                   ) : top10Coins.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
                         No coins data available for this timeframe
                       </td>
                     </tr>
@@ -312,7 +279,6 @@ export default function CoinsPage() {
                     top10Coins.map((coin, index) => {
                       // Use callback functions for live data (similar to influencer-search)
                       const currentPrice = getLivePrice(coin.symbol);
-                      const volume = getLiveVolume(coin.symbol);
                       const priceChangePercent = getLivePriceChange(coin.symbol);
 
                       // Calculate absolute price change from percentage
@@ -320,89 +286,123 @@ export default function CoinsPage() {
                         ? (currentPrice * priceChangePercent / 100)
                         : null;
 
+                      // Generate detailed AI summary based on coin data
+                      const totalBullish = coin.yt_tg_bullish_short_term + coin.yt_tg_bullish_long_term;
+                      const totalBearish = coin.yt_tg_bearish_short_term + coin.yt_tg_bearish_long_term;
+                      const isBullish = totalBullish > totalBearish;
+                      const sentimentStrength = totalBullish === totalBearish ? 'Neutral' :
+                        Math.abs(totalBullish - totalBearish) > 5 ? 'Strong' : 'Mild';
+                      const sentimentDirection = isBullish ? 'Bullish' : 'Bearish';
+
+                      const aiSummary = `Based on the provided data, here is a summary of ${coin.coin_name} trading insights over a 6-hour timeframe:
+
+*1. Overall Sentiment Consensus:*
+The overall sentiment leans *${sentimentStrength} ${sentimentDirection}* ${coin.yt_tg_bullish_short_term > coin.yt_tg_bearish_short_term ? 'in the short term' : 'with short-term caution'}, ${coin.yt_tg_bullish_long_term > coin.yt_tg_bearish_long_term ? 'with a positive long-term outlook' : 'with mixed long-term views'}.
+
+*2. Key Reasons for Views:*
+Influencers are ${isBullish ? 'optimistic about price appreciation and emphasize accumulation opportunities' : 'cautious, citing potential corrections and advising careful position management'}. ${coin.total_mentions > 20 ? 'High community engagement suggests strong interest' : coin.total_mentions > 10 ? 'Moderate community engagement indicates steady interest' : 'Limited community engagement reflects lower current attention'}.
+
+*3. Common Price Targets & Holding Periods:*
+${priceChangePercent && priceChangePercent !== 0 ? `Current price movement shows a ${priceChangePercent > 0 ? 'positive' : 'negative'} change of ${Math.abs(priceChangePercent).toFixed(2)}% over 24 hours.` : 'Price movement data is currently unavailable.'} ${coin.yt_tg_bullish_long_term > 0 ? 'Long-term holding strategies are recommended by several influencers.' : ''}
+
+*4. Short-term vs. Long-term Outlook:*
+Short-term: ${coin.yt_tg_bullish_short_term > coin.yt_tg_bearish_short_term ? `${coin.yt_tg_bullish_short_term} bullish calls suggest near-term upside potential` : `${coin.yt_tg_bearish_short_term} bearish calls indicate caution for near-term trading`}. Long-term: ${coin.yt_tg_bullish_long_term > coin.yt_tg_bearish_long_term ? `${coin.yt_tg_bullish_long_term} bullish recommendations favor accumulation strategies` : 'Mixed outlook with divided opinions on long-term holding'}.
+
+*5. Notable Disagreements:*
+${totalBullish > 0 && totalBearish > 0 ? `Significant divergence exists with ${totalBullish} bullish calls versus ${totalBearish} bearish calls, reflecting differing time horizons and risk appetites among influencers.` : 'Relatively unified sentiment among tracked influencers.'}
+
+*6. Risk Factors:*
+Key risks include ${priceChangePercent && priceChangePercent < -5 ? 'recent sharp decline indicating potential further downside' : priceChangePercent && priceChangePercent > 5 ? 'rapid appreciation raising concerns about potential corrections' : 'market volatility and changing sentiment dynamics'}. Monitoring key support and resistance levels remains critical for both short and long-term positions.`;
+
                       return (
                         <tr key={`${coin.symbol}-${index}`} className="hover:bg-gray-50">
-                          {/* Coin */}
-                          <td className="px-4 py-3">
-                            <div className="flex items-center gap-2">
+                          {/* Coin - Image and Name Vertically Stacked with Total Posts */}
+                          <td className="px-2 py-3">
+                            <div className="flex flex-col items-center gap-2">
                               {coin.image_small && (
                                 <img
                                   src={coin.image_small}
                                   alt={coin.symbol}
-                                  className="w-8 h-8 rounded-full"
+                                  className="w-10 h-10 rounded-full"
                                 />
                               )}
-                              <div>
-                                <div className="text-sm font-bold text-gray-900">{coin.symbol}</div>
-                                <div className="text-xs text-gray-500">{coin.coin_name}</div>
+                              <div className="text-center">
+                                <div className="text-xs font-bold text-balck-900">{coin.symbol}</div>
+                                <div className="text-[10px] text-black-500">
+                                  {coin.coin_name.charAt(0).toUpperCase() + coin.coin_name.slice(1)}
+                                </div>
+                                <div className="text-[10px] font-semibold text-black-900 mt-1">
+                                  {coin.total_mentions} posts
+                                </div>
                               </div>
                             </div>
                           </td>
 
-                          {/* Total Posts */}
-                          <td className="px-4 py-3 text-center">
-                            <span className="text-sm font-semibold text-gray-900">
-                              {coin.total_mentions}
-                            </span>
-                          </td>
-
-                          {/* Sentiment - All 4 sentiments in one column */}
-                          <td className="px-4 py-3">
-                            <div className="flex items-center justify-center gap-2 flex-wrap">
+                          {/* Sentiment - All 4 sentiments stacked vertically */}
+                          <td className="pl-2 pr-0.5 py-3">
+                            <div className="flex flex-col items-start gap-1">
                               {/* ST Bullish */}
                               {coin.yt_tg_bullish_short_term > 0 && (
-                                <div className="flex flex-col items-center gap-1">
-                                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-green-100 text-green-700">
+                                <div className="flex items-center gap-1">
+                                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-green-100 text-green-700">
                                     <div className="flex items-center gap-0.5">
-                                      <FaArrowUp className="text-[8px]" />
-                                      <span className="text-[8px] font-semibold">ST</span>
+                                      <FaArrowUp className="text-[6px]" />
+                                      <span className="text-[6px] font-semibold">ST</span>
                                     </div>
                                   </div>
-                                  <span className="text-[8px] text-gray-600">{coin.yt_tg_bullish_short_term} posts</span>
+                                  <span className="text-[10px] text-black-600 min-w-[45px]">
+                                    {coin.yt_tg_bullish_short_term} {coin.yt_tg_bullish_short_term === 1 ? "post" : "posts"}
+                                  </span>
                                 </div>
                               )}
                               {/* LT Bullish */}
                               {coin.yt_tg_bullish_long_term > 0 && (
-                                <div className="flex flex-col items-center gap-1">
-                                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-green-100 text-green-700">
+                                <div className="flex items-center gap-1">
+                                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-green-100 text-green-700">
                                     <div className="flex items-center gap-0.5">
-                                      <FaArrowUp className="text-[8px]" />
-                                      <span className="text-[8px] font-semibold">LT</span>
+                                      <FaArrowUp className="text-[6px]" />
+                                      <span className="text-[6px] font-semibold">LT</span>
                                     </div>
                                   </div>
-                                  <span className="text-[8px] text-gray-600">{coin.yt_tg_bullish_long_term} posts</span>
+                                  <span className="text-[10px] text-black-600 min-w-[45px]">
+                                    {coin.yt_tg_bullish_long_term} {coin.yt_tg_bullish_long_term === 1 ? "post" : "posts"}
+                                  </span>
                                 </div>
                               )}
                               {/* ST Bearish */}
                               {coin.yt_tg_bearish_short_term > 0 && (
-                                <div className="flex flex-col items-center gap-1">
-                                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-red-100 text-red-700">
+                                <div className="flex items-center gap-1">
+                                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-red-100 text-red-700">
                                     <div className="flex items-center gap-0.5">
-                                      <FaArrowDown className="text-[8px]" />
-                                      <span className="text-[8px] font-semibold">ST</span>
+                                      <FaArrowDown className="text-[6px]" />
+                                      <span className="text-[6px] font-semibold">ST</span>
                                     </div>
                                   </div>
-                                  <span className="text-[8px] text-gray-600">{coin.yt_tg_bearish_short_term} posts</span>
+                                  <span className="text-[10px] text-black-600 min-w-[45px]">
+                                    {coin.yt_tg_bearish_short_term} {coin.yt_tg_bearish_short_term === 1 ? "post" : "posts"}
+                                  </span>
                                 </div>
                               )}
                               {/* LT Bearish */}
                               {coin.yt_tg_bearish_long_term > 0 && (
-                                <div className="flex flex-col items-center gap-1">
-                                  <div className="w-10 h-10 rounded-full flex items-center justify-center bg-red-100 text-red-700">
+                                <div className="flex items-center gap-1">
+                                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-red-100 text-red-700">
                                     <div className="flex items-center gap-0.5">
-                                      <FaArrowDown className="text-[8px]" />
-                                      <span className="text-[8px] font-semibold">LT</span>
+                                      <FaArrowDown className="text-[6px]" />
+                                      <span className="text-[6px] font-semibold">LT</span>
                                     </div>
                                   </div>
-                                  <span className="text-[8px] text-gray-600">{coin.yt_tg_bearish_long_term} posts</span>
+                                  <span className="text-[10px] text-black-600 min-w-[45px]">
+                                    {coin.yt_tg_bearish_long_term} {coin.yt_tg_bearish_long_term === 1 ? "post" : "posts"}
+                                  </span>
                                 </div>
                               )}
                             </div>
                           </td>
 
                           {/* Current Price */}
-                          <td className="px-4 py-3 text-center">
-                            <span className="text-sm font-semibold text-blue-600">
+                          <td className="pl-0.5 pr-2 py-3 text-center">
+                            <span className="text-xs font-semibold text-blue-600">
                               {(() => {
                                 if (currentPrice === 'N/A') return 'N/A';
                                 const value = typeof currentPrice === 'number' ? currentPrice : parseFloat(currentPrice);
@@ -420,27 +420,11 @@ export default function CoinsPage() {
                             </span>
                           </td>
 
-                          {/* Volume */}
-                          <td className="px-4 py-3 text-center">
-                            <span className="text-sm font-semibold text-blue-600">
-                              {(() => {
-                                if (volume === 'N/A') return 'N/A';
-                                const value = typeof volume === 'number' ? volume : parseFloat(volume);
-                                if (isNaN(value)) return 'N/A';
-
-                                return value.toLocaleString('en-US', {
-                                  minimumFractionDigits: 0,
-                                  maximumFractionDigits: 0
-                                });
-                              })()}
-                            </span>
-                          </td>
-
                           {/* Price Change */}
-                          <td className="px-4 py-3 text-center">
+                          <td className="px-2 py-3 text-center">
                             {priceChange !== null && priceChangePercent !== null ? (
-                              <div className="flex flex-col items-center gap-1">
-                                <span className={`text-sm font-semibold ${parseFloat(priceChange) > 0
+                              <div className="flex flex-col items-center gap-0.5">
+                                <span className={`text-xs font-semibold ${parseFloat(priceChange) > 0
                                   ? 'text-green-600'
                                   : parseFloat(priceChange) < 0
                                     ? 'text-red-600'
@@ -452,7 +436,7 @@ export default function CoinsPage() {
                                     maximumFractionDigits: 2
                                   })}
                                 </span>
-                                <span className={`text-xs font-semibold ${parseFloat(priceChange) > 0
+                                <span className={`text-[10px] font-semibold ${parseFloat(priceChange) > 0
                                   ? 'text-green-600'
                                   : parseFloat(priceChange) < 0
                                     ? 'text-red-600'
@@ -462,8 +446,15 @@ export default function CoinsPage() {
                                 </span>
                               </div>
                             ) : (
-                              <span className="text-sm text-gray-500">N/A</span>
+                              <span className="text-xs text-gray-500">N/A</span>
                             )}
+                          </td>
+
+                          {/* AI Summary */}
+                          <td className="px-4 py-3 text-left">
+                            <p className="text-xs text-gray-700 leading-relaxed">
+                              {aiSummary}
+                            </p>
                           </td>
                         </tr>
                       );
