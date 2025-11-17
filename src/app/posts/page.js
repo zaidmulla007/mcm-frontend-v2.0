@@ -201,9 +201,8 @@ export default function PostsPage() {
                     {/* Post Header */}
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
-                        <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                          post.type === 'telegram' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'
-                        }`}>
+                        <span className={`px-2 py-1 rounded text-xs font-semibold ${post.type === 'telegram' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'
+                          }`}>
                           {post.type.toUpperCase()}
                         </span>
                         <a
@@ -220,9 +219,9 @@ export default function PostsPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-semibold text-black">
-                          Rank #{post.rank}
+                          Rank {post.rank}
                         </span>
-                        <span className="text-xs text-black">
+                        <span className="text-xs font-semibold text-black">
                           Score: {post.final_score?.toFixed(3)}
                         </span>
                       </div>
@@ -285,13 +284,12 @@ export default function PostsPage() {
                                       })()}
                                     </span>
                                     {priceChangePercent !== null && (
-                                      <span className={`text-xs font-semibold ${
-                                        parseFloat(priceChangePercent) > 0
+                                      <span className={`text-xs font-semibold ${parseFloat(priceChangePercent) > 0
                                           ? 'text-green-600'
                                           : parseFloat(priceChangePercent) < 0
                                             ? 'text-red-600'
                                             : 'text-black'
-                                      }`}>
+                                        }`}>
                                         ({parseFloat(priceChangePercent) > 0 ? '+' : ''}{priceChangePercent}%)
                                       </span>
                                     )}
@@ -307,31 +305,31 @@ export default function PostsPage() {
                     {/* Scores */}
                     <div className="flex flex-wrap gap-3 text-xs">
                       <span className="text-black">
-                        <strong>View on Coins:</strong> {post.viewOnCoins}/5
+                        View on Coins: {post.viewOnCoins}/5
                       </span>
                       <span className="text-black">
-                        <strong>Recommendations:</strong> {post.recommendations}/5
+                        Recommendations:{post.recommendations}/10
                       </span>
                       <span className="text-black">
-                        <strong>Risk Management:</strong> {post.riskManagement}/5
+                        Risk Management: {post.riskManagement}/10
                       </span>
                       <span className="text-black">
-                        <strong>Overall:</strong> {post.overallScore}/5
+                        Overall: {post.overallScore}/10
                       </span>
                       <span className="text-black">
-                        <strong>Exit Strategy:</strong> {post.exitStrategyScore}/5
+                        Exit Strategy: {post.exitStrategyScore}/10
                       </span>
                       <span className="text-black">
-                        <strong>Educational:</strong> {post.educationalPurpose}/5
+                        Educational: {post.educationalPurpose}/10
                       </span>
                       <span className="text-black">
-                        <strong>Actionable:</strong> {post.actionableInsights}/5
+                        Actionable: {post.actionableInsights}/10
                       </span>
                       <span className="text-black">
-                        <strong>Clarity:</strong> {post.clarityOfAnalysis}/5
+                        Clarity: {post.clarityOfAnalysis}/10
                       </span>
                       <span className="text-black">
-                        <strong>Credibility:</strong> {post.credibilityScore}/5
+                        Credibility: {post.credibilityScore}/10
                       </span>
                     </div>
                   </div>
