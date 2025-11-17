@@ -1927,7 +1927,8 @@ export default function InfluencerSearchPage() {
                                             <div className="w-[10%]"></div>
                                             <div className="w-[6%] flex justify-center">
                                               <button
-                                                onClick={() => {
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
                                                   setExpandedPosts(prev => {
                                                     if (showingAllCoins) {
                                                       // Collapse back to 3
@@ -2233,7 +2234,10 @@ export default function InfluencerSearchPage() {
                                       <div className="w-[16%]"></div>
                                       <div className="w-[6%] flex justify-left">
                                         <button
-                                          onClick={handleToggle}
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleToggle();
+                                          }}
                                           className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-colors shadow-md"
                                           title={showingAll ? "Show less" : `Show more (${totalCount - visibleCount} remaining)`}
                                         >
