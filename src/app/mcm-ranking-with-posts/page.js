@@ -287,17 +287,12 @@ export default function InfluencerSearchPage() {
 
   // Fetch Binance volume data
   useEffect(() => {
-    let isMounted = true;
-
     const fetchBinanceVolume = async () => {
       try {
         // Fetch only USDT pairs by making individual requests or filtering
         // Since Binance doesn't support filtering in the API, we fetch all and filter
         const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
         const data = await response.json();
-
-        // Only update state if component is still mounted
-        if (!isMounted) return;
 
         // Create a map of symbol to volume, priceChange, and priceChangePercent (only USDT pairs)
         const volumeMap = {};
@@ -325,10 +320,7 @@ export default function InfluencerSearchPage() {
     // Refresh volume data every 5 minutes
     const interval = setInterval(fetchBinanceVolume, 5 * 60 * 1000);
 
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, []);
 
   // Pagination state
@@ -1278,7 +1270,7 @@ export default function InfluencerSearchPage() {
 
                     <th className="px-0.5 py-0.5">
                       <div className="flex items-center justify-start gap-1 px-0.5 w-full">
-                        <div className="w-[10%] flex flex-col items-start gap-1">
+                        <div className="w-[15%] flex flex-col items-start gap-1">
                           <select
                             value={selectedDateFilter}
                             onChange={(e) => setSelectedDateFilter(e.target.value)}
@@ -1301,10 +1293,10 @@ export default function InfluencerSearchPage() {
                             })}
                           </select>
                         </div>
-                        <div className="w-[6%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           Coin&apos;s
                         </div>
-                        <div className="w-[8%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start gap-0.5">
                             <span>Sentiment</span>
                             <div className="flex items-center justify-start gap-1">
@@ -1318,13 +1310,13 @@ export default function InfluencerSearchPage() {
                             </div>
                           </div>
                         </div>
-                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
                             <span>Post Date</span>
                             <span>Price</span>
                           </div>
                         </div>
-                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
                             <span>Current Price</span>
 
@@ -1343,7 +1335,7 @@ export default function InfluencerSearchPage() {
                           </div>
                         </div>
 
-                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
                           <span>
                             Post Date<br />% Change
                           </span>
@@ -1355,7 +1347,7 @@ export default function InfluencerSearchPage() {
                           </span>
                         </div>
 
-                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
                             <span>Price Change</span>
 
@@ -1374,7 +1366,7 @@ export default function InfluencerSearchPage() {
                           </div>
                         </div>
 
-                        <div className="w-[36%] text-[10px] font-bold text-black-900 text-center">
+                        <div className="w-[20%] text-[10px] font-bold text-black-900 text-center">
                           <span>{selectedPlatform === "youtube" ? "Post AI Summary" : "Post AI Summary"}</span><br />
                           <span className="text-[8px] font-normal text-black-600">click to view post</span>
                         </div>
@@ -1662,24 +1654,8 @@ export default function InfluencerSearchPage() {
                                     // Handle grouped posts (when specific date is selected)
                                     // Display them exactly like Latest Posts - individual rows for each coin
                                     if (rec.isGrouped && rec.coins) {
-                                      // Get the post key for tracking expansion
-                                      const postKey = `${influencer.id}-grouped-${idx}`;
-                                      const visibleCoinsCount = expandedPosts[postKey] || 3;
-                                      const totalCoins = rec.coins.length;
-                                      const hasMoreCoins = totalCoins > visibleCoinsCount;
-                                      const showingAllCoins = visibleCoinsCount >= totalCoins;
-
-                                      // Get visible coins
-                                      const visibleCoins = rec.coins.slice(0, visibleCoinsCount);
-
-                                      // Check if any summary is expanded in visible coins
-                                      const hasExpandedSummary = visibleCoins.some((_, coinIdx) => {
-                                        const latestPostKey = `${influencer.id}-grouped-${idx}-${coinIdx}`;
-                                        return expandedTitles[latestPostKey] || false;
-                                      });
-
                                       // Flatten coins into individual rows, same as Latest Posts
-                                      const coinRows = visibleCoins.map((coinData, coinIdx) => {
+                                      return rec.coins.map((coinData, coinIdx) => {
                                         const latestPostKey = `${influencer.id}-grouped-${idx}-${coinIdx}`;
                                         const isSummaryExpanded = expandedTitles[latestPostKey] || false;
                                         // Use summary for YouTube and Telegram, title for others
@@ -1687,19 +1663,19 @@ export default function InfluencerSearchPage() {
                                         const contentLimit = 200;
                                         const showReadMore = contentText.length > contentLimit;
                                         const isFirstCoin = coinIdx === 0;
-                                        const isLastVisibleCoin = coinIdx === visibleCoins.length - 1;
 
                                         return (
-                                          <div key={`${idx}-${coinIdx}`} className={`flex justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full ${isSummaryExpanded ? 'items-start' : 'items-center'}`} style={{ position: 'relative', minHeight: (isFirstCoin && isSummaryExpanded) ? '200px' : 'initial', height: isSummaryExpanded ? 'auto' : 'initial' }}>
+                                          <div key={`${idx}-${coinIdx}`} className={`flex justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full ${isSummaryExpanded ? 'items-start' : 'items-center'}`} style={{ position: 'relative', minHeight: isSummaryExpanded ? 'auto' : 'initial', height: isSummaryExpanded ? 'auto' : 'initial' }}>
                                             {/* Date and Time - only show for first coin with merged cell effect */}
                                             {isFirstCoin ? (
                                               <div
-                                                className="flex flex-col items-center justify-center gap-1 w-[10%] px-1 border-r border-gray-200"
+                                                className="flex flex-col items-center justify-center gap-1 w-[12%] px-1 border-r border-gray-200"
                                                 style={{
                                                   position: 'absolute',
                                                   left: 0,
                                                   top: 0,
-                                                  height: `${visibleCoins.length * 100}%`,
+                                                  height: isSummaryExpanded ? 'auto' : `${rec.coins.length * 100}%`,
+                                                  minHeight: `${rec.coins.length * 100}%`,
                                                   zIndex: 1,
                                                   backgroundColor: 'white'
                                                 }}
@@ -1714,10 +1690,10 @@ export default function InfluencerSearchPage() {
                                               </div>
                                             ) : null}
                                             {/* Spacer for date column */}
-                                            <div className="w-[10%]" />
+                                            <div className="w-[15%]" />
 
                                             {/* Coin Icon and Name */}
-                                            <div className="flex items-center justify-start gap-0.5 w-[6%]">
+                                            <div className="flex items-center justify-start gap-0.5 w-[10%]">
                                               <div className="flex items-center justify-center w-3">
                                                 {coinData.icon}
                                               </div>
@@ -1726,7 +1702,7 @@ export default function InfluencerSearchPage() {
                                               </span>
                                             </div>
                                             {/* Sentiment Badge (Circular with Arrow LEFT + ST/LT RIGHT) */}
-                                            <div className="w-[8%] flex justify-start">
+                                            <div className="w-[15%] flex justify-start">
                                               <div
                                                 className={`w-10 h-10 rounded-full flex items-center justify-center ${coinData.type === "bullish"
                                                   ? "bg-green-100 text-green-700"
@@ -1751,7 +1727,7 @@ export default function InfluencerSearchPage() {
 
 
                                             {/* Base Price */}
-                                            <div className="w-[10%] flex justify-start">
+                                            <div className="w-[15%] flex justify-start">
                                               <span className="text-[8px] font-semibold text-gray-900">
                                                 {(() => {
                                                   const value = parseFloat(coinData.basePrice?.replace(/[^0-9.-]/g, ''));
@@ -1765,7 +1741,7 @@ export default function InfluencerSearchPage() {
                                             </div>
 
                                             {/* Current Price */}
-                                            <div className="w-[10%] flex justify-start">
+                                            <div className="w-[15%] flex justify-start">
                                               <span className="text-[8px] font-semibold text-blue-500">
                                                 {(() => {
                                                   const livePrice = getLivePrice(coinData.coin);
@@ -1780,7 +1756,7 @@ export default function InfluencerSearchPage() {
                                             </div>
 
                                             {/* Price Change % */}
-                                            <div className="w-[10%] flex justify-start">
+                                            <div className="w-[15%] flex justify-start">
                                               {(() => {
                                                 const basePrice = coinData.basePrice && coinData.basePrice !== 'N/A'
                                                   ? parseFloat(coinData.basePrice.replace('$', '').replace(',', ''))
@@ -1814,7 +1790,7 @@ export default function InfluencerSearchPage() {
                                             </div>
 
                                             {/* Price Change (24hrs) - LIVE WebSocket data (EXACT same pattern as /coins) */}
-                                            <div className="w-[10%] flex flex-col justify-start">
+                                            <div className="w-[15%] flex flex-col justify-start">
                                               {(() => {
                                                 // Get live price change percentage from WebSocket
                                                 const priceChangePercent = getLivePriceChange(coinData.coin);
@@ -1856,12 +1832,13 @@ export default function InfluencerSearchPage() {
                                             {/* Summary/Title Column - only show for first coin with merged cell effect */}
                                             {isFirstCoin ? (
                                               <div
-                                                className="w-[36%] flex items-center justify-center border-l border-gray-200 px-2"
+                                                className="w-[20%] flex items-center justify-center border-l border-gray-200 px-2"
                                                 style={{
                                                   position: 'absolute',
                                                   right: 0,
                                                   top: 0,
-                                                  height: `${visibleCoins.length * 100}%`,
+                                                  height: isSummaryExpanded ? 'auto' : `${rec.coins.length * 100}%`,
+                                                  minHeight: isSummaryExpanded ? 'auto' : `${rec.coins.length * 100}%`,
                                                   zIndex: 1,
                                                   backgroundColor: 'white',
                                                   overflow: isSummaryExpanded ? 'visible' : 'hidden'
@@ -1921,59 +1898,10 @@ export default function InfluencerSearchPage() {
                                               </div>
                                             ) : null}
                                             {/* Spacer for summary column */}
-                                            <div className="w-[36%]" />
+                                            <div className="w-[20%]" />
                                           </div>
                                         );
                                       });
-
-                                      // Add Show More/Less button if there are more than 3 coins
-                                      if (totalCoins > 3) {
-                                        const remainingCoins = totalCoins - visibleCoinsCount;
-                                        const showMoreButton = (
-                                          <div key={`show-more-${idx}`} className="flex items-center justify-start gap-1 px-0.5 py-2 border-b border-gray-100 w-full">
-                                            <div className="w-[10%]"></div>
-                                            <div className="w-[6%] flex justify-center">
-                                              <button
-                                                onClick={() => {
-                                                  setExpandedPosts(prev => {
-                                                    if (showingAllCoins) {
-                                                      // Collapse back to 3
-                                                      return { ...prev, [postKey]: 3 };
-                                                    } else {
-                                                      // Expand by 3 more (or show all if less than 3 remaining)
-                                                      const newCount = Math.min(visibleCoinsCount + 3, totalCoins);
-                                                      return { ...prev, [postKey]: newCount };
-                                                    }
-                                                  });
-                                                }}
-                                                className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-colors shadow-md"
-                                                title={showingAllCoins ? "Show less" : `Show more (${remainingCoins} remaining)`}
-                                              >
-                                                <span className="text-[12px] font-bold">
-                                                  {showingAllCoins ? "−" : "+"}
-                                                </span>
-                                              </button>
-                                            </div>
-                                            <div className="w-[8%]"></div>
-                                            <div className="w-[10%]"></div>
-                                            <div className="w-[10%]"></div>
-                                            <div className="w-[10%]"></div>
-                                            <div className="w-[10%]"></div>
-                                            <div className="w-[36%]"></div>
-                                          </div>
-                                        );
-                                        return (
-                                          <div key={`group-wrapper-${idx}`} style={{ position: 'relative', minHeight: hasExpandedSummary ? 'auto' : 'initial' }}>
-                                            {[...coinRows, showMoreButton]}
-                                          </div>
-                                        );
-                                      }
-
-                                      return (
-                                        <div key={`group-wrapper-${idx}`} style={{ position: 'relative', minHeight: hasExpandedSummary ? 'auto' : 'initial' }}>
-                                          {coinRows}
-                                        </div>
-                                      );
                                     }
 
                                     // Handle individual coin posts (Latest Posts mode)
@@ -1985,8 +1913,8 @@ export default function InfluencerSearchPage() {
                                     const showReadMore = contentText.length > contentLimit;
 
                                     return (
-                                      <div key={idx} className={`flex justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full ${isSummaryExpanded ? 'items-start' : 'items-center'}`} style={{ minHeight: isSummaryExpanded ? '150px' : 'initial', position: 'relative' }}>
-                                        <div className="flex flex-col items-start gap-1 w-[10%] px-1">
+                                      <div key={idx} className={`flex justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full ${isSummaryExpanded ? 'items-start' : 'items-center'}`} style={{ minHeight: isSummaryExpanded ? 'auto' : 'initial' }}>
+                                        <div className="flex flex-col items-start gap-1 w-[15%] px-1">
                                           {rec.date && rec.time ? (
                                             <>
                                               <span className="text-[8px] font-semibold text-black-900">
@@ -1998,7 +1926,7 @@ export default function InfluencerSearchPage() {
                                           )}
                                         </div>
                                         {/* Coin Icon and Name */}
-                                        <div className="flex items-center justify-start gap-0.5 w-[6%]">
+                                        <div className="flex items-center justify-start gap-0.5 w-[10%]">
                                           <div className="flex items-center justify-center w-3">
                                             {rec.icon}
                                           </div>
@@ -2008,7 +1936,7 @@ export default function InfluencerSearchPage() {
                                         </div>
 
                                         {/* Sentiment with Term - Circular Badge */}
-                                        <div className="w-[8%] flex justify-start">
+                                        <div className="w-[15%] flex justify-start">
                                           <div
                                             className={`w-10 h-10 rounded-full flex items-center justify-center ${rec.type === "bullish"
                                               ? "bg-green-100 text-green-700"
@@ -2033,7 +1961,7 @@ export default function InfluencerSearchPage() {
 
 
                                         {/* PRICE AT POST DATE (formerly Base Price) */}
-                                        <div className="w-[10%] flex justify-start">
+                                        <div className="w-[15%] flex justify-start">
                                           <span className="text-[8px] font-semibold text-gray-900">
                                             {(() => {
                                               const value = parseFloat(rec.basePrice?.replace(/[^0-9.-]/g, ''));
@@ -2051,7 +1979,7 @@ export default function InfluencerSearchPage() {
                                         </div>
 
                                         {/* CURRENT PRICE */}
-                                        <div className="w-[10%] flex justify-start">
+                                        <div className="w-[15%] flex justify-start">
                                           <span className="text-[8px] font-semibold text-blue-500">
                                             {(() => {
                                               const livePrice = getLivePrice(rec.coin);
@@ -2068,7 +1996,7 @@ export default function InfluencerSearchPage() {
                                         </div>
 
                                         {/* Change Price (PRICE AT POST DATE - CURRENT PRICE) */}
-                                        <div className="w-[10%] flex justify-start">
+                                        <div className="w-[15%] flex justify-start">
                                           {(() => {
                                             // Parse base price and current price
                                             const basePrice = rec.basePrice && rec.basePrice !== 'N/A'
@@ -2118,7 +2046,7 @@ export default function InfluencerSearchPage() {
                                         </div>
 
                                         {/* Price Change (24hrs) - LIVE WebSocket data (EXACT same pattern as /coins) */}
-                                        <div className="w-[10%] flex flex-col justify-start">
+                                        <div className="w-[15%] flex flex-col justify-start">
                                           {(() => {
                                             // Get live price change percentage from WebSocket
                                             const priceChangePercent = getLivePriceChange(rec.coin);
@@ -2158,7 +2086,7 @@ export default function InfluencerSearchPage() {
                                         </div>
 
                                         {/* Summary/Title Column - separate */}
-                                        <div className={`w-[36%] flex justify-start break-words ${isSummaryExpanded ? 'overflow-visible' : 'overflow-hidden'}`}>
+                                        <div className={`w-[20%] flex justify-start break-words ${isSummaryExpanded ? 'overflow-visible' : 'overflow-hidden'}`}>
                                           {contentText ? (
                                             <span className="text-[8px] text-gray-600 break-words">
                                               <a
@@ -2237,8 +2165,8 @@ export default function InfluencerSearchPage() {
 
                                   return (
                                     <div className="flex items-center justify-center gap-1 px-0.5 py-2 border-t border-gray-200 w-full">
-                                      <div className="w-[16%]"></div>
-                                      <div className="w-[6%] flex justify-left">
+                                      <div className="w-[25%]"></div>
+                                      <div className="w-[10%] flex justify-left">
                                         <button
                                           onClick={handleToggle}
                                           className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-colors shadow-md"
@@ -2249,12 +2177,11 @@ export default function InfluencerSearchPage() {
                                           </span>
                                         </button>
                                       </div>
-                                      <div className="w-[8%]"></div>
-                                      <div className="w-[10%]"></div>
-                                      <div className="w-[10%]"></div>
-                                      <div className="w-[10%]"></div>
-                                      <div className="w-[10%]"></div>
-                                      <div className="w-[30%]"></div>
+                                      <div className="w-[15%]"></div>
+                                      <div className="w-[15%]"></div>
+                                      <div className="w-[15%]"></div>
+                                      <div className="w-[15%]"></div>
+                                      <div className="w-[15%]"></div>
                                     </div>
                                   );
                                 })()}

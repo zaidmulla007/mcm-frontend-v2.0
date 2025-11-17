@@ -221,10 +221,10 @@ export default function CoinsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[5%]">
+                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       Coins
                     </th>
-                    <th className="pl-2 pr-0.5 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[5%]">
+                    <th rowSpan="2" className="pl-2 pr-0.5 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       <div className="flex flex-col items-start gap-0.5">
                         <span>Sentiment</span>
                         <div className="flex items-center justify-start gap-1">
@@ -238,12 +238,11 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[7%]">
+                    <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       <div className="flex flex-col items-center">
                         <span>Current Price</span>
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] font-normal">(Binance)</span>
-                          {/* Info Icon + Tooltip */}
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
@@ -253,12 +252,11 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%]">
+                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       <div className="flex flex-col items-center">
                         <span>Price Change</span>
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] font-normal">(24hrs Binance)</span>
-                          {/* Info Icon + Tooltip */}
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
@@ -268,15 +266,35 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[66%]">
-                      AI Summary
+                    <th colSpan="6" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[60%]">
+                      Summary Analysis
+                    </th>
+                  </tr>
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="px-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[10%]">
+                      price targets
+                    </th>
+                    <th className="px-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[10%]">
+                      Overall sentiments
+                    </th>
+                    <th className="px-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[10%]">
+                      outlook (ST/LT)
+                    </th>
+                    <th className="px-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[10%]">
+                      key Reasons 
+                    </th>
+                    <th className="px-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[10%]">
+                      Disagreements
+                    </th>
+                    <th className="px-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[10%]">
+                      Risk Factors
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan="5" className="px-6 py-12 text-center">
+                      <td colSpan="10" className="px-6 py-12 text-center">
                         <div className="flex justify-center items-center">
                           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                         </div>
@@ -284,13 +302,13 @@ export default function CoinsPage() {
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan="5" className="px-6 py-12 text-center text-red-600">
+                      <td colSpan="10" className="px-6 py-12 text-center text-red-600">
                         {error}
                       </td>
                     </tr>
                   ) : top10Coins.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan="10" className="px-6 py-12 text-center text-gray-500">
                         No coins data available for this timeframe
                       </td>
                     </tr>
@@ -313,25 +331,35 @@ export default function CoinsPage() {
                         Math.abs(totalBullish - totalBearish) > 5 ? 'Strong' : 'Mild';
                       const sentimentDirection = isBullish ? 'Bullish' : 'Bearish';
 
-                      const aiSummary = `Based on the provided data, here is a summary of ${coin.coin_name} trading insights over a 6-hour timeframe:
+                      const safePriceChangePercent = parseFloat(priceChangePercent);
 
-*1. Overall Sentiment Consensus:*
-The overall sentiment leans *${sentimentStrength} ${sentimentDirection}* ${coin.yt_tg_bullish_short_term > coin.yt_tg_bearish_short_term ? 'in the short term' : 'with short-term caution'}, ${coin.yt_tg_bullish_long_term > coin.yt_tg_bearish_long_term ? 'with a positive long-term outlook' : 'with mixed long-term views'}.
-
-*2. Key Reasons for Views:*
-Influencers are ${isBullish ? 'optimistic about price appreciation and emphasize accumulation opportunities' : 'cautious, citing potential corrections and advising careful position management'}. ${coin.total_mentions > 20 ? 'High community engagement suggests strong interest' : coin.total_mentions > 10 ? 'Moderate community engagement indicates steady interest' : 'Limited community engagement reflects lower current attention'}.
-
-*3. Common Price Targets & Holding Periods:*
-${priceChangePercent && priceChangePercent !== 0 ? `Current price movement shows a ${priceChangePercent > 0 ? 'positive' : 'negative'} change of ${Math.abs(priceChangePercent).toFixed(2)}% over 24 hours.` : 'Price movement data is currently unavailable.'} ${coin.yt_tg_bullish_long_term > 0 ? 'Long-term holding strategies are recommended by several influencers.' : ''}
-
-*4. Short-term vs. Long-term Outlook:*
-Short-term: ${coin.yt_tg_bullish_short_term > coin.yt_tg_bearish_short_term ? `${coin.yt_tg_bullish_short_term} bullish calls suggest near-term upside potential` : `${coin.yt_tg_bearish_short_term} bearish calls indicate caution for near-term trading`}. Long-term: ${coin.yt_tg_bullish_long_term > coin.yt_tg_bearish_long_term ? `${coin.yt_tg_bullish_long_term} bullish recommendations favor accumulation strategies` : 'Mixed outlook with divided opinions on long-term holding'}.
-
-*5. Notable Disagreements:*
-${totalBullish > 0 && totalBearish > 0 ? `Significant divergence exists with ${totalBullish} bullish calls versus ${totalBearish} bearish calls, reflecting differing time horizons and risk appetites among influencers.` : 'Relatively unified sentiment among tracked influencers.'}
-
-*6. Risk Factors:*
-Key risks include ${priceChangePercent && priceChangePercent < -5 ? 'recent sharp decline indicating potential further downside' : priceChangePercent && priceChangePercent > 5 ? 'rapid appreciation raising concerns about potential corrections' : 'market volatility and changing sentiment dynamics'}. Monitoring key support and resistance levels remains critical for both short and long-term positions.`;
+                      // Create an array of objects for the AI summary sections
+                      const aiSummarySections = [
+                        {
+                          title: "Overall Sentiment Consensus",
+                          content: `Based on the provided data, the overall sentiment for ${coin.coin_name} leans *${sentimentStrength} ${sentimentDirection}* ${coin.yt_tg_bullish_short_term > coin.yt_tg_bearish_short_term ? 'in the short term' : 'with short-term caution'}, ${coin.yt_tg_bullish_long_term > coin.yt_tg_bearish_long_term ? 'with a positive long-term outlook' : 'with mixed long-term views'}.`
+                        },
+                        {
+                          title: "Key Reasons for Views",
+                          content: `Influencers are ${isBullish ? 'optimistic about price appreciation and emphasize accumulation opportunities' : 'cautious, citing potential corrections and advising careful position management'}. ${coin.total_mentions > 20 ? 'High community engagement suggests strong interest' : coin.total_mentions > 10 ? 'Moderate community engagement indicates steady interest' : 'Limited community engagement reflects lower current attention'}.`
+                        },
+                        {
+                          title: "Common Price Targets & Holding Periods",
+                          content: `${!isNaN(safePriceChangePercent) && safePriceChangePercent !== 0 ? `Current price movement shows a ${safePriceChangePercent > 0 ? 'positive' : 'negative'} change of ${Math.abs(safePriceChangePercent).toFixed(2)}% over 24 hours.` : 'Price movement data is currently unavailable.'} ${coin.yt_tg_bullish_long_term > 0 ? 'Long-term holding strategies are recommended by several influencers.' : ''}`
+                        },
+                        {
+                          title: "Short-term vs. Long-term Outlook",
+                          content: `Short-term: ${coin.yt_tg_bullish_short_term > coin.yt_tg_bearish_short_term ? `${coin.yt_tg_bullish_short_term} bullish calls suggest near-term upside potential` : `${coin.yt_tg_bearish_short_term} bearish calls indicate caution for near-term trading`}. Long-term: ${coin.yt_tg_bullish_long_term > coin.yt_tg_bearish_long_term ? `${coin.yt_tg_bullish_long_term} bullish recommendations favor accumulation strategies` : 'Mixed outlook with divided opinions on long-term holding'}.`
+                        },
+                        {
+                          title: "Notable Disagreements",
+                          content: `${totalBullish > 0 && totalBearish > 0 ? `Significant divergence exists with ${totalBullish} bullish calls versus ${totalBearish} bearish calls, reflecting differing time horizons and risk appetites among influencers.` : 'Relatively unified sentiment among tracked influencers.'}`
+                        },
+                        {
+                          title: "Risk Factors",
+                          content: `Key risks include ${!isNaN(safePriceChangePercent) && safePriceChangePercent < -5 ? 'recent sharp decline indicating potential further downside' : !isNaN(safePriceChangePercent) && safePriceChangePercent > 5 ? 'rapid appreciation raising concerns about potential corrections' : 'market volatility and changing sentiment dynamics'}. Monitoring key support and resistance levels remains critical for both short and long-term positions.`
+                        }
+                      ];
 
                       return (
                         <tr key={`${coin.symbol}-${index}`} className="hover:bg-gray-50">
@@ -374,20 +402,6 @@ Key risks include ${priceChangePercent && priceChangePercent < -5 ? 'recent shar
                                   </span>
                                 </div>
                               )}
-                              {/* LT Bullish */}
-                              {coin.yt_tg_bullish_long_term > 0 && (
-                                <div className="flex items-center gap-1">
-                                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-green-100 text-green-700">
-                                    <div className="flex items-center gap-0.5">
-                                      <FaArrowUp className="text-[6px]" />
-                                      <span className="text-[6px] font-semibold">LT</span>
-                                    </div>
-                                  </div>
-                                  <span className="text-[10px] text-black-600 min-w-[45px]">
-                                    {coin.yt_tg_bullish_long_term} {coin.yt_tg_bullish_long_term === 1 ? "post" : "posts"}
-                                  </span>
-                                </div>
-                              )}
                               {/* ST Bearish */}
                               {coin.yt_tg_bearish_short_term > 0 && (
                                 <div className="flex items-center gap-1">
@@ -399,6 +413,20 @@ Key risks include ${priceChangePercent && priceChangePercent < -5 ? 'recent shar
                                   </div>
                                   <span className="text-[10px] text-black-600 min-w-[45px]">
                                     {coin.yt_tg_bearish_short_term} {coin.yt_tg_bearish_short_term === 1 ? "post" : "posts"}
+                                  </span>
+                                </div>
+                              )}
+                              {/* LT Bullish */}
+                              {coin.yt_tg_bullish_long_term > 0 && (
+                                <div className="flex items-center gap-1">
+                                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-green-100 text-green-700">
+                                    <div className="flex items-center gap-0.5">
+                                      <FaArrowUp className="text-[6px]" />
+                                      <span className="text-[6px] font-semibold">LT</span>
+                                    </div>
+                                  </div>
+                                  <span className="text-[10px] text-black-600 min-w-[45px]">
+                                    {coin.yt_tg_bullish_long_term} {coin.yt_tg_bullish_long_term === 1 ? "post" : "posts"}
                                   </span>
                                 </div>
                               )}
@@ -469,10 +497,35 @@ Key risks include ${priceChangePercent && priceChangePercent < -5 ? 'recent shar
                             )}
                           </td>
 
-                          {/* AI Summary */}
-                          <td className="px-4 py-3 text-left">
-                            <p className="text-xs text-gray-700 leading-relaxed">
-                              {aiSummary}
+                          {/* AI Summary Columns - Split into 6 separate columns */}
+                          <td className="px-2 py-3 text-left align-top">
+                            <p className="text-[11px] text-gray-700">
+                              {aiSummarySections[0].content}
+                            </p>
+                          </td>
+                          <td className="px-2 py-3 text-left align-top">
+                            <p className="text-[11px] text-gray-700">
+                              {aiSummarySections[1].content}
+                            </p>
+                          </td>
+                          <td className="px-2 py-3 text-left align-top">
+                            <p className="text-[11px] text-gray-700">
+                              {aiSummarySections[2].content}
+                            </p>
+                          </td>
+                          <td className="px-2 py-3 text-left align-top">
+                            <p className="text-[11px] text-gray-700">
+                              {aiSummarySections[3].content}
+                            </p>
+                          </td>
+                          <td className="px-2 py-3 text-left align-top">
+                            <p className="text-[11px] text-gray-700">
+                              {aiSummarySections[4].content}
+                            </p>
+                          </td>
+                          <td className="px-2 py-3 text-left align-top">
+                            <p className="text-[11px] text-gray-700">
+                              {aiSummarySections[5].content}
                             </p>
                           </td>
                         </tr>
