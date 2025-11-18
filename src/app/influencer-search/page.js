@@ -228,7 +228,7 @@ export default function InfluencerSearchPage() {
   const [binanceVolumeData, setBinanceVolumeData] = useState({});
 
   // Use live price hook
-  const { top10Data, isConnected } = useTop10LivePrice();
+  const { top10Data, isConnected, bidAskData } = useTop10LivePrice();
 
   // Create a live prices map that updates when top10Data changes
   const livePricesMap = useMemo(() => {
@@ -267,6 +267,14 @@ export default function InfluencerSearchPage() {
     return priceChange || null;
   }, [livePriceChangesMap]);
 
+  // Helper function to get live bid/ask data from WebSocket
+  const getLiveBidAsk = useCallback((symbol) => {
+    if (!symbol) return null;
+    const upperSymbol = symbol.toUpperCase();
+    const symbolWithUSDT = `${upperSymbol}USDT`;
+    return bidAskData[symbolWithUSDT] || null;
+  }, [bidAskData]);
+
   // Use timezone context
   const { useLocalTime, userTimezone, toggleTimezone, setUseLocalTime } = useTimezone();
 
@@ -299,7 +307,7 @@ export default function InfluencerSearchPage() {
         // Only update state if component is still mounted
         if (!isMounted) return;
 
-        // Create a map of symbol to volume, priceChange, and priceChangePercent (only USDT pairs)
+        // Create a map of symbol to volume, priceChange, priceChangePercent, bidPrice, askPrice, bidQty, and askQty (only USDT pairs)
         const volumeMap = {};
         data.forEach(ticker => {
           // Only process USDT trading pairs
@@ -309,7 +317,11 @@ export default function InfluencerSearchPage() {
             volumeMap[symbol] = {
               volume: ticker.volume,
               priceChange: ticker.priceChange,
-              priceChangePercent: ticker.priceChangePercent
+              priceChangePercent: ticker.priceChangePercent,
+              bidPrice: ticker.bidPrice,
+              askPrice: ticker.askPrice,
+              bidQty: ticker.bidQty,
+              askQty: ticker.askQty
             };
           }
         });
@@ -322,7 +334,7 @@ export default function InfluencerSearchPage() {
     };
 
     fetchBinanceVolume();
-    // Refresh volume data every 5 minutes
+    // Refresh Binance data every 5 minutes (only for volume data, bid/ask comes from WebSocket)
     const interval = setInterval(fetchBinanceVolume, 5 * 60 * 1000);
 
     return () => {
@@ -1152,7 +1164,7 @@ export default function InfluencerSearchPage() {
                   onClick={() => router.push("/posts")}
                   className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-200 text-gray-700 hover:bg-gray-300"
                 >
-                  Publish
+                  Publish Posts
                 </button>
               </div>
 
@@ -1318,8 +1330,19 @@ export default function InfluencerSearchPage() {
                           </div>
                         </div>
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
+                          <span>
+                            Publish Date<br />% Change
+                          </span>
+                          <span className="relative group cursor-pointer z-[9999] ml-1">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                              N/A : Not Available
+                            </span>
+                          </span>
+                        </div>
+                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
-                            <span>Price Movement</span>
+                            <span>Movement</span>
 
                             <div className="flex items-center gap-1">
                               <span className="text-[8px] font-normal text-black-600">(Binance)</span>
@@ -1336,24 +1359,14 @@ export default function InfluencerSearchPage() {
                           </div>
                         </div>
 
-                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
-                          <span>
-                            Publish Date<br />% Change
-                          </span>
-                          <span className="relative group cursor-pointer z-[9999] ml-1">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                              N/A : Not Available
-                            </span>
-                          </span>
-                        </div>
+
 
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
-                            <span>Price Change</span>
+                            <span>Movement</span>
 
                             <div className="flex items-center gap-1">
-                              <span className="text-[8px] font-normal text-black-600">(24hrs Binance)</span>
+                              <span className="text-[8px] font-normal text-black-600">(Binance)</span>
 
                               {/* Info Icon + Tooltip */}
                               <span className="relative group cursor-pointer z-[9999]">
@@ -1770,6 +1783,41 @@ export default function InfluencerSearchPage() {
                                               </span>
                                             </div>
 
+                                            {/* Price Change % */}
+                                            <div className="w-[10%] flex justify-start">
+                                              {(() => {
+                                                const basePrice = coinData.basePrice && coinData.basePrice !== 'N/A'
+                                                  ? parseFloat(coinData.basePrice.replace('$', '').replace(',', ''))
+                                                  : null;
+                                                const livePriceStr = getLivePrice(coinData.coin);
+                                                const currentPrice = livePriceStr && livePriceStr !== 'N/A'
+                                                  ? parseFloat(livePriceStr.replace('$', '').replace(',', ''))
+                                                  : null;
+
+                                                if (basePrice !== null && currentPrice !== null) {
+                                                  let changePrice = currentPrice - basePrice;
+                                                  if (coinData.type?.toLowerCase().includes("bearish")) {
+                                                    changePrice *= -1;
+                                                  }
+                                                  const percentageChange = (changePrice / currentPrice) * 100;
+                                                  const isPositive = changePrice > 0;
+                                                  const isNegative = changePrice < 0;
+
+                                                  return (
+                                                    <span className={`text-[8px] font-semibold ${isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900'}`}>
+                                                      {isPositive ? '+' : ''}
+                                                      {percentageChange.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                      })}%
+                                                    </span>
+                                                  );
+                                                }
+                                                return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
+                                              })()}
+                                            </div>
+
+
 
                                             {/* Current Price + Price Change (24hrs) - Combined Column */}
                                             <div className="w-[10%] flex flex-col justify-start">
@@ -1832,79 +1880,54 @@ export default function InfluencerSearchPage() {
                                             </div>
 
 
-                                            {/* Price Change % */}
-                                            <div className="w-[10%] flex justify-start">
-                                              {(() => {
-                                                const basePrice = coinData.basePrice && coinData.basePrice !== 'N/A'
-                                                  ? parseFloat(coinData.basePrice.replace('$', '').replace(',', ''))
-                                                  : null;
-                                                const livePriceStr = getLivePrice(coinData.coin);
-                                                const currentPrice = livePriceStr && livePriceStr !== 'N/A'
-                                                  ? parseFloat(livePriceStr.replace('$', '').replace(',', ''))
-                                                  : null;
 
-                                                if (basePrice !== null && currentPrice !== null) {
-                                                  let changePrice = currentPrice - basePrice;
-                                                  if (coinData.type?.toLowerCase().includes("bearish")) {
-                                                    changePrice *= -1;
-                                                  }
-                                                  const percentageChange = (changePrice / currentPrice) * 100;
-                                                  const isPositive = changePrice > 0;
-                                                  const isNegative = changePrice < 0;
-
-                                                  return (
-                                                    <span className={`text-[8px] font-semibold ${isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900'}`}>
-                                                      {isPositive ? '+' : ''}
-                                                      {percentageChange.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                      })}%
-                                                    </span>
-                                                  );
-                                                }
-                                                return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
-                                              })()}
-                                            </div>
-
-                                            {/* Price Change (24hrs) - LIVE WebSocket data (EXACT same pattern as /coins) */}
+                                            {/* Bid/Ask Price + Qty - From Binance WebSocket */}
                                             <div className="w-[10%] flex flex-col justify-start">
                                               {(() => {
-                                                // Get live price change percentage from WebSocket
-                                                const priceChangePercent = getLivePriceChange(coinData.coin);
+                                                const liveBidAsk = getLiveBidAsk(coinData.coin);
 
-                                                // Get current price to calculate absolute change
-                                                const currentPriceStr = coinData.currentPrice;
-                                                const currentPrice = currentPriceStr && currentPriceStr !== 'N/A'
-                                                  ? parseFloat(currentPriceStr.replace('$', ''))
-                                                  : null;
-
-                                                // Calculate absolute price change from percentage (EXACT same pattern as /coins)
-                                                const priceChange = (priceChangePercent !== null && currentPrice !== null)
-                                                  ? (currentPrice * priceChangePercent / 100)
-                                                  : null;
-
-                                                if (priceChange !== null && priceChangePercent !== null) {
-                                                  const isPositive = priceChange > 0;
-                                                  const isNegative = priceChange < 0;
-                                                  const colorClass = isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900';
-
+                                                if (liveBidAsk?.bidPrice && liveBidAsk?.askPrice && liveBidAsk?.bidQty && liveBidAsk?.askQty) {
                                                   return (
                                                     <>
-                                                      <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                        {isPositive ? '+' : ''}{priceChange.toLocaleString('en-US', {
+                                                      {/* Ask Price */}
+                                                      <span className="text-[8px] font-semibold text-gray-900">
+                                                        {liveBidAsk.askPrice.toLocaleString("en-US", {
                                                           minimumFractionDigits: 2,
                                                           maximumFractionDigits: 2
                                                         })}
                                                       </span>
-                                                      <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                        ({isPositive ? '+' : ''}{priceChangePercent.toFixed(2)}%)
+
+                                                      {/* Ask Quantity */}
+                                                      <span className="text-[8px] font-semibold text-gray-900">
+                                                        {liveBidAsk.askQty.toLocaleString("en-US", {
+                                                          minimumFractionDigits: 3,
+                                                          maximumFractionDigits: 3
+                                                        })}
+                                                      </span>
+
+                                                      {/* Bid Price */}
+                                                      <span className="text-[8px] font-semibold text-gray-900">
+                                                        {liveBidAsk.bidPrice.toLocaleString("en-US", {
+                                                          minimumFractionDigits: 2,
+                                                          maximumFractionDigits: 2
+                                                        })}
+                                                      </span>
+
+                                                      {/* Bid Quantity */}
+                                                      <span className="text-[8px] font-semibold text-gray-900">
+                                                        {liveBidAsk.bidQty.toLocaleString("en-US", {
+                                                          minimumFractionDigits: 3,
+                                                          maximumFractionDigits: 3
+                                                        })}
                                                       </span>
                                                     </>
                                                   );
                                                 }
+
                                                 return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
                                               })()}
                                             </div>
+
 
                                             {/* Summary/Title Column - only show for first coin with merged cell effect */}
                                             {isFirstCoin ? (
@@ -2159,38 +2182,32 @@ export default function InfluencerSearchPage() {
                                           })()}
                                         </div>
 
-                                        {/* Price Change (24hrs) - LIVE WebSocket data (EXACT same pattern as /coins) */}
+                                        {/* Bid/Ask Price + Qty - From Binance WebSocket */}
                                         <div className="w-[10%] flex flex-col justify-start">
                                           {(() => {
-                                            // Get live price change percentage from WebSocket
-                                            const priceChangePercent = getLivePriceChange(rec.coin);
+                                            // Get live bid/ask data from WebSocket
+                                            const liveBidAsk = getLiveBidAsk(rec.coin);
 
-                                            // Get current price to calculate absolute change
-                                            const currentPriceStr = rec.currentPrice;
-                                            const currentPrice = currentPriceStr && currentPriceStr !== 'N/A'
-                                              ? parseFloat(currentPriceStr.replace('$', ''))
-                                              : null;
-
-                                            // Calculate absolute price change from percentage (EXACT same pattern as /coins)
-                                            const priceChange = (priceChangePercent !== null && currentPrice !== null)
-                                              ? (currentPrice * priceChangePercent / 100)
-                                              : null;
-
-                                            if (priceChange !== null && priceChangePercent !== null) {
-                                              const isPositive = priceChange > 0;
-                                              const isNegative = priceChange < 0;
-                                              const colorClass = isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900';
-
+                                            if (liveBidAsk?.bidPrice && liveBidAsk?.askPrice && liveBidAsk?.bidQty && liveBidAsk?.askQty) {
                                               return (
                                                 <>
-                                                  <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                    {isPositive ? '+' : ''}{priceChange.toLocaleString('en-US', {
+                                                  <span className="text-[8px] font-semibold text-gray-900">
+                                                    {liveBidAsk.bidPrice.toLocaleString('en-US', {
                                                       minimumFractionDigits: 2,
                                                       maximumFractionDigits: 2
-                                                    })}
+                                                    })} ({liveBidAsk.bidQty.toLocaleString('en-US', {
+                                                      minimumFractionDigits: 2,
+                                                      maximumFractionDigits: 2
+                                                    })})
                                                   </span>
-                                                  <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                    ({isPositive ? '+' : ''}{priceChangePercent.toFixed(2)}%)
+                                                  <span className="text-[8px] font-semibold text-gray-900">
+                                                    {liveBidAsk.askPrice.toLocaleString('en-US', {
+                                                      minimumFractionDigits: 2,
+                                                      maximumFractionDigits: 2
+                                                    })} ({liveBidAsk.askQty.toLocaleString('en-US', {
+                                                      minimumFractionDigits: 2,
+                                                      maximumFractionDigits: 2
+                                                    })})
                                                   </span>
                                                 </>
                                               );

@@ -157,7 +157,7 @@ export default function PostsPage() {
                 <button
                   className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md"
                 >
-                  Posts
+                  Publish Posts
                 </button>
               </div>
             </div>

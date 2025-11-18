@@ -5,6 +5,7 @@ export const useCoinsLivePrice = (coinSymbols = []) => {
   const [prices, setPrices] = useState({});
   const [priceChanges, setPriceChanges] = useState({});
   const [volumes, setVolumes] = useState({});
+  const [bidAskData, setBidAskData] = useState({});
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef(null);
 
@@ -44,6 +45,16 @@ export const useCoinsLivePrice = (coinSymbols = []) => {
             ...prev,
             [symbol]: parseFloat(msg.data.v),
           }));
+          // Capture bid/ask prices and quantities
+          setBidAskData((prev) => ({
+            ...prev,
+            [symbol]: {
+              bidPrice: msg.data.b ? parseFloat(msg.data.b) : null,
+              bidQty: msg.data.B ? parseFloat(msg.data.B) : null,
+              askPrice: msg.data.a ? parseFloat(msg.data.a) : null,
+              askQty: msg.data.A ? parseFloat(msg.data.A) : null,
+            }
+          }));
         }
       } catch (err) {
         console.error(err);
@@ -61,6 +72,6 @@ export const useCoinsLivePrice = (coinSymbols = []) => {
     volume: volumes[`${symbol}USDT`] || "-",
   }));
 
-  // Return the actual data (EXACT same pattern as useTop10LivePrice)
-  return { coinsLiveData, isConnected };
+  // Return the actual data including bid/ask data (EXACT same pattern as useTop10LivePrice)
+  return { coinsLiveData, isConnected, bidAskData };
 };

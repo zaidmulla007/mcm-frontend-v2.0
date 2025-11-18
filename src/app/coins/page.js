@@ -22,7 +22,7 @@ export default function CoinsPage() {
   const userCity = userTimezone ? userTimezone.split('/').pop().replace(/_/g, ' ') : 'Local Time';
 
   // Use live price hook (EXACT same pattern as influencer-search)
-  const { coinsLiveData, isConnected } = useCoinsLivePrice(coinSymbols);
+  const { coinsLiveData, isConnected, bidAskData } = useCoinsLivePrice(coinSymbols);
 
   // Create a live prices map that updates when coinsLiveData changes (EXACT same pattern as influencer-search)
   const livePricesMap = useMemo(() => {
@@ -100,6 +100,14 @@ export default function CoinsPage() {
     return priceChange || null;
   }, [livePriceChangesMap]);
 
+  // Helper function to get live bid/ask data from WebSocket (EXACT same pattern as influencer-search)
+  const getLiveBidAsk = useCallback((symbol) => {
+    if (!symbol) return null;
+    const upperSymbol = symbol.toUpperCase();
+    const symbolWithUSDT = `${upperSymbol}USDT`;
+    return bidAskData[symbolWithUSDT] || null;
+  }, [bidAskData]);
+
   // Helper function to truncate text to 30 words
   const truncateText = (text, wordLimit = 30) => {
     if (!text) return '';
@@ -166,7 +174,7 @@ export default function CoinsPage() {
                   onClick={() => router.push("/posts")}
                   className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-200 text-gray-700 hover:bg-gray-300"
                 >
-                  Posts
+                  Publish Posts
                 </button>
               </div>
               {/* Last Updated */}
@@ -264,7 +272,7 @@ export default function CoinsPage() {
                     </th>
                     <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       <div className="flex flex-col items-center">
-                        <span>Current Price</span>
+                        <span>Movement</span>
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] font-normal">(Binance)</span>
                           <span className="relative group cursor-pointer z-[9999]">
@@ -276,11 +284,25 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
+                    {/* <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       <div className="flex flex-col items-center">
                         <span>Price Change</span>
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] font-normal">(24hrs Binance)</span>
+                          <span className="relative group cursor-pointer z-[9999]">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                              N/A : Not Available
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </th> */}
+                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[10%] align-middle">
+                      <div className="flex flex-col items-center">
+                        <span>Movement</span>
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] font-normal">(Binance)</span>
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
@@ -433,58 +455,147 @@ export default function CoinsPage() {
                             </div>
                           </td>
 
-                          {/* Current Price */}
-                          <td className="pl-0.5 pr-2 py-3 text-center">
-                            <span className="text-xs font-semibold text-blue-600">
-                              {(() => {
-                                if (currentPrice === 'N/A') return 'N/A';
-                                const value = typeof currentPrice === 'number' ? currentPrice : parseFloat(currentPrice);
-                                if (isNaN(value)) return 'N/A';
-
-                                // Always 2 decimals
-                                return `$${value.toFixed(2)}`;
-                              })()}
-                            </span>
-                          </td>
-
-                          {/* Price Change */}
+                          {/* Price Change - Current Price + Price Change + Percentage */}
                           <td className="px-2 py-3 text-center">
-                            {priceChange !== null && priceChangePercent !== null ? (
+                            {currentPrice !== 'N/A' ? (
                               <div className="flex flex-col items-center gap-0.5">
 
-                                {/* Price Change Value */}
-                                <span
-                                  className={`text-xs font-semibold ${parseFloat(priceChange) > 0
-                                      ? 'text-green-600'
-                                      : parseFloat(priceChange) < 0
-                                        ? 'text-red-600'
-                                        : 'text-gray-900'
-                                    }`}
-                                >
-                                  {parseFloat(priceChange) > 0 ? '+' : ''}
-                                  {parseFloat(priceChange).toLocaleString('en-US', {
-                                    minimumFractionDigits: 2,
-                                    maximumFractionDigits: 2
-                                  })}
+                                {/* Current Price */}
+                                <span className="text-xs font-semibold text-blue-500">
+                                  ${typeof currentPrice === 'number' ? currentPrice.toFixed(2) : currentPrice}
                                 </span>
 
-                                {/* Price Change Percent */}
-                                <span
-                                  className={`text-[10px] font-semibold ${parseFloat(priceChangePercent) > 0
-                                      ? 'text-green-600'
-                                      : parseFloat(priceChangePercent) < 0
-                                        ? 'text-red-600'
-                                        : 'text-gray-900'
-                                    }`}
-                                >
-                                  ({parseFloat(priceChangePercent) > 0 ? '+' : ''}
-                                  {parseFloat(priceChangePercent).toFixed(2)}%)
-                                </span>
+                                {/* Price Change Value */}
+                                {priceChange !== null && priceChangePercent !== null ? (
+                                  <>
+                                    <span
+                                      className={`text-xs font-semibold ${parseFloat(priceChange) > 0
+                                        ? 'text-green-600'
+                                        : parseFloat(priceChange) < 0
+                                          ? 'text-red-600'
+                                          : 'text-gray-900'
+                                        }`}
+                                    >
+                                      {parseFloat(priceChange) > 0 ? '+' : ''}
+                                      {parseFloat(priceChange).toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                      })}
+                                    </span>
+
+                                    {/* Price Change Percent */}
+                                    <span
+                                      className={`text-[10px] font-semibold ${parseFloat(priceChangePercent) > 0
+                                        ? 'text-green-600'
+                                        : parseFloat(priceChangePercent) < 0
+                                          ? 'text-red-600'
+                                          : 'text-gray-900'
+                                        }`}
+                                    >
+                                      ({parseFloat(priceChangePercent) > 0 ? '+' : ''}
+                                      {parseFloat(priceChangePercent).toFixed(2)}%)
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="text-xs text-gray-500">N/A</span>
+                                )}
 
                               </div>
                             ) : (
                               <span className="text-xs text-gray-500">N/A</span>
                             )}
+                          </td>
+
+                          {/* Price Change - Current Price + Price Change + Percentage */}
+                          {/* <td className="px-2 py-3 text-center">
+                            {currentPrice !== 'N/A' ? (
+                              <div className="flex flex-col items-center gap-0.5">
+                                <span className="text-xs font-semibold text-blue-500">
+                                  ${typeof currentPrice === 'number' ? currentPrice.toFixed(2) : currentPrice}
+                                </span>
+                                {priceChange !== null && priceChangePercent !== null ? (
+                                  <>
+                                    <span
+                                      className={`text-xs font-semibold ${parseFloat(priceChange) > 0
+                                        ? 'text-green-600'
+                                        : parseFloat(priceChange) < 0
+                                          ? 'text-red-600'
+                                          : 'text-gray-900'
+                                        }`}
+                                    >
+                                      {parseFloat(priceChange) > 0 ? '+' : ''}
+                                      {parseFloat(priceChange).toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                      })}
+                                    </span>
+                                    <span
+                                      className={`text-[10px] font-semibold ${parseFloat(priceChangePercent) > 0
+                                        ? 'text-green-600'
+                                        : parseFloat(priceChangePercent) < 0
+                                          ? 'text-red-600'
+                                          : 'text-gray-900'
+                                        }`}
+                                    >
+                                      ({parseFloat(priceChangePercent) > 0 ? '+' : ''}
+                                      {parseFloat(priceChangePercent).toFixed(2)}%)
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="text-xs text-gray-500">N/A</span>
+                                )}
+
+                              </div>
+                            ) : (
+                              <span className="text-xs text-gray-500">N/A</span>
+                            )}
+                          </td> */}
+                          <td className="px-2 py-3 text-center">
+                            {(() => {
+                              const liveBidAsk = getLiveBidAsk(coin.symbol);
+
+                              if (liveBidAsk?.bidPrice && liveBidAsk?.askPrice && liveBidAsk?.bidQty && liveBidAsk?.askQty) {
+                                return (
+                                  <div className="flex flex-col items-center gap-0.5">
+
+                                    {/* Ask Price */}
+                                    <span className="text-xs font-semibold text-gray-900">
+                                      {liveBidAsk.askPrice.toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                      })}
+                                    </span>
+
+                                    {/* Ask Quantity */}
+                                    <span className="text-xs font-semibold text-gray-900">
+                                      {liveBidAsk.askQty.toLocaleString('en-US', {
+                                        minimumFractionDigits: 3,
+                                        maximumFractionDigits: 3
+                                      })}
+                                    </span>
+
+                                    {/* Bid Price */}
+                                    <span className="text-xs font-semibold text-gray-900">
+                                      {liveBidAsk.bidPrice.toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                      })}
+                                    </span>
+
+                                    {/* Bid Quantity */}
+                                    <span className="text-xs font-semibold text-gray-900">
+                                      {liveBidAsk.bidQty.toLocaleString('en-US', {
+                                        minimumFractionDigits: 3,
+                                        maximumFractionDigits: 3
+                                      })}
+                                    </span>
+
+                                  </div>
+                                );
+                              }
+
+                              return <span className="text-xs text-gray-500">N/A</span>;
+                            })()}
                           </td>
 
 
