@@ -1558,7 +1558,7 @@ export default function InfluencerSearchPage() {
                                     {/* Graph container with axes */}
                                     <div className="relative">
                                       {/* Data columns with stars */}
-                                      <div className="flex items-end gap-3 pl-1 h-16 pb-3">
+                                      <div className="flex items-end gap-5 pl-1 h-16 pb-5">
                                         {scatterData.map((point, idx) => {
                                           const fullStars = Math.floor(point.rating);
                                           const hasHalfStar = point.rating % 1 >= 0.5;
@@ -1568,7 +1568,7 @@ export default function InfluencerSearchPage() {
                                           return (
                                             <div
                                               key={idx}
-                                              className="flex flex-col items-center relative min-w-[12px]"
+                                              className="flex flex-col items-center relative min-w-[20px]"
                                               title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
                                             >
                                               {/* Stars displayed vertically (bottom to top) */}
@@ -1584,7 +1584,7 @@ export default function InfluencerSearchPage() {
                                                 ))}
                                               </div>
                                               {/* Year label at bottom (below x-axis) */}
-                                              <span className="text-[8px] text-black-500 font-semibold absolute whitespace-nowrap" style={{ bottom: '-12px' }}>
+                                              <span className="text-[8px] text-black-500 font-semibold absolute whitespace-nowrap text-center" style={{ bottom: '-16px', left: '50%', transform: 'translateX(-50%)' }}>
                                                 {point.yearLabel}
                                               </span>
                                             </div>
@@ -1749,9 +1749,6 @@ export default function InfluencerSearchPage() {
                                                 {(() => {
                                                   const value = parseFloat(coinData.basePrice?.replace(/[^0-9.-]/g, ''));
                                                   if (isNaN(value)) return coinData.basePrice;
-                                                  if (Math.abs(value) >= 1000) {
-                                                    return Math.round(value).toLocaleString('en-US');
-                                                  }
                                                   return value.toFixed(2);
                                                 })()}
                                               </span>
@@ -1764,9 +1761,6 @@ export default function InfluencerSearchPage() {
                                                   const livePrice = getLivePrice(coinData.coin);
                                                   const value = parseFloat(livePrice?.replace(/[^0-9.-]/g, ''));
                                                   if (isNaN(value)) return livePrice;
-                                                  if (Math.abs(value) >= 1000) {
-                                                    return Math.round(value).toLocaleString('en-US');
-                                                  }
                                                   return value.toFixed(2);
                                                 })()}
                                               </span>
@@ -2032,13 +2026,6 @@ export default function InfluencerSearchPage() {
                                             {(() => {
                                               const value = parseFloat(rec.basePrice?.replace(/[^0-9.-]/g, ''));
                                               if (isNaN(value)) return rec.basePrice;
-
-                                              // Large numbers: comma separated, no decimals
-                                              if (Math.abs(value) >= 1000) {
-                                                return Math.round(value).toLocaleString('en-US');
-                                              }
-
-                                              // Small numbers: show with 2 decimals
                                               return value.toFixed(2);
                                             })()}
                                           </span>
@@ -2051,11 +2038,6 @@ export default function InfluencerSearchPage() {
                                               const livePrice = getLivePrice(rec.coin);
                                               const value = parseFloat(livePrice?.replace(/[^0-9.-]/g, ''));
                                               if (isNaN(value)) return livePrice;
-
-                                              if (Math.abs(value) >= 1000) {
-                                                return Math.round(value).toLocaleString('en-US');
-                                              }
-
                                               return value.toFixed(2);
                                             })()}
                                           </span>
