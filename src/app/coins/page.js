@@ -441,14 +441,8 @@ export default function CoinsPage() {
                                 const value = typeof currentPrice === 'number' ? currentPrice : parseFloat(currentPrice);
                                 if (isNaN(value)) return 'N/A';
 
-                                if (Math.abs(value) >= 1000) {
-                                  return `$${Math.round(value).toLocaleString('en-US')}`;
-                                }
-
-                                return `$${value.toLocaleString('en-US', {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 8
-                                })}`;
+                                // Always 2 decimals
+                                return `$${value.toFixed(2)}`;
                               })()}
                             </span>
                           </td>
@@ -457,31 +451,42 @@ export default function CoinsPage() {
                           <td className="px-2 py-3 text-center">
                             {priceChange !== null && priceChangePercent !== null ? (
                               <div className="flex flex-col items-center gap-0.5">
-                                <span className={`text-xs font-semibold ${parseFloat(priceChange) > 0
-                                  ? 'text-green-600'
-                                  : parseFloat(priceChange) < 0
-                                    ? 'text-red-600'
-                                    : 'text-gray-900'
-                                  }`}>
+
+                                {/* Price Change Value */}
+                                <span
+                                  className={`text-xs font-semibold ${parseFloat(priceChange) > 0
+                                      ? 'text-green-600'
+                                      : parseFloat(priceChange) < 0
+                                        ? 'text-red-600'
+                                        : 'text-gray-900'
+                                    }`}
+                                >
                                   {parseFloat(priceChange) > 0 ? '+' : ''}
                                   {parseFloat(priceChange).toLocaleString('en-US', {
                                     minimumFractionDigits: 2,
                                     maximumFractionDigits: 2
                                   })}
                                 </span>
-                                <span className={`text-[10px] font-semibold ${parseFloat(priceChange) > 0
-                                  ? 'text-green-600'
-                                  : parseFloat(priceChange) < 0
-                                    ? 'text-red-600'
-                                    : 'text-gray-900'
-                                  }`}>
-                                  ({parseFloat(priceChange) > 0 ? '+' : ''}{priceChangePercent}%)
+
+                                {/* Price Change Percent */}
+                                <span
+                                  className={`text-[10px] font-semibold ${parseFloat(priceChangePercent) > 0
+                                      ? 'text-green-600'
+                                      : parseFloat(priceChangePercent) < 0
+                                        ? 'text-red-600'
+                                        : 'text-gray-900'
+                                    }`}
+                                >
+                                  ({parseFloat(priceChangePercent) > 0 ? '+' : ''}
+                                  {parseFloat(priceChangePercent).toFixed(2)}%)
                                 </span>
+
                               </div>
                             ) : (
                               <span className="text-xs text-gray-500">N/A</span>
                             )}
                           </td>
+
 
                           {/* Summary Analysis Columns - Using API Response Data */}
                           {/* Price Targets */}

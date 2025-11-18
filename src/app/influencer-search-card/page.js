@@ -1152,7 +1152,7 @@ export default function InfluencerSearchPage() {
                   onClick={() => router.push("/posts")}
                   className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-200 text-gray-700 hover:bg-gray-300"
                 >
-                  Publish
+                  Posts
                 </button>
               </div>
 
@@ -1313,13 +1313,13 @@ export default function InfluencerSearchPage() {
                         </div>
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
-                            <span>Publish Date</span>
+                            <span>Post Date</span>
                             <span>Price</span>
                           </div>
                         </div>
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
-                            <span>Price Movement</span>
+                            <span>Current Price</span>
 
                             <div className="flex items-center gap-1">
                               <span className="text-[8px] font-normal text-black-600">(Binance)</span>
@@ -1338,7 +1338,7 @@ export default function InfluencerSearchPage() {
 
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <span>
-                            Publish Date<br />% Change
+                            Post Date<br />% Change
                           </span>
                           <span className="relative group cursor-pointer z-[9999] ml-1">
                             <span className="text-blue-600 text-sm">ⓘ</span>
@@ -1367,24 +1367,10 @@ export default function InfluencerSearchPage() {
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-center w-[36%] text-black-900 text-center leading-tight">
-                          {/* Row with text + AI badge */}
-                          <div className="flex items-center">
-                            <span className="text-[10px] font-bold mr-1">
-                              Publish Summary
-                            </span>
-                            {/* AI Badge */}
-                            <div className="text-[10px] rounded-2xl font-bold tracking-wide bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-                              Ai
-                            </div>
-                          </div>
-                          {/* Subtitle */}
-                          <span className="text-[8px] font-normal text-left text-black-600 mt-[1px]">
-                            click to view post
-                          </span>
-
+                        <div className="w-[36%] text-[10px] font-bold text-black-900 text-center">
+                          <span>{selectedPlatform === "youtube" ? "Post AI Summary" : "Post AI Summary"}</span><br />
+                          <span className="text-[8px] font-normal text-black-600">click to view post</span>
                         </div>
-
                       </div>
                     </th>
                   </tr>
@@ -1771,64 +1757,22 @@ export default function InfluencerSearchPage() {
                                             </div>
 
 
-                                            {/* Current Price + Price Change (24hrs) - Combined Column */}
-                                            <div className="w-[10%] flex flex-col justify-start">
-                                              {(() => {
-                                                // Get live current price
-                                                const livePrice = getLivePrice(coinData.coin);
-                                                const raw = livePrice?.replace(/[^0-9.-]/g, '');
-                                                const value = parseFloat(raw);
-                                                const formattedPrice = isNaN(value) ? livePrice : `$${value.toLocaleString(undefined, {
-                                                  minimumFractionDigits: 2,
-                                                  maximumFractionDigits: 2
-                                                })}`;
+                                            {/* Current Price */}
+                                            <div className="w-[10%] flex justify-start">
+                                              <span className="text-[8px] font-semibold text-blue-500">
+                                                {(() => {
+                                                  const livePrice = getLivePrice(coinData.coin);
+                                                  const raw = livePrice?.replace(/[^0-9.-]/g, '');
+                                                  const value = parseFloat(raw);
 
-                                                // Get live price change percentage from WebSocket
-                                                const priceChangePercent = getLivePriceChange(coinData.coin);
+                                                  if (isNaN(value)) return livePrice;
 
-                                                // Get current price to calculate absolute change
-                                                const currentPriceStr = coinData.currentPrice;
-                                                const currentPrice = currentPriceStr && currentPriceStr !== 'N/A'
-                                                  ? parseFloat(currentPriceStr.replace('$', ''))
-                                                  : null;
-
-                                                // Calculate absolute price change from percentage
-                                                const priceChange = (priceChangePercent !== null && currentPrice !== null)
-                                                  ? (currentPrice * priceChangePercent / 100)
-                                                  : null;
-
-                                                if (priceChange !== null && priceChangePercent !== null) {
-                                                  const isPositive = priceChange > 0;
-                                                  const isNegative = priceChange < 0;
-                                                  const colorClass = isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900';
-
-                                                  return (
-                                                    <>
-                                                      {/* Current Price */}
-                                                      <span className="text-[8px] font-semibold text-blue-500">
-                                                        {formattedPrice}
-                                                      </span>
-                                                      {/* Price Change (absolute) */}
-                                                      <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                        {isPositive ? '+' : ''}{priceChange.toLocaleString('en-US', {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2
-                                                        })}
-                                                      </span>
-                                                      {/* Price Change (percentage) */}
-                                                      <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                        ({isPositive ? '+' : ''}{priceChangePercent.toFixed(2)}%)
-                                                      </span>
-                                                    </>
-                                                  );
-                                                }
-                                                return (
-                                                  <>
-                                                    <span className="text-[8px] font-semibold text-blue-500">{formattedPrice}</span>
-                                                    <span className="text-[8px] font-semibold text-gray-900">N/A</span>
-                                                  </>
-                                                );
-                                              })()}
+                                                  return `$${value.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2
+                                                  })}`;
+                                                })()}
+                                              </span>
                                             </div>
 
 
