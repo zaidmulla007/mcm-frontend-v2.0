@@ -14,6 +14,7 @@ export default function CoinsPage() {
   const [coinSymbols, setCoinSymbols] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [expandedCells, setExpandedCells] = useState({});
+  const [expandedSummaries, setExpandedSummaries] = useState({});
 
   // Use timezone context for local/UTC time switching
   const { formatDate, useLocalTime, toggleTimezone, userTimezone } = useTimezone();
@@ -22,7 +23,7 @@ export default function CoinsPage() {
   const userCity = userTimezone ? userTimezone.split('/').pop().replace(/_/g, ' ') : 'Local Time';
 
   // Use live price hook (EXACT same pattern as influencer-search)
-  const { coinsLiveData, isConnected, bidAskData } = useCoinsLivePrice(coinSymbols);
+  const { coinsLiveData, isConnected, bidAskData, volumeData } = useCoinsLivePrice(coinSymbols);
 
   // Create a live prices map that updates when coinsLiveData changes (EXACT same pattern as influencer-search)
   const livePricesMap = useMemo(() => {
@@ -108,6 +109,14 @@ export default function CoinsPage() {
     return bidAskData[symbolWithUSDT] || null;
   }, [bidAskData]);
 
+  // Helper function to get live volume data from Binance WebSocket (EXACT same pattern as influencer-search)
+  const getLiveVolume = useCallback((symbol) => {
+    if (!symbol) return null;
+    const upperSymbol = symbol.toUpperCase();
+    const symbolWithUSDT = `${upperSymbol}USDT`;
+    return volumeData[symbolWithUSDT] || null;
+  }, [volumeData]);
+
   // Helper function to truncate text to 30 words
   const truncateText = (text, wordLimit = 30) => {
     if (!text) return '';
@@ -123,6 +132,24 @@ export default function CoinsPage() {
       ...prev,
       [key]: !prev[key]
     }));
+  };
+
+  // Toggle expand/collapse for summary columns
+  const toggleSummaryExpand = (coinSymbol) => {
+    setExpandedSummaries(prev => ({
+      ...prev,
+      [coinSymbol]: !prev[coinSymbol]
+    }));
+  };
+
+  // Check if summary is expanded
+  const isSummaryExpanded = (coinSymbol) => {
+    return expandedSummaries[coinSymbol] || false;
+  };
+
+  // Check if any summary is expanded
+  const isAnySummaryExpanded = () => {
+    return Object.values(expandedSummaries).some(val => val === true);
   };
 
   // Check if a cell is expanded
@@ -272,7 +299,7 @@ export default function CoinsPage() {
                     </th>
                     <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       <div className="flex flex-col items-center">
-                        <span>Movement</span>
+                        <span>24 Hours</span>
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] font-normal">(Binance)</span>
                           <span className="relative group cursor-pointer z-[9999]">
@@ -300,7 +327,7 @@ export default function CoinsPage() {
                     </th> */}
                     <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[10%] align-middle">
                       <div className="flex flex-col items-center">
-                        <span>Movement</span>
+                        <span>24 Hours</span>
                         <div className="flex items-center gap-1">
                           <span className="text-[10px] font-normal">(Binance)</span>
                           <span className="relative group cursor-pointer z-[9999]">
@@ -312,7 +339,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th colSpan="6" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[60%]">
+                    <th colSpan={isAnySummaryExpanded() ? "7" : "4"} className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[60%]">
                       Summary Analysis
                     </th>
                   </tr>
@@ -326,14 +353,21 @@ export default function CoinsPage() {
                     <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
                       outlook (ST/LT)
                     </th>
-                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
-                      key Reasons
-                    </th>
-                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
-                      Disagreements
-                    </th>
-                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
-                      Risk Factors
+                    {isAnySummaryExpanded() && (
+                      <>
+                        <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
+                          key Reasons
+                        </th>
+                        <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
+                          Disagreements
+                        </th>
+                        <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
+                          Risk Factors
+                        </th>
+                      </>
+                    )}
+                    <th className="px-1 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[3%]">
+
                     </th>
                   </tr>
                 </thead>
@@ -552,45 +586,18 @@ export default function CoinsPage() {
                           </td> */}
                           <td className="px-2 py-3 text-center">
                             {(() => {
-                              const liveBidAsk = getLiveBidAsk(coin.symbol);
+                              const liveVolume = getLiveVolume(coin.symbol);
 
-                              if (liveBidAsk?.bidPrice && liveBidAsk?.askPrice && liveBidAsk?.bidQty && liveBidAsk?.askQty) {
+                              if (liveVolume?.volume) {
+                                const volume = parseFloat(liveVolume.volume);
+
                                 return (
-                                  <div className="flex flex-col items-center gap-0.5">
-
-                                    {/* Ask Price */}
-                                    <span className="text-xs font-semibold text-gray-900">
-                                      {liveBidAsk.askPrice.toLocaleString('en-US', {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2
-                                      })}
-                                    </span>
-
-                                    {/* Ask Quantity */}
-                                    <span className="text-xs font-semibold text-gray-900">
-                                      {liveBidAsk.askQty.toLocaleString('en-US', {
-                                        minimumFractionDigits: 3,
-                                        maximumFractionDigits: 3
-                                      })}
-                                    </span>
-
-                                    {/* Bid Price */}
-                                    <span className="text-xs font-semibold text-gray-900">
-                                      {liveBidAsk.bidPrice.toLocaleString('en-US', {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2
-                                      })}
-                                    </span>
-
-                                    {/* Bid Quantity */}
-                                    <span className="text-xs font-semibold text-gray-900">
-                                      {liveBidAsk.bidQty.toLocaleString('en-US', {
-                                        minimumFractionDigits: 3,
-                                        maximumFractionDigits: 3
-                                      })}
-                                    </span>
-
-                                  </div>
+                                  <span className="text-xs font-semibold text-gray-900">
+                                    {volume.toLocaleString("en-US", {
+                                      minimumFractionDigits: 0,
+                                      maximumFractionDigits: 0
+                                    })}
+                                  </span>
                                 );
                               }
 
@@ -687,92 +694,108 @@ export default function CoinsPage() {
                               )}
                             </div>
                           </td>
-                          {/* Key Reasons */}
-                          <td className="px-1 py-3 text-left align-top">
-                            <div className="text-[11px] text-gray-700 break-words">
-                              {coin.Key_Reasons ? (
-                                <>
-                                  <p>
-                                    {isExpanded(coin.symbol, 'Key_Reasons')
-                                      ? coin.Key_Reasons
-                                      : truncateText(coin.Key_Reasons, 30)}
-                                    {coin.Key_Reasons.split(' ').length > 30 && (
-                                      <>
-                                        {!isExpanded(coin.symbol, 'Key_Reasons') && '...'}
-                                      </>
-                                    )}
-                                  </p>
-                                  {coin.Key_Reasons.split(' ').length > 30 && (
-                                    <button
-                                      onClick={() => toggleExpand(coin.symbol, 'Key_Reasons')}
-                                      className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
-                                    >
-                                      {isExpanded(coin.symbol, 'Key_Reasons') ? 'Read less' : 'Read more'}
-                                    </button>
+
+                          {/* Conditionally render last 3 columns */}
+                          {isSummaryExpanded(coin.symbol) && (
+                            <>
+                              {/* Key Reasons */}
+                              <td className="px-1 py-3 text-left align-top">
+                                <div className="text-[11px] text-gray-700 break-words">
+                                  {coin.Key_Reasons ? (
+                                    <>
+                                      <p>
+                                        {isExpanded(coin.symbol, 'Key_Reasons')
+                                          ? coin.Key_Reasons
+                                          : truncateText(coin.Key_Reasons, 30)}
+                                        {coin.Key_Reasons.split(' ').length > 30 && (
+                                          <>
+                                            {!isExpanded(coin.symbol, 'Key_Reasons') && '...'}
+                                          </>
+                                        )}
+                                      </p>
+                                      {coin.Key_Reasons.split(' ').length > 30 && (
+                                        <button
+                                          onClick={() => toggleExpand(coin.symbol, 'Key_Reasons')}
+                                          className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
+                                        >
+                                          {isExpanded(coin.symbol, 'Key_Reasons') ? 'Read less' : 'Read more'}
+                                        </button>
+                                      )}
+                                    </>
+                                  ) : (
+                                    'N/A'
                                   )}
-                                </>
-                              ) : (
-                                'N/A'
-                              )}
-                            </div>
-                          </td>
-                          {/* Disagreements */}
-                          <td className="px-1 py-3 text-left align-top">
-                            <div className="text-[11px] text-gray-700 break-words">
-                              {coin.Disagreements ? (
-                                <>
-                                  <p>
-                                    {isExpanded(coin.symbol, 'Disagreements')
-                                      ? coin.Disagreements
-                                      : truncateText(coin.Disagreements, 30)}
-                                    {coin.Disagreements.split(' ').length > 30 && (
-                                      <>
-                                        {!isExpanded(coin.symbol, 'Disagreements') && '...'}
-                                      </>
-                                    )}
-                                  </p>
-                                  {coin.Disagreements.split(' ').length > 30 && (
-                                    <button
-                                      onClick={() => toggleExpand(coin.symbol, 'Disagreements')}
-                                      className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
-                                    >
-                                      {isExpanded(coin.symbol, 'Disagreements') ? 'Read less' : 'Read more'}
-                                    </button>
+                                </div>
+                              </td>
+                              {/* Disagreements */}
+                              <td className="px-1 py-3 text-left align-top">
+                                <div className="text-[11px] text-gray-700 break-words">
+                                  {coin.Disagreements ? (
+                                    <>
+                                      <p>
+                                        {isExpanded(coin.symbol, 'Disagreements')
+                                          ? coin.Disagreements
+                                          : truncateText(coin.Disagreements, 30)}
+                                        {coin.Disagreements.split(' ').length > 30 && (
+                                          <>
+                                            {!isExpanded(coin.symbol, 'Disagreements') && '...'}
+                                          </>
+                                        )}
+                                      </p>
+                                      {coin.Disagreements.split(' ').length > 30 && (
+                                        <button
+                                          onClick={() => toggleExpand(coin.symbol, 'Disagreements')}
+                                          className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
+                                        >
+                                          {isExpanded(coin.symbol, 'Disagreements') ? 'Read less' : 'Read more'}
+                                        </button>
+                                      )}
+                                    </>
+                                  ) : (
+                                    'N/A'
                                   )}
-                                </>
-                              ) : (
-                                'N/A'
-                              )}
-                            </div>
-                          </td>
-                          {/* Risk Factors */}
-                          <td className="px-1 py-3 text-left align-top">
-                            <div className="text-[11px] text-gray-700 break-words">
-                              {coin.Risk_Factors ? (
-                                <>
-                                  <p>
-                                    {isExpanded(coin.symbol, 'Risk_Factors')
-                                      ? coin.Risk_Factors
-                                      : truncateText(coin.Risk_Factors, 30)}
-                                    {coin.Risk_Factors.split(' ').length > 30 && (
-                                      <>
-                                        {!isExpanded(coin.symbol, 'Risk_Factors') && '...'}
-                                      </>
-                                    )}
-                                  </p>
-                                  {coin.Risk_Factors.split(' ').length > 30 && (
-                                    <button
-                                      onClick={() => toggleExpand(coin.symbol, 'Risk_Factors')}
-                                      className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
-                                    >
-                                      {isExpanded(coin.symbol, 'Risk_Factors') ? 'Read less' : 'Read more'}
-                                    </button>
+                                </div>
+                              </td>
+                              {/* Risk Factors */}
+                              <td className="px-1 py-3 text-left align-top">
+                                <div className="text-[11px] text-gray-700 break-words">
+                                  {coin.Risk_Factors ? (
+                                    <>
+                                      <p>
+                                        {isExpanded(coin.symbol, 'Risk_Factors')
+                                          ? coin.Risk_Factors
+                                          : truncateText(coin.Risk_Factors, 30)}
+                                        {coin.Risk_Factors.split(' ').length > 30 && (
+                                          <>
+                                            {!isExpanded(coin.symbol, 'Risk_Factors') && '...'}
+                                          </>
+                                        )}
+                                      </p>
+                                      {coin.Risk_Factors.split(' ').length > 30 && (
+                                        <button
+                                          onClick={() => toggleExpand(coin.symbol, 'Risk_Factors')}
+                                          className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
+                                        >
+                                          {isExpanded(coin.symbol, 'Risk_Factors') ? 'Read less' : 'Read more'}
+                                        </button>
+                                      )}
+                                    </>
+                                  ) : (
+                                    'N/A'
                                   )}
-                                </>
-                              ) : (
-                                'N/A'
-                              )}
-                            </div>
+                                </div>
+                              </td>
+                            </>
+                          )}
+
+                          {/* Expand/Collapse Button */}
+                          <td className="px-1 py-3 text-center align-top">
+                            <button
+                              onClick={() => toggleSummaryExpand(coin.symbol)}
+                              className="text-blue-600 hover:text-blue-800 font-bold text-lg"
+                            >
+                              {isSummaryExpanded(coin.symbol) ? '−' : '+'}
+                            </button>
                           </td>
                         </tr>
                       );

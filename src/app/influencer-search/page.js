@@ -228,7 +228,7 @@ export default function InfluencerSearchPage() {
   const [binanceVolumeData, setBinanceVolumeData] = useState({});
 
   // Use live price hook
-  const { top10Data, isConnected, bidAskData } = useTop10LivePrice();
+  const { top10Data, isConnected, bidAskData, volumeData } = useTop10LivePrice();
 
   // Create a live prices map that updates when top10Data changes
   const livePricesMap = useMemo(() => {
@@ -274,6 +274,18 @@ export default function InfluencerSearchPage() {
     const symbolWithUSDT = `${upperSymbol}USDT`;
     return bidAskData[symbolWithUSDT] || null;
   }, [bidAskData]);
+
+  // Helper function to get live volume data from Binance WebSocket
+  const getLiveVolume = useCallback((symbol) => {
+    if (!symbol) return null;
+    const upperSymbol = symbol.toUpperCase();
+    const symbolWithUSDT = `${upperSymbol}USDT`;
+    // First try to get live data from WebSocket
+    const liveData = volumeData[symbolWithUSDT];
+    if (liveData) return liveData;
+    // Fallback to static data if WebSocket data not available
+    return binanceVolumeData[upperSymbol] || null;
+  }, [volumeData, binanceVolumeData]);
 
   // Use timezone context
   const { useLocalTime, userTimezone, toggleTimezone, setUseLocalTime } = useTimezone();
@@ -1325,11 +1337,11 @@ export default function InfluencerSearchPage() {
                         </div>
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
-                            <span>Publish Date</span>
-                            <span>Price</span>
+                            <span>Publish Price</span>
+                            <span>% Change</span>
                           </div>
                         </div>
-                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
+                        {/* <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <span>
                             Publish Date<br />% Change
                           </span>
@@ -1339,7 +1351,7 @@ export default function InfluencerSearchPage() {
                               N/A : Not Available
                             </span>
                           </span>
-                        </div>
+                        </div> */}
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
                             <span>Movement</span>
@@ -1363,7 +1375,7 @@ export default function InfluencerSearchPage() {
 
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
-                            <span>Movement</span>
+                            <span>24 Hours</span>
 
                             <div className="flex items-center gap-1">
                               <span className="text-[8px] font-normal text-black-600">(Binance)</span>
@@ -1380,7 +1392,7 @@ export default function InfluencerSearchPage() {
                           </div>
                         </div>
 
-                        <div className="flex flex-col items-center w-[36%] text-black-900 text-center leading-tight">
+                        <div className="flex flex-col items-center w-[50%] text-black-900 text-center leading-tight">
                           {/* Row with text + AI badge */}
                           <div className="flex items-center">
                             <span className="text-[10px] font-bold mr-1">
@@ -1741,33 +1753,34 @@ export default function InfluencerSearchPage() {
                                                 {coinData.coin}
                                               </span>
                                             </div>
-                                            {/* Sentiment Badge (Circular with Arrow LEFT + ST/LT RIGHT) */}
+                                            {/* Sentiment Badge (Pill with Arrow + Bullish/Bearish + ST/LT) */}
                                             <div className="w-[8%] flex justify-start">
                                               <div
-                                                className={`w-10 h-10 rounded-full flex items-center justify-center ${coinData.type === "bullish"
-                                                  ? "bg-green-100 text-green-700"
-                                                  : "bg-red-100 text-red-700"
+                                                className={`px-2 py-1 rounded-full flex items-center gap-1 text-[7px] font-semibold ${coinData.type === "bullish"
+                                                    ? "bg-green-100 text-green-700"
+                                                    : "bg-red-100 text-red-700"
                                                   }`}
                                               >
-                                                <div className="flex items-center gap-1">
-                                                  {/* Arrow */}
-                                                  {coinData.type === "bullish" ? (
-                                                    <FaArrowUp className="text-[8px]" />
-                                                  ) : (
-                                                    <FaArrowDown className="text-[8px]" />
-                                                  )}
+                                                {/* Arrow */}
+                                                {coinData.type === "bullish" ? (
+                                                  <FaArrowUp className="text-[8px]" />
+                                                ) : (
+                                                  <FaArrowDown className="text-[8px]" />
+                                                )}
 
-                                                  {/* ST / LT */}
-                                                  <span className="text-[8px] font-semibold">
-                                                    {coinData.term === "short" ? "ST" : "LT"}
-                                                  </span>
-                                                </div>
+                                                {/* Bullish/Bearish + ST/LT */}
+                                                <span className="whitespace-nowrap">
+                                                  {coinData.type === "bullish" ? "Bullish" : "Bearish"}{" "}
+                                                  {coinData.term === "short" ? "ST" : "LT"}
+                                                </span>
                                               </div>
                                             </div>
 
 
-                                            {/* Base Price */}
-                                            <div className="w-[10%] flex justify-start">
+
+                                            {/* Base Price + Price Change % */}
+                                            <div className="w-[10%] flex flex-col justify-start">
+                                              {/* Base Price */}
                                               <span className="text-[8px] font-semibold text-gray-900">
                                                 {(() => {
                                                   const raw = coinData.basePrice?.replace(/[^0-9.-]/g, '');
@@ -1781,10 +1794,55 @@ export default function InfluencerSearchPage() {
                                                   })}`;
                                                 })()}
                                               </span>
+
+                                              {/* Price Change % */}
+                                              <span className="text-[8px] font-semibold">
+                                                {(() => {
+                                                  const basePrice =
+                                                    coinData.basePrice && coinData.basePrice !== "N/A"
+                                                      ? parseFloat(coinData.basePrice.replace("$", "").replace(/,/g, ""))
+                                                      : null;
+
+                                                  const livePriceStr = getLivePrice(coinData.coin);
+                                                  const currentPrice =
+                                                    livePriceStr && livePriceStr !== "N/A"
+                                                      ? parseFloat(livePriceStr.replace("$", "").replace(/,/g, ""))
+                                                      : null;
+
+                                                  if (basePrice !== null && currentPrice !== null) {
+                                                    let changePrice = currentPrice - basePrice;
+
+                                                    if (coinData.type?.toLowerCase().includes("bearish")) {
+                                                      changePrice *= -1;
+                                                    }
+
+                                                    const percentageChange = (changePrice / currentPrice) * 100;
+                                                    const isPositive = changePrice > 0;
+                                                    const isNegative = changePrice < 0;
+
+                                                    return (
+                                                      <span
+                                                        className={`${isPositive ? "text-green-600" : isNegative ? "text-red-600" : "text-gray-900"
+                                                          }`}
+                                                      >
+                                                        {isPositive ? "+" : ""}
+                                                        {percentageChange.toLocaleString(undefined, {
+                                                          minimumFractionDigits: 2,
+                                                          maximumFractionDigits: 2,
+                                                        })}
+                                                        %
+                                                      </span>
+                                                    );
+                                                  }
+
+                                                  return <span className="text-gray-900">N/A</span>;
+                                                })()}
+                                              </span>
                                             </div>
 
+
                                             {/* Price Change % */}
-                                            <div className="w-[10%] flex justify-start">
+                                            {/* <div className="w-[10%] flex justify-start">
                                               {(() => {
                                                 const basePrice = coinData.basePrice && coinData.basePrice !== 'N/A'
                                                   ? parseFloat(coinData.basePrice.replace('$', '').replace(',', ''))
@@ -1815,7 +1873,7 @@ export default function InfluencerSearchPage() {
                                                 }
                                                 return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
                                               })()}
-                                            </div>
+                                            </div> */}
 
 
 
@@ -1881,46 +1939,21 @@ export default function InfluencerSearchPage() {
 
 
 
-                                            {/* Bid/Ask Price + Qty - From Binance WebSocket */}
+                                            {/* 24 Hours Volume - From Binance */}
                                             <div className="w-[10%] flex flex-col justify-start">
                                               {(() => {
-                                                const liveBidAsk = getLiveBidAsk(coinData.coin);
+                                                const liveVolume = getLiveVolume(coinData.coin);
 
-                                                if (liveBidAsk?.bidPrice && liveBidAsk?.askPrice && liveBidAsk?.bidQty && liveBidAsk?.askQty) {
+                                                if (liveVolume?.volume) {
+                                                  const volume = parseFloat(liveVolume.volume);
+
                                                   return (
-                                                    <>
-                                                      {/* Ask Price */}
-                                                      <span className="text-[8px] font-semibold text-gray-900">
-                                                        {liveBidAsk.askPrice.toLocaleString("en-US", {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2
-                                                        })}
-                                                      </span>
-
-                                                      {/* Ask Quantity */}
-                                                      <span className="text-[8px] font-semibold text-gray-900">
-                                                        {liveBidAsk.askQty.toLocaleString("en-US", {
-                                                          minimumFractionDigits: 3,
-                                                          maximumFractionDigits: 3
-                                                        })}
-                                                      </span>
-
-                                                      {/* Bid Price */}
-                                                      <span className="text-[8px] font-semibold text-gray-900">
-                                                        {liveBidAsk.bidPrice.toLocaleString("en-US", {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2
-                                                        })}
-                                                      </span>
-
-                                                      {/* Bid Quantity */}
-                                                      <span className="text-[8px] font-semibold text-gray-900">
-                                                        {liveBidAsk.bidQty.toLocaleString("en-US", {
-                                                          minimumFractionDigits: 3,
-                                                          maximumFractionDigits: 3
-                                                        })}
-                                                      </span>
-                                                    </>
+                                                    <span className="text-[8px] font-semibold text-gray-900">
+                                                      {volume.toLocaleString("en-US", {
+                                                        minimumFractionDigits: 0,
+                                                        maximumFractionDigits: 0
+                                                      })}
+                                                    </span>
                                                   );
                                                 }
 
@@ -1932,7 +1965,7 @@ export default function InfluencerSearchPage() {
                                             {/* Summary/Title Column - only show for first coin with merged cell effect */}
                                             {isFirstCoin ? (
                                               <div
-                                                className="w-[36%] flex items-center justify-center border-l border-gray-200 px-2 bg-white group-hover:bg-gray-50"
+                                                className="w-[50%] flex items-center justify-center border-l border-gray-200 px-2 bg-white group-hover:bg-gray-50"
                                                 style={{
                                                   position: 'absolute',
                                                   right: 0,
@@ -1997,7 +2030,7 @@ export default function InfluencerSearchPage() {
                                               </div>
                                             ) : null}
                                             {/* Spacer for summary column */}
-                                            <div className="w-[36%]" />
+                                            <div className="w-[50%]" />
                                           </div>
                                         );
                                       });
@@ -2036,7 +2069,7 @@ export default function InfluencerSearchPage() {
                                             <div className="w-[10%]"></div>
                                             <div className="w-[10%]"></div>
                                             <div className="w-[10%]"></div>
-                                            <div className="w-[36%]"></div>
+                                            <div className="w-[50%]"></div>
                                           </div>
                                         );
                                         return (
@@ -2084,27 +2117,26 @@ export default function InfluencerSearchPage() {
                                           </span>
                                         </div>
 
-                                        {/* Sentiment with Term - Circular Badge */}
+                                        {/* Sentiment with Term - Pill Badge */}
                                         <div className="w-[8%] flex justify-start">
                                           <div
-                                            className={`w-10 h-10 rounded-full flex items-center justify-center ${rec.type === "bullish"
+                                            className={`px-2 py-1 rounded-full flex items-center gap-1 ${rec.type === "bullish"
                                               ? "bg-green-100 text-green-700"
                                               : "bg-red-100 text-red-700"
                                               }`}
                                           >
-                                            <div className="flex items-center gap-1">
-                                              {/* Arrow */}
-                                              {rec.type === "bullish" ? (
-                                                <FaArrowUp className="text-[7px]" />
-                                              ) : (
-                                                <FaArrowDown className="text-[7px]" />
-                                              )}
+                                            {/* Arrow */}
+                                            {rec.type === "bullish" ? (
+                                              <FaArrowUp className="text-[7px]" />
+                                            ) : (
+                                              <FaArrowDown className="text-[7px]" />
+                                            )}
 
-                                              {/* ST / LT */}
-                                              <span className="text-[8px] font-semibold">
-                                                {rec.term === "short" ? "ST" : "LT"}
-                                              </span>
-                                            </div>
+                                            {/* Bullish/Bearish + ST/LT */}
+                                            <span className="text-[7px] font-semibold whitespace-nowrap">
+                                              {rec.type === "bullish" ? "Bullish" : "Bearish"}{" "}
+                                              {rec.term === "short" ? "ST" : "LT"}
+                                            </span>
                                           </div>
                                         </div>
 
@@ -2182,34 +2214,22 @@ export default function InfluencerSearchPage() {
                                           })()}
                                         </div>
 
-                                        {/* Bid/Ask Price + Qty - From Binance WebSocket */}
+                                        {/* 24 Hours Volume - From Binance */}
                                         <div className="w-[10%] flex flex-col justify-start">
                                           {(() => {
-                                            // Get live bid/ask data from WebSocket
-                                            const liveBidAsk = getLiveBidAsk(rec.coin);
+                                            // Get live volume data from Binance
+                                            const liveVolume = getLiveVolume(rec.coin);
 
-                                            if (liveBidAsk?.bidPrice && liveBidAsk?.askPrice && liveBidAsk?.bidQty && liveBidAsk?.askQty) {
+                                            if (liveVolume?.volume) {
+                                              const volume = parseFloat(liveVolume.volume);
+
                                               return (
-                                                <>
-                                                  <span className="text-[8px] font-semibold text-gray-900">
-                                                    {liveBidAsk.bidPrice.toLocaleString('en-US', {
-                                                      minimumFractionDigits: 2,
-                                                      maximumFractionDigits: 2
-                                                    })} ({liveBidAsk.bidQty.toLocaleString('en-US', {
-                                                      minimumFractionDigits: 2,
-                                                      maximumFractionDigits: 2
-                                                    })})
-                                                  </span>
-                                                  <span className="text-[8px] font-semibold text-gray-900">
-                                                    {liveBidAsk.askPrice.toLocaleString('en-US', {
-                                                      minimumFractionDigits: 2,
-                                                      maximumFractionDigits: 2
-                                                    })} ({liveBidAsk.askQty.toLocaleString('en-US', {
-                                                      minimumFractionDigits: 2,
-                                                      maximumFractionDigits: 2
-                                                    })})
-                                                  </span>
-                                                </>
+                                                <span className="text-[8px] font-semibold text-black-900">
+                                                  {volume.toLocaleString("en-US", {
+                                                    minimumFractionDigits: 0,
+                                                    maximumFractionDigits: 0
+                                                  })}
+                                                </span>
                                               );
                                             }
                                             return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
@@ -2217,7 +2237,7 @@ export default function InfluencerSearchPage() {
                                         </div>
 
                                         {/* Summary/Title Column - separate */}
-                                        <div className={`w-[36%] flex justify-start break-words ${isSummaryExpanded ? 'overflow-visible' : 'overflow-hidden'}`}>
+                                        <div className={`w-[50%] flex justify-start break-words ${isSummaryExpanded ? 'overflow-visible' : 'overflow-hidden'}`}>
                                           {contentText ? (
                                             <span className="text-[8px] text-gray-600 break-words capitalize">
                                               <a
