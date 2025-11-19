@@ -504,14 +504,29 @@ export default function CoinsPage() {
                           {/* Publish Price + Price Change % */}
                           <td className="pl-0.5 pr-2 py-3">
                             <div className="flex flex-col justify-start">
-                              {/* Publish Price */}
+                              {/* Publish Price (Average Base Price) */}
                               <span className="text-[10px] font-semibold text-gray-900">
-                                $1,234.78
+                                {coin.avg_base_price && coin.binance_prices && coin.binance_prices.length > 0
+                                  ? `$${parseFloat(coin.avg_base_price).toFixed(2)}`
+                                  : 'No base price available'}
                               </span>
 
-                              {/* Price Change % */}
-                              <span className="text-[10px] font-semibold text-red-600">
-                                -1.18%
+                              {/* Price Change % (calculated from avg_base_price to current price) */}
+                              <span className={`text-[10px] font-semibold ${
+                                coin.avg_base_price && coin.binance_prices && coin.binance_prices.length > 0 && currentPrice !== 'N/A'
+                                  ? ((currentPrice - coin.avg_base_price) / coin.avg_base_price * 100) > 0
+                                    ? 'text-green-600'
+                                    : ((currentPrice - coin.avg_base_price) / coin.avg_base_price * 100) < 0
+                                      ? 'text-red-600'
+                                      : 'text-gray-900'
+                                  : 'text-gray-500'
+                              }`}>
+                                {coin.avg_base_price && coin.binance_prices && coin.binance_prices.length > 0 && currentPrice !== 'N/A'
+                                  ? (() => {
+                                      const changePercent = ((currentPrice - coin.avg_base_price) / coin.avg_base_price * 100);
+                                      return `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                                    })()
+                                  : 'N/A'}
                               </span>
                             </div>
                           </td>
