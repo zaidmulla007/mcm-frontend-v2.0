@@ -26,6 +26,14 @@ const formatNumber = (num) => {
   return num.toString();
 };
 
+// Helper function to truncate text to specified word limit
+const truncateText = (text, wordLimit = 30) => {
+  if (!text) return '';
+  const words = text.split(' ');
+  if (words.length <= wordLimit) return text;
+  return words.slice(0, wordLimit).join(' ');
+};
+
 // Helper function to format recommendations from API data
 const formatRecommendations = (lastPostsData, livePrices = {}, volumeData = {}) => {
   if (!lastPostsData || lastPostsData.length === 0) {
@@ -1737,13 +1745,13 @@ export default function InfluencerSearchPage() {
                                         const isSummaryExpanded = hasExpandedSummary;
                                         // Use summary for YouTube and Telegram, title for others
                                         const contentText = (rec.type === 'youtube' || rec.type === 'telegram') ? (rec.summary || '') : (rec.title || '');
-                                        const contentLimit = 200;
-                                        const showReadMore = contentText.length > contentLimit;
+                                        const wordLimit = 30;
+                                        const showReadMore = contentText.split(' ').length > wordLimit;
                                         const isFirstCoin = coinIdx === 0;
                                         const isLastVisibleCoin = coinIdx === visibleCoins.length - 1;
 
                                         return (
-                                          <div key={`${idx}-${coinIdx}`} className={`flex justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full ${isSummaryExpanded ? 'items-start' : 'items-center'}`} style={{ position: 'relative', minHeight: (isFirstCoin && isSummaryExpanded) ? '200px' : 'initial', height: isSummaryExpanded ? 'auto' : 'initial' }}>
+                                          <div key={`${idx}-${coinIdx}`} className={`flex justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full items-center`} style={{ position: 'relative', minHeight: 'auto' }}>
                                             {/* Date and Time - only show for first coin with merged cell effect */}
                                             {isFirstCoin ? (
                                               <div
@@ -1998,7 +2006,7 @@ export default function InfluencerSearchPage() {
                                             {/* Summary/Title Column - only show for first coin with merged cell effect */}
                                             {isFirstCoin ? (
                                               <div
-                                                className="w-[50%] flex items-center justify-center border-l border-gray-200 px-2 bg-white group-hover:bg-gray-50"
+                                                className="w-[50%] flex items-start justify-center border-l border-gray-200 px-2 bg-white group-hover:bg-gray-50"
                                                 style={{
                                                   position: 'absolute',
                                                   right: 0,
@@ -2010,45 +2018,43 @@ export default function InfluencerSearchPage() {
                                                 }}
                                               >
                                                 {contentText ? (
-                                                  <div className="text-[9px] text-gray-700 leading-[1.4]" style={{
+                                                  <div className="text-[9px] text-gray-700 leading-[1.4] py-2" style={{
                                                     wordWrap: 'break-word',
                                                     overflowWrap: 'break-word',
                                                     whiteSpace: 'normal',
                                                     textAlign: 'left',
                                                     display: 'block',
-                                                    width: '100%',
-                                                    padding: isSummaryExpanded ? '8px 0' : '0'
+                                                    width: '100%'
                                                   }}>
-                                                    <a
-                                                      href={rec.link}
-                                                      target="_blank"
-                                                      rel="noopener noreferrer"
-                                                      onClick={(e) => e.stopPropagation()}
-                                                      className="hover:text-blue-600 hover:underline cursor-pointer"
-                                                      style={{ display: 'inline' }}
-                                                    >
-                                                      {isSummaryExpanded ? contentText : (showReadMore ? `${contentText.substring(0, contentLimit)}...` : contentText)}
-                                                    </a>
+                                                    <p className="mb-0">
+                                                      <a
+                                                        href={rec.link}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        className="hover:text-blue-600 hover:underline cursor-pointer"
+                                                      >
+                                                        {isSummaryExpanded ? contentText : (showReadMore ? truncateText(contentText, wordLimit) : contentText)}
+                                                        {showReadMore && !isSummaryExpanded && '...'}
+                                                      </a>
+                                                    </p>
                                                     {showReadMore && (
-                                                      <>
-                                                        <br />
-                                                        <button
-                                                          onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setExpandedTitles(prev => ({
-                                                              ...prev,
-                                                              [groupedPostKey]: !prev[groupedPostKey]
-                                                            }));
-                                                          }}
-                                                          className="mt-1 text-blue-600 hover:text-blue-800 font-semibold text-[8px]"
-                                                        >
-                                                          {isSummaryExpanded ? 'Read less' : 'Read more'}
-                                                        </button>
-                                                      </>
+                                                      <button
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          setExpandedTitles(prev => ({
+                                                            ...prev,
+                                                            [groupedPostKey]: !prev[groupedPostKey]
+                                                          }));
+                                                        }}
+                                                        className="mt-1 text-blue-600 hover:text-blue-800 font-semibold text-[8px]"
+                                                      >
+                                                        {isSummaryExpanded ? 'Read less' : 'Read more'}
+                                                      </button>
                                                     )}
                                                   </div>
                                                 ) : (
-                                                  <div className="text-[8px] text-gray-600">
+                                                  <div className="text-[8px] text-gray-600 py-2">
                                                     <a
                                                       href={rec.link}
                                                       target="_blank"
@@ -2124,8 +2130,8 @@ export default function InfluencerSearchPage() {
                                     const isSummaryExpanded = expandedTitles[latestPostKey] || false;
                                     // Use summary for YouTube and Telegram, title for others
                                     const contentText = (rec.type === 'youtube' || rec.type === 'telegram') ? (rec.summary || '') : (rec.title || '');
-                                    const contentLimit = 50;
-                                    const showReadMore = contentText.length > contentLimit;
+                                    const wordLimit = 30;
+                                    const showReadMore = contentText.split(' ').length > wordLimit;
 
                                     return (
                                       <div key={idx} className={`flex justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full ${isSummaryExpanded ? 'items-start' : 'items-center'}`} style={{ minHeight: isSummaryExpanded ? '150px' : 'initial', position: 'relative' }}>
@@ -2288,7 +2294,7 @@ export default function InfluencerSearchPage() {
                                                 className="hover:text-blue-600 hover:underline cursor-pointer"
                                               >
                                                 {showReadMore && !isSummaryExpanded
-                                                  ? `${contentText.substring(0, contentLimit)}...`
+                                                  ? `${truncateText(contentText, wordLimit)}...`
                                                   : contentText
                                                 }
                                               </a>
