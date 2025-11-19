@@ -277,7 +277,7 @@ export default function CoinsPage() {
 
             {/* Table */}
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed">
+              <table className="w-full table-auto">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
                     <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
@@ -351,36 +351,36 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th colSpan={isAnySummaryExpanded() ? "7" : "4"} className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[60%]">
+                    <th colSpan={isAnySummaryExpanded() ? "6" : "3"} className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider">
                       Summary Analysis
+                    </th>
+                    <th rowSpan="2" className="py-3 text-center text-xs font-bold text-black-900 tracking-wider align-middle" style={{ width: '30px', padding: '0.75rem 0.25rem' }}>
+
                     </th>
                   </tr>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
+                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-auto">
                       Price targets
                     </th>
-                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
+                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-auto">
                       Overall sentiments
                     </th>
-                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
+                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-auto">
                       outlook (ST/LT)
                     </th>
                     {isAnySummaryExpanded() && (
                       <>
-                        <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
+                        <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-auto">
                           key Reasons
                         </th>
-                        <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
+                        <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-auto">
                           Disagreements
                         </th>
-                        <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider">
+                        <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-auto">
                           Risk Factors
                         </th>
                       </>
                     )}
-                    <th className="px-1 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[3%]">
-
-                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -634,6 +634,7 @@ export default function CoinsPage() {
 
 
                           {/* Summary Analysis Columns - Using API Response Data */}
+                          {/* First 3 columns - ALWAYS VISIBLE */}
                           {/* Price Targets */}
                           <td className="px-1 py-3 text-left align-top">
                             <div className="text-[11px] text-gray-700 break-words">
@@ -722,7 +723,7 @@ export default function CoinsPage() {
                             </div>
                           </td>
 
-                          {/* Conditionally render last 3 columns */}
+                          {/* Last 3 columns - Only show when THIS row is expanded */}
                           {isSummaryExpanded(coin.symbol) && (
                             <>
                               {/* Key Reasons */}
@@ -816,7 +817,7 @@ export default function CoinsPage() {
                           )}
 
                           {/* Expand/Collapse Button */}
-                          <td className="px-1 py-3 text-center align-top">
+                          <td className="py-3 text-center align-top" style={{ width: '30px', padding: '0.75rem 0.25rem' }}>
                             <button
                               onClick={() => toggleSummaryExpand(coin.symbol)}
                               className="text-blue-600 hover:text-blue-800 font-bold text-lg"
