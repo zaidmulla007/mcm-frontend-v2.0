@@ -1774,7 +1774,7 @@ export default function InfluencerSearchPage() {
                                             <div className="w-[10%]" />
 
                                             {/* Coin Icon and Name */}
-                                            <div className="flex items-center justify-start gap-0.5 w-[6%]">
+                                            <div className="flex items-center justify-start gap-0.5 w-[6%] pl-2">
                                               <div className="flex items-center justify-center w-3">
                                                 {coinData.icon}
                                               </div>
@@ -2144,7 +2144,7 @@ export default function InfluencerSearchPage() {
                                           )}
                                         </div>
                                         {/* Coin Icon and Name */}
-                                        <div className="flex items-center justify-start gap-0.5 w-[6%]">
+                                        <div className="flex items-center justify-start gap-0.5 w-[6%] pl-2">
                                           <div className="flex items-center justify-center w-3">
                                             {rec.icon}
                                           </div>
