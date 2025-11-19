@@ -1338,7 +1338,7 @@ export default function InfluencerSearchPage() {
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
                             <span>Publish Price</span>
-                            <span>% Change</span>
+                            <span>And % Change</span>
                           </div>
                         </div>
                         {/* <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
@@ -1354,43 +1354,62 @@ export default function InfluencerSearchPage() {
                         </div> */}
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
-                            <span>Movement</span>
 
+                            {/* Title */}
+                            <span>24 Hours</span>
+
+                            {/* Price + Info Icon on the right */}
                             <div className="flex items-center gap-1">
-                              <span className="text-[8px] font-normal text-black-600">(Binance)</span>
 
-                              {/* Info Icon with Hover Tooltip */}
+                              {/* Price */}
+                              <span className="text-[10px] font-bold text-black-900">
+                                Price
+                              </span>
+
+                              {/* Info Icon */}
                               <span className="relative group cursor-pointer z-[9999]">
                                 <span className="text-blue-600 text-sm">ⓘ</span>
 
                                 <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                  Source: Binance <br />
                                   N/A : Not Available
                                 </span>
                               </span>
+
                             </div>
+
                           </div>
                         </div>
 
-
-
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
+
+                            {/* Title */}
                             <span>24 Hours</span>
 
+                            {/* Price + Info Icon on the right */}
                             <div className="flex items-center gap-1">
-                              <span className="text-[8px] font-normal text-black-600">(Binance)</span>
+
+                              {/* Price (same size as 24 Hours) */}
+                              <span className="text-[10px] font-bold text-black-900">
+                                Volume
+                              </span>
 
                               {/* Info Icon + Tooltip */}
                               <span className="relative group cursor-pointer z-[9999]">
                                 <span className="text-blue-600 text-sm">ⓘ</span>
 
                                 <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                  Source: Binance <br />
                                   N/A : Not Available
                                 </span>
                               </span>
+
                             </div>
+
                           </div>
                         </div>
+
 
                         <div className="flex flex-col items-center w-[50%] text-black-900 text-center leading-tight">
                           {/* Row with text + AI badge */}
@@ -1597,12 +1616,17 @@ export default function InfluencerSearchPage() {
                                     {/* Graph container with axes */}
                                     <div className="relative">
                                       {/* Data columns with stars */}
-                                      <div className="flex items-end gap-5 pl-1 h-16 pb-5">
+                                      <div className="flex items-end gap-8 pl-1 h-16 pb-5">
                                         {scatterData.map((point, idx) => {
                                           const fullStars = Math.floor(point.rating);
                                           const hasHalfStar = point.rating % 1 >= 0.5;
                                           const totalStars = 5;
                                           const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+
+                                          // Determine text color based on year
+                                          const yearColor = (point.yearLabel === 2022 || point.yearLabel === 2023)
+                                            ? 'text-gray-400'
+                                            : 'text-black-900';
 
                                           return (
                                             <div
@@ -1623,7 +1647,7 @@ export default function InfluencerSearchPage() {
                                                 ))}
                                               </div>
                                               {/* Year label at bottom (below x-axis) */}
-                                              <span className="text-[8px] text-black-500 font-semibold absolute whitespace-nowrap text-center" style={{ bottom: '-16px', left: '50%', transform: 'translateX(-50%)' }}>
+                                              <span className={`text-[8px] ${yearColor} font-semibold absolute whitespace-nowrap text-center`} style={{ bottom: '-16px', left: '50%', transform: 'translateX(-50%)' }}>
                                                 {point.yearLabel}
                                               </span>
                                             </div>
@@ -1733,9 +1757,14 @@ export default function InfluencerSearchPage() {
                                                 }}
                                               >
                                                 {rec.date && rec.time ? (
-                                                  <span className="text-[8px] font-semibold text-black-900 text-center">
-                                                    {formatDate(rec.date)} {formatTime(rec.date, rec.time)}
-                                                  </span>
+                                                  <>
+                                                    <span className="text-[8px] font-semibold text-black-900 text-center">
+                                                      {formatDate(rec.date)}
+                                                    </span>
+                                                    <span className="text-[8px] font-semibold text-black-900 text-center">
+                                                      {formatTime(rec.date, rec.time)}
+                                                    </span>
+                                                  </>
                                                 ) : (
                                                   <span className="text-[8px] text-gray-400">No data</span>
                                                 )}
@@ -1757,8 +1786,8 @@ export default function InfluencerSearchPage() {
                                             <div className="w-[8%] flex justify-start">
                                               <div
                                                 className={`px-2 py-1 rounded-full flex items-center gap-1 text-[7px] font-semibold ${coinData.type === "bullish"
-                                                    ? "bg-green-100 text-green-700"
-                                                    : "bg-red-100 text-red-700"
+                                                  ? "bg-green-100 text-green-700"
+                                                  : "bg-red-100 text-red-700"
                                                   }`}
                                               >
                                                 {/* Arrow */}
@@ -1769,10 +1798,14 @@ export default function InfluencerSearchPage() {
                                                 )}
 
                                                 {/* Bullish/Bearish + ST/LT */}
-                                                <span className="whitespace-nowrap">
-                                                  {coinData.type === "bullish" ? "Bullish" : "Bearish"}{" "}
-                                                  {coinData.term === "short" ? "ST" : "LT"}
-                                                </span>
+                                                <div className="flex flex-col items-center">
+                                                  <span className="whitespace-nowrap">
+                                                    {coinData.type === "bullish" ? "Bullish" : "Bearish"}
+                                                  </span>
+                                                  <span className="whitespace-nowrap">
+                                                    {coinData.term === "short" ? "ST" : "LT"}
+                                                  </span>
+                                                </div>
                                               </div>
                                             </div>
 
@@ -1977,7 +2010,7 @@ export default function InfluencerSearchPage() {
                                                 }}
                                               >
                                                 {contentText ? (
-                                                  <div className="text-[9px] text-gray-700 leading-[1.4] capitalize" style={{
+                                                  <div className="text-[9px] text-gray-700 leading-[1.4]" style={{
                                                     wordWrap: 'break-word',
                                                     overflowWrap: 'break-word',
                                                     whiteSpace: 'normal',
@@ -2100,7 +2133,10 @@ export default function InfluencerSearchPage() {
                                           {rec.date && rec.time ? (
                                             <>
                                               <span className="text-[8px] font-semibold text-black-900">
-                                                {formatDate(rec.date)} {formatTime(rec.date, rec.time)}
+                                                {formatDate(rec.date)}
+                                              </span>
+                                              <span className="text-[8px] font-semibold text-black-900">
+                                                {formatTime(rec.date, rec.time)}
                                               </span>
                                             </>
                                           ) : (
@@ -2133,10 +2169,14 @@ export default function InfluencerSearchPage() {
                                             )}
 
                                             {/* Bullish/Bearish + ST/LT */}
-                                            <span className="text-[7px] font-semibold whitespace-nowrap">
-                                              {rec.type === "bullish" ? "Bullish" : "Bearish"}{" "}
-                                              {rec.term === "short" ? "ST" : "LT"}
-                                            </span>
+                                            <div className="flex flex-col items-center">
+                                              <span className="text-[7px] font-semibold whitespace-nowrap">
+                                                {rec.type === "bullish" ? "Bullish" : "Bearish"}
+                                              </span>
+                                              <span className="text-[7px] font-semibold whitespace-nowrap">
+                                                {rec.term === "short" ? "ST" : "LT"}
+                                              </span>
+                                            </div>
                                           </div>
                                         </div>
 

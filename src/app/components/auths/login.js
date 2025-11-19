@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Swal from "sweetalert2";
 import { FaWhatsapp, FaChevronDown, FaEnvelope, FaLock, FaEye, FaEyeSlash } from "react-icons/fa";
 import { countryCodes } from "../../data/countryCodes";
+import axios from "axios";
 
 // List of valid email domains
 const VALID_EMAIL_DOMAINS = [
@@ -46,6 +47,12 @@ export default function Login() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const dropdownRef = useRef(null);
   const contactDropdownRef = useRef(null);
+
+  // OTP Retry and User ID tracking
+  const [otpRetryCount, setOtpRetryCount] = useState(0);
+  const [userId, setUserId] = useState(null);
+  const [isSignupPending, setIsSignupPending] = useState(false);
+  const intervalRef = useRef(null);
 
   const [formData, setFormData] = useState({
     firstName: '',
@@ -141,6 +148,9 @@ export default function Login() {
     setIsOtpSent(false);
     setOtp("");
     setTimer(0);
+    setOtpRetryCount(0); // Reset retry count
+    setUserId(null); // Reset userId
+    setIsSignupPending(false); // Reset signup pending status
     // Clear all form data when switching between login and signup
     setFormData({
       firstName: '',
@@ -182,6 +192,57 @@ export default function Login() {
       return () => clearInterval(interval);
     }
   }, [timer]);
+
+  // Heartbeat/Keep-Alive system for pending signups
+  useEffect(() => {
+    if (!userId || !isSignupPending) {
+      return;
+    }
+
+    // Start polling every 1 second to check signup status
+    intervalRef.current = setInterval(async () => {
+      try {
+        const response = await axios.get(`/api/auth/checkSignupStatus/${userId}`);
+        if (response.data.success && !response.data.signup_pending) {
+          // Signup complete, stop polling
+          clearInterval(intervalRef.current);
+          setIsSignupPending(false);
+        }
+      } catch (error) {
+        console.error('Error checking signup status:', error);
+      }
+    }, 1000);
+
+    // Cleanup function for when user navigates away or component unmounts
+    const handleBeforeUnload = async () => {
+      if (userId && isSignupPending) {
+        // Use sendBeacon for reliable cleanup on page close/refresh
+        const blob = new Blob(
+          [JSON.stringify({ id: userId })],
+          { type: 'application/json' }
+        );
+        navigator.sendBeacon(`/api/auth/deletePendingSignup/${userId}`, blob);
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    // Cleanup on unmount (navigation within app)
+    return async () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+
+      if (userId && isSignupPending) {
+        try {
+          await axios.delete(`/api/auth/deletePendingSignup/${userId}`);
+        } catch (error) {
+          console.error('Error cleaning up pending signup:', error);
+        }
+      }
+    };
+  }, [userId, isSignupPending]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -704,6 +765,11 @@ export default function Login() {
               const data = await response.json();
 
               if (data.success) {
+                // Store userId and set signup pending status for heartbeat system
+                setUserId(data._id);
+                setIsSignupPending(true);
+                setOtpRetryCount(0); // Reset retry count for new signup
+
                 // DON'T store user data yet - only store after OTP verification
                 // Just show OTP input after successful signup
                 setIsOtpSent(true);
@@ -851,6 +917,9 @@ export default function Login() {
             localStorage.setItem('dateEnd', data.user.dateEnd || '');
           }
 
+          // Reset retry count for login OTP
+          setOtpRetryCount(0);
+
           // Show OTP input
           setIsOtpSent(true);
           setTimer(60);
@@ -929,6 +998,32 @@ export default function Login() {
         if (response.ok) {
           const data = await response.json();
 
+          // Check for CONTACT_SUPPORT message (3 failed attempts)
+          if (data.message === 'CONTACT_SUPPORT') {
+            Swal.fire({
+              title: 'Account Disabled!',
+              html: `
+                <div style="text-align: center; padding: 20px;">
+                  <p style="font-size: 16px; margin-bottom: 15px; color: #000000;">
+                    Your account has been disabled due to multiple failed OTP attempts.
+                  </p>
+                  <p style="font-size: 14px; color: #6b7280;">
+                    Please contact support to regain access to your account.
+                  </p>
+                </div>
+              `,
+              icon: 'error',
+              confirmButtonText: 'Contact Support',
+              confirmButtonColor: '#8b5cf6',
+              background: '#ffffff',
+              color: '#000000'
+            }).then(() => {
+              // Show contact support modal
+              setShowContactModal(true);
+            });
+            return;
+          }
+
           // Store all user data in localStorage
           if (data.success) {
             localStorage.setItem('accessToken', data.accessToken);
@@ -984,8 +1079,55 @@ export default function Login() {
         if (response.ok) {
           const data = await response.json();
 
+          // Check for CONTACT_SUPPORT message (3 failed attempts)
+          if (data.message === 'CONTACT_SUPPORT') {
+            // Stop heartbeat polling
+            setIsSignupPending(false);
+            if (intervalRef.current) {
+              clearInterval(intervalRef.current);
+            }
+
+            // Delete pending signup
+            if (userId) {
+              try {
+                await axios.delete(`/api/auth/deletePendingSignup/${userId}`);
+              } catch (error) {
+                console.error('Error deleting pending signup:', error);
+              }
+            }
+
+            Swal.fire({
+              title: 'Account Disabled!',
+              html: `
+                <div style="text-align: center; padding: 20px;">
+                  <p style="font-size: 16px; margin-bottom: 15px; color: #000000;">
+                    Your account has been disabled due to multiple failed OTP attempts.
+                  </p>
+                  <p style="font-size: 14px; color: #6b7280;">
+                    Please contact support to complete your registration.
+                  </p>
+                </div>
+              `,
+              icon: 'error',
+              confirmButtonText: 'Contact Support',
+              confirmButtonColor: '#8b5cf6',
+              background: '#ffffff',
+              color: '#000000'
+            }).then(() => {
+              // Show contact support modal
+              setShowContactModal(true);
+            });
+            return;
+          }
+
           // Store all user data in localStorage
           if (data.success) {
+            // Stop heartbeat polling - signup is complete
+            setIsSignupPending(false);
+            if (intervalRef.current) {
+              clearInterval(intervalRef.current);
+            }
+
             localStorage.setItem('accessToken', data.accessToken);
             localStorage.setItem('userId', data.id);
             localStorage.setItem('username', data.username);
@@ -1060,11 +1202,57 @@ export default function Login() {
     } catch (error) {
       console.error('Error verifying OTP:', error);
 
-      // Show error message for both login and signup
+      // Increment retry count
+      const newRetryCount = otpRetryCount + 1;
+      setOtpRetryCount(newRetryCount);
+
+      // Check if max retries reached (3 attempts)
+      if (newRetryCount >= 3) {
+        // Stop heartbeat polling
+        setIsSignupPending(false);
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+        }
+
+        // Delete pending signup if in signup mode
+        if (!isLogin && userId) {
+          try {
+            await axios.delete(`/api/auth/deletePendingSignup/${userId}`);
+          } catch (deleteError) {
+            console.error('Error deleting pending signup:', deleteError);
+          }
+        }
+
+        Swal.fire({
+          title: 'Too Many Failed Attempts!',
+          html: `
+            <div style="text-align: center; padding: 20px;">
+              <p style="font-size: 16px; margin-bottom: 15px; color: #000000;">
+                You have exceeded the maximum number of OTP attempts (3).
+              </p>
+              <p style="font-size: 14px; color: #6b7280;">
+                Please contact support for assistance.
+              </p>
+            </div>
+          `,
+          icon: 'error',
+          confirmButtonText: 'Contact Support',
+          confirmButtonColor: '#8b5cf6',
+          background: '#ffffff',
+          color: '#000000'
+        }).then(() => {
+          // Show contact support modal
+          setShowContactModal(true);
+        });
+        return;
+      }
+
+      // Show error message for both login and signup with remaining attempts
+      const remainingAttempts = 3 - newRetryCount;
       if (isLogin) {
         Swal.fire({
           title: 'Login Failed!',
-          text: 'Invalid OTP. Please try again.',
+          text: `Invalid OTP. You have ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`,
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
@@ -1075,7 +1263,7 @@ export default function Login() {
         // For signup, show OTP error (not success!)
         Swal.fire({
           title: 'Verification Failed!',
-          text: 'Invalid OTP. Please check and try again.',
+          text: `Invalid OTP. You have ${remainingAttempts} attempt${remainingAttempts > 1 ? 's' : ''} remaining.`,
           icon: 'error',
           confirmButtonText: 'OK',
           confirmButtonColor: '#8b5cf6',
@@ -1092,6 +1280,9 @@ export default function Login() {
     if (timer > 0) {
       return;
     }
+
+    // Reset retry count when resending OTP
+    setOtpRetryCount(0);
 
     if (isLogin) {
       // For login, call fetchOTP API
@@ -1236,6 +1427,9 @@ export default function Login() {
         const data = await response.json();
 
         if (data.success) {
+          // Reset retry count when OTP is sent
+          setOtpRetryCount(0);
+
           setIsOtpSent(true);
           setTimer(60);
           setOtpSentTo(sentTo);
