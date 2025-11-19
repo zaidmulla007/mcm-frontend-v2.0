@@ -297,14 +297,23 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
+                    <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
+                      <div className="flex flex-col items-start">
+                        <span>Publish Price</span>
+                        <span>And % Change</span>
+                      </div>
+                    </th>
                     <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       <div className="flex flex-col items-center">
+                        {/* 24 Hours */}
                         <span>24 Hours</span>
+                        {/* Price + Info icon in same row */}
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-normal">(Binance)</span>
+                          <span>Price</span>
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                              Source: Binance <br />
                               N/A : Not Available
                             </span>
                           </span>
@@ -327,12 +336,15 @@ export default function CoinsPage() {
                     </th> */}
                     <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[10%] align-middle">
                       <div className="flex flex-col items-center">
+                        {/* 24 Hours */}
                         <span>24 Hours</span>
+                        {/* Price + Info icon in same row */}
                         <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-normal">(Binance)</span>
+                          <span>Volume</span>
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                              Source: Binance <br />
                               N/A : Not Available
                             </span>
                           </span>
@@ -486,6 +498,21 @@ export default function CoinsPage() {
                                   </span>
                                 </div>
                               )}
+                            </div>
+                          </td>
+
+                          {/* Publish Price + Price Change % */}
+                          <td className="pl-0.5 pr-2 py-3">
+                            <div className="flex flex-col justify-start">
+                              {/* Publish Price */}
+                              <span className="text-[10px] font-semibold text-gray-900">
+                                $1,234.78
+                              </span>
+
+                              {/* Price Change % */}
+                              <span className="text-[10px] font-semibold text-red-600">
+                                -1.18%
+                              </span>
                             </div>
                           </td>
 
