@@ -141,13 +141,21 @@ export default function ClientHeader() {
     <header className="sticky top-0 z-30 w-full bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm">
       <div className="mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo */}
-        <Link href="/home" className="flex items-center gap-2">
+        <Link href={isLoggedIn ? "/landing-page" : "/home"} className="flex items-center gap-2">
           <Image src="/images/mycryptomonitor.jpg" alt="Logo" width={80} height={90} className="logo-img" />
         </Link>
 
         {/* Navigation */}
         <nav className="hidden md:flex gap-8 flex-1 justify-center">
-          {navLinks.map((link) => {
+          {navLinks
+            .filter((link) => {
+              // Hide "Landing Page" (/home) when user is logged in
+              if (link.href === "/home" && isLoggedIn) {
+                return false;
+              }
+              return true;
+            })
+            .map((link) => {
             // Special case for Leaderboard: make it active for influencer detail pages, /coins, and /posts
             const isLeaderboardActive = link.href === "/influencer-search" &&
               (pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/") || pathname === "/coins" || pathname === "/posts");

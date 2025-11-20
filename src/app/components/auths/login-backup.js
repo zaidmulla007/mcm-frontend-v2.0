@@ -144,29 +144,6 @@ export default function Login() {
   useEffect(() => {
     const showSignUp = searchParams.get('signup') === 'true';
     setIsLogin(!showSignUp);
-    
-    // Cleanup function when switching forms
-    const cleanup = async () => {
-      // Stop polling
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-
-      // Delete pending signup if exists
-      if (userId && isSignupPending) {
-        try {
-          await axios.delete(`/api/auth/deletePendingSignup/${userId}`);
-        } catch (error) {
-          console.error('Error cleaning up on form switch:', error);
-        }
-      }
-
-      // Clear temporary user_id from localStorage
-      localStorage.removeItem('user_id');
-    };
-
-    cleanup();
-
     // Reset form state when switching between login and signup
     setIsOtpSent(false);
     setOtp("");
@@ -193,93 +170,6 @@ export default function Login() {
       confirmPassword: false
     });
   }, [searchParams]);
-
-  // Restore userId from localStorage on component mount and check signup status
-  useEffect(() => {
-    const storedUserId = localStorage.getItem('user_id');
-
-    if (storedUserId && !isLogin) {
-      // User has a pending signup, restore the userId and check status
-      setUserId(storedUserId);
-
-      // Immediately check signup status on mount/refresh
-      const checkStatus = async () => {
-        try {
-          const response = await axios.get(`/api/auth/checkSignupStatus/${storedUserId}`);
-          if (response.data.success) {
-            if (response.data.signup_pending) {
-              // Signup is still pending, set the flag to start polling
-              setIsSignupPending(true);
-              setIsOtpSent(true); // Show OTP input
-            } else {
-              // Signup is complete, clear the temporary user_id
-              localStorage.removeItem('user_id');
-              setUserId(null);
-              setIsSignupPending(false);
-            }
-          }
-        } catch (error) {
-          console.error('Error checking signup status on mount:', error);
-          // If there's an error, clear the stored user_id
-          localStorage.removeItem('user_id');
-          setUserId(null);
-        }
-      };
-
-      checkStatus();
-    }
-  }, []); // Run only once on component mount
-
-  // Polling and cleanup useEffect for signup monitoring
-  useEffect(() => {
-    if (!userId || !isSignupPending) {
-      return;
-    }
-
-    // Start polling every 1 second
-    intervalRef.current = setInterval(async () => {
-      try {
-        const response = await axios.get(`/api/auth/checkSignupStatus/${userId}`);
-        if (response.data.success && !response.data.signup_pending) {
-          // Signup complete, stop polling
-          clearInterval(intervalRef.current);
-          setIsSignupPending(false);
-        }
-      } catch (error) {
-        console.error('Error checking signup status:', error);
-      }
-    }, 1000);
-
-    // Cleanup function for when user navigates away or component unmounts
-    const handleBeforeUnload = async () => {
-      if (userId && isSignupPending) {
-        // Use sendBeacon for reliable cleanup on page close/refresh
-        const blob = new Blob(
-          [JSON.stringify({ id: userId })],
-          { type: 'application/json' }
-        );
-        navigator.sendBeacon(`/api/auth/deletePendingSignup/${userId}`, blob);
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    // Cleanup on unmount (navigation within app)
-    return async () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-      
-      if (userId && isSignupPending) {
-        try {
-          await axios.delete(`/api/auth/deletePendingSignup/${userId}`);
-        } catch (error) {
-          console.error('Error cleaning up:', error);
-        }
-      }
-    };
-  }, [userId, isSignupPending]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -880,9 +770,6 @@ export default function Login() {
                 setIsSignupPending(true);
                 setOtpRetryCount(0); // Reset retry count for new signup
 
-                // Store user_id in localStorage for persistence across page refreshes
-                localStorage.setItem('user_id', data._id);
-
                 // DON'T store user data yet - only store after OTP verification
                 // Just show OTP input after successful signup
                 setIsOtpSent(true);
@@ -1171,7 +1058,7 @@ export default function Login() {
             timerProgressBar: true,
             showConfirmButton: false
           }).then(() => {
-            router.push('/influencer-search');
+            router.push('/landing-page');
           });
         } else {
           throw new Error('Login failed');
@@ -1240,9 +1127,6 @@ export default function Login() {
             if (intervalRef.current) {
               clearInterval(intervalRef.current);
             }
-
-            // Clear temporary user_id now that signup is complete
-            localStorage.removeItem('user_id');
 
             localStorage.setItem('accessToken', data.accessToken);
             localStorage.setItem('userId', data.id);

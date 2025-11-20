@@ -18,8 +18,12 @@ function batchArray(arr, size) {
   return batches;
 }
 
-export const useTop10LivePrice = () => {
-  const [coinData, setCoinData] = useState([]);
+/**
+ * Custom hook to get live prices from Binance WebSocket for given symbols
+ * @param {Array} symbols - Array of coin symbols to track (e.g., ["BTC", "ETH", "SOL"])
+ * @returns {object} Live price data, connection status, bid/ask data, and volume data
+ */
+export const useInfluencerLivePrice = (symbols = []) => {
   const [prices, setPrices] = useState({});
   const [priceChanges, setPriceChanges] = useState({});
   const [bidAskData, setBidAskData] = useState({});
@@ -27,15 +31,25 @@ export const useTop10LivePrice = () => {
   const [isConnected, setIsConnected] = useState(false);
   const [validUSDTPairs, setValidUSDTPairs] = useState(new Set());
   const wsRefsArray = useRef([]);
+  const exchangeInfoFetched = useRef(false);
 
-  // Fetch top 10 coins from Binance and validate USDT pairs (SOLUTION from AppOld.js)
+  console.log(`🎬 [Influencer] useInfluencerLivePrice hook initialized with ${symbols.length} symbols`);
+
+  // Debug: Log whenever prices state changes
   useEffect(() => {
-    const fetchCoinData = async () => {
+    console.log(`🔄 [Influencer] Prices state updated! Now has ${Object.keys(prices).length} entries:`, Object.keys(prices).slice(0, 10));
+  }, [prices]);
+
+  // Fetch Binance exchangeInfo to get all valid USDT pairs
+  useEffect(() => {
+    const fetchExchangeInfo = async () => {
+      if (exchangeInfoFetched.current) return;
+
       try {
-        // Step 1: Fetch exchangeInfo to get all valid USDT pairs (AppOld.js line 53-60)
         const resInfo = await fetch("https://api.binance.com/api/v3/exchangeInfo");
         const exchangeInfo = await resInfo.json();
 
+        // Extract all valid USDT trading pairs
         const usdtPairs = new Set();
         exchangeInfo.symbols.forEach(s => {
           if (s.quoteAsset === "USDT" && s.status === "TRADING") {
@@ -44,54 +58,25 @@ export const useTop10LivePrice = () => {
         });
 
         setValidUSDTPairs(usdtPairs);
-        console.log(`✅ Binance: Loaded ${usdtPairs.size} valid USDT trading pairs`);
-
-        // Step 2: Fetch top 10 USDT pairs by volume from Binance (AppOld.js line 63-64)
-        const binanceRes = await fetch("https://api.binance.com/api/v3/ticker/24hr");
-        const binanceData = await binanceRes.json();
-
-        // Filter only USDT pairs that exist in our valid pairs set
-        const top10Coins = binanceData
-          .filter((coin) => usdtPairs.has(coin.symbol)) // Only valid USDT pairs
-          .sort((a, b) => parseFloat(b.quoteVolume) - parseFloat(a.quoteVolume))
-          .slice(0, 10)
-          .map((coin) => coin.symbol.replace("USDT", "").toLowerCase());
-
-        // Step 3: Fetch additional data from your backend
-        const symbols = top10Coins.join(",");
-        const res = await fetch(`/api/top10-coins?symbols=${symbols}`);
-        const data = await res.json();
-
-        if (data.success) {
-          setCoinData(data.coins);
-        } else {
-          throw new Error("Failed to fetch coins");
-        }
-      } catch (err) {
-        console.error("Failed to fetch coin data:", err);
-        // Fallback data
-        setCoinData([
-          { symbol: "BTC", name: "Bitcoin", price: 0, image: "", priceChange24h: 0 },
-          { symbol: "ETH", name: "Ethereum", price: 0, image: "", priceChange24h: 0 },
-          { symbol: "BNB", name: "BNB", price: 0, image: "", priceChange24h: 0 },
-          { symbol: "XRP", name: "XRP", price: 0, image: "", priceChange24h: 0 },
-          { symbol: "ADA", name: "Cardano", price: 0, image: "", priceChange24h: 0 },
-          { symbol: "DOGE", name: "Dogecoin", price: 0, image: "", priceChange24h: 0 },
-          { symbol: "SOL", name: "Solana", price: 0, image: "", priceChange24h: 0 },
-          { symbol: "DOT", name: "Polkadot", price: 0, image: "", priceChange24h: 0 },
-          { symbol: "MATIC", name: "Polygon", price: 0, image: "", priceChange24h: 0 },
-          { symbol: "LTC", name: "Litecoin", price: 0, image: "", priceChange24h: 0 },
-        ]);
+        exchangeInfoFetched.current = true;
+        console.log(`✅ [Influencer] Binance: Loaded ${usdtPairs.size} valid USDT trading pairs`);
+      } catch (error) {
+        console.error("❌ [Influencer] Failed to fetch Binance exchange info:", error);
       }
     };
 
-    fetchCoinData();
+    fetchExchangeInfo();
   }, []);
 
-  // Connect WebSocket for live prices with batching support (based on AppOld.js implementation)
+  // Connect WebSocket for live prices with batching support
   useEffect(() => {
-    // Wait until we have both coin data and valid USDT pairs
-    if (coinData.length === 0 || validUSDTPairs.size === 0) return;
+    console.log(`🔍 [Influencer] Hook triggered. symbols.length: ${symbols.length}, validUSDTPairs.size: ${validUSDTPairs.size}`);
+
+    // Wait until we have both coin symbols and valid USDT pairs
+    if (symbols.length === 0 || validUSDTPairs.size === 0) {
+      console.log(`⏳ [Influencer] Waiting... symbols empty or validUSDTPairs not loaded yet`);
+      return;
+    }
 
     // Close all previous WebSocket connections
     wsRefsArray.current.forEach(ws => {
@@ -99,37 +84,38 @@ export const useTop10LivePrice = () => {
     });
     wsRefsArray.current = [];
 
-    // Prepare symbols with USDT suffix and filter ONLY valid ones (AppOld.js line 64)
-    const requestedSymbols = coinData.map((c) => `${c.symbol.toUpperCase()}USDT`);
+    // Prepare symbols with USDT suffix and filter ONLY valid ones
+    const requestedSymbols = symbols.map((symbol) => `${symbol.toUpperCase()}USDT`);
     const validSymbols = requestedSymbols.filter(symbol => validUSDTPairs.has(symbol));
 
     // Log invalid symbols for debugging
     const invalidSymbols = requestedSymbols.filter(symbol => !validUSDTPairs.has(symbol));
     if (invalidSymbols.length > 0) {
-      console.warn(`⚠️ Top10: ${invalidSymbols.length} symbols don't have USDT pairs on Binance:`,
-        invalidSymbols.join(", ")
+      console.warn(`⚠️ [Influencer] ${invalidSymbols.length} symbols don't have USDT pairs on Binance:`,
+        invalidSymbols.slice(0, 10).join(", "),
+        invalidSymbols.length > 10 ? `... +${invalidSymbols.length - 10} more` : ""
       );
     }
 
     if (validSymbols.length === 0) {
-      console.warn("⚠️ No valid USDT pairs to subscribe to");
+      console.warn("⚠️ [Influencer] No valid USDT pairs to subscribe to");
       return;
     }
 
-    // SOLUTION: Fetch initial prices from REST API before WebSocket (AppOld.js line 63-72)
+    // Fetch initial prices from REST API before WebSocket
     const fetchInitialPrices = async () => {
       try {
-        console.log(`🔄 Fetching initial prices for symbols:`, validSymbols);
+        console.log(`🔄 [Influencer] Fetching initial prices for ${validSymbols.length} symbols:`, validSymbols);
         const resPrice = await fetch("https://api.binance.com/api/v3/ticker/24hr");
         const allTicker = await resPrice.json();
 
-        console.log(`📊 Received ${allTicker.length} tickers from Binance`);
+        console.log(`📊 [Influencer] Received ${allTicker.length} tickers from Binance`);
 
         // Filter to only our valid symbols
         const initialPrices = {};
         const initialPriceChanges = {};
         const initialBidAsk = {};
-        const initialVolume = {};
+        const initialVolumeData = {};
 
         allTicker.forEach(ticker => {
           if (validSymbols.includes(ticker.symbol)) {
@@ -141,7 +127,7 @@ export const useTop10LivePrice = () => {
               askPrice: parseFloat(ticker.askPrice),
               askQty: parseFloat(ticker.askQty),
             };
-            initialVolume[ticker.symbol] = {
+            initialVolumeData[ticker.symbol] = {
               volume: parseFloat(ticker.volume),
               quoteVolume: parseFloat(ticker.quoteVolume),
               priceChange: parseFloat(ticker.priceChange),
@@ -150,18 +136,19 @@ export const useTop10LivePrice = () => {
           }
         });
 
-        console.log(`💰 Initial prices loaded:`, initialPrices);
-        console.log(`📈 Initial price changes loaded:`, initialPriceChanges);
+        console.log(`💰 [Influencer] Initial prices loaded for ${Object.keys(initialPrices).length} symbols:`, Object.keys(initialPrices));
+        console.log(`💰 [Influencer] Sample prices:`, Object.entries(initialPrices).slice(0, 3));
 
         // Set initial state before WebSocket connects
+        console.log(`🔧 [Influencer] About to set prices in state. initialPrices has ${Object.keys(initialPrices).length} entries`);
         setPrices(initialPrices);
         setPriceChanges(initialPriceChanges);
         setBidAskData(initialBidAsk);
-        setVolumeData(initialVolume);
+        setVolumeData(initialVolumeData);
 
-        console.log(`✅ Loaded initial prices for ${Object.keys(initialPrices).length} coins from REST API`);
+        console.log(`✅ [Influencer] Called setPrices with ${Object.keys(initialPrices).length} prices`);
       } catch (error) {
-        console.error("❌ Failed to fetch initial prices:", error);
+        console.error("❌ [Influencer] Failed to fetch initial prices:", error);
       }
     };
 
@@ -172,7 +159,7 @@ export const useTop10LivePrice = () => {
     // Batch symbols into groups of MAX_STREAMS (1024)
     const batches = batchArray(symbolsLower, MAX_STREAMS);
 
-    console.log(`✅ Connecting WebSocket (Top10) for ${validSymbols.length}/${requestedSymbols.length} valid USDT pairs in ${batches.length} batch(es)`);
+    console.log(`✅ [Influencer] Connecting WebSocket for ${validSymbols.length}/${requestedSymbols.length} valid USDT pairs in ${batches.length} batch(es)`);
 
     // Create a WebSocket connection for each batch
     batches.forEach((batch, batchIndex) => {
@@ -181,12 +168,12 @@ export const useTop10LivePrice = () => {
       wsRefsArray.current.push(ws);
 
       ws.onopen = () => {
-        console.log(`📡 Binance WebSocket (Top10) batch ${batchIndex + 1}/${batches.length} connected (${batch.length} streams)`);
+        console.log(`📡 [Influencer] Binance WebSocket batch ${batchIndex + 1}/${batches.length} connected (${batch.length} streams)`);
         setIsConnected(true);
       };
 
       ws.onclose = () => {
-        console.log(`🔌 Binance WebSocket (Top10) batch ${batchIndex + 1} disconnected`);
+        console.log(`🔌 [Influencer] Binance WebSocket batch ${batchIndex + 1} disconnected`);
         // Only set disconnected if ALL connections are closed
         const allClosed = wsRefsArray.current.every(socket => socket.readyState === WebSocket.CLOSED);
         if (allClosed) {
@@ -195,7 +182,7 @@ export const useTop10LivePrice = () => {
       };
 
       ws.onerror = (error) => {
-        console.error(`❌ Binance WebSocket (Top10) batch ${batchIndex + 1} error:`, error);
+        console.error(`❌ [Influencer] Binance WebSocket batch ${batchIndex + 1} error:`, error);
       };
 
       ws.onmessage = (event) => {
@@ -244,7 +231,7 @@ export const useTop10LivePrice = () => {
             }));
           }
         } catch (err) {
-          console.error('❌ Error parsing WebSocket message:', err);
+          console.error('❌ [Influencer] Error parsing WebSocket message:', err);
         }
       };
     });
@@ -255,23 +242,8 @@ export const useTop10LivePrice = () => {
         if (ws) ws.close();
       });
     };
-  }, [coinData, validUSDTPairs]);
-
-  // Compose live top 10 data with images and names
-  const top10Data = coinData.map((coin) => {
-    const symbolKey = `${coin.symbol.toUpperCase()}USDT`;
-    const livePrice = prices[symbolKey];
-    const livePriceChange = priceChanges[symbolKey];
-
-    return {
-      symbol: coin.symbol,
-      name: coin.name,
-      image: coin.image,
-      price: livePrice || coin.price || "-",
-      priceChange24h: livePriceChange || coin.priceChange24h || 0,
-    };
-  });
+  }, [symbols, validUSDTPairs]);
 
   // Return the actual data including bid/ask data and volume data
-  return { top10Data, isConnected, bidAskData, volumeData };
+  return { prices, priceChanges, isConnected, bidAskData, volumeData };
 };

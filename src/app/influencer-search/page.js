@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FaStar, FaStarHalfAlt, FaInfoCircle, FaArrowUp, FaArrowDown, FaBitcoin, FaYoutube, FaTelegram } from "react-icons/fa";
 import { FaEthereum } from "react-icons/fa6";
 import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
-import { useTop10LivePrice } from "../../hooks/useTop10LivePrice";
+import { useInfluencerLivePrice } from "../../hooks/useInfluencerLivePrice";
 import { useTimezone } from "../contexts/TimezoneContext";
 import moment from "moment-timezone";
 
@@ -235,66 +235,6 @@ export default function InfluencerSearchPage() {
   const [error, setError] = useState(null);
   const [binanceVolumeData, setBinanceVolumeData] = useState({});
 
-  // Use live price hook
-  const { top10Data, isConnected, bidAskData, volumeData } = useTop10LivePrice();
-
-  // Create a live prices map that updates when top10Data changes
-  const livePricesMap = useMemo(() => {
-    const pricesMap = {};
-    top10Data.forEach(coin => {
-      pricesMap[coin.symbol.toUpperCase()] = coin.price;
-    });
-    return pricesMap;
-  }, [top10Data]);
-
-  // Create a live price changes map (EXACT same pattern as /coins)
-  const livePriceChangesMap = useMemo(() => {
-    const changesMap = {};
-    top10Data.forEach(coin => {
-      changesMap[coin.symbol.toUpperCase()] = coin.priceChange24h;
-    });
-    return changesMap;
-  }, [top10Data]);
-
-  // Helper function to get live price for a symbol
-  const getLivePrice = useCallback((symbol) => {
-    if (!symbol) return "N/A";
-    const upperSymbol = symbol.toUpperCase();
-    const livePrice = livePricesMap[upperSymbol];
-    if (livePrice && livePrice !== "-") {
-      return `$${typeof livePrice === 'number' ? livePrice.toFixed(2) : livePrice}`;
-    }
-    return "N/A";
-  }, [livePricesMap]);
-
-  // Helper function to get live price change (EXACT same pattern as /coins)
-  const getLivePriceChange = useCallback((symbol) => {
-    if (!symbol) return null;
-    const upperSymbol = symbol.toUpperCase();
-    const priceChange = livePriceChangesMap[upperSymbol];
-    return priceChange || null;
-  }, [livePriceChangesMap]);
-
-  // Helper function to get live bid/ask data from WebSocket
-  const getLiveBidAsk = useCallback((symbol) => {
-    if (!symbol) return null;
-    const upperSymbol = symbol.toUpperCase();
-    const symbolWithUSDT = `${upperSymbol}USDT`;
-    return bidAskData[symbolWithUSDT] || null;
-  }, [bidAskData]);
-
-  // Helper function to get live volume data from Binance WebSocket
-  const getLiveVolume = useCallback((symbol) => {
-    if (!symbol) return null;
-    const upperSymbol = symbol.toUpperCase();
-    const symbolWithUSDT = `${upperSymbol}USDT`;
-    // First try to get live data from WebSocket
-    const liveData = volumeData[symbolWithUSDT];
-    if (liveData) return liveData;
-    // Fallback to static data if WebSocket data not available
-    return binanceVolumeData[upperSymbol] || null;
-  }, [volumeData, binanceVolumeData]);
-
   // Use timezone context
   const { useLocalTime, userTimezone, toggleTimezone, setUseLocalTime } = useTimezone();
 
@@ -405,6 +345,146 @@ export default function InfluencerSearchPage() {
   // Sorting state for recommendations (default: desc to show recent posts first)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'desc' });
 
+  // Extract unique coin symbols from YouTube and Telegram last posts
+  const coinSymbols = useMemo(() => {
+    const symbolsSet = new Set();
+
+    // Extract from YouTube last posts
+    Object.values(youtubeLastPosts).forEach(posts => {
+      if (Array.isArray(posts)) {
+        posts.forEach(post => {
+          // Handle grouped posts (multiple coins per post)
+          if (post.isGrouped && post.coins) {
+            post.coins.forEach(coinData => {
+              if (coinData.symbol) {
+                symbolsSet.add(coinData.symbol.toUpperCase());
+              }
+            });
+          }
+          // Handle posts with mentioned array (new API structure)
+          else if (post.mentioned && Array.isArray(post.mentioned)) {
+            post.mentioned.forEach(coinData => {
+              if (coinData.symbol) {
+                symbolsSet.add(coinData.symbol.toUpperCase());
+              }
+            });
+          }
+          // Handle individual coin posts (old structure)
+          else if (post.coin && post.coin.symbol) {
+            symbolsSet.add(post.coin.symbol.toUpperCase());
+          }
+        });
+      }
+    });
+
+    // Extract from Telegram last posts
+    Object.values(telegramLastPosts).forEach(posts => {
+      if (Array.isArray(posts)) {
+        posts.forEach(post => {
+          // Handle grouped posts (multiple coins per post)
+          if (post.isGrouped && post.coins) {
+            post.coins.forEach(coinData => {
+              if (coinData.symbol) {
+                symbolsSet.add(coinData.symbol.toUpperCase());
+              }
+            });
+          }
+          // Handle posts with mentioned array (new API structure)
+          else if (post.mentioned && Array.isArray(post.mentioned)) {
+            post.mentioned.forEach(coinData => {
+              if (coinData.symbol) {
+                symbolsSet.add(coinData.symbol.toUpperCase());
+              }
+            });
+          }
+          // Handle individual coin posts (old structure)
+          else if (post.coin && post.coin.symbol) {
+            symbolsSet.add(post.coin.symbol.toUpperCase());
+          }
+        });
+      }
+    });
+
+    const symbols = Array.from(symbolsSet);
+    console.log(`📊 [Influencer Search] Extracted ${symbols.length} unique coin symbols from youtubeLastPosts:`, Object.keys(youtubeLastPosts).length, 'influencers, telegramLastPosts:', Object.keys(telegramLastPosts).length, 'influencers');
+    console.log(`📊 [Influencer Search] Symbols:`, symbols);
+    return symbols;
+  }, [youtubeLastPosts, telegramLastPosts]);
+
+  // Use live price hook with extracted symbols
+  const { prices, priceChanges, isConnected, bidAskData, volumeData } = useInfluencerLivePrice(coinSymbols);
+
+  console.log('📱 [Influencer Search] Component received prices:', Object.keys(prices).length);
+  console.log('📱 [Influencer Search] isConnected:', isConnected);
+
+  // Create a live prices map that updates when prices change
+  const livePricesMap = useMemo(() => {
+    const pricesMap = {};
+    console.log('📱 [Influencer Search] Raw prices from hook:', prices);
+    console.log('📱 [Influencer Search] Number of prices:', Object.keys(prices).length);
+    Object.entries(prices).forEach(([symbolKey, price]) => {
+      // Remove 'USDT' suffix to get base symbol (e.g., BTCUSDT -> BTC)
+      const baseSymbol = symbolKey.replace('USDT', '');
+      pricesMap[baseSymbol] = price;
+    });
+    console.log('📱 [Influencer Search] livePricesMap created with', Object.keys(pricesMap).length, 'entries:', Object.keys(pricesMap).slice(0, 10));
+    return pricesMap;
+  }, [prices]);
+
+  // Create a live price changes map
+  const livePriceChangesMap = useMemo(() => {
+    const changesMap = {};
+    Object.entries(priceChanges).forEach(([symbolKey, change]) => {
+      // Remove 'USDT' suffix to get base symbol (e.g., BTCUSDT -> BTC)
+      const baseSymbol = symbolKey.replace('USDT', '');
+      changesMap[baseSymbol] = change;
+    });
+    return changesMap;
+  }, [priceChanges]);
+
+  // Helper function to get live price for a symbol
+  const getLivePrice = useCallback((symbol) => {
+    if (!symbol) {
+      console.log('⚠️ [getLivePrice] No symbol provided');
+      return "N/A";
+    }
+    const upperSymbol = symbol.toUpperCase();
+    const livePrice = livePricesMap[upperSymbol];
+    console.log(`🔍 [getLivePrice] Looking up ${upperSymbol}: found ${livePrice}, livePricesMap keys:`, Object.keys(livePricesMap));
+    if (livePrice && livePrice !== "-") {
+      return `$${typeof livePrice === 'number' ? livePrice.toFixed(2) : livePrice}`;
+    }
+    return "N/A";
+  }, [livePricesMap]);
+
+  // Helper function to get live price change (EXACT same pattern as /coins)
+  const getLivePriceChange = useCallback((symbol) => {
+    if (!symbol) return null;
+    const upperSymbol = symbol.toUpperCase();
+    const priceChange = livePriceChangesMap[upperSymbol];
+    return priceChange || null;
+  }, [livePriceChangesMap]);
+
+  // Helper function to get live bid/ask data from WebSocket
+  const getLiveBidAsk = useCallback((symbol) => {
+    if (!symbol) return null;
+    const upperSymbol = symbol.toUpperCase();
+    const symbolWithUSDT = `${upperSymbol}USDT`;
+    return bidAskData[symbolWithUSDT] || null;
+  }, [bidAskData]);
+
+  // Helper function to get live volume data from Binance WebSocket
+  const getLiveVolume = useCallback((symbol) => {
+    if (!symbol) return null;
+    const upperSymbol = symbol.toUpperCase();
+    const symbolWithUSDT = `${upperSymbol}USDT`;
+    // First try to get live data from WebSocket
+    const liveData = volumeData[symbolWithUSDT];
+    if (liveData) return liveData;
+    // Fallback to static data if WebSocket data not available
+    return binanceVolumeData[upperSymbol] || null;
+  }, [volumeData, binanceVolumeData]);
+
   // Function to format time based on timezone preference
   const formatTime = (dateStr, timeStr) => {
     try {
@@ -502,12 +582,6 @@ export default function InfluencerSearchPage() {
       influencerMap[influencer.id] = influencer;
       const lastPostsData = selectedPlatform === "youtube" ? youtubeLastPosts : telegramLastPosts;
       const lastPostsForInfluencer = getInfluencerPosts(lastPostsData, influencer.id, selectedDateFilter);
-
-      // Create live prices map
-      const livePricesMap = {};
-      top10Data.forEach(coin => {
-        livePricesMap[coin.symbol.toUpperCase()] = coin.price;
-      });
 
       const recommendations = formatRecommendations(lastPostsForInfluencer, livePricesMap, binanceVolumeData);
 
@@ -1079,7 +1153,7 @@ export default function InfluencerSearchPage() {
   // Apply global sorting to recommendations and reorder influencers if sorting is active
   const sortedData = useMemo(() => {
     return sortRecommendationsAndInfluencers(top10Influencers);
-  }, [top10Influencers, sortConfig, youtubeLastPosts, telegramLastPosts, selectedPlatform, top10Data, binanceVolumeData, selectedDateFilter]);
+  }, [top10Influencers, sortConfig, youtubeLastPosts, telegramLastPosts, selectedPlatform, livePricesMap, binanceVolumeData, selectedDateFilter]);
 
   // Use sorted influencers if sorting is active, otherwise use original order
   let displayInfluencers = sortConfig.key ? sortedData.sortedInfluencers : top10Influencers;
@@ -1259,7 +1333,7 @@ export default function InfluencerSearchPage() {
                     </th>
                     {/* Timeframe Filter */}
                     <th className="px-1 py-0.5 border-r border-gray-300">
-                      <div className="flex justify-center">
+                      {/* <div className="flex justify-center">
                         <select
                           value={selectedTimeframe}
                           onChange={(e) => setSelectedTimeframe(e.target.value)}
@@ -1271,7 +1345,7 @@ export default function InfluencerSearchPage() {
                             </option>
                           ))}
                         </select>
-                      </div>
+                      </div> */}
                     </th>
                     {/* Date and Time Column with Timezone Toggle */}
                     {/* <th className="px-1 py-0.5 border-r border-gray-300">
@@ -1345,8 +1419,8 @@ export default function InfluencerSearchPage() {
                         </div>
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
-                            <span>Publish Price</span>
-                            <span>And % Change</span>
+                            <span>Base Price</span>
+                            {/* <span>And % Change</span> */}
                           </div>
                         </div>
                         {/* <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
@@ -1364,7 +1438,7 @@ export default function InfluencerSearchPage() {
                           <div className="flex flex-col items-start">
 
                             {/* Title */}
-                            <span>24 Hours</span>
+                            <span>Current</span>
 
                             {/* Price + Info Icon on the right */}
                             <div className="flex items-center gap-1">
@@ -1393,14 +1467,14 @@ export default function InfluencerSearchPage() {
                           <div className="flex flex-col items-start">
 
                             {/* Title */}
-                            <span>24 Hours</span>
+                            <span>Price</span>
 
                             {/* Price + Info Icon on the right */}
                             <div className="flex items-center gap-1">
 
                               {/* Price (same size as 24 Hours) */}
                               <span className="text-[10px] font-bold text-black-900">
-                                Volume
+                                Change
                               </span>
 
                               {/* Info Icon + Tooltip */}
@@ -1516,12 +1590,6 @@ export default function InfluencerSearchPage() {
                         } else {
                           const lastPostsData = selectedPlatform === "youtube" ? youtubeLastPosts : telegramLastPosts;
                           const lastPostsForInfluencer = getInfluencerPosts(lastPostsData, influencer.id, selectedDateFilter);
-
-                          // Create live prices map from top10Data
-                          const livePricesMap = {};
-                          top10Data.forEach(coin => {
-                            livePricesMap[coin.symbol.toUpperCase()] = coin.price;
-                          });
 
                           recommendations = formatRecommendations(lastPostsForInfluencer, livePricesMap, binanceVolumeData);
                         }
@@ -1798,12 +1866,12 @@ export default function InfluencerSearchPage() {
                                                   : "bg-red-100 text-red-700"
                                                   }`}
                                               >
-                                                {/* Arrow */}
+                                                {/* Arrow
                                                 {coinData.type === "bullish" ? (
                                                   <FaArrowUp className="text-[8px]" />
                                                 ) : (
                                                   <FaArrowDown className="text-[8px]" />
-                                                )}
+                                                )} */}
 
                                                 {/* Bullish/Bearish + ST/LT */}
                                                 <div className="flex flex-col items-center">
@@ -1837,7 +1905,7 @@ export default function InfluencerSearchPage() {
                                               </span>
 
                                               {/* Price Change % */}
-                                              <span className="text-[8px] font-semibold">
+                                              {/* <span className="text-[8px] font-semibold">
                                                 {(() => {
                                                   const basePrice =
                                                     coinData.basePrice && coinData.basePrice !== "N/A"
@@ -1878,7 +1946,7 @@ export default function InfluencerSearchPage() {
 
                                                   return <span className="text-gray-900">N/A</span>;
                                                 })()}
-                                              </span>
+                                              </span> */}
                                             </div>
 
 
@@ -1956,23 +2024,23 @@ export default function InfluencerSearchPage() {
                                                         {formattedPrice}
                                                       </span>
                                                       {/* Price Change (absolute) */}
-                                                      <span className={`text-[8px] font-semibold ${colorClass}`}>
+                                                      {/* <span className={`text-[8px] font-semibold ${colorClass}`}>
                                                         {isPositive ? '+' : ''}{priceChange.toLocaleString('en-US', {
                                                           minimumFractionDigits: 2,
                                                           maximumFractionDigits: 2
                                                         })}
-                                                      </span>
+                                                      </span> */}
                                                       {/* Price Change (percentage) */}
-                                                      <span className={`text-[8px] font-semibold ${colorClass}`}>
+                                                      {/* <span className={`text-[8px] font-semibold ${colorClass}`}>
                                                         ({isPositive ? '+' : ''}{priceChangePercent.toFixed(2)}%)
-                                                      </span>
+                                                      </span> */}
                                                     </>
                                                   );
                                                 }
                                                 return (
                                                   <>
                                                     <span className="text-[8px] font-semibold text-blue-500">{formattedPrice}</span>
-                                                    <span className="text-[8px] font-semibold text-gray-900">N/A</span>
+                                                    {/* <span className="text-[8px] font-semibold text-gray-900">N/A</span> */}
                                                   </>
                                                 );
                                               })()}
@@ -1983,6 +2051,47 @@ export default function InfluencerSearchPage() {
                                             {/* 24 Hours Volume - From Binance */}
                                             <div className="w-[10%] flex flex-col justify-start">
                                               {(() => {
+                                                const basePrice =
+                                                  coinData.basePrice && coinData.basePrice !== "N/A"
+                                                    ? parseFloat(coinData.basePrice.replace("$", "").replace(/,/g, ""))
+                                                    : null;
+
+                                                const livePriceStr = getLivePrice(coinData.coin);
+                                                const currentPrice =
+                                                  livePriceStr && livePriceStr !== "N/A"
+                                                    ? parseFloat(livePriceStr.replace("$", "").replace(/,/g, ""))
+                                                    : null;
+
+                                                if (basePrice !== null && currentPrice !== null) {
+                                                  let changePrice = currentPrice - basePrice;
+
+                                                  if (coinData.type?.toLowerCase().includes("bearish")) {
+                                                    changePrice *= -1;
+                                                  }
+
+                                                  const percentageChange = (changePrice / currentPrice) * 100;
+                                                  const isPositive = changePrice > 0;
+                                                  const isNegative = changePrice < 0;
+
+                                                  return (
+                                                    <span
+                                                      className={`text-[8px] font-semibold ${isPositive ? "text-green-600" : isNegative ? "text-red-600" : "text-gray-900"
+                                                        }`}
+                                                    >
+                                                      {isPositive ? "+" : ""}
+                                                      {percentageChange.toLocaleString(undefined, {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                      })}
+                                                      %
+                                                    </span>
+                                                  );
+                                                }
+
+                                                return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
+                                              })()}
+
+                                              {/* {(() => {
                                                 const liveVolume = getLiveVolume(coinData.coin);
 
                                                 if (liveVolume?.volume) {
@@ -1999,7 +2108,7 @@ export default function InfluencerSearchPage() {
                                                 }
 
                                                 return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
-                                              })()}
+                                              })()} */}
                                             </div>
 
 

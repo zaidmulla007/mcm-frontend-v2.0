@@ -23,24 +23,35 @@ export default function CoinsPage() {
   const userCity = userTimezone ? userTimezone.split('/').pop().replace(/_/g, ' ') : 'Local Time';
 
   // Use live price hook (EXACT same pattern as influencer-search)
-  const { coinsLiveData, isConnected, bidAskData, volumeData } = useCoinsLivePrice(coinSymbols);
+  const { prices, priceChanges, isConnected, bidAskData, volumeData } = useCoinsLivePrice(coinSymbols);
 
-  // Create a live prices map that updates when coinsLiveData changes (EXACT same pattern as influencer-search)
+  console.log('📱 [Coins] Component received prices:', Object.keys(prices).length);
+  console.log('📱 [Coins] isConnected:', isConnected);
+
+  // Create a live prices map that updates when prices change (EXACT same pattern as influencer-search)
   const livePricesMap = useMemo(() => {
     const pricesMap = {};
-    coinsLiveData.forEach(coin => {
-      pricesMap[coin.symbol.toUpperCase()] = coin.price;
+    console.log('📱 [Coins] Raw prices from hook:', prices);
+    console.log('📱 [Coins] Number of prices:', Object.keys(prices).length);
+    Object.entries(prices).forEach(([symbolKey, price]) => {
+      // Remove 'USDT' suffix to get base symbol (e.g., BTCUSDT -> BTC)
+      const baseSymbol = symbolKey.replace('USDT', '');
+      pricesMap[baseSymbol] = price;
     });
+    console.log('📱 [Coins] livePricesMap created with', Object.keys(pricesMap).length, 'entries:', Object.keys(pricesMap).slice(0, 10));
     return pricesMap;
-  }, [coinsLiveData]);
+  }, [prices]);
 
+  // Create a live price changes map (EXACT same pattern as influencer-search)
   const livePriceChangesMap = useMemo(() => {
     const changesMap = {};
-    coinsLiveData.forEach(coin => {
-      changesMap[coin.symbol.toUpperCase()] = coin.priceChange24h;
+    Object.entries(priceChanges).forEach(([symbolKey, change]) => {
+      // Remove 'USDT' suffix to get base symbol (e.g., BTCUSDT -> BTC)
+      const baseSymbol = symbolKey.replace('USDT', '');
+      changesMap[baseSymbol] = change;
     });
     return changesMap;
-  }, [coinsLiveData]);
+  }, [priceChanges]);
 
   // Fetch coins data from API
   useEffect(() => {

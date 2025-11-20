@@ -416,7 +416,7 @@ export default function HomePage() {
           <YouTubeTelegramDataTable useLocalTime={useLocalTime} />
         </div>
 
-        <div className="mt-16">
+        {/* <div className="mt-16">
           <YouTubeTelegramDataTableStack useLocalTime={useLocalTime} />
         </div>
         <div className="mt-16">
@@ -427,7 +427,7 @@ export default function HomePage() {
         </div>
         <div className="mt-16">
           <YouTubeTelegramDataTableMatrix useLocalTime={useLocalTime} />
-        </div>
+        </div> */}
 
         {/* Influencer Flash News Text */}
         <h2 className="text-center text-gray-900 text-2xl font-bold mb-0 mt-10">
