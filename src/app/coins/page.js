@@ -310,14 +310,14 @@ export default function CoinsPage() {
                     </th>
                     <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       <div className="flex flex-col items-start">
-                        <span>Publish Price</span>
-                        <span>And % Change</span>
+                        <span>Base Price</span>
+                        {/* <span>And % Change</span> */}
                       </div>
                     </th>
                     <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       <div className="flex flex-col items-center">
                         {/* 24 Hours */}
-                        <span>24 Hours</span>
+                        <span>Current</span>
                         {/* Price + Info icon in same row */}
                         <div className="flex items-center gap-1">
                           <span>Price</span>
@@ -348,10 +348,10 @@ export default function CoinsPage() {
                     <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[10%] align-middle">
                       <div className="flex flex-col items-center">
                         {/* 24 Hours */}
-                        <span>24 Hours</span>
+                        <span>Price</span>
                         {/* Price + Info icon in same row */}
                         <div className="flex items-center gap-1">
-                          <span>Volume</span>
+                          <span>Change</span>
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
@@ -515,30 +515,62 @@ export default function CoinsPage() {
                           {/* Publish Price + Price Change % */}
                           <td className="pl-0.5 pr-2 py-3">
                             <div className="flex flex-col justify-start">
-                              {/* Publish Price (Average Base Price) */}
-                              <span className="text-[10px] font-semibold text-gray-900">
-                                {coin.avg_base_price && coin.binance_prices && coin.binance_prices.length > 0
-                                  ? `$${parseFloat(coin.avg_base_price).toFixed(2)}`
-                                  : 'No base price available'}
-                              </span>
-
-                              {/* Price Change % (calculated from avg_base_price to current price) */}
-                              <span className={`text-[10px] font-semibold ${
-                                coin.avg_base_price && coin.binance_prices && coin.binance_prices.length > 0 && currentPrice !== 'N/A'
-                                  ? ((currentPrice - coin.avg_base_price) / coin.avg_base_price * 100) > 0
-                                    ? 'text-green-600'
-                                    : ((currentPrice - coin.avg_base_price) / coin.avg_base_price * 100) < 0
-                                      ? 'text-red-600'
-                                      : 'text-gray-900'
-                                  : 'text-gray-500'
-                              }`}>
-                                {coin.avg_base_price && coin.binance_prices && coin.binance_prices.length > 0 && currentPrice !== 'N/A'
-                                  ? (() => {
-                                      const changePercent = ((currentPrice - coin.avg_base_price) / coin.avg_base_price * 100);
-                                      return `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
-                                    })()
-                                  : 'N/A'}
-                              </span>
+                              {/* Publish Price (Average Base Price or Last Available Price) */}
+                              {coin.avg_base_price && coin.binance_prices && coin.binance_prices.length > 0 ? (
+                                <span className="text-[10px] font-semibold text-gray-900">
+                                  ${parseFloat(coin.avg_base_price).toFixed(2)}
+                                </span>
+                              ) : coin.binance?.last_available_price ? (
+                                <div className="flex flex-col gap-0.5">
+                                  <div className="flex items-center gap-1">
+                                    <span className="text-[10px] font-semibold text-gray-900">
+                                      ${parseFloat(coin.binance.last_available_price).toFixed(2)}
+                                    </span>
+                                    <span className="relative group cursor-pointer z-[9999]">
+                                      <span className="text-blue-600 text-xs">ⓘ</span>
+                                      <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                        MCMDB Last Price<br />
+                                        {coin.binance.last_available_timestamp ? (
+                                          <>
+                                            {new Date(coin.binance.last_available_timestamp).toLocaleDateString('en-GB', {
+                                              day: '2-digit',
+                                              month: '2-digit',
+                                              year: 'numeric',
+                                              timeZone: 'UTC'
+                                            })}<br />
+                                            {new Date(coin.binance.last_available_timestamp).toLocaleTimeString('en-US', {
+                                              hour: '2-digit',
+                                              minute: '2-digit',
+                                              hour12: true,
+                                              timeZone: 'UTC'
+                                            })} UTC
+                                          </>
+                                        ) : 'N/A'}
+                                      </span>
+                                    </span>
+                                  </div>
+                                  {coin.binance.last_available_timestamp && (
+                                    <div className="flex flex-col text-[9px] text-gray-500">
+                                      <span>{new Date(coin.binance.last_available_timestamp).toLocaleDateString('en-GB', {
+                                        day: '2-digit',
+                                        month: '2-digit',
+                                        year: 'numeric',
+                                        timeZone: 'UTC'
+                                      })}</span>
+                                      <span>{new Date(coin.binance.last_available_timestamp).toLocaleTimeString('en-US', {
+                                        hour: '2-digit',
+                                        minute: '2-digit',
+                                        hour12: true,
+                                        timeZone: 'UTC'
+                                      })} UTC</span>
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-[10px] font-semibold text-gray-900">
+                                  No base price available
+                                </span>
+                              )}
                             </div>
                           </td>
 
@@ -553,7 +585,7 @@ export default function CoinsPage() {
                                 </span>
 
                                 {/* Price Change Value */}
-                                {priceChange !== null && priceChangePercent !== null ? (
+                                {/* {priceChange !== null && priceChangePercent !== null ? (
                                   <>
                                     <span
                                       className={`text-xs font-semibold ${parseFloat(priceChange) > 0
@@ -569,8 +601,6 @@ export default function CoinsPage() {
                                         maximumFractionDigits: 2
                                       })}
                                     </span>
-
-                                    {/* Price Change Percent */}
                                     <span
                                       className={`text-[10px] font-semibold ${parseFloat(priceChangePercent) > 0
                                         ? 'text-green-600'
@@ -585,7 +615,7 @@ export default function CoinsPage() {
                                   </>
                                 ) : (
                                   <span className="text-xs text-gray-500">N/A</span>
-                                )}
+                                )} */}
 
                               </div>
                             ) : (
@@ -638,7 +668,7 @@ export default function CoinsPage() {
                             )}
                           </td> */}
                           <td className="px-2 py-3 text-center">
-                            {(() => {
+                            {/* {(() => {
                               const liveVolume = getLiveVolume(coin.symbol);
 
                               if (liveVolume?.volume) {
@@ -655,7 +685,22 @@ export default function CoinsPage() {
                               }
 
                               return <span className="text-xs text-gray-500">N/A</span>;
-                            })()}
+                            })()} */}
+                            <span className={`text-[10px] font-semibold ${coin.avg_base_price && coin.binance_prices && coin.binance_prices.length > 0 && currentPrice !== 'N/A'
+                              ? ((currentPrice - coin.avg_base_price) / coin.avg_base_price * 100) > 0
+                                ? 'text-green-600'
+                                : ((currentPrice - coin.avg_base_price) / coin.avg_base_price * 100) < 0
+                                  ? 'text-red-600'
+                                  : 'text-gray-900'
+                              : 'text-gray-500'
+                              }`}>
+                              {coin.avg_base_price && coin.binance_prices && coin.binance_prices.length > 0 && currentPrice !== 'N/A'
+                                ? (() => {
+                                  const changePercent = ((currentPrice - coin.avg_base_price) / coin.avg_base_price * 100);
+                                  return `${changePercent > 0 ? '+' : ''}${changePercent.toFixed(2)}%`;
+                                })()
+                                : 'N/A'}
+                            </span>
                           </td>
 
 
