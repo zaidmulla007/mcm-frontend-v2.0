@@ -525,10 +525,14 @@ export default function CoinsPage() {
                           {/* Publish Price + Price Change % */}
                           <td className="pl-0.5 pr-2 py-3">
                             <div className="flex flex-col justify-start">
-                              {/* Publish Price (Average Base Price only) */}
                               {coin.avg_base_price && coin.binance_prices && coin.binance_prices.length > 0 ? (
                                 <span className="text-[10px] font-semibold text-gray-900">
-                                  ${parseFloat(coin.avg_base_price).toFixed(2)}
+                                  $
+                                  {Number(coin.avg_base_price)
+                                    .toLocaleString("en-US", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
                                 </span>
                               ) : (
                                 <span className="text-[10px] font-semibold text-gray-900">
@@ -537,27 +541,40 @@ export default function CoinsPage() {
                               )}
                             </div>
                           </td>
-
                           {/* Current Price */}
                           <td className="px-2 py-3 text-center">
                             {currentPrice !== 'N/A' ? (
                               <div className="flex flex-col items-center gap-0.5">
                                 {/* Current Price from Binance Live */}
                                 <span className="text-xs font-semibold text-blue-500">
-                                  ${typeof currentPrice === 'number' ? currentPrice.toFixed(2) : currentPrice}
+                                  $
+                                  {typeof currentPrice === "number"
+                                    ? currentPrice.toLocaleString("en-US", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })
+                                    : currentPrice}
                                 </span>
                               </div>
                             ) : coin.binance?.last_available_price ? (
                               <div className="flex flex-col items-center gap-0.5">
                                 <div className="flex items-center gap-1">
                                   <span className="text-xs font-semibold text-gray-600">
-                                    ${parseFloat(coin.binance.last_available_price).toFixed(2)}
+                                    $
+                                    {Number(coin.binance.last_available_price).toLocaleString("en-US", {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: 2,
+                                    })}
                                   </span>
+
+                                  {/* Tooltip */}
                                   <span className="relative group cursor-pointer z-[9999]">
                                     <span className="text-gray-600 text-xs">ⓘ</span>
                                     <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
                                       MCM DB Last Price<br />
-                                      {coin.binance.last_available_timestamp ? formatDate(new Date(coin.binance.last_available_timestamp)) : 'N/A'}
+                                      {coin.binance.last_available_timestamp
+                                        ? formatDate(new Date(coin.binance.last_available_timestamp))
+                                        : "N/A"}
                                     </span>
                                   </span>
                                 </div>
@@ -566,7 +583,6 @@ export default function CoinsPage() {
                               <span className="text-xs text-gray-500">N/A</span>
                             )}
                           </td>
-
                           {/* 24 Hours Price Change */}
                           <td className="px-2 py-3 text-center">
                             <span className={`text-[10px] font-semibold ${priceChangePercent !== null
