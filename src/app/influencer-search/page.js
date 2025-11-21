@@ -244,7 +244,7 @@ export default function InfluencerSearchPage() {
   const [binanceVolumeData, setBinanceVolumeData] = useState({});
 
   // Use timezone context
-  const { useLocalTime, userTimezone, toggleTimezone, setUseLocalTime } = useTimezone();
+  const { useLocalTime, userTimezone, toggleTimezone, setUseLocalTime, formatDate: formatDateFromContext } = useTimezone();
 
   // Get user's city from timezone
   const [userCity, setUserCity] = useState('');
@@ -1246,7 +1246,7 @@ export default function InfluencerSearchPage() {
               </div>
 
               {/* View Mode Buttons in Center */}
-              <div className="flex gap-3">
+              {/* <div className="flex gap-3">
                 <button
                   onClick={() => setViewMode("top10_influencer_latest")}
                   className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${viewMode === "top10_influencer_latest"
@@ -1268,7 +1268,7 @@ export default function InfluencerSearchPage() {
                 >
                   Publish Posts
                 </button>
-              </div>
+              </div> */}
 
               {/* Empty space on right for balance */}
               <div className="w-40"></div>
@@ -1290,8 +1290,8 @@ export default function InfluencerSearchPage() {
                           Timeframes represent how an influencer’s calls performed over different periods.<br />
                           We check the price when the call was made,<br />
                           compare it after each timeframe,<br />
-                          and use those outcomes to rank influencers based on overall performance.<br/>
-                          <br/>
+                          and use those outcomes to rank influencers based on overall performance.<br />
+                          <br />
                           (Rating based on 1 hour)
                         </span>
                       </span>
@@ -1301,7 +1301,7 @@ export default function InfluencerSearchPage() {
                     </th> */}
                     <th className="px-1 py-1 text-[10px] font-medium text-black-900 tracking-wider relative">
                       <div className="flex items-center justify-between w-full">
-                        <span className="px-1">Date & Time</span>
+                        {/* <span className="px-1">Date & Time</span> */}
                         <div className="flex items-center justify-center gap-1 flex-1">
                           <span>Info</span>
                           {/* <span className="relative group cursor-pointer z-[9999]">
@@ -1387,28 +1387,8 @@ export default function InfluencerSearchPage() {
 
                     <th className="px-0.5 py-0.5">
                       <div className="flex items-center justify-start gap-1 px-0.5 w-full">
-                        <div className="w-[10%] flex flex-col items-start gap-1">
-                          <select
-                            value={selectedDateFilter}
-                            onChange={(e) => setSelectedDateFilter(e.target.value)}
-                            className="w-3/4 border border-gray-300 bg-gray-50 rounded-full px-2 py-0.5 text-[9px] font-medium text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 cursor-pointer transition-all"
-                          >
-                            <option value="latest">Latest</option>
-                            {Array.from({ length: 7 }).map((_, i) => {
-                              // Start from current UTC date and go back 7 days
-                              const date = new Date();
-                              date.setUTCDate(date.getUTCDate() - i);
-                              const day = String(date.getUTCDate()).padStart(2, "0");
-                              const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-                              const year = date.getUTCFullYear();
-                              const formatted = `${day}-${month}-${year}`;
-                              return (
-                                <option key={formatted} value={formatted}>
-                                  {formatted}
-                                </option>
-                              );
-                            })}
-                          </select>
+                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-center flex flex-col  gap-1">
+                          Date & Time
                         </div>
                         <div className="w-[6%] text-[10px] font-bold text-black-900 text-left">
                           Coin&apos;s
@@ -1429,8 +1409,17 @@ export default function InfluencerSearchPage() {
                         </div>
                         <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
-                            <span>Base Price</span>
-                            {/* <span>And % Change</span> */}
+                            <span>Base</span>
+                            <div className="flex items-center gap-1">
+                              <span>Price</span>
+                              <span className="relative group cursor-pointer z-[9999]">
+                                <span className="text-blue-600 text-sm">ⓘ</span>
+                                <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                  Price at the time when post was published
+                                </span>
+                              </span>
+                            </div>
+
                           </div>
                         </div>
                         {/* <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
@@ -1464,6 +1453,7 @@ export default function InfluencerSearchPage() {
 
                                 <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
                                   Source: Binance <br />
+                                  Source: MCM DB Last Updated Price<br />
                                   N/A : Not Available
                                 </span>
                               </span>
@@ -1477,7 +1467,7 @@ export default function InfluencerSearchPage() {
                           <div className="flex flex-col items-start">
 
                             {/* Title */}
-                            <span>Price</span>
+                            <span>24 Hours Price</span>
 
                             {/* Price + Info Icon on the right */}
                             <div className="flex items-center gap-1">
@@ -1897,109 +1887,22 @@ export default function InfluencerSearchPage() {
 
 
 
-                                            {/* Base Price + Price Change % */}
+                                            {/* Base Price */}
                                             <div className="w-[10%] flex flex-col justify-start">
-                                              {/* Base Price or Last Available Price */}
                                               {coinData.basePrice ? (
-                                                <div className="flex flex-col gap-0.5">
-                                                  <div className="flex items-center gap-1">
-                                                    <span className="text-[8px] font-semibold text-gray-900">
-                                                      {(() => {
-                                                        const raw = coinData.basePrice?.replace(/[^0-9.-]/g, '');
-                                                        const value = parseFloat(raw);
+                                                <span className="text-[8px] font-semibold text-gray-900">
+                                                  {(() => {
+                                                    const raw = coinData.basePrice?.replace(/[^0-9.-]/g, '');
+                                                    const value = parseFloat(raw);
 
-                                                        if (isNaN(value)) return coinData.basePrice;
+                                                    if (isNaN(value)) return coinData.basePrice;
 
-                                                        return `$${value.toLocaleString(undefined, {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2
-                                                        })}`;
-                                                      })()}
-                                                    </span>
-                                                    {coinData.lastAvailablePrice && coinData.lastAvailableTimestamp && (
-                                                      <span className="relative group cursor-pointer z-[9999]">
-                                                        <span className="text-blue-600 text-[10px]">ⓘ</span>
-                                                        <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-[10px] p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                                          MCMDB Last Price<br />
-                                                          {new Date(coinData.lastAvailableTimestamp).toLocaleDateString('en-GB', {
-                                                            day: '2-digit',
-                                                            month: '2-digit',
-                                                            year: 'numeric',
-                                                            timeZone: 'UTC'
-                                                          })}<br />
-                                                          {new Date(coinData.lastAvailableTimestamp).toLocaleTimeString('en-US', {
-                                                            hour: '2-digit',
-                                                            minute: '2-digit',
-                                                            hour12: true,
-                                                            timeZone: 'UTC'
-                                                          })} UTC
-                                                        </span>
-                                                      </span>
-                                                    )}
-                                                  </div>
-                                                  {coinData.lastAvailablePrice && coinData.lastAvailableTimestamp && (
-                                                    <div className="flex flex-col text-[7px] text-gray-500">
-                                                      <span>{new Date(coinData.lastAvailableTimestamp).toLocaleDateString('en-GB', {
-                                                        day: '2-digit',
-                                                        month: '2-digit',
-                                                        year: 'numeric',
-                                                        timeZone: 'UTC'
-                                                      })}</span>
-                                                      <span>{new Date(coinData.lastAvailableTimestamp).toLocaleTimeString('en-US', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        hour12: true,
-                                                        timeZone: 'UTC'
-                                                      })} UTC</span>
-                                                    </div>
-                                                  )}
-                                                </div>
-                                              ) : coinData.lastAvailablePrice ? (
-                                                <div className="flex flex-col gap-0.5">
-                                                  <div className="flex items-center gap-1">
-                                                    <span className="text-[8px] font-semibold text-gray-900">
-                                                      ${parseFloat(coinData.lastAvailablePrice).toFixed(2)}
-                                                    </span>
-                                                    <span className="relative group cursor-pointer z-[9999]">
-                                                      <span className="text-blue-600 text-[10px]">ⓘ</span>
-                                                      <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-[10px] p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                                        MCMDB Last Price<br />
-                                                        {coinData.lastAvailableTimestamp ? (
-                                                          <>
-                                                            {new Date(coinData.lastAvailableTimestamp).toLocaleDateString('en-GB', {
-                                                              day: '2-digit',
-                                                              month: '2-digit',
-                                                              year: 'numeric',
-                                                              timeZone: 'UTC'
-                                                            })}<br />
-                                                            {new Date(coinData.lastAvailableTimestamp).toLocaleTimeString('en-US', {
-                                                              hour: '2-digit',
-                                                              minute: '2-digit',
-                                                              hour12: true,
-                                                              timeZone: 'UTC'
-                                                            })} UTC
-                                                          </>
-                                                        ) : 'N/A'}
-                                                      </span>
-                                                    </span>
-                                                  </div>
-                                                  {coinData.lastAvailableTimestamp && (
-                                                    <div className="flex flex-col text-[7px] text-gray-500">
-                                                      <span>{new Date(coinData.lastAvailableTimestamp).toLocaleDateString('en-GB', {
-                                                        day: '2-digit',
-                                                        month: '2-digit',
-                                                        year: 'numeric',
-                                                        timeZone: 'UTC'
-                                                      })}</span>
-                                                      <span>{new Date(coinData.lastAvailableTimestamp).toLocaleTimeString('en-US', {
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        hour12: true,
-                                                        timeZone: 'UTC'
-                                                      })} UTC</span>
-                                                    </div>
-                                                  )}
-                                                </div>
+                                                    return `$${value.toLocaleString(undefined, {
+                                                      minimumFractionDigits: 2,
+                                                      maximumFractionDigits: 2
+                                                    })}`;
+                                                  })()}
+                                                </span>
                                               ) : (
                                                 <span className="text-[8px] font-semibold text-gray-900">N/A</span>
                                               )}
@@ -2086,111 +1989,78 @@ export default function InfluencerSearchPage() {
 
 
 
-                                            {/* Current Price + Price Change (24hrs) - Combined Column */}
+                                            {/* Current Price */}
                                             <div className="w-[10%] flex flex-col justify-start">
                                               {(() => {
-                                                // Check if basePrice exists
-                                                const hasBasePrice = coinData.basePrice && coinData.basePrice !== 'N/A';
+                                                // First try to get live price from Binance WebSocket
+                                                const livePrice = getLivePrice(coinData.coin);
+                                                const raw = livePrice?.replace(/[^0-9.-]/g, '');
+                                                const value = parseFloat(raw);
 
-                                                // If no basePrice but has lastAvailablePrice, show lastAvailablePrice
-                                                if (!hasBasePrice && coinData.lastAvailablePrice) {
+                                                // If we have a valid live price, show it
+                                                if (!isNaN(value) && livePrice !== 'N/A') {
+                                                  const formattedPrice = `$${value.toLocaleString(undefined, {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2
+                                                  })}`;
                                                   return (
                                                     <span className="text-[8px] font-semibold text-blue-500">
-                                                      ${parseFloat(coinData.lastAvailablePrice).toFixed(2)}
+                                                      {formattedPrice}
                                                     </span>
                                                   );
                                                 }
 
-                                                // If no basePrice and no lastAvailablePrice, show N/A
-                                                if (!hasBasePrice) {
+                                                // Otherwise, check if we have lastAvailablePrice from MCM DB
+                                                if (coinData.lastAvailablePrice) {
                                                   return (
-                                                    <span className="text-[8px] font-semibold text-gray-900">N/A</span>
+                                                    <div className="flex flex-col items-start gap-0.5">
+                                                      <div className="flex items-center gap-1">
+                                                        <span className="text-[8px] font-semibold text-gray-600">
+                                                          ${parseFloat(coinData.lastAvailablePrice).toFixed(2)}
+                                                        </span>
+                                                        <span className="relative inline-block z-[9999]">
+                                                          <span
+                                                            className="text-gray-600 text-[8px] cursor-pointer hover:text-gray-800 inline-block"
+                                                            onMouseEnter={(e) => {
+                                                              const tooltip = e.currentTarget.nextElementSibling;
+                                                              if (tooltip) tooltip.classList.remove('invisible');
+                                                            }}
+                                                            onMouseLeave={(e) => {
+                                                              const tooltip = e.currentTarget.nextElementSibling;
+                                                              if (tooltip) tooltip.classList.add('invisible');
+                                                            }}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                          >
+                                                            ⓘ
+                                                          </span>
+                                                          <span className="invisible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-[8px] p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999] pointer-events-none">
+                                                            MCM DB Last Price<br />
+                                                            {coinData.lastAvailableTimestamp ? formatDateFromContext(new Date(coinData.lastAvailableTimestamp), 'DD-MM-YYYY hh:mm A') : 'N/A'}
+                                                          </span>
+                                                        </span>
+                                                      </div>
+                                                    </div>
                                                   );
                                                 }
 
-                                                // Otherwise, show live price as before
-                                                const livePrice = getLivePrice(coinData.coin);
-                                                const raw = livePrice?.replace(/[^0-9.-]/g, '');
-                                                const value = parseFloat(raw);
-                                                const formattedPrice = isNaN(value) ? livePrice : `$${value.toLocaleString(undefined, {
-                                                  minimumFractionDigits: 2,
-                                                  maximumFractionDigits: 2
-                                                })}`;
-
-                                                // Get live price change percentage from WebSocket
-                                                const priceChangePercent = getLivePriceChange(coinData.coin);
-
-                                                // Get current price to calculate absolute change
-                                                const currentPriceStr = coinData.currentPrice;
-                                                const currentPrice = currentPriceStr && currentPriceStr !== 'N/A'
-                                                  ? parseFloat(currentPriceStr.replace('$', ''))
-                                                  : null;
-
-                                                // Calculate absolute price change from percentage
-                                                const priceChange = (priceChangePercent !== null && currentPrice !== null)
-                                                  ? (currentPrice * priceChangePercent / 100)
-                                                  : null;
-
-                                                if (priceChange !== null && priceChangePercent !== null) {
-                                                  const isPositive = priceChange > 0;
-                                                  const isNegative = priceChange < 0;
-                                                  const colorClass = isPositive ? 'text-green-600' : isNegative ? 'text-red-600' : 'text-gray-900';
-
-                                                  return (
-                                                    <>
-                                                      {/* Current Price */}
-                                                      <span className="text-[8px] font-semibold text-blue-500">
-                                                        {formattedPrice}
-                                                      </span>
-                                                      {/* Price Change (absolute) */}
-                                                      {/* <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                        {isPositive ? '+' : ''}{priceChange.toLocaleString('en-US', {
-                                                          minimumFractionDigits: 2,
-                                                          maximumFractionDigits: 2
-                                                        })}
-                                                      </span> */}
-                                                      {/* Price Change (percentage) */}
-                                                      {/* <span className={`text-[8px] font-semibold ${colorClass}`}>
-                                                        ({isPositive ? '+' : ''}{priceChangePercent.toFixed(2)}%)
-                                                      </span> */}
-                                                    </>
-                                                  );
-                                                }
+                                                // If neither live price nor last available price exists, show N/A
                                                 return (
-                                                  <>
-                                                    <span className="text-[8px] font-semibold text-blue-500">{formattedPrice}</span>
-                                                    {/* <span className="text-[8px] font-semibold text-gray-900">N/A</span> */}
-                                                  </>
+                                                  <span className="text-[8px] font-semibold text-gray-900">N/A</span>
                                                 );
                                               })()}
                                             </div>
 
 
 
-                                            {/* 24 Hours Volume - From Binance */}
+                                            {/* 24 Hours Price Change - From Binance WebSocket */}
                                             <div className="w-[10%] flex flex-col justify-start">
                                               {(() => {
-                                                const basePrice =
-                                                  coinData.basePrice && coinData.basePrice !== "N/A"
-                                                    ? parseFloat(coinData.basePrice.replace("$", "").replace(/,/g, ""))
-                                                    : null;
+                                                // Get live 24-hour price change percentage from WebSocket
+                                                const priceChangePercent = getLivePriceChange(coinData.coin);
 
-                                                const livePriceStr = getLivePrice(coinData.coin);
-                                                const currentPrice =
-                                                  livePriceStr && livePriceStr !== "N/A"
-                                                    ? parseFloat(livePriceStr.replace("$", "").replace(/,/g, ""))
-                                                    : null;
-
-                                                if (basePrice !== null && currentPrice !== null) {
-                                                  let changePrice = currentPrice - basePrice;
-
-                                                  if (coinData.type?.toLowerCase().includes("bearish")) {
-                                                    changePrice *= -1;
-                                                  }
-
-                                                  const percentageChange = (changePrice / currentPrice) * 100;
-                                                  const isPositive = changePrice > 0;
-                                                  const isNegative = changePrice < 0;
+                                                if (priceChangePercent !== null) {
+                                                  const isPositive = priceChangePercent > 0;
+                                                  const isNegative = priceChangePercent < 0;
 
                                                   return (
                                                     <span
@@ -2198,36 +2068,13 @@ export default function InfluencerSearchPage() {
                                                         }`}
                                                     >
                                                       {isPositive ? "+" : ""}
-                                                      {percentageChange.toLocaleString(undefined, {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                      })}
-                                                      %
+                                                      {priceChangePercent.toFixed(2)}%
                                                     </span>
                                                   );
                                                 }
 
                                                 return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
                                               })()}
-
-                                              {/* {(() => {
-                                                const liveVolume = getLiveVolume(coinData.coin);
-
-                                                if (liveVolume?.volume) {
-                                                  const volume = parseFloat(liveVolume.volume);
-
-                                                  return (
-                                                    <span className="text-[8px] font-semibold text-gray-900">
-                                                      {volume.toLocaleString("en-US", {
-                                                        minimumFractionDigits: 0,
-                                                        maximumFractionDigits: 0
-                                                      })}
-                                                    </span>
-                                                  );
-                                                }
-
-                                                return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
-                                              })()} */}
                                             </div>
 
 

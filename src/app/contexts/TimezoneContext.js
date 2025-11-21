@@ -13,7 +13,7 @@ export const useTimezone = () => {
 };
 
 export const TimezoneProvider = ({ children }) => {
-  const [useLocalTime, setUseLocalTime] = useState(false);
+  const [useLocalTime, setUseLocalTime] = useState(true);
   const [userTimezone, setUserTimezone] = useState('UTC');
 
   // Initialize timezone on mount
@@ -22,13 +22,13 @@ export const TimezoneProvider = ({ children }) => {
     const detectedTimezone = moment.tz.guess();
     setUserTimezone(detectedTimezone);
 
-    // Load timezone preference from localStorage (default to false/UTC if not set)
+    // Load timezone preference from localStorage (default to true/Local Time if not set)
     const savedTimezone = localStorage.getItem('useLocalTime');
     if (savedTimezone !== null) {
       setUseLocalTime(JSON.parse(savedTimezone));
     } else {
-      // Explicitly set to false (UTC) if no preference saved
-      setUseLocalTime(false);
+      // Explicitly set to true (Local Time) if no preference saved
+      setUseLocalTime(true);
     }
   }, []);
 
