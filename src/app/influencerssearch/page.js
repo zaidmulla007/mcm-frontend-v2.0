@@ -384,7 +384,7 @@ export default function InfluencerSearchPage() {
   return (
     <div className="min-h-screen bg-gray-100 text-gray-900 font-sans mt-5">
       {/* Backup Link Banner */}
-      <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
+      {/* <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
         <div className="flex items-center justify-between max-w-7xl mx-auto">
           <div className="flex items-center gap-2">
             <span className="text-sm text-blue-800">
@@ -399,7 +399,7 @@ export default function InfluencerSearchPage() {
             View Backups
           </Link>
         </div>
-      </div>
+      </div> */}
 
       {/* Main Content */}
       <main className="mx-auto px-4 pb-8 overflow-x-hidden">

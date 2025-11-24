@@ -33,13 +33,6 @@ export const useInfluencerLivePrice = (symbols = []) => {
   const wsRefsArray = useRef([]);
   const exchangeInfoFetched = useRef(false);
 
-  console.log(`🎬 [Influencer] useInfluencerLivePrice hook initialized with ${symbols.length} symbols`);
-
-  // Debug: Log whenever prices state changes
-  useEffect(() => {
-    console.log(`🔄 [Influencer] Prices state updated! Now has ${Object.keys(prices).length} entries:`, Object.keys(prices).slice(0, 10));
-  }, [prices]);
-
   // Fetch Binance exchangeInfo to get all valid USDT pairs
   useEffect(() => {
     const fetchExchangeInfo = async () => {
@@ -59,9 +52,8 @@ export const useInfluencerLivePrice = (symbols = []) => {
 
         setValidUSDTPairs(usdtPairs);
         exchangeInfoFetched.current = true;
-        console.log(`✅ [Influencer] Binance: Loaded ${usdtPairs.size} valid USDT trading pairs`);
       } catch (error) {
-        console.error("❌ [Influencer] Failed to fetch Binance exchange info:", error);
+        console.error("Failed to fetch Binance exchange info:", error);
       }
     };
 
@@ -70,11 +62,8 @@ export const useInfluencerLivePrice = (symbols = []) => {
 
   // Connect WebSocket for live prices with batching support
   useEffect(() => {
-    console.log(`🔍 [Influencer] Hook triggered. symbols.length: ${symbols.length}, validUSDTPairs.size: ${validUSDTPairs.size}`);
-
     // Wait until we have both coin symbols and valid USDT pairs
     if (symbols.length === 0 || validUSDTPairs.size === 0) {
-      console.log(`⏳ [Influencer] Waiting... symbols empty or validUSDTPairs not loaded yet`);
       return;
     }
 
@@ -88,28 +77,15 @@ export const useInfluencerLivePrice = (symbols = []) => {
     const requestedSymbols = symbols.map((symbol) => `${symbol.toUpperCase()}USDT`);
     const validSymbols = requestedSymbols.filter(symbol => validUSDTPairs.has(symbol));
 
-    // Log invalid symbols for debugging
-    const invalidSymbols = requestedSymbols.filter(symbol => !validUSDTPairs.has(symbol));
-    if (invalidSymbols.length > 0) {
-      console.warn(`⚠️ [Influencer] ${invalidSymbols.length} symbols don't have USDT pairs on Binance:`,
-        invalidSymbols.slice(0, 10).join(", "),
-        invalidSymbols.length > 10 ? `... +${invalidSymbols.length - 10} more` : ""
-      );
-    }
-
     if (validSymbols.length === 0) {
-      console.warn("⚠️ [Influencer] No valid USDT pairs to subscribe to");
       return;
     }
 
     // Fetch initial prices from REST API before WebSocket
     const fetchInitialPrices = async () => {
       try {
-        console.log(`🔄 [Influencer] Fetching initial prices for ${validSymbols.length} symbols:`, validSymbols);
         const resPrice = await fetch("https://api.binance.com/api/v3/ticker/24hr");
         const allTicker = await resPrice.json();
-
-        console.log(`📊 [Influencer] Received ${allTicker.length} tickers from Binance`);
 
         // Filter to only our valid symbols
         const initialPrices = {};
@@ -136,19 +112,13 @@ export const useInfluencerLivePrice = (symbols = []) => {
           }
         });
 
-        console.log(`💰 [Influencer] Initial prices loaded for ${Object.keys(initialPrices).length} symbols:`, Object.keys(initialPrices));
-        console.log(`💰 [Influencer] Sample prices:`, Object.entries(initialPrices).slice(0, 3));
-
         // Set initial state before WebSocket connects
-        console.log(`🔧 [Influencer] About to set prices in state. initialPrices has ${Object.keys(initialPrices).length} entries`);
         setPrices(initialPrices);
         setPriceChanges(initialPriceChanges);
         setBidAskData(initialBidAsk);
         setVolumeData(initialVolumeData);
-
-        console.log(`✅ [Influencer] Called setPrices with ${Object.keys(initialPrices).length} prices`);
       } catch (error) {
-        console.error("❌ [Influencer] Failed to fetch initial prices:", error);
+        console.error("Failed to fetch initial prices:", error);
       }
     };
 
@@ -159,8 +129,6 @@ export const useInfluencerLivePrice = (symbols = []) => {
     // Batch symbols into groups of MAX_STREAMS (1024)
     const batches = batchArray(symbolsLower, MAX_STREAMS);
 
-    console.log(`✅ [Influencer] Connecting WebSocket for ${validSymbols.length}/${requestedSymbols.length} valid USDT pairs in ${batches.length} batch(es)`);
-
     // Create a WebSocket connection for each batch
     batches.forEach((batch, batchIndex) => {
       const streams = batch.map(s => `${s}@ticker`).join("/");
@@ -168,12 +136,10 @@ export const useInfluencerLivePrice = (symbols = []) => {
       wsRefsArray.current.push(ws);
 
       ws.onopen = () => {
-        console.log(`📡 [Influencer] Binance WebSocket batch ${batchIndex + 1}/${batches.length} connected (${batch.length} streams)`);
         setIsConnected(true);
       };
 
       ws.onclose = () => {
-        console.log(`🔌 [Influencer] Binance WebSocket batch ${batchIndex + 1} disconnected`);
         // Only set disconnected if ALL connections are closed
         const allClosed = wsRefsArray.current.every(socket => socket.readyState === WebSocket.CLOSED);
         if (allClosed) {
@@ -182,7 +148,7 @@ export const useInfluencerLivePrice = (symbols = []) => {
       };
 
       ws.onerror = (error) => {
-        console.error(`❌ [Influencer] Binance WebSocket batch ${batchIndex + 1} error:`, error);
+        console.error("Binance WebSocket error:", error);
       };
 
       ws.onmessage = (event) => {
@@ -231,7 +197,7 @@ export const useInfluencerLivePrice = (symbols = []) => {
             }));
           }
         } catch (err) {
-          console.error('❌ [Influencer] Error parsing WebSocket message:', err);
+          console.error('Error parsing WebSocket message:', err);
         }
       };
     });

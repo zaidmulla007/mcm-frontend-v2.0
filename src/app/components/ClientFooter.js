@@ -424,15 +424,15 @@ export default function ClientFooter() {
               <a href="/terms" className="hover:text-purple-400 transition">
                 Terms
               </a>
-              <a href="/privacy" className="hover:text-purple-400 transition">
+              {/* <a href="/privacy" className="hover:text-purple-400 transition">
                 Privacy
               </a>
               <button onClick={handleContactClick} className="hover:text-purple-400 transition">
                 Contact
-              </button>
-              <a href="/blog" className="hover:text-purple-400 transition">
+              </button> */}
+              {/* <a href="/blog" className="hover:text-purple-400 transition">
                 Blog
-              </a>
+              </a> */}
               <a href="/sitemap" className="hover:text-purple-400 transition">
                 Sitemap
               </a>

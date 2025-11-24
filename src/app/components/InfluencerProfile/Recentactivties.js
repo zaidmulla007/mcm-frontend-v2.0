@@ -156,7 +156,7 @@ export default function RecentActivityTab({ channelID, channelData, youtubeLast5
   };
 
   const getColumnColor = (index) => {
-    return "bg-blue-600";
+    return "bg-gradient-to-r from-blue-500 to-purple-500";
   };
 
   const getScoreColor = (score) => {
@@ -257,11 +257,11 @@ export default function RecentActivityTab({ channelID, channelData, youtubeLast5
           <h1 className="text-3xl font-bold text-gray-900">
             {channelData?.influencer_name || "Influencer"}
           </h1>
-          {rank && (
+          {/* {rank && (
             <div className="text-xl font-semibold text-white-600 mt-2">
               Rank (180 days/Overall) : {rank}
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Posts */}
@@ -286,7 +286,7 @@ export default function RecentActivityTab({ channelID, channelData, youtubeLast5
                     {post.title}
                   </div>
                 </div>
-                <div className="h-6 mb-2">
+                <div className="h-2 mb-2">
                   {post.title.length > 80 && (
                     <button
                       onClick={() => toggleTitle(post.id)}
@@ -296,7 +296,7 @@ export default function RecentActivityTab({ channelID, channelData, youtubeLast5
                     </button>
                   )}
                 </div>
-                <div className="text-xs h-6">
+                <div className="text-xs h-2">
                   <a
                     href={post.videoUrl}
                     target="_blank"
@@ -390,7 +390,7 @@ export default function RecentActivityTab({ channelID, channelData, youtubeLast5
                   </button>
                 </div>
 
-                <div className="min-h-[96px] mb-2">
+                <div className="min-h-[76px] mb-2">
                   <div
                     className={`text-xs text-gray-600 leading-tight transition-all duration-300 ${expandedSummaries[post.id] ? '' : 'line-clamp-4'
                       }`}

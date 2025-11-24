@@ -243,13 +243,6 @@ export default function InfluencerSearchPage() {
   const [error, setError] = useState(null);
   const [binanceVolumeData, setBinanceVolumeData] = useState({});
 
-  // Posts pagination state (from 3days-all-posts API)
-  const [threeDaysAllPostsPagination, setThreeDaysAllPostsPagination] = useState({
-    youtube: { page: 1, limit: 10, total: 0, totalPages: 0, hasNextPage: false, hasPrevPage: false },
-    telegram: { page: 1, limit: 10, total: 0, totalPages: 0, hasNextPage: false, hasPrevPage: false }
-  });
-  const [threeDaysDateRange, setThreeDaysDateRange] = useState({ start: null, end: null });
-
   // Use timezone context
   const { useLocalTime, userTimezone, toggleTimezone, setUseLocalTime, formatDate: formatDateFromContext } = useTimezone();
 
@@ -301,6 +294,7 @@ export default function InfluencerSearchPage() {
           }
         });
 
+        console.log(`Loaded ${Object.keys(volumeMap).length} USDT pairs from ${data.length} total pairs`);
         setBinanceVolumeData(volumeMap);
       } catch (error) {
         console.error('Error fetching Binance volume data:', error);
@@ -363,69 +357,85 @@ export default function InfluencerSearchPage() {
   const coinSymbols = useMemo(() => {
     const symbolsSet = new Set();
 
-    // Helper function to extract symbols from a post
-    const extractSymbolsFromPost = (post) => {
-      // Handle posts with mentioned array (new API structure from 3days-all-posts)
-      if (post.mentioned && Array.isArray(post.mentioned)) {
-        post.mentioned.forEach(coinData => {
-          if (coinData.symbol) {
-            symbolsSet.add(coinData.symbol.toUpperCase());
+    // Extract from YouTube last posts
+    Object.values(youtubeLastPosts).forEach(posts => {
+      if (Array.isArray(posts)) {
+        posts.forEach(post => {
+          // Handle grouped posts (multiple coins per post)
+          if (post.isGrouped && post.coins) {
+            post.coins.forEach(coinData => {
+              if (coinData.symbol) {
+                symbolsSet.add(coinData.symbol.toUpperCase());
+              }
+            });
+          }
+          // Handle posts with mentioned array (new API structure)
+          else if (post.mentioned && Array.isArray(post.mentioned)) {
+            post.mentioned.forEach(coinData => {
+              if (coinData.symbol) {
+                symbolsSet.add(coinData.symbol.toUpperCase());
+              }
+            });
+          }
+          // Handle individual coin posts (old structure)
+          else if (post.coin && post.coin.symbol) {
+            symbolsSet.add(post.coin.symbol.toUpperCase());
           }
         });
       }
-      // Handle grouped posts (multiple coins per post)
-      else if (post.isGrouped && post.coins) {
-        post.coins.forEach(coinData => {
-          if (coinData.symbol) {
-            symbolsSet.add(coinData.symbol.toUpperCase());
+    });
+
+    // Extract from Telegram last posts
+    Object.values(telegramLastPosts).forEach(posts => {
+      if (Array.isArray(posts)) {
+        posts.forEach(post => {
+          // Handle grouped posts (multiple coins per post)
+          if (post.isGrouped && post.coins) {
+            post.coins.forEach(coinData => {
+              if (coinData.symbol) {
+                symbolsSet.add(coinData.symbol.toUpperCase());
+              }
+            });
+          }
+          // Handle posts with mentioned array (new API structure)
+          else if (post.mentioned && Array.isArray(post.mentioned)) {
+            post.mentioned.forEach(coinData => {
+              if (coinData.symbol) {
+                symbolsSet.add(coinData.symbol.toUpperCase());
+              }
+            });
+          }
+          // Handle individual coin posts (old structure)
+          else if (post.coin && post.coin.symbol) {
+            symbolsSet.add(post.coin.symbol.toUpperCase());
           }
         });
       }
-      // Handle individual coin posts (old structure)
-      else if (post.coin && post.coin.symbol) {
-        symbolsSet.add(post.coin.symbol.toUpperCase());
-      }
-    };
-
-    // Extract from YouTube last posts - check for results array (new structure)
-    if (youtubeLastPosts.results && Array.isArray(youtubeLastPosts.results)) {
-      youtubeLastPosts.results.forEach(extractSymbolsFromPost);
-    } else {
-      // Fallback for old structure
-      Object.values(youtubeLastPosts).forEach(posts => {
-        if (Array.isArray(posts)) {
-          posts.forEach(extractSymbolsFromPost);
-        }
-      });
-    }
-
-    // Extract from Telegram last posts - check for results array (new structure)
-    if (telegramLastPosts.results && Array.isArray(telegramLastPosts.results)) {
-      telegramLastPosts.results.forEach(extractSymbolsFromPost);
-    } else {
-      // Fallback for old structure
-      Object.values(telegramLastPosts).forEach(posts => {
-        if (Array.isArray(posts)) {
-          posts.forEach(extractSymbolsFromPost);
-        }
-      });
-    }
+    });
 
     const symbols = Array.from(symbolsSet);
+    console.log(`📊 [Influencer Search] Extracted ${symbols.length} unique coin symbols from youtubeLastPosts:`, Object.keys(youtubeLastPosts).length, 'influencers, telegramLastPosts:', Object.keys(telegramLastPosts).length, 'influencers');
+    console.log(`📊 [Influencer Search] Symbols:`, symbols);
     return symbols;
   }, [youtubeLastPosts, telegramLastPosts]);
 
   // Use live price hook with extracted symbols
   const { prices, priceChanges, isConnected, bidAskData, volumeData } = useInfluencerLivePrice(coinSymbols);
 
+  console.log('📱 [Influencer Search] Component received prices:', Object.keys(prices).length);
+  console.log('📱 [Influencer Search] isConnected:', isConnected);
+
   // Create a live prices map that updates when prices change
   const livePricesMap = useMemo(() => {
     const pricesMap = {};
+    console.log('📱 [Influencer Search] Raw prices from hook:', prices);
+    console.log('📱 [Influencer Search] Number of prices:', Object.keys(prices).length);
     Object.entries(prices).forEach(([symbolKey, price]) => {
       // Remove 'USDT' suffix to get base symbol (e.g., BTCUSDT -> BTC)
       const baseSymbol = symbolKey.replace('USDT', '');
       pricesMap[baseSymbol] = price;
     });
+    console.log('📱 [Influencer Search] livePricesMap created with', Object.keys(pricesMap).length, 'entries:', Object.keys(pricesMap).slice(0, 10));
     return pricesMap;
   }, [prices]);
 
@@ -443,10 +453,12 @@ export default function InfluencerSearchPage() {
   // Helper function to get live price for a symbol
   const getLivePrice = useCallback((symbol) => {
     if (!symbol) {
+      console.log('⚠️ [getLivePrice] No symbol provided');
       return "N/A";
     }
     const upperSymbol = symbol.toUpperCase();
     const livePrice = livePricesMap[upperSymbol];
+    console.log(`🔍 [getLivePrice] Looking up ${upperSymbol}: found ${livePrice}, livePricesMap keys:`, Object.keys(livePricesMap));
     if (livePrice && livePrice !== "-") {
       return `$${typeof livePrice === 'number' ? livePrice.toFixed(2) : livePrice}`;
     }
@@ -652,19 +664,16 @@ export default function InfluencerSearchPage() {
     return { sortedInfluencers: influencerOrder, groupedRecommendations };
   };
 
-  // Memoized API call functions - using 3days-all-posts API
-  const fetchYouTubeData = useCallback(async (page = 1, limit = 10) => {
-    console.log('📡 fetchYouTubeData called with page:', page, 'limit:', limit);
+  // Memoized API call functions
+  const fetchYouTubeData = useCallback(async () => {
     // Only show loading on first load
     if (isFirstRenderRef.current) {
       setLoading(true);
     }
     setError(null);
     try {
-      // Fetch data from the 3days-all-posts API endpoint
-      const apiUrl = `/api/youtube-data/3days-all-posts?page=${page}&limit=${limit}`;
-      console.log('📡 Fetching YouTube data from:', apiUrl);
-      const res = await fetch(apiUrl);
+      // Fetch data from the new combined API endpoint
+      const res = await fetch(`/api/youtube-data/top10-last-posts?type=haplusnonha&limit=10&timeframe=${selectedTimeframe}`);
       const data = await res.json();
 
       // Extract ranking data
@@ -680,27 +689,10 @@ export default function InfluencerSearchPage() {
         setYoutubeInfluencers([]);
       }
 
-      // Extract posts data and store with results key for compatibility
+      // Extract last posts data
       if (data.success) {
-        // Store posts in results key for getInfluencerPosts compatibility
-        setYoutubeLastPosts({
-          ...data,
-          results: data.posts || []
-        });
-
-        // Update pagination state
-        if (data.pagination) {
-          console.log('📡 YouTube API returned pagination:', data.pagination);
-          setThreeDaysAllPostsPagination(prev => ({
-            ...prev,
-            youtube: data.pagination
-          }));
-        }
-
-        // Update date range
-        if (data.date_range) {
-          setThreeDaysDateRange(data.date_range);
-        }
+        // Store the complete response including day1, day2, etc. keys
+        setYoutubeLastPosts(data);
       }
     } catch (err) {
       setError("Failed to fetch YouTube data");
@@ -712,20 +704,17 @@ export default function InfluencerSearchPage() {
         isFirstRenderRef.current = false;
       }
     }
-  }, []);
+  }, [selectedTimeframe]);
 
-  const fetchTelegramData = useCallback(async (page = 1, limit = 10) => {
-    console.log('📡 fetchTelegramData called with page:', page, 'limit:', limit);
+  const fetchTelegramData = useCallback(async () => {
     // Only show loading on first load
     if (isFirstRenderRef.current) {
       setLoading(true);
     }
     setError(null);
     try {
-      // Fetch data from the 3days-all-posts API endpoint
-      const apiUrl = `/api/telegram-data/3days-all-posts?page=${page}&limit=${limit}`;
-      console.log('📡 Fetching Telegram data from:', apiUrl);
-      const res = await fetch(apiUrl);
+      // Fetch data from the new combined API endpoint
+      const res = await fetch(`/api/telegram-data/top10-last-posts?type=haplusnonha&limit=10&timeframe=${selectedTimeframe}`);
       const data = await res.json();
 
       // Extract ranking data
@@ -741,27 +730,10 @@ export default function InfluencerSearchPage() {
         setTelegramInfluencers([]);
       }
 
-      // Extract posts data and store with results key for compatibility
+      // Extract last posts data
       if (data.success) {
-        // Store posts in results key for getInfluencerPosts compatibility
-        setTelegramLastPosts({
-          ...data,
-          results: data.posts || []
-        });
-
-        // Update pagination state
-        if (data.pagination) {
-          console.log('📡 Telegram API returned pagination:', data.pagination);
-          setThreeDaysAllPostsPagination(prev => ({
-            ...prev,
-            telegram: data.pagination
-          }));
-        }
-
-        // Update date range
-        if (data.date_range) {
-          setThreeDaysDateRange(data.date_range);
-        }
+        // Store the complete response including day1, day2, etc. keys
+        setTelegramLastPosts(data);
       }
     } catch (err) {
       setError("Failed to fetch Telegram data");
@@ -773,39 +745,14 @@ export default function InfluencerSearchPage() {
         isFirstRenderRef.current = false;
       }
     }
-  }, []);
-
-  // Handler for posts pagination
-  const handlePostsPageChange = (newPage) => {
-    const pagination = threeDaysAllPostsPagination[selectedPlatform];
-    console.log('handlePostsPageChange called:', { newPage, pagination, selectedPlatform });
-
-    // Validate page number
-    if (!pagination || newPage < 1) {
-      console.log('Invalid pagination or page number');
-      return;
-    }
-
-    // Allow fetching if totalPages is valid, or if it's a reasonable page number
-    if (pagination.totalPages > 0 && newPage > pagination.totalPages) {
-      console.log('Page number exceeds total pages');
-      return;
-    }
-
-    console.log('Fetching page:', newPage);
-    if (selectedPlatform === "youtube") {
-      fetchYouTubeData(newPage, pagination.limit || 10);
-    } else {
-      fetchTelegramData(newPage, pagination.limit || 10);
-    }
-  };
+  }, [selectedTimeframe]);
 
   useEffect(() => {
-    // Fetch data when platform changes
+    // Fetch data when platform or filters change
     if (selectedPlatform === "youtube") {
-      fetchYouTubeData(1, 20);
+      fetchYouTubeData();
     } else if (selectedPlatform === "telegram") {
-      fetchTelegramData(1, 20);
+      fetchTelegramData();
     }
   }, [selectedPlatform, fetchYouTubeData, fetchTelegramData]);
 
@@ -1272,15 +1219,15 @@ export default function InfluencerSearchPage() {
           {/* Leaderboard Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             {/* View Mode Toggle Buttons */}
-            <div className="flex justify-between items-center gap-2 px-2 py-1.5 border-b border-gray-200 bg-gray-50">
+            <div className="flex justify-between items-center gap-3 px-4 py-3 border-b border-gray-200 bg-gray-50">
               {/* Timezone Toggle on Left */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-[9px] font-semibold text-black-600">Timezone:</span>
-                <div className="flex gap-1">
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-semibold text-center text-black-600">Timezone</span>
+                <div className="flex gap-2">
                   <button
                     onClick={() => toggleTimezone()}
-                    className={`px-2 py-0.5 text-[10px] font-semibold rounded transition-all ${!useLocalTime
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${!useLocalTime
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                       }`}
                   >
@@ -1288,12 +1235,12 @@ export default function InfluencerSearchPage() {
                   </button>
                   <button
                     onClick={() => toggleTimezone()}
-                    className={`px-2 py-0.5 text-[10px] font-semibold rounded transition-all ${useLocalTime
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${useLocalTime
+                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                       }`}
                   >
-                    {useLocalTime && userCity ? userCity : 'Local'}
+                    {useLocalTime && userCity ? userCity : 'Local Time'}
                   </button>
                 </div>
               </div>
@@ -1516,7 +1463,7 @@ export default function InfluencerSearchPage() {
                           </div>
                         </div>
 
-                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
 
                             {/* Title */}
@@ -1615,37 +1562,23 @@ export default function InfluencerSearchPage() {
                         // Get star ratings from influencer's star_rating_yearly (from main API)
                         const starRatingYearly = influencer.star_rating_yearly || {};
 
-                        // Define timeframes to display vertically
-                        const timeframes = ['7_days', '30_days', '60_days', '90_days'];
-                        const timeframeLabels = { '7_days': '7D', '30_days': '30D', '60_days': '60D', '90_days': '90D' };
+                        // Extract all available yearly ratings dynamically, starting from 2022
+                        const scatterData = [];
+                        const years = Object.keys(starRatingYearly)
+                          .map(year => parseInt(year))
+                          .filter(year => year >= 2022) // Filter to start from 2022
+                          .sort((a, b) => a - b); // Sort in ascending order
 
-                        // Build star data for 2024 and 2025 with timeframes
-                        const starData2024 = [];
-                        const starData2025 = [];
-
-                        timeframes.forEach(tf => {
-                          // 2024 data
-                          if (starRatingYearly['2024'] && starRatingYearly['2024'][tf]) {
-                            starData2024.push({
-                              timeframe: tf,
-                              label: timeframeLabels[tf],
-                              rating: starRatingYearly['2024'][tf].current_rating || 0,
-                              finalScore: starRatingYearly['2024'][tf].current_final_score || 0
+                        // Build scatter data for each year
+                        years.forEach((year, yearIndex) => {
+                          const yearData = starRatingYearly[year];
+                          if (yearData && yearData.current_rating) {
+                            scatterData.push({
+                              year: yearIndex,
+                              yearLabel: year,
+                              rating: yearData.current_rating,
+                              finalScore: yearData.current_final_score
                             });
-                          } else {
-                            starData2024.push({ timeframe: tf, label: timeframeLabels[tf], rating: 0, finalScore: 0 });
-                          }
-
-                          // 2025 data
-                          if (starRatingYearly['2025'] && starRatingYearly['2025'][tf]) {
-                            starData2025.push({
-                              timeframe: tf,
-                              label: timeframeLabels[tf],
-                              rating: starRatingYearly['2025'][tf].current_rating || 0,
-                              finalScore: starRatingYearly['2025'][tf].current_final_score || 0
-                            });
-                          } else {
-                            starData2025.push({ timeframe: tf, label: timeframeLabels[tf], rating: 0, finalScore: 0 });
                           }
                         });
 
@@ -1751,76 +1684,57 @@ export default function InfluencerSearchPage() {
                               </Link>
                             </td>
 
-                            {/* MCM Ranking Column - Vertical Star Ratings for 2024 & 2025 */}
-                            <td className="px-2 py-1 border-r border-gray-200">
-                              <div className="flex justify-start items-start gap-4">
-                                {/* 2024 Column */}
-                                <div className="flex flex-col items-center">
-                                  <span className="text-[9px] font-bold text-gray-700 mb-1">2024</span>
-                                  <div className="flex flex-col gap-0.5">
-                                    {starData2024.map((item, idx) => {
-                                      const fullStars = Math.floor(item.rating);
-                                      const hasHalfStar = item.rating % 1 >= 0.5;
-                                      const totalStars = 5;
-                                      const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+                            {/* MCM Ranking Column - Yearly Rating Graph with Stars */}
+                            <td className="px-3 py-1 border-r border-gray-200">
+                              <div className="flex justify-start items-center py-1">
+                                {scatterData.length > 0 ? (
+                                  <div className="relative">
+                                    {/* Graph container with axes */}
+                                    <div className="relative">
+                                      {/* Data columns with stars */}
+                                      <div className="flex items-end gap-8 pl-1 h-16 pb-5">
+                                        {scatterData.map((point, idx) => {
+                                          const fullStars = Math.floor(point.rating);
+                                          const hasHalfStar = point.rating % 1 >= 0.5;
+                                          const totalStars = 5;
+                                          const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
 
-                                      return (
-                                        <div
-                                          key={idx}
-                                          className="flex items-center gap-1"
-                                          title={`2024 ${item.label}: ${item.rating} stars`}
-                                        >
-                                          <span className="text-[7px] font-medium text-gray-500 w-5">{item.label}</span>
-                                          <div className="flex gap-0">
-                                            {[...Array(fullStars)].map((_, i) => (
-                                              <FaStar key={`full-${i}`} className="text-yellow-500 w-2 h-2" />
-                                            ))}
-                                            {hasHalfStar && (
-                                              <FaStarHalfAlt key="half" className="text-yellow-500 w-2 h-2" />
-                                            )}
-                                            {[...Array(emptyStars)].map((_, i) => (
-                                              <FaStar key={`empty-${i}`} className="text-gray-300 w-2 h-2" />
-                                            ))}
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
+                                          // Determine text color based on year
+                                          const yearColor = (point.yearLabel === 2022 || point.yearLabel === 2023)
+                                            ? 'text-gray-400'
+                                            : 'text-black-900';
+
+                                          return (
+                                            <div
+                                              key={idx}
+                                              className="flex flex-col items-center relative min-w-[20px]"
+                                              title={`Year: ${point.yearLabel}, Rating: ${point.rating}`}
+                                            >
+                                              {/* Stars displayed vertically (bottom to top) */}
+                                              <div className="flex flex-col-reverse gap-0">
+                                                {[...Array(fullStars)].map((_, i) => (
+                                                  <FaStar key={`full-${i}`} className="text-yellow-500 w-2.5 h-2.5" />
+                                                ))}
+                                                {hasHalfStar && (
+                                                  <FaStarHalfAlt key="half" className="text-yellow-500 w-2.5 h-2.5" />
+                                                )}
+                                                {[...Array(emptyStars)].map((_, i) => (
+                                                  <FaStar key={`empty-${i}`} className="text-gray-300 w-2.5 h-2.5" />
+                                                ))}
+                                              </div>
+                                              {/* Year label at bottom (below x-axis) */}
+                                              <span className={`text-[8px] ${yearColor} font-semibold absolute whitespace-nowrap text-center`} style={{ bottom: '-16px', left: '50%', transform: 'translateX(-50%)' }}>
+                                                {point.yearLabel}
+                                              </span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
                                   </div>
-                                </div>
-
-                                {/* 2025 Column */}
-                                <div className="flex flex-col items-center">
-                                  <span className="text-[9px] font-bold text-gray-700 mb-1">2025</span>
-                                  <div className="flex flex-col gap-0.5">
-                                    {starData2025.map((item, idx) => {
-                                      const fullStars = Math.floor(item.rating);
-                                      const hasHalfStar = item.rating % 1 >= 0.5;
-                                      const totalStars = 5;
-                                      const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
-
-                                      return (
-                                        <div
-                                          key={idx}
-                                          className="flex items-center gap-1"
-                                          title={`2025 ${item.label}: ${item.rating} stars`}
-                                        >
-                                          <span className="text-[7px] font-medium text-gray-500 w-5">{item.label}</span>
-                                          <div className="flex gap-0">
-                                            {[...Array(fullStars)].map((_, i) => (
-                                              <FaStar key={`full-${i}`} className="text-yellow-500 w-2 h-2" />
-                                            ))}
-                                            {hasHalfStar && (
-                                              <FaStarHalfAlt key="half" className="text-yellow-500 w-2 h-2" />
-                                            )}
-                                            {[...Array(emptyStars)].map((_, i) => (
-                                              <FaStar key={`empty-${i}`} className="text-gray-300 w-2 h-2" />
-                                            ))}
-                                          </div>
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                </div>
+                                ) : (
+                                  <div className="text-[10px] text-gray-400">loading...</div>
+                                )}
                               </div>
                             </td>
 
@@ -2128,7 +2042,7 @@ export default function InfluencerSearchPage() {
 
 
                                             {/* 24 Hours Price Change - From Binance WebSocket */}
-                                            <div className="w-[15%] flex flex-col justify-start">
+                                            <div className="w-[10%] flex flex-col justify-start">
                                               {(() => {
                                                 // Get live 24-hour price change percentage from WebSocket
                                                 const priceChangePercent = getLivePriceChange(coinData.coin);
@@ -2547,98 +2461,70 @@ export default function InfluencerSearchPage() {
               </table>
             </div>
 
-            {/* Posts Pagination */}
-            {(() => {
-              const pagination = threeDaysAllPostsPagination[selectedPlatform];
-              if (!pagination || pagination.totalPages <= 1) return null;
-
-              const postsTotalPages = pagination.totalPages;
-              const postsCurrentPage = pagination.page;
-
-              // Generate page numbers to display
-              const getPostsPageNumbers = () => {
-                const maxPagesToShow = 5;
-                const half = Math.floor(maxPagesToShow / 2);
-                let startPage = Math.max(1, postsCurrentPage - half);
-                let endPage = Math.min(postsTotalPages, postsCurrentPage + half);
-
-                if (postsCurrentPage <= half) {
-                  endPage = Math.min(postsTotalPages, maxPagesToShow);
-                }
-                if (postsCurrentPage > postsTotalPages - half) {
-                  startPage = Math.max(1, postsTotalPages - maxPagesToShow + 1);
-                }
-
-                const pages = [];
-                for (let i = startPage; i <= endPage; i++) {
-                  pages.push(i);
-                }
-                return pages;
-              };
-
-              return (
-                <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-                  <div className="text-sm text-gray-700">
-                    Page <span className="font-medium">{postsCurrentPage}</span> of{" "}
-                    <span className="font-medium">{postsTotalPages}</span> ({pagination.total} total posts)
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handlePostsPageChange(1)}
-                      disabled={postsCurrentPage === 1}
-                      className={`px-3 py-1 rounded-md text-sm font-medium ${postsCurrentPage === 1
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
-                    >
-                      First
-                    </button>
-                    <button
-                      onClick={() => handlePostsPageChange(postsCurrentPage - 1)}
-                      disabled={!pagination.hasPrevPage}
-                      className={`px-3 py-1 rounded-md text-sm font-medium ${!pagination.hasPrevPage
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
-                    >
-                      Previous
-                    </button>
-                    {getPostsPageNumbers().map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => handlePostsPageChange(page)}
-                        className={`px-3 py-1 rounded-md text-sm font-medium ${postsCurrentPage === page
-                          ? "bg-blue-600 text-white"
-                          : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                          }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
-                    <button
-                      onClick={() => handlePostsPageChange(postsCurrentPage + 1)}
-                      disabled={!pagination.hasNextPage}
-                      className={`px-3 py-1 rounded-md text-sm font-medium ${!pagination.hasNextPage
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
-                    >
-                      Next
-                    </button>
-                    <button
-                      onClick={() => handlePostsPageChange(postsTotalPages)}
-                      disabled={postsCurrentPage === postsTotalPages}
-                      className={`px-3 py-1 rounded-md text-sm font-medium ${postsCurrentPage === postsTotalPages
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
-                        }`}
-                    >
-                      Last
-                    </button>
-                  </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                <div className="text-sm text-gray-700">
+                  Showing <span className="font-medium">{startIndex + 1}</span> to{" "}
+                  <span className="font-medium">{Math.min(endIndex, filteredInfluencers.length)}</span> of{" "}
+                  <span className="font-medium">{filteredInfluencers.length}</span> results
                 </div>
-              );
-            })()}
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={handleFirst}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === 1
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                  >
+                    First
+                  </button>
+                  <button
+                    onClick={handlePrevious}
+                    disabled={currentPage === 1}
+                    className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === 1
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                  >
+                    Previous
+                  </button>
+                  {getPageNumbers().map((page) => (
+                    <button
+                      key={page}
+                      onClick={() => handlePageChange(page)}
+                      className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === page
+                        ? "bg-blue-600 text-white"
+                        : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                        }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                  <button
+                    onClick={handleNext}
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === totalPages
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                  >
+                    Next
+                  </button>
+                  <button
+                    onClick={handleLast}
+                    disabled={currentPage === totalPages}
+                    className={`px-3 py-1 rounded-md text-sm font-medium ${currentPage === totalPages
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                      : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }`}
+                  >
+                    Last
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </main>

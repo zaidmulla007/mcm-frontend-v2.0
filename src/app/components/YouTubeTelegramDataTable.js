@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import moment from "moment-timezone";
+import { FaBell } from "react-icons/fa";
 
 export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTime = false }) {
     const [selectedPlatform, setSelectedPlatform] = useState("Combined");
@@ -9,6 +10,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState(null);
     const [nextUpdate, setNextUpdate] = useState(null);
+    const [binancePriceData, setBinancePriceData] = useState({});
     const useLocalTime = propUseLocalTime;
 
     const [expandedTables, setExpandedTables] = useState({
@@ -61,6 +63,56 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             "30days": false
         });
     }, [selectedPlatform, selectedCoinType]);
+
+    // Fetch Binance 24hr price data for all USDT pairs
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchBinancePriceData = async () => {
+            try {
+                const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
+                const data = await response.json();
+
+                if (!isMounted) return;
+
+                // Create a map of symbol to priceChangePercent (only USDT pairs)
+                const priceMap = {};
+                data.forEach(ticker => {
+                    if (ticker.symbol.endsWith('USDT')) {
+                        const symbol = ticker.symbol.replace('USDT', '').toLowerCase();
+                        priceMap[symbol] = parseFloat(ticker.priceChangePercent);
+                    }
+                });
+
+                setBinancePriceData(priceMap);
+            } catch (error) {
+                console.error('Error fetching Binance price data:', error);
+            }
+        };
+
+        fetchBinancePriceData();
+        // Refresh every 5 minutes
+        const interval = setInterval(fetchBinancePriceData, 5 * 60 * 1000);
+
+        return () => {
+            isMounted = false;
+            clearInterval(interval);
+        };
+    }, []);
+
+    // Helper function to get price change for a coin symbol
+    const getPriceChangePercent = (symbol) => {
+        if (!symbol) return null;
+        const lowerSymbol = symbol.toLowerCase();
+        return binancePriceData[lowerSymbol] ?? null;
+    };
+
+    // Check if price change exceeds threshold (15%)
+    const hasPriceAlert = (symbol) => {
+        const priceChange = getPriceChangePercent(symbol);
+        if (priceChange === null) return false;
+        return Math.abs(priceChange) >= 15;
+    };
 
     const formatDateStringDisplay = (dateStr) => {
         if (!dateStr) return "N/A";
@@ -264,20 +316,37 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     const shortTermBallPosition = shortTermBullish >= shortTermBearish ? shortTermBullish : (100 - shortTermBearish);
                                     const longTermBallPosition = longTermBullish >= longTermBearish ? longTermBullish : (100 - longTermBearish);
 
+                                    const priceChangePercent = getPriceChangePercent(coin.symbol);
+                                    const showPriceAlert = hasPriceAlert(coin.symbol);
+
                                     return (
                                         <tr key={index} className="border-b border-gray-800">
                                             {/* Coin Column */}
                                             <td className="py-4 px-4 w-1/2">
                                                 <div className="flex flex-col items-center text-center">
-                                                    <img
-                                                        src={coin.image_small || coin.image_thumb}
-                                                        alt={coin.symbol}
-                                                        className="w-14 h-14 rounded-full mb-2"
-                                                        onError={(e) => {
-                                                            e.target.onerror = null;
-                                                            e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
-                                                        }}
-                                                    />
+                                                    <div className="relative">
+                                                        <img
+                                                            src={coin.image_small || coin.image_thumb}
+                                                            alt={coin.symbol}
+                                                            className="w-14 h-14 rounded-full mb-2"
+                                                            onError={(e) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
+                                                            }}
+                                                        />
+                                                        {/* Bell icon for coins with >15% price change */}
+                                                        {showPriceAlert && (
+                                                            <div className="absolute -bottom-1 -right-1 group cursor-pointer z-[9999]">
+                                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center ${priceChangePercent > 0 ? 'bg-green-500' : 'bg-red-500'}`}>
+                                                                    <FaBell className="text-white text-[10px]" />
+                                                                </div>
+                                                                {/* Tooltip on hover - centered above */}
+                                                                <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                                                    24H Price Change: <span className={priceChangePercent > 0 ? 'text-green-400' : 'text-red-400'}>{priceChangePercent > 0 ? '+' : ''}{priceChangePercent?.toFixed(2)}%</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                     <div className="text-sm text-black font-bold mb-1">
                                                         {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
                                                     </div>
@@ -561,7 +630,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                             )}
                         </tbody>
                     </table>
-                </div>; */}
+                </div>
 
                 {/* <div className="p-6 overflow-x-auto overflow-y-auto" style={{ scrollbarGutter: 'stable' }}>
                     <table className="w-full min-w-full table-fixed">
