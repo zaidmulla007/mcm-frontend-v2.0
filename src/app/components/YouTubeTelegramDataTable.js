@@ -100,14 +100,93 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         };
     }, []);
 
-    // Helper function to get price change for a coin symbol
+    // Helper function to get price change for a coin symbol (24hr from Binance)
     const getPriceChangePercent = (symbol) => {
         if (!symbol) return null;
         const lowerSymbol = symbol.toLowerCase();
         return binancePriceData[lowerSymbol] ?? null;
     };
 
-    // Check if price change exceeds threshold (15%)
+    // Helper function to get price change from coin's percentage_change data for specific timeframe
+    const getCoinPriceChange = (coin, timeframe) => {
+        if (!coin?.percentage_change) return null;
+
+        // Map timeframe to the key in percentage_change object
+        const timeframeMap = {
+            '6hrs': '6hr',
+            '24hrs': '24hr',
+            '7days': '7days',
+            '30days': '30days'
+        };
+
+        const key = timeframeMap[timeframe];
+        if (!key) return null;
+
+        return coin.percentage_change[key]?.change ?? null;
+    };
+
+    // Get the threshold for each timeframe
+    const getThreshold = (timeframe) => {
+        switch (timeframe) {
+            case '6hrs':
+                return 5; // ±5% for 6 hours
+            case '24hrs':
+                return 15; // ±15% for 24 hours
+            case '7days':
+                return 25; // ±25% for 7 days
+            case '30days':
+                return 50; // ±50% for 30 days
+            default:
+                return 15;
+        }
+    };
+
+    // Check if price change exceeds threshold based on timeframe
+    const hasPriceAlertForTimeframe = (coin, timeframe) => {
+        let priceChange;
+
+        if (timeframe === '24hrs') {
+            // Use Binance 24hr live data for 24hrs
+            priceChange = getPriceChangePercent(coin?.symbol);
+        } else {
+            // Use coin's percentage_change data for 6hrs, 7days, and 30days
+            priceChange = getCoinPriceChange(coin, timeframe);
+        }
+
+        if (priceChange === null) return false;
+
+        const threshold = getThreshold(timeframe);
+        return Math.abs(priceChange) >= threshold;
+    };
+
+    // Get price change value for display based on timeframe
+    const getPriceChangeForTimeframe = (coin, timeframe) => {
+        if (timeframe === '24hrs') {
+            // Use Binance 24hr live data for 24hrs
+            return getPriceChangePercent(coin?.symbol);
+        } else {
+            // Use coin's percentage_change data for 6hrs, 7days, and 30days
+            return getCoinPriceChange(coin, timeframe);
+        }
+    };
+
+    // Get timeframe label for tooltip display
+    const getTimeframeLabel = (timeframe) => {
+        switch (timeframe) {
+            case '6hrs':
+                return '6H';
+            case '24hrs':
+                return '24H';
+            case '7days':
+                return '7 Day';
+            case '30days':
+                return '30 Day';
+            default:
+                return '24H';
+        }
+    };
+
+    // Legacy function for backwards compatibility (uses 24hr threshold)
     const hasPriceAlert = (symbol) => {
         const priceChange = getPriceChangePercent(symbol);
         if (priceChange === null) return false;
@@ -316,8 +395,10 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     const shortTermBallPosition = shortTermBullish >= shortTermBearish ? shortTermBullish : (100 - shortTermBearish);
                                     const longTermBallPosition = longTermBullish >= longTermBearish ? longTermBullish : (100 - longTermBearish);
 
-                                    const priceChangePercent = getPriceChangePercent(coin.symbol);
-                                    const showPriceAlert = hasPriceAlert(coin.symbol);
+                                    // Get price change and alert status based on timeframe
+                                    const priceChangePercent = getPriceChangeForTimeframe(coin, timeframe);
+                                    const showPriceAlert = hasPriceAlertForTimeframe(coin, timeframe);
+                                    const threshold = getThreshold(timeframe);
 
                                     return (
                                         <tr key={index} className="border-b border-gray-800">
@@ -334,7 +415,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                 e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
                                                             }}
                                                         />
-                                                        {/* Bell icon for coins with >15% price change */}
+                                                        {/* Bell icon for coins exceeding price change threshold */}
                                                         {showPriceAlert && (
                                                             <div className="absolute -bottom-1 -right-1 group cursor-pointer z-[9999]">
                                                                 <div className={`w-5 h-5 rounded-full flex items-center justify-center ${priceChangePercent > 0 ? 'bg-green-500' : 'bg-red-500'}`}>
@@ -342,7 +423,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                 </div>
                                                                 {/* Tooltip on hover - centered above */}
                                                                 <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                                                    24H Price Change: <span className={priceChangePercent > 0 ? 'text-green-400' : 'text-red-400'}>{priceChangePercent > 0 ? '+' : ''}{priceChangePercent?.toFixed(2)}%</span>
+                                                                    {getTimeframeLabel(timeframe)} Price Change: <span className={priceChangePercent > 0 ? 'text-green-400' : 'text-red-400'}>{priceChangePercent > 0 ? '+' : ''}{priceChangePercent?.toFixed(2)}%</span>
                                                                 </div>
                                                             </div>
                                                         )}

@@ -803,9 +803,9 @@ export default function InfluencerSearchPage() {
   useEffect(() => {
     // Fetch data when platform changes
     if (selectedPlatform === "youtube") {
-      fetchYouTubeData(1, 20);
+      fetchYouTubeData(1, 10);
     } else if (selectedPlatform === "telegram") {
-      fetchTelegramData(1, 20);
+      fetchTelegramData(1, 10);
     }
   }, [selectedPlatform, fetchYouTubeData, fetchTelegramData]);
 
@@ -1092,7 +1092,7 @@ export default function InfluencerSearchPage() {
         });
       }
 
-      // Sort posts in ascending order (oldest first) by publishedAt or date/time
+      // Sort posts in descending order (most recent first) by publishedAt or date/time
       posts.sort((a, b) => {
         const getTimestamp = (post) => {
           // Try publishedAt first
@@ -1130,7 +1130,7 @@ export default function InfluencerSearchPage() {
           return 0;
         };
 
-        return getTimestamp(a) - getTimestamp(b);
+        return getTimestamp(b) - getTimestamp(a);
       });
     } else {
       // Specific day selected - group coins by post
@@ -1163,7 +1163,7 @@ export default function InfluencerSearchPage() {
         });
       }
 
-      // Sort posts in ascending order (oldest first) by publishedAt or date/time
+      // Sort posts in descending order (most recent first) by publishedAt or date/time
       posts.sort((a, b) => {
         const getTimestamp = (post) => {
           // Try publishedAt first
@@ -1192,9 +1192,6 @@ export default function InfluencerSearchPage() {
 
               const timestamp = new Date(year, month - 1, day, hours, minutes, seconds).getTime();
 
-              // Debug logging
-              console.log(`Post time: ${post.time}, parsed as: ${hours}:${minutes}:${seconds}, timestamp: ${timestamp}, date: ${new Date(timestamp).toLocaleString()}`);
-
               return timestamp;
             } catch (e) {
               console.error('Error parsing time:', post.time, e);
@@ -1204,12 +1201,118 @@ export default function InfluencerSearchPage() {
           return 0;
         };
 
-        return getTimestamp(a) - getTimestamp(b);
+        return getTimestamp(b) - getTimestamp(a);
       });
     }
 
     return posts;
   };
+
+  // Function to get all posts as a flat list (not grouped by influencer)
+  const getAllPostsFlat = useCallback((lastPostsData, influencersList) => {
+    if (!lastPostsData || !lastPostsData.results) return [];
+
+    // Create a map of influencer data by channelID
+    const influencerMap = {};
+    if (influencersList && influencersList.length > 0) {
+      influencersList.forEach(inf => {
+        // Try multiple possible ID field names (channel_id, id, channelID)
+        const infId = inf.channel_id || inf.id || inf.channelID;
+        if (inf && infId) {
+          influencerMap[infId] = inf;
+        }
+      });
+    }
+
+    // Also check if lastPostsData has ranking info embedded
+    if (lastPostsData.ranking && Array.isArray(lastPostsData.ranking)) {
+      lastPostsData.ranking.forEach(inf => {
+        // Try multiple possible ID field names
+        const infId = inf.channel_id || inf.id || inf.channelID;
+        if (inf && infId && !influencerMap[infId]) {
+          influencerMap[infId] = inf;
+        }
+      });
+    }
+
+    // Get all posts directly from API results
+    const allPosts = lastPostsData.results
+      .filter(item => item.mentioned && Array.isArray(item.mentioned))
+      .map(item => {
+        const influencer = influencerMap[item.channelID];
+
+        // Build influencer object - use found influencer or create from post data
+        const influencerData = influencer ? {
+          ...influencer
+        } : {
+          channel_id: item.channelID,
+          influencer_name: item.channel_name,
+          // Try to get thumbnail from post's influencer_data if available
+          channel_thumbnails: item.influencer_thumbnails || item.channel_thumbnails || null,
+          star_rating_yearly: item.star_rating_yearly || {}
+        };
+
+        return {
+          // Post data
+          date: item.date,
+          time: item.time,
+          coins: item.mentioned,
+          videoID: item.videoID,
+          messageID: item.messageID,
+          link: item.link,
+          publishedAt: item.publishedAt,
+          title: item.title,
+          summary: item.summary,
+          type: item.type,
+          channel_name: item.channel_name,
+          channelID: item.channelID,
+          roi_1hr: item["1_hour_roi"],
+          roi_24hr: item["24_hours_roi"],
+          isGrouped: true,
+          // Influencer data attached to each post
+          influencer: influencerData
+        };
+      });
+
+    // Sort by publishedAt descending (most recent first)
+    allPosts.sort((a, b) => {
+      const getTimestamp = (post) => {
+        if (post.publishedAt) {
+          const timestamp = new Date(post.publishedAt).getTime();
+          if (!isNaN(timestamp)) return timestamp;
+        }
+        if (post.date && post.time) {
+          try {
+            let year, month, day;
+            const dateParts = post.date.split('-');
+            if (dateParts[0].length === 4) {
+              [year, month, day] = dateParts.map(Number);
+            } else {
+              [day, month, year] = dateParts.map(Number);
+            }
+            const timeParts = post.time.split(':');
+            const hours = parseInt(timeParts[0]);
+            const minutes = parseInt(timeParts[1]);
+            const seconds = timeParts[2] ? parseInt(timeParts[2]) : 0;
+            return new Date(year, month - 1, day, hours, minutes, seconds).getTime();
+          } catch (e) {
+            return 0;
+          }
+        }
+        return 0;
+      };
+      return getTimestamp(b) - getTimestamp(a);
+    });
+
+    return allPosts;
+  }, []);
+
+  // Get flat list of all posts
+  const allPostsFlat = useMemo(() => {
+    const lastPostsData = selectedPlatform === "youtube" ? youtubeLastPosts : telegramLastPosts;
+    const influencersList = selectedPlatform === "youtube" ? youtubeInfluencers : telegramInfluencers;
+    return getAllPostsFlat(lastPostsData, influencersList);
+  }, [selectedPlatform, youtubeLastPosts, telegramLastPosts, youtubeInfluencers, telegramInfluencers, getAllPostsFlat]);
 
   // Apply global sorting to recommendations and reorder influencers if sorting is active
   const sortedData = useMemo(() => {
@@ -1258,10 +1361,12 @@ export default function InfluencerSearchPage() {
     return dateB - dateA; // Most recent first (descending order)
   });
 
-  // Pagination for top 10 influencers
-  const totalPages = Math.ceil(displayInfluencers.length / itemsPerPage);
+  // Pagination for individual posts (not grouped by influencer)
+  const totalPages = Math.ceil(allPostsFlat.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
+  const paginatedPosts = allPostsFlat.slice(startIndex, endIndex);
+  // Keep paginatedInfluencers for backwards compatibility if needed elsewhere
   const paginatedInfluencers = displayInfluencers.slice(startIndex, endIndex);
 
   return (
@@ -1594,26 +1699,29 @@ export default function InfluencerSearchPage() {
                         </td>
                       </tr>
                     ))
-                  ) : !loading && filteredInfluencers.length === 0 ? (
+                  ) : !loading && allPostsFlat.length === 0 ? (
                     <tr>
                       <td colSpan="4" className="px-6 py-12 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <svg className="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                           </svg>
-                          <p className="text-lg font-semibold text-gray-600 mb-2">No influencers found</p>
-                          <p className="text-sm text-gray-500">No influencers match the selected filters. Try adjusting your filter criteria.</p>
+                          <p className="text-lg font-semibold text-gray-600 mb-2">No posts found</p>
+                          <p className="text-sm text-gray-500">No posts available. Try adjusting your filter criteria.</p>
                         </div>
                       </td>
                     </tr>
                   ) : (
                     <AnimatePresence mode="popLayout">
-                      {/* Paginated influencers */}
-                      {paginatedInfluencers.map((influencer, index) => {
+                      {/* Paginated individual posts */}
+                      {paginatedPosts.map((post, index) => {
                         const globalRank = startIndex + index + 1;
 
+                        // Get influencer from the post
+                        const influencer = post.influencer;
+
                         // Get star ratings from influencer's star_rating_yearly (from main API)
-                        const starRatingYearly = influencer.star_rating_yearly || {};
+                        const starRatingYearly = influencer?.star_rating_yearly || {};
 
                         // Define timeframes to display vertically
                         const timeframes = ['7_days', '30_days', '60_days', '90_days'];
@@ -1649,23 +1757,14 @@ export default function InfluencerSearchPage() {
                           }
                         });
 
-                        // Get recommendations for this influencer
-                        // Use globally sorted recommendations if sorting is active, otherwise use unsorted
-                        let recommendations;
-                        if (sortConfig.key && globalSortedRecommendations[influencer.id]) {
-                          recommendations = globalSortedRecommendations[influencer.id];
-                        } else {
-                          const lastPostsData = selectedPlatform === "youtube" ? youtubeLastPosts : telegramLastPosts;
-                          const lastPostsForInfluencer = getInfluencerPosts(lastPostsData, influencer.id, selectedDateFilter);
-
-                          recommendations = formatRecommendations(lastPostsForInfluencer, livePricesMap, binanceVolumeData);
-                        }
+                        // Format the single post as a recommendation for display
+                        const recommendations = formatRecommendations([post], livePricesMap, binanceVolumeData);
 
                         return (
                           <motion.tr
-                            key={influencer.id}
+                            key={`${post.channelID}-${post.videoID || post.messageID}-${index}`}
                             layout
-                            layoutId={`leaderboard-${influencer.id}`}
+                            layoutId={`post-${post.channelID}-${post.videoID || post.messageID}-${index}`}
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
                             exit={{ opacity: 0, x: 20 }}
@@ -1682,10 +1781,11 @@ export default function InfluencerSearchPage() {
                             className="group hover:bg-gray-50 cursor-pointer"
                             style={{ position: 'relative', zIndex: 1 }}
                             onClick={() => {
+                              const infId = influencer?.channel_id || influencer?.id || post.channelID;
                               router.push(
                                 selectedPlatform === "youtube"
-                                  ? `/influencers/${influencer.id}`
-                                  : `/telegram-influencer/${influencer.id}`
+                                  ? `/influencers/${infId}`
+                                  : `/telegram-influencer/${infId}`
                               );
                             }}
                           >
@@ -1694,8 +1794,8 @@ export default function InfluencerSearchPage() {
                               <Link
                                 href={
                                   selectedPlatform === "youtube"
-                                    ? `/influencers/${influencer.id}`
-                                    : `/telegram-influencer/${influencer.id}`
+                                    ? `/influencers/${influencer?.channel_id || influencer?.id || post.channelID}`
+                                    : `/telegram-influencer/${influencer?.channel_id || influencer?.id || post.channelID}`
                                 }
                                 className="block"
                                 onClick={(e) => e.stopPropagation()}
@@ -1703,10 +1803,10 @@ export default function InfluencerSearchPage() {
                                 <div className="flex flex-col items-center gap-2">
                                   {/* Profile Image */}
                                   <div className="flex-shrink-0 relative">
-                                    {influencer.channel_thumbnails?.high?.url ? (
+                                    {influencer?.channel_thumbnails?.high?.url ? (
                                       <Image
                                         src={influencer.channel_thumbnails.high.url}
-                                        alt={influencer.name || "Influencer"}
+                                        alt={influencer?.influencer_name || influencer?.name || post.channel_name || "Influencer"}
                                         width={48}
                                         height={48}
                                         className="w-11 h-11 rounded-full object-cover"
@@ -1720,10 +1820,10 @@ export default function InfluencerSearchPage() {
                                     {/* Name Initial Fallback */}
                                     <div
                                       className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center flex"
-                                      style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
+                                      style={{ display: influencer?.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
                                     >
                                       <span className="text-white text-base font-bold">
-                                        {influencer.name?.[0]?.toUpperCase() || "?"}
+                                        {(influencer?.influencer_name || influencer?.name || post.channel_name)?.[0]?.toUpperCase() || "?"}
                                       </span>
                                     </div>
 
@@ -1744,7 +1844,7 @@ export default function InfluencerSearchPage() {
                                   {/* Name Below Image */}
                                   <div className="text-center">
                                     <span className="text-xs font-semibold text-black-500">
-                                      {influencer.name?.replace(/_/g, " ") || "Unknown"}
+                                      {(influencer?.influencer_name || influencer?.name || post.channel_name)?.replace(/_/g, " ") || "Unknown"}
                                     </span>
                                   </div>
                                 </div>
@@ -1845,28 +1945,19 @@ export default function InfluencerSearchPage() {
                             {/* Recommendations Column */}
                             <td className="px-0.5 py-0 align-top">
                               <div className="flex flex-col gap-0">
-                                {/* Display recommendations based on visible count (default 3, increment by 3) */}
+                                {/* Display recommendations - single post per row */}
                                 {(() => {
-                                  const visibleCount = visibleRecommendations[influencer.id] || 3;
+                                  // Use post-specific key for this individual post
+                                  const postUniqueKey = `${post.channelID}-${post.videoID || post.messageID}-${index}`;
 
                                   // Check if recommendations contain grouped posts (date filter applied)
                                   const hasGroupedPosts = recommendations.some(rec => rec.isGrouped);
 
-                                  // Sort recommendations: rows with data first, N/A rows at bottom
-                                  // Skip sorting for grouped posts to preserve chronological order
-                                  const sortedRecommendations = hasGroupedPosts ? recommendations : [...recommendations].sort((a, b) => {
-                                    const aHasData = a.basePrice !== 'N/A' || a.currentPrice !== 'N/A';
-                                    const bHasData = b.basePrice !== 'N/A' || b.currentPrice !== 'N/A';
-
-                                    if (aHasData && !bHasData) return -1;
-                                    if (!aHasData && bHasData) return 1;
-                                    return 0;
-                                  });
-
-                                  const displayedRecommendations = sortedRecommendations.slice(0, visibleCount);
+                                  // For individual posts view, show all coins in the single post
+                                  const displayedRecommendations = recommendations;
 
                                   // Check if there are no posts for the selected date
-                                  if (displayedRecommendations.length === 0 && selectedDateFilter !== "latest") {
+                                  if (displayedRecommendations.length === 0) {
                                     return (
                                       <div className="flex items-center justify-center py-4 text-gray-500">
                                         <span className="text-[10px] font-medium">
@@ -1881,7 +1972,7 @@ export default function InfluencerSearchPage() {
                                     // Display them exactly like Latest Posts - individual rows for each coin
                                     if (rec.isGrouped && rec.coins) {
                                       // Get the post key for tracking expansion
-                                      const postKey = `${influencer.id}-grouped-${idx}`;
+                                      const postKey = `${postUniqueKey}-grouped-${idx}`;
                                       const visibleCoinsCount = expandedPosts[postKey] || 3;
                                       const totalCoins = rec.coins.length;
                                       const hasMoreCoins = totalCoins > visibleCoinsCount;
@@ -1891,7 +1982,7 @@ export default function InfluencerSearchPage() {
                                       const visibleCoins = rec.coins.slice(0, visibleCoinsCount);
 
                                       // Single expansion key for the entire grouped post (not per coin)
-                                      const groupedPostKey = `${influencer.id}-grouped-${idx}`;
+                                      const groupedPostKey = `${postUniqueKey}-grouped-${idx}`;
                                       const hasExpandedSummary = expandedTitles[groupedPostKey] || false;
 
                                       // Flatten coins into individual rows, same as Latest Posts
@@ -2276,7 +2367,7 @@ export default function InfluencerSearchPage() {
                                     }
 
                                     // Handle individual coin posts (Latest Posts mode)
-                                    const latestPostKey = `${influencer.id}-latest-${idx}`;
+                                    const latestPostKey = `${postUniqueKey}-latest-${idx}`;
                                     const isSummaryExpanded = expandedTitles[latestPostKey] || false;
                                     // Use summary for YouTube and Telegram, title for others
                                     const contentText = (rec.type === 'youtube' || rec.type === 'telegram') ? (rec.summary || '') : (rec.title || '');
@@ -2482,60 +2573,7 @@ export default function InfluencerSearchPage() {
                                   });
                                 })()}
 
-                                {/* Show More/Less button - positioned below coin column */}
-                                {recommendations.length > 3 && (() => {
-                                  const visibleCount = visibleRecommendations[influencer.id] || 3;
-                                  const totalCount = recommendations.length;
-                                  const showingAll = visibleCount >= totalCount;
-
-                                  const handleToggle = (e) => {
-                                    e.stopPropagation();
-                                    setVisibleRecommendations(prev => {
-                                      const currentVisible = prev[influencer.id] || 3;
-
-                                      if (showingAll) {
-                                        // Showing all, so reset to 3 (hide all except top 3)
-                                        return {
-                                          ...prev,
-                                          [influencer.id]: 3
-                                        };
-                                      } else {
-                                        // Not showing all, so increase by 3
-                                        const newCount = Math.min(totalCount, currentVisible + 3);
-                                        return {
-                                          ...prev,
-                                          [influencer.id]: newCount
-                                        };
-                                      }
-                                    });
-                                  };
-
-                                  return (
-                                    <div className="flex items-center justify-center gap-1 px-0.5 py-2 border-t border-gray-200 w-full">
-                                      <div className="w-[16%]"></div>
-                                      <div className="w-[6%] flex justify-left">
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleToggle();
-                                          }}
-                                          className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-colors shadow-md"
-                                          title={showingAll ? "Show less" : `Show more (${totalCount - visibleCount} remaining)`}
-                                        >
-                                          <span className="text-[12px] font-bold">
-                                            {showingAll ? "−" : "+"}
-                                          </span>
-                                        </button>
-                                      </div>
-                                      <div className="w-[8%]"></div>
-                                      <div className="w-[10%]"></div>
-                                      <div className="w-[10%]"></div>
-                                      <div className="w-[10%]"></div>
-                                      <div className="w-[10%]"></div>
-                                      <div className="w-[30%]"></div>
-                                    </div>
-                                  );
-                                })()}
+                                {/* Show More/Less button removed - each row now shows a single post */}
                               </div>
                             </td>
                           </motion.tr>
