@@ -64,10 +64,12 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         });
     }, [selectedPlatform, selectedCoinType]);
 
-    // Fetch Binance 24hr price data for all USDT pairs
+    // Fetch initial Binance 24hr price data and setup WebSocket for live updates
     useEffect(() => {
         let isMounted = true;
+        let ws = null;
 
+        // Fetch initial data via REST API
         const fetchBinancePriceData = async () => {
             try {
                 const response = await fetch('https://api.binance.com/api/v3/ticker/24hr');
@@ -90,13 +92,66 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             }
         };
 
-        fetchBinancePriceData();
-        // Refresh every 5 minutes
-        const interval = setInterval(fetchBinancePriceData, 5 * 60 * 1000);
+        // Setup WebSocket connection for live 24hr ticker updates
+        const setupWebSocket = () => {
+            ws = new WebSocket('wss://stream.binance.com:9443/ws/!ticker@arr');
+
+            ws.onopen = () => {
+                console.log('Binance WebSocket connected for 24hr ticker');
+            };
+
+            ws.onmessage = (event) => {
+                if (!isMounted) return;
+
+                try {
+                    const data = JSON.parse(event.data);
+
+                    // Update price data with live values
+                    setBinancePriceData(prevData => {
+                        const newData = { ...prevData };
+                        data.forEach(ticker => {
+                            if (ticker.s && ticker.s.endsWith('USDT')) {
+                                const symbol = ticker.s.replace('USDT', '').toLowerCase();
+                                // P = 24hr price change percent
+                                newData[symbol] = parseFloat(ticker.P);
+                            }
+                        });
+                        return newData;
+                    });
+                } catch (error) {
+                    console.error('Error parsing WebSocket data:', error);
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('Binance WebSocket error:', error);
+            };
+
+            ws.onclose = () => {
+                console.log('Binance WebSocket disconnected');
+                // Reconnect after 5 seconds if component is still mounted
+                if (isMounted) {
+                    setTimeout(() => {
+                        if (isMounted) {
+                            setupWebSocket();
+                        }
+                    }, 5000);
+                }
+            };
+        };
+
+        // Fetch initial data then setup WebSocket
+        fetchBinancePriceData().then(() => {
+            if (isMounted) {
+                setupWebSocket();
+            }
+        });
 
         return () => {
             isMounted = false;
-            clearInterval(interval);
+            if (ws) {
+                ws.close();
+            }
         };
     }, []);
 
@@ -140,6 +195,23 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                 return 15;
         }
     };
+
+
+     // Get the threshold for each timeframe
+    // const getThreshold = (timeframe) => {
+    //     switch (timeframe) {
+    //         case '6hrs':
+    //             return 0; // ±5% for 6 hours
+    //         case '24hrs':
+    //             return 0; // ±15% for 24 hours
+    //         case '7days':
+    //             return 0; // ±25% for 7 days
+    //         case '30days':
+    //             return 0; // ±50% for 30 days
+    //         default:
+    //             return 0;
+    //     }
+    // };
 
     // Check if price change exceeds threshold based on timeframe
     const hasPriceAlertForTimeframe = (coin, timeframe) => {
