@@ -418,8 +418,8 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         {/* Bell icon for coins exceeding price change threshold */}
                                                         {showPriceAlert && (
                                                             <div className="absolute -bottom-1 -right-1 group cursor-pointer z-[9999]">
-                                                                <div className={`w-5 h-5 rounded-full flex items-center justify-center ${priceChangePercent > 0 ? 'bg-green-500' : 'bg-red-500'}`}>
-                                                                    <FaBell className="text-white text-[10px]" />
+                                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${priceChangePercent > 0 ? 'bg-green-500' : 'bg-red-500'}`}>
+                                                                    <FaBell className="text-white text-[15px]" />
                                                                 </div>
                                                                 {/* Tooltip on hover - centered above */}
                                                                 <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">

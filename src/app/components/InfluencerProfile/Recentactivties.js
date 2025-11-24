@@ -257,6 +257,11 @@ export default function RecentActivityTab({ channelID, channelData, youtubeLast5
           <h1 className="text-3xl font-bold text-gray-900">
             {channelData?.influencer_name || "Influencer"}
           </h1>
+          {channelData?.videos_last_30_count !== undefined && (
+            <p className="text-lg text-black-600 mt-2">
+              Videos in last 30 days: <span className="font-semibold text-gray-900">{channelData.videos_last_30_count}</span>
+            </p>
+          )}
           {/* {rank && (
             <div className="text-xl font-semibold text-white-600 mt-2">
               Rank (180 days/Overall) : {rank}

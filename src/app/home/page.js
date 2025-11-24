@@ -358,7 +358,7 @@ export default function HomePage() {
         {/* Section Title and Description */}
         <div className="text-center mb-12 mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
-            View Top Crypto Influencers
+            Latest Posts
           </h2>
 
           <button
@@ -371,12 +371,12 @@ export default function HomePage() {
                 window.location.href = '/login?signup=true';
               }
             }}
-            className="inline-block bg-green-500 text-white px-8 py-3 rounded-lg font-semibold text-2xl md:text-3xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 mb-6"
+            className="inline-block bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 text-white px-8 py-3 rounded-lg font-semibold text-2xl md:text-3xl shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 mb-6"
           >
-            Live Leaderboard
+            View Latest Posts
           </button>
 
-          <p className="text-md text-gray-600 leading-relaxed">
+          <p className="text-lg text-black-600 leading-relaxed">
             Trust is the real Alpha. Track ROI, win rate, and trust scores with our
             comprehensive analytics and Influencer dashboard.
           </p>

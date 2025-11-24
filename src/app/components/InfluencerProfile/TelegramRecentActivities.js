@@ -143,7 +143,7 @@ export default function TelegramRecentActivityTab({ channelID, channelData, tele
   };
 
   const getColumnColor = (index) => {
-    return "bg-blue-600";
+    return "bg-gradient-to-r from-blue-500 to-purple-500";
   };
 
   const getScoreColor = (score) => {
@@ -237,11 +237,16 @@ export default function TelegramRecentActivityTab({ channelID, channelData, tele
           <h1 className="text-3xl font-bold text-gray-900">
             {channelData?.results?.channel_id || "Telegram Influencer"}
           </h1>
-          {rank && (
+          {channelData?.messages_last_30_count !== undefined && (
+            <p className="text-lg text-black-600 mt-2">
+              Messages in last 30 days: <span className="font-semibold text-gray-900">{channelData.messages_last_30_count}</span>
+            </p>
+          )}
+          {/* {rank && (
             <div className="text-xl font-semibold text-white-600 mt-2">
               Rank (180 days/Overall) : {rank}
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Posts */}
