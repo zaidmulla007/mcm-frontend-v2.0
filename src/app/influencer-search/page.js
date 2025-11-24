@@ -1376,60 +1376,9 @@ export default function InfluencerSearchPage() {
         <div className="min-w-0">
           {/* Leaderboard Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            {/* View Mode Toggle Buttons */}
-            <div className="flex justify-between items-center gap-2 px-2 py-1.5 border-b border-gray-200 bg-gray-50">
-              {/* Timezone Toggle on Left */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-[9px] font-semibold text-black-600">Timezone:</span>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => toggleTimezone()}
-                    className={`px-2 py-0.5 text-[10px] font-semibold rounded transition-all ${!useLocalTime
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                  >
-                    UTC
-                  </button>
-                  <button
-                    onClick={() => toggleTimezone()}
-                    className={`px-2 py-0.5 text-[10px] font-semibold rounded transition-all ${useLocalTime
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
-                  >
-                    {useLocalTime && userCity ? userCity : 'Local'}
-                  </button>
-                </div>
-              </div>
-
-              {/* View Mode Buttons in Center */}
-              {/* <div className="flex gap-3">
-                <button
-                  onClick={() => setViewMode("top10_influencer_latest")}
-                  className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${viewMode === "top10_influencer_latest"
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                >
-                  Influencers
-                </button>
-                <button
-                  onClick={() => router.push("/coins")}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-200 text-gray-700 hover:bg-gray-300"
-                >
-                  Coins
-                </button>
-                <button
-                  onClick={() => router.push("/posts")}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-200 text-gray-700 hover:bg-gray-300"
-                >
-                  Publish Posts
-                </button>
-              </div> */}
-
-              {/* Empty space on right for balance */}
-              <div className="w-40"></div>
+            {/* Header with centered title */}
+            <div className="flex justify-center items-center px-2 py-1.5 border-b border-gray-200 bg-gray-50">
+              <h1 className="text-lg font-semibold text-center">Latest Posts</h1>
             </div>
 
             <div>
@@ -1459,16 +1408,33 @@ export default function InfluencerSearchPage() {
                     </th> */}
                     <th className="px-1 py-1 text-[10px] font-medium text-black-900 tracking-wider relative">
                       <div className="flex items-center justify-between w-full">
-                        {/* <span className="px-1">Date & Time</span> */}
+                        {/* Timezone Toggle on Left */}
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => toggleTimezone()}
+                            className={`px-1.5 py-0.5 text-[9px] font-semibold rounded transition-all ${!useLocalTime
+                              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              }`}
+                          >
+                            UTC
+                          </button>
+                          <button
+                            onClick={() => toggleTimezone()}
+                            className={`px-1.5 py-0.5 text-[9px] font-semibold rounded transition-all ${useLocalTime
+                              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
+                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              }`}
+                          >
+                            {useLocalTime && userCity ? userCity : 'Local'}
+                          </button>
+                        </div>
+                        {/* Info centered */}
                         <div className="flex items-center justify-center gap-1 flex-1">
                           <span>Info</span>
-                          {/* <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                              N/A : Not Available
-                            </span>
-                          </span> */}
                         </div>
+                        {/* Empty space for balance */}
+                        <div className="w-16"></div>
                       </div>
                     </th>
                   </tr>
