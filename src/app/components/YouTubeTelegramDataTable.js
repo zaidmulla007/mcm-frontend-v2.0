@@ -506,6 +506,12 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                     <div className="text-xs text-black">
                                                         {sentimentData.mentions} posts
                                                     </div>
+                                                    {/* Price change display - 24hrs uses live Binance data, others use coin's percentage_change */}
+                                                    {priceChangePercent !== null && (
+                                                        <div className={`text-xs font-semibold mt-1 ${priceChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                            {priceChangePercent >= 0 ? '+' : ''}{priceChangePercent?.toFixed(2)}%
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </td>
 
