@@ -213,6 +213,11 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     //     }
     // };
 
+    // Threshold constants for bell alerts
+    const THRESHOLD_50_PERCENT = 50;
+    const THRESHOLD_TOP10_PERCENT = 15;
+    const TOP_COINS_RANK_LIMIT = 10;
+
     // Check if price change exceeds threshold based on timeframe
     const hasPriceAlertForTimeframe = (coin, timeframe) => {
         // Bell should only show for 24hrs timeframe
@@ -230,11 +235,11 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         // 2. OR if coin's market_cap_rank <= 10 and price change is ±15%
         const marketCapRank = coin?.market_cap_rank;
 
-        if (Math.abs(priceChange) >= 50) {
+        if (Math.abs(priceChange) >= THRESHOLD_50_PERCENT) {
             return true;
         }
 
-        if (marketCapRank && marketCapRank <= 10 && Math.abs(priceChange) >= 15) {
+        if (marketCapRank && marketCapRank <= TOP_COINS_RANK_LIMIT && Math.abs(priceChange) >= THRESHOLD_TOP10_PERCENT) {
             return true;
         }
 
@@ -490,6 +495,22 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     const showPriceAlert = hasPriceAlertForTimeframe(coin, timeframe);
                                     const threshold = getThreshold(timeframe);
 
+                                    // Determine alert reason for tooltip
+                                    const getAlertReason = () => {
+                                        if (timeframe === '24hrs' && priceChangePercent !== null) {
+                                            const absChange = Math.abs(priceChangePercent);
+                                            // Check 50% threshold first
+                                            if (absChange >= THRESHOLD_50_PERCENT) {
+                                                return `${THRESHOLD_50_PERCENT}% Price Movement`;
+                                            }
+                                            // Check top 10 coin with 15% threshold
+                                            if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= THRESHOLD_TOP10_PERCENT) {
+                                                return `Top ${TOP_COINS_RANK_LIMIT} coin, ${THRESHOLD_TOP10_PERCENT}% Movement`;
+                                            }
+                                        }
+                                        return 'Price Change';
+                                    };
+
                                     return (
                                         <tr key={index} className="border-b border-gray-800">
                                             {/* Coin Column */}
@@ -513,7 +534,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                 </div>
                                                                 {/* Tooltip on hover - positioned below the bell */}
                                                                 <div className="invisible group-hover:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                                                    {getTimeframeLabel(timeframe)} Price Change: <span className={priceChangePercent > 0 ? 'text-green-400' : 'text-red-400'}>{priceChangePercent > 0 ? '+' : ''}{priceChangePercent?.toFixed(2)}%</span>
+                                                                    {getAlertReason()}
                                                                 </div>
                                                             </div>
                                                         )}
