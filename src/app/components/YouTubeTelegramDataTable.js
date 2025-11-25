@@ -502,16 +502,22 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                     </div>
                                                     <div className="text-sm text-black font-bold mb-1">
                                                         {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
+                                                        {/* Display 24hrs price change only */}
+                                                        {timeframe === '24hrs' && priceChangePercent !== null && (
+                                                            <span className={`ml-1 ${priceChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                                {Math.abs(priceChangePercent)?.toFixed(2)}%
+                                                            </span>
+                                                        )}
                                                     </div>
                                                     <div className="text-xs text-black">
                                                         {sentimentData.mentions} posts
                                                     </div>
-                                                    {/* Price change display - 24hrs uses live Binance data, others use coin's percentage_change */}
-                                                    {priceChangePercent !== null && (
+                                                    {/* Price change display - COMMENTED OUT - 24hrs uses live Binance data, others use coin's percentage_change */}
+                                                    {/* {priceChangePercent !== null && (
                                                         <div className={`text-xs font-semibold mt-1 ${priceChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                             {priceChangePercent >= 0 ? '+' : ''}{priceChangePercent?.toFixed(2)}%
                                                         </div>
-                                                    )}
+                                                    )} */}
                                                 </div>
                                             </td>
 

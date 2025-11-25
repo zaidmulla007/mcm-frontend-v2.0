@@ -251,15 +251,10 @@ export default function InfluencerSearchPage() {
   const [threeDaysDateRange, setThreeDaysDateRange] = useState({ start: null, end: null });
 
   // Use timezone context
-  const { useLocalTime, userTimezone, toggleTimezone, setUseLocalTime, formatDate: formatDateFromContext } = useTimezone();
+  const { useLocalTime, userTimezone, toggleTimezone, formatDate: formatDateFromContext } = useTimezone();
 
   // Get user's city from timezone
   const [userCity, setUserCity] = useState('');
-
-  // Ensure UTC is the default on page load
-  useEffect(() => {
-    setUseLocalTime(false);
-  }, []); // Run only once on mount
 
   useEffect(() => {
     if (useLocalTime && userTimezone) {
@@ -1378,7 +1373,7 @@ export default function InfluencerSearchPage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             {/* Header with centered title */}
             <div className="flex justify-center items-center px-2 py-1.5 border-b border-gray-200 bg-gray-50">
-              <h1 className="text-lg font-semibold text-center">Latest Posts</h1>
+              <h1 className="text-lg font-semibold text-center">Last 3 Days Posts</h1>
             </div>
 
             <div>
@@ -1576,8 +1571,7 @@ export default function InfluencerSearchPage() {
                                 <span className="text-blue-600 text-sm">ⓘ</span>
 
                                 <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                  Source: Binance <br />
-                                  Source: MCM DB Last Updated Price<br />
+                                  Source: Binance ,MCM DB Last Updated Price<br />
                                   N/A : Not Available
                                 </span>
                               </span>
@@ -1587,11 +1581,11 @@ export default function InfluencerSearchPage() {
                           </div>
                         </div>
 
-                        <div className="w-[15%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
                           <div className="flex flex-col items-start">
 
                             {/* Title */}
-                            <span>24 Hours Price</span>
+                            <span>24 Hrs</span>
 
                             {/* Price + Info Icon on the right */}
                             <div className="flex items-center gap-1">
@@ -1744,16 +1738,8 @@ export default function InfluencerSearchPage() {
                               opacity: { duration: 0.5 },
                               x: { duration: 0.5 }
                             }}
-                            className="group hover:bg-gray-50 cursor-pointer"
+                            className="group hover:bg-gray-50"
                             style={{ position: 'relative', zIndex: 1 }}
-                            onClick={() => {
-                              const infId = influencer?.channel_id || influencer?.id || post.channelID;
-                              router.push(
-                                selectedPlatform === "youtube"
-                                  ? `/influencers/${infId}`
-                                  : `/telegram-influencer/${infId}`
-                              );
-                            }}
                           >
                             {/* Influencer Column */}
                             <td className="px-1 py-1 border-r border-gray-200">
@@ -2185,7 +2171,7 @@ export default function InfluencerSearchPage() {
 
 
                                             {/* 24 Hours Price Change - From Binance WebSocket */}
-                                            <div className="w-[15%] flex flex-col justify-start">
+                                            <div className="w-[10%] flex flex-col justify-start">
                                               {(() => {
                                                 // Get live 24-hour price change percentage from WebSocket
                                                 const priceChangePercent = getLivePriceChange(coinData.coin);
@@ -2215,11 +2201,13 @@ export default function InfluencerSearchPage() {
                                               <div
                                                 className="w-[50%] flex items-start justify-center border-l border-gray-200 px-2 bg-white group-hover:bg-gray-50"
                                                 style={{
-                                                  position: 'absolute',
-                                                  right: 0,
-                                                  top: 0,
-                                                  minHeight: `${visibleCoins.length * 100}%`,
+                                                  position: (visibleCoins.length === 1 && isSummaryExpanded) ? 'relative' : 'absolute',
+                                                  right: (visibleCoins.length === 1 && isSummaryExpanded) ? 'auto' : 0,
+                                                  top: (visibleCoins.length === 1 && isSummaryExpanded) ? 'auto' : 0,
+                                                  minHeight: (visibleCoins.length === 2 && isSummaryExpanded) ? `${visibleCoins.length * 100}%` : (visibleCoins.length === 1 && isSummaryExpanded) ? 'auto' : `${visibleCoins.length * 100}%`,
                                                   height: isSummaryExpanded ? 'auto' : `${visibleCoins.length * 100}%`,
+                                                  width: '50%',
+                                                  flex: (visibleCoins.length === 1 && isSummaryExpanded) ? '0 0 50%' : 'none',
                                                   zIndex: isSummaryExpanded ? 10 : 1,
                                                   overflow: 'visible'
                                                 }}
@@ -2234,16 +2222,21 @@ export default function InfluencerSearchPage() {
                                                     width: '100%'
                                                   }}>
                                                     <p className="mb-0">
-                                                      <a
-                                                        href={rec.link}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        onClick={(e) => e.stopPropagation()}
+                                                      <span
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          const infId = influencer?.channel_id || influencer?.id || post.channelID;
+                                                          router.push(
+                                                            selectedPlatform === "youtube"
+                                                              ? `/influencers/${infId}?tab=recentActivities`
+                                                              : `/telegram-influencer/${infId}?tab=recentActivities`
+                                                          );
+                                                        }}
                                                         className="hover:text-blue-600 hover:underline cursor-pointer"
                                                       >
                                                         {isSummaryExpanded ? contentText : (showReadMore ? truncateText(contentText, wordLimit) : contentText)}
                                                         {showReadMore && !isSummaryExpanded && '...'}
-                                                      </a>
+                                                      </span>
                                                     </p>
                                                     {showReadMore && (
                                                       <button
@@ -2262,21 +2255,50 @@ export default function InfluencerSearchPage() {
                                                   </div>
                                                 ) : (
                                                   <div className="text-[8px] text-gray-600 py-2">
-                                                    <a
-                                                      href={rec.link}
-                                                      target="_blank"
-                                                      rel="noopener noreferrer"
-                                                      onClick={(e) => e.stopPropagation()}
+                                                    <span
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        const infId = influencer?.channel_id || influencer?.id || post.channelID;
+                                                        router.push(
+                                                          selectedPlatform === "youtube"
+                                                            ? `/influencers/${infId}?tab=recentActivities`
+                                                            : `/telegram-influencer/${infId}?tab=recentActivities`
+                                                        );
+                                                      }}
                                                       className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
                                                     >
                                                       click to view post
-                                                    </a>
+                                                    </span>
                                                   </div>
                                                 )}
                                               </div>
                                             ) : null}
-                                            {/* Spacer for summary column */}
-                                            <div className="w-[50%]" />
+                                            {/* Spacer for summary column - hide only when 1 coin and summary is expanded */}
+                                            {!(visibleCoins.length === 1 && isSummaryExpanded) && (
+                                              <div className="w-[50%] flex items-start justify-center px-2" style={{
+                                                minHeight: 'auto'
+                                              }}>
+                                                {/* Invisible placeholder for expansion - distributes content across all coin rows */}
+                                                {(visibleCoins.length >= 2 && isSummaryExpanded) && (
+                                                  <div className="text-[9px] text-gray-700 leading-[1.4] py-2" style={{
+                                                    opacity: 0,
+                                                    pointerEvents: 'none',
+                                                    wordWrap: 'break-word',
+                                                    overflowWrap: 'break-word',
+                                                    whiteSpace: 'normal',
+                                                    textAlign: 'left',
+                                                    display: 'block',
+                                                    width: '100%'
+                                                  }}>
+                                                    {/* Split content evenly across all visible coin rows */}
+                                                    {contentText.substring(
+                                                      Math.floor((coinIdx * contentText.length) / visibleCoins.length),
+                                                      Math.floor(((coinIdx + 1) * contentText.length) / visibleCoins.length)
+                                                    )}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            )}
                                           </div>
                                         );
                                       });
@@ -2493,18 +2515,23 @@ export default function InfluencerSearchPage() {
                                         <div className={`w-[50%] flex justify-start break-words ${isSummaryExpanded ? 'overflow-visible' : 'overflow-hidden'}`}>
                                           {contentText ? (
                                             <span className="text-[8px] text-gray-600 break-words capitalize">
-                                              <a
-                                                href={rec.link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={(e) => e.stopPropagation()}
+                                              <span
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  const infId = influencer?.channel_id || influencer?.id || post.channelID;
+                                                  router.push(
+                                                    selectedPlatform === "youtube"
+                                                      ? `/influencers/${infId}?tab=recentActivities`
+                                                      : `/telegram-influencer/${infId}?tab=recentActivities`
+                                                  );
+                                                }}
                                                 className="hover:text-blue-600 hover:underline cursor-pointer"
                                               >
                                                 {showReadMore && !isSummaryExpanded
                                                   ? `${truncateText(contentText, wordLimit)}...`
                                                   : contentText
                                                 }
-                                              </a>
+                                              </span>
                                               {showReadMore && (
                                                 <button
                                                   onClick={(e) => {
@@ -2522,15 +2549,20 @@ export default function InfluencerSearchPage() {
                                             </span>
                                           ) : (
                                             <span className="text-[8px] text-gray-600">
-                                              <a
-                                                href={rec.link}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                onClick={(e) => e.stopPropagation()}
+                                              <span
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  const infId = influencer?.channel_id || influencer?.id || post.channelID;
+                                                  router.push(
+                                                    selectedPlatform === "youtube"
+                                                      ? `/influencers/${infId}?tab=recentActivities`
+                                                      : `/telegram-influencer/${infId}?tab=recentActivities`
+                                                  );
+                                                }}
                                                 className="text-blue-600 hover:text-blue-700 hover:underline cursor-pointer"
                                               >
                                                 {rec.link}
-                                              </a>
+                                              </span>
                                             </span>
                                           )}
                                         </div>

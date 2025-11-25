@@ -22,13 +22,23 @@ export const TimezoneProvider = ({ children }) => {
     const detectedTimezone = moment.tz.guess();
     setUserTimezone(detectedTimezone);
 
-    // Load timezone preference from localStorage (default to true/Local Time if not set)
-    const savedTimezone = localStorage.getItem('useLocalTime');
-    if (savedTimezone !== null) {
-      setUseLocalTime(JSON.parse(savedTimezone));
-    } else {
-      // Explicitly set to true (Local Time) if no preference saved
+    // One-time migration: Reset to Local Time as default
+    // Check if migration has been done
+    const migrationDone = localStorage.getItem('timezone_migration_v1');
+    if (!migrationDone) {
+      // Reset to Local Time and mark migration as complete
+      localStorage.setItem('useLocalTime', JSON.stringify(true));
+      localStorage.setItem('timezone_migration_v1', 'true');
       setUseLocalTime(true);
+    } else {
+      // Load timezone preference from localStorage (default to true/Local Time if not set)
+      const savedTimezone = localStorage.getItem('useLocalTime');
+      if (savedTimezone !== null) {
+        setUseLocalTime(JSON.parse(savedTimezone));
+      } else {
+        // Explicitly set to true (Local Time) if no preference saved
+        setUseLocalTime(true);
+      }
     }
   }, []);
 
