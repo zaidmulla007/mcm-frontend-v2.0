@@ -1403,25 +1403,24 @@ export default function InfluencerSearchPage() {
                     </th> */}
                     <th className="px-1 py-1 text-[10px] font-medium text-black-900 tracking-wider relative">
                       <div className="flex items-center justify-between w-full">
-                        {/* Timezone Toggle on Left */}
-                        <div className="flex items-center gap-1">
+                        {/* Timezone Switch on Left */}
+                        <div className="flex items-center gap-2">
+                          <span className="text-[9px] font-medium text-black-700">
+                            {useLocalTime ? (userCity || 'Local') : 'UTC'}
+                          </span>
                           <button
                             onClick={() => toggleTimezone()}
-                            className={`px-1.5 py-0.5 text-[9px] font-semibold rounded transition-all ${!useLocalTime
-                              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                              }`}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
+                              useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
+                            }`}
+                            role="switch"
+                            aria-checked={useLocalTime}
                           >
-                            UTC
-                          </button>
-                          <button
-                            onClick={() => toggleTimezone()}
-                            className={`px-1.5 py-0.5 text-[9px] font-semibold rounded transition-all ${useLocalTime
-                              ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-sm'
-                              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${
+                                useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
                               }`}
-                          >
-                            {useLocalTime && userCity ? userCity : 'Local'}
+                            />
                           </button>
                         </div>
                         {/* Info centered */}
@@ -1684,8 +1683,8 @@ export default function InfluencerSearchPage() {
                         const starRatingYearly = influencer?.star_rating_yearly || {};
 
                         // Define timeframes to display vertically
-                        const timeframes = ['7_days', '30_days', '60_days', '90_days'];
-                        const timeframeLabels = { '7_days': '7D', '30_days': '30D', '60_days': '60D', '90_days': '90D' };
+                        const timeframes = ['7_days', '30_days', '60_days', '90_days', '180_days', '1_year'];
+                        const timeframeLabels = { '7_days': '7D', '30_days': '30D', '60_days': '60D', '90_days': '90D', '180_days': '180D', '1_year': '1Y' };
 
                         // Build star data for 2024 and 2025 with timeframes
                         const starData2024 = [];
@@ -1942,7 +1941,8 @@ export default function InfluencerSearchPage() {
                                         const isSummaryExpanded = hasExpandedSummary;
                                         // Use summary for YouTube and Telegram, title for others
                                         const contentText = (rec.type === 'youtube' || rec.type === 'telegram') ? (rec.summary || '') : (rec.title || '');
-                                        const wordLimit = 30;
+                                        // Dynamic word limit based on number of coins
+                                        const wordLimit = visibleCoins.length === 1 ? 30 : visibleCoins.length === 2 ? 60 : 90;
                                         const showReadMore = contentText.split(' ').length > wordLimit;
                                         const isFirstCoin = coinIdx === 0;
                                         const isLastVisibleCoin = coinIdx === visibleCoins.length - 1;
@@ -2359,7 +2359,9 @@ export default function InfluencerSearchPage() {
                                     const isSummaryExpanded = expandedTitles[latestPostKey] || false;
                                     // Use summary for YouTube and Telegram, title for others
                                     const contentText = (rec.type === 'youtube' || rec.type === 'telegram') ? (rec.summary || '') : (rec.title || '');
-                                    const wordLimit = 30;
+                                    // Dynamic word limit based on number of coins (for Latest Posts, usually 1 coin per post)
+                                    const coinsCount = rec.coins ? rec.coins.length : 1;
+                                    const wordLimit = coinsCount === 1 ? 30 : coinsCount === 2 ? 60 : 90;
                                     const showReadMore = contentText.split(' ').length > wordLimit;
 
                                     return (
