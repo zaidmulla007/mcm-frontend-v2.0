@@ -91,14 +91,18 @@ export default function InfluencerProfilePage() {
       let last5 = apiRes.data?.youtube_last_5 || [];
       let rank = apiRes.data?.rank || null;
       let videos_last_30_count = apiRes.data?.videos_last_30_count;
+      let videos_last_7_count = apiRes.data?.videos_last_7_count;
+      let videos_last_24h_count = apiRes.data?.videos_last_24h_count;
 
       if (!results) throw new Error("No data found in response");
 
-      // Add rank and videos_last_30_count to the results object
+      // Add rank and video counts to the results object
       const channelDataWithRank = {
         ...results,
         rank: rank,
-        videos_last_30_count: videos_last_30_count
+        videos_last_30_count: videos_last_30_count,
+        videos_last_7_count: videos_last_7_count,
+        videos_last_24h_count: videos_last_24h_count
       };
 
       setChannelData(channelDataWithRank);

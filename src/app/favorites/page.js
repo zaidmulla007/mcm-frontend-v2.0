@@ -286,8 +286,8 @@ export default function FavoritesPage() {
                   <table className="w-full">
                     <thead className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
                       <tr>
-                        <th className="px-6 py-4 text-left text-sm font-semibold">Logo</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold">Name</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Influencer Icon</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Influencer Name</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold">Platform</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold">Channel URL</th>
                         <th className="px-6 py-4 text-center text-sm font-semibold">Details</th>

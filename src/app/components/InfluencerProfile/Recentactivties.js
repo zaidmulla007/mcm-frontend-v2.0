@@ -21,6 +21,11 @@ export default function RecentActivityTab({ channelID, channelData, youtubeLast5
 
   useEffect(() => {
     console.log("RecentActivities - Full channelData:", channelData);
+    console.log("RecentActivities - Video counts:", {
+      videos_last_30_count: channelData?.videos_last_30_count,
+      videos_last_7_count: channelData?.videos_last_7_count,
+      videos_last_24h_count: channelData?.videos_last_24h_count
+    });
     console.log("RecentActivities - channelData.youtube_last_5:", channelData?.youtube_last_5);
     console.log("RecentActivities - channelData.last5:", channelData?.last5);
     console.log("RecentActivities - youtubeLast5 prop:", youtubeLast5);
@@ -257,11 +262,26 @@ export default function RecentActivityTab({ channelID, channelData, youtubeLast5
           <h1 className="text-3xl font-bold text-gray-900">
             {channelData?.influencer_name || "Influencer"}
           </h1>
-          {channelData?.videos_last_30_count !== undefined && (
-            <p className="text-lg text-black-600 mt-2">
-              Videos in last 30 days: <span className="font-semibold text-gray-900">{channelData.videos_last_30_count}</span>
-            </p>
-          )}
+          <div className="mt-3 flex flex-wrap justify-start gap-4 text-sm text-gray-700">
+            {(channelData?.videos_last_30_count !== undefined && channelData?.videos_last_30_count !== null) && (
+              <div className="flex items-start gap-2">
+                <span className="text-gray-600">Last 30 days:</span>
+                <span className="font-semibold text-gray-900 bg-blue-100 px-3 py-1 rounded-full">{channelData.videos_last_30_count} videos</span>
+              </div>
+            )}
+            {(channelData?.videos_last_7_count !== undefined && channelData?.videos_last_7_count !== null) && (
+              <div className="flex items-start gap-2">
+                <span className="text-gray-600">Last 7 days:</span>
+                <span className="font-semibold text-gray-900 bg-green-100 px-3 py-1 rounded-full">{channelData.videos_last_7_count} videos</span>
+              </div>
+            )}
+            {(channelData?.videos_last_24h_count !== undefined && channelData?.videos_last_24h_count !== null) && (
+              <div className="flex items-start gap-2">
+                <span className="text-gray-600">Last 24 hours:</span>
+                <span className="font-semibold text-gray-900 bg-purple-100 px-3 py-1 rounded-full">{channelData.videos_last_24h_count} videos</span>
+              </div>
+            )}
+          </div>
           {/* {rank && (
             <div className="text-xl font-semibold text-white-600 mt-2">
               Rank (180 days/Overall) : {rank}

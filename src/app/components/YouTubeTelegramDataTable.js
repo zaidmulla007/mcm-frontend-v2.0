@@ -215,20 +215,30 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
     // Check if price change exceeds threshold based on timeframe
     const hasPriceAlertForTimeframe = (coin, timeframe) => {
-        let priceChange;
-
-        if (timeframe === '24hrs') {
-            // Use Binance 24hr live data for 24hrs
-            priceChange = getPriceChangePercent(coin?.symbol);
-        } else {
-            // Use coin's percentage_change data for 6hrs, 7days, and 30days
-            priceChange = getCoinPriceChange(coin, timeframe);
+        // Bell should only show for 24hrs timeframe
+        if (timeframe !== '24hrs') {
+            return false;
         }
+
+        // Use Binance 24hr live data for 24hrs
+        const priceChange = getPriceChangePercent(coin?.symbol);
 
         if (priceChange === null) return false;
 
-        const threshold = getThreshold(timeframe);
-        return Math.abs(priceChange) >= threshold;
+        // Show bell for 24 hours when:
+        // 1. Price change is ±50%
+        // 2. OR if coin's market_cap_rank <= 10 and price change is ±15%
+        const marketCapRank = coin?.market_cap_rank;
+
+        if (Math.abs(priceChange) >= 50) {
+            return true;
+        }
+
+        if (marketCapRank && marketCapRank <= 10 && Math.abs(priceChange) >= 15) {
+            return true;
+        }
+
+        return false;
     };
 
     // Get price change value for display based on timeframe
@@ -420,6 +430,9 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         const coins = isExpanded ? allCoins : allCoins.slice(0, 5);
         const hasMore = allCoins.length > 5;
 
+        // Check if any coin in this timeframe has a price alert
+        const hasAnyPriceAlert = timeframe === '24hrs' && allCoins.some(coin => hasPriceAlertForTimeframe(coin, timeframe));
+
         const getFromDateForTimeframe = () => {
             if (combinedData && combinedData.resultsByTimeframe &&
                 combinedData.resultsByTimeframe[timeframe] &&
@@ -433,7 +446,12 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         return (
             <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
                 <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4">
-                    <h3 className="text-xl font-bold text-white text-center mb-1">{title}</h3>
+                    <h3 className="text-xl font-bold text-white text-center mb-1 flex items-center justify-center gap-2">
+                        {title}
+                        {hasAnyPriceAlert && (
+                            <FaBell className="text-yellow-300 text-lg animate-pulse" />
+                        )}
+                    </h3>
                     {/* <div className="text-xs text-white text-center">
                         {getFromDateForTimeframe()}
                     </div> */}
@@ -489,12 +507,12 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         />
                                                         {/* Bell icon for coins exceeding price change threshold */}
                                                         {showPriceAlert && (
-                                                            <div className="absolute -bottom-1 -right-1 group cursor-pointer z-[9999]">
-                                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center ${priceChangePercent > 0 ? 'bg-green-500' : 'bg-red-500'}`}>
+                                                            <div className="absolute -top-1 -right-1 group cursor-pointer z-[9999]">
+                                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-lg ${priceChangePercent > 0 ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}>
                                                                     <FaBell className="text-white text-[15px]" />
                                                                 </div>
-                                                                {/* Tooltip on hover - centered above */}
-                                                                <div className="invisible group-hover:visible absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                                                {/* Tooltip on hover - positioned below the bell */}
+                                                                <div className="invisible group-hover:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
                                                                     {getTimeframeLabel(timeframe)} Price Change: <span className={priceChangePercent > 0 ? 'text-green-400' : 'text-red-400'}>{priceChangePercent > 0 ? '+' : ''}{priceChangePercent?.toFixed(2)}%</span>
                                                                 </div>
                                                             </div>
@@ -504,8 +522,8 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
                                                         {/* Display 24hrs price change only */}
                                                         {timeframe === '24hrs' && priceChangePercent !== null && (
-                                                            <span className={`ml-1 ${priceChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                                                {Math.abs(priceChangePercent)?.toFixed(2)}%
+                                                            <span className="ml-1 text-gray-600">
+                                                                ({Math.abs(priceChangePercent)?.toFixed(2)}%)
                                                             </span>
                                                         )}
                                                     </div>

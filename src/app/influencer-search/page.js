@@ -1392,9 +1392,7 @@ export default function InfluencerSearchPage() {
                           Timeframes represent how an influencer’s calls performed over different periods.<br />
                           We check the price when the call was made,<br />
                           compare it after each timeframe,<br />
-                          and use those outcomes to rank influencers based on overall performance.<br />
-                          <br />
-                          (Rating based on 1 hour)
+                          and use those outcomes to rank influencers based on overall performance.
                         </span>
                       </span>
                     </th>
@@ -1410,18 +1408,19 @@ export default function InfluencerSearchPage() {
                           </span>
                           <button
                             onClick={() => toggleTimezone()}
-                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
-                              useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
-                            }`}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
+                              }`}
                             role="switch"
                             aria-checked={useLocalTime}
                           >
                             <span
-                              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${
-                                useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
-                              }`}
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
+                                }`}
                             />
                           </button>
+                          <span className="text-[9px] font-medium text-black-700">
+                            Local Time / UTC
+                          </span>
                         </div>
                         {/* Info centered */}
                         <div className="flex items-center justify-center gap-1 flex-1">
@@ -1623,7 +1622,7 @@ export default function InfluencerSearchPage() {
                           </div>
                           {/* Subtitle */}
                           <span className="text-[8px] font-normal text-left text-black-600 mt-[1px]">
-                            click to view post
+                            Click to View Post
                           </span>
 
                         </div>
@@ -2015,9 +2014,11 @@ export default function InfluencerSearchPage() {
 
                                                     if (isNaN(value)) return coinData.basePrice;
 
+                                                    const digits = Math.floor(Math.abs(value)).toString().length;
+
                                                     return `$${value.toLocaleString(undefined, {
-                                                      minimumFractionDigits: 2,
-                                                      maximumFractionDigits: 2
+                                                      minimumFractionDigits: digits <= 3 ? 2 : 0,
+                                                      maximumFractionDigits: digits <= 3 ? 2 : 0
                                                     })}`;
                                                   })()}
                                                 </span>
@@ -2110,32 +2111,42 @@ export default function InfluencerSearchPage() {
                                             {/* Current Price */}
                                             <div className="w-[10%] flex flex-col justify-start">
                                               {(() => {
-                                                // First try to get live price from Binance WebSocket
+                                                // Try to get live price from Binance WebSocket
                                                 const livePrice = getLivePrice(coinData.coin);
                                                 const raw = livePrice?.replace(/[^0-9.-]/g, '');
                                                 const value = parseFloat(raw);
 
-                                                // If we have a valid live price, show it
+                                                // Helper function for formatting
+                                                const formatPrice = (num) => {
+                                                  const digits = Math.floor(Math.abs(num)).toString().length;
+
+                                                  return num.toLocaleString(undefined, {
+                                                    minimumFractionDigits: digits <= 3 ? 2 : 0,
+                                                    maximumFractionDigits: digits <= 3 ? 2 : 0
+                                                  });
+                                                };
+
+                                                // LIVE PRICE AVAILABLE → show formatted
                                                 if (!isNaN(value) && livePrice !== 'N/A') {
-                                                  const formattedPrice = `$${value.toLocaleString(undefined, {
-                                                    minimumFractionDigits: 2,
-                                                    maximumFractionDigits: 2
-                                                  })}`;
                                                   return (
                                                     <span className="text-[8px] font-semibold text-blue-500">
-                                                      {formattedPrice}
+                                                      ${formatPrice(value)}
                                                     </span>
                                                   );
                                                 }
 
-                                                // Otherwise, check if we have lastAvailablePrice from MCM DB
+                                                // FALLBACK: MCM DB LAST AVAILABLE PRICE
                                                 if (coinData.lastAvailablePrice) {
+                                                  const lastValue = parseFloat(coinData.lastAvailablePrice);
+
                                                   return (
                                                     <div className="flex flex-col items-start gap-0.5">
                                                       <div className="flex items-center gap-1">
                                                         <span className="text-[8px] font-semibold text-gray-600">
-                                                          ${parseFloat(coinData.lastAvailablePrice).toFixed(2)}
+                                                          ${formatPrice(lastValue)}
                                                         </span>
+
+                                                        {/* Tooltip */}
                                                         <span className="relative inline-block z-[9999]">
                                                           <span
                                                             className="text-gray-600 text-[8px] cursor-pointer hover:text-gray-800 inline-block"
@@ -2151,9 +2162,12 @@ export default function InfluencerSearchPage() {
                                                           >
                                                             ⓘ
                                                           </span>
+
                                                           <span className="invisible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-[8px] p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999] pointer-events-none">
                                                             MCM DB Last Price<br />
-                                                            {coinData.lastAvailableTimestamp ? formatDateFromContext(new Date(coinData.lastAvailableTimestamp), 'DD-MM-YYYY hh:mm A') : 'N/A'}
+                                                            {coinData.lastAvailableTimestamp
+                                                              ? formatDateFromContext(new Date(coinData.lastAvailableTimestamp), 'DD-MM-YYYY hh:mm A')
+                                                              : 'N/A'}
                                                           </span>
                                                         </span>
                                                       </div>
@@ -2161,14 +2175,12 @@ export default function InfluencerSearchPage() {
                                                   );
                                                 }
 
-                                                // If neither live price nor last available price exists, show N/A
+                                                // NO PRICE AVAILABLE → show N/A
                                                 return (
                                                   <span className="text-[8px] font-semibold text-gray-900">N/A</span>
                                                 );
                                               })()}
                                             </div>
-
-
 
                                             {/* 24 Hours Price Change - From Binance WebSocket */}
                                             <div className="w-[10%] flex flex-col justify-start">
