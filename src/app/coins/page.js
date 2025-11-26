@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { FaArrowUp, FaArrowDown } from "react-icons/fa";
+import { FaArrowUp, FaArrowDown, FaBell } from "react-icons/fa";
 import { useCoinsLivePrice } from "@/hooks/useCoinsLivePrice";
 import { useTimezone } from "../contexts/TimezoneContext";
 import ReactMarkdown from "react-markdown";
@@ -21,6 +21,15 @@ export default function CoinsPage() {
 
   // Get city name from timezone
   const userCity = userTimezone ? userTimezone.split('/').pop().replace(/_/g, ' ') : 'Local Time';
+
+  // Threshold constants for bell alerts
+  const THRESHOLD_50_PERCENT = 30;
+  const THRESHOLD_TOP15_PERCENT = 15;
+  const TOP_COINS_RANK_LIMIT = 15;
+
+  // Threshold constants for meme coins
+  const MEME_THRESHOLD_TOP15_PERCENT = 20;
+  const MEME_THRESHOLD_50_PERCENT = 50;
 
   // Use live price hook (EXACT same pattern as influencer-search)
   const { prices, priceChanges, isConnected, bidAskData, volumeData } = useCoinsLivePrice(coinSymbols);
@@ -112,6 +121,71 @@ export default function CoinsPage() {
     return priceChange || null;
   }, [livePriceChangesMap]);
 
+  // Check if price change exceeds threshold based on 24hr Binance data
+  const hasPriceAlert = useCallback((coin) => {
+    const priceChange = getLivePriceChange(coin?.symbol);
+
+    if (priceChange === null) return false;
+
+    const marketCapRank = coin?.market_cap_rank;
+    const isMeme = coin?.mem_coin === true;
+
+    // For meme coins, use different thresholds
+    if (isMeme) {
+      // Show bell when:
+      // 1. Meme coin with rank <= 15 and price change is ±20%
+      // 2. OR meme coin with rank > 15 (or no rank) and price change is ±50%
+      if (marketCapRank && marketCapRank <= TOP_COINS_RANK_LIMIT) {
+        return Math.abs(priceChange) >= MEME_THRESHOLD_TOP15_PERCENT;
+      } else {
+        return Math.abs(priceChange) >= MEME_THRESHOLD_50_PERCENT;
+      }
+    }
+
+    // For regular coins (not meme coins), use original thresholds
+    // Show bell when:
+    // 1. Price change is ±30% (THRESHOLD_50_PERCENT)
+    // 2. OR if coin's market_cap_rank <= 15 and price change is ±15%
+    if (Math.abs(priceChange) >= THRESHOLD_50_PERCENT) {
+      return true;
+    }
+
+    if (marketCapRank && marketCapRank <= TOP_COINS_RANK_LIMIT && Math.abs(priceChange) >= THRESHOLD_TOP15_PERCENT) {
+      return true;
+    }
+
+    return false;
+  }, [getLivePriceChange, THRESHOLD_50_PERCENT, THRESHOLD_TOP15_PERCENT, TOP_COINS_RANK_LIMIT, MEME_THRESHOLD_TOP15_PERCENT, MEME_THRESHOLD_50_PERCENT]);
+
+  // Get alert reason for tooltip
+  const getAlertReason = useCallback((coin) => {
+    const priceChange = getLivePriceChange(coin?.symbol);
+    const isMeme = coin?.mem_coin === true;
+
+    if (priceChange !== null) {
+      const absChange = Math.abs(priceChange);
+
+      // For meme coins, use meme thresholds
+      if (isMeme) {
+        if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= MEME_THRESHOLD_TOP15_PERCENT) {
+          return `24H % Change: ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}%`;
+        }
+        if (absChange >= MEME_THRESHOLD_50_PERCENT) {
+          return `24H % Change: ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}%`;
+        }
+      } else {
+        // For regular coins, use original thresholds
+        if (absChange >= THRESHOLD_50_PERCENT) {
+          return `24H % Change: ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}%`;
+        }
+        if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= THRESHOLD_TOP15_PERCENT) {
+          return `24H % Change: ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}%`;
+        }
+      }
+    }
+    return '24H Price Alert';
+  }, [getLivePriceChange, THRESHOLD_50_PERCENT, THRESHOLD_TOP15_PERCENT, TOP_COINS_RANK_LIMIT, MEME_THRESHOLD_TOP15_PERCENT, MEME_THRESHOLD_50_PERCENT]);
+
   // Helper function to get live bid/ask data from WebSocket (EXACT same pattern as influencer-search)
   const getLiveBidAsk = useCallback((symbol) => {
     if (!symbol) return null;
@@ -171,6 +245,10 @@ export default function CoinsPage() {
     const allCoins = coinsData[selectedTimeframe].all_coins || [];
     const memCoins = coinsData[selectedTimeframe].mem_coins || [];
     const combined = [...allCoins, ...memCoins];
+
+    // Sort by total_mentions in descending order
+    combined.sort((a, b) => (b.total_mentions || 0) - (a.total_mentions || 0));
+
     return combined.slice(0, 10);
   }, [coinsData, selectedTimeframe]);
 
@@ -272,13 +350,13 @@ export default function CoinsPage() {
 
             {/* Table */}
             <div className="overflow-x-auto">
-              <table className="w-full table-auto">
+              <table className="w-full table-fixed">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
+                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
                       Coins
                     </th>
-                    <th rowSpan="2" className="pl-2 pr-0.5 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
+                    <th rowSpan="2" className="pl-2 pr-0.5 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
                       <div className="flex flex-col items-start gap-0.5">
                         <span>Sentiment</span>
                         <div className="flex items-center justify-start gap-1">
@@ -292,7 +370,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
+                    <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
                       <div className="flex flex-col items-start">
                         <span>Base</span>
                         <div className="flex items-center gap-1">
@@ -306,7 +384,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
+                    <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
                       <div className="flex flex-col items-center">
                         {/* 24 Hours */}
                         <span>Current</span>
@@ -338,7 +416,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th> */}
-                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[10%] align-middle">
+                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
                       <div className="flex flex-col items-center">
                         {/* 24 Hours */}
                         <span>% Price</span>
@@ -360,10 +438,10 @@ export default function CoinsPage() {
                     </th>
                   </tr>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[35%]">
+                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[40%]">
                       24 Hours
                     </th>
-                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[35%]">
+                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[40%]">
                       7 Days
                     </th>
                   </tr>
@@ -404,20 +482,48 @@ export default function CoinsPage() {
                       const coin24hrs = getCoinFromTimeframe(coin.symbol, '24hrs');
                       const coin7days = getCoinFromTimeframe(coin.symbol, '7days');
 
+                      // Check for price alert
+                      const showPriceAlert = hasPriceAlert(coin);
+                      const alertReason = getAlertReason(coin);
+
                       return (
                         <tr key={`${coin.symbol}-${index}`} className="hover:bg-gray-50">
                           {/* Coin - Image and Name Vertically Stacked with Total Posts */}
                           <td className="px-2 py-3">
                             <div className="flex flex-col items-center gap-2">
                               {coin.image_small && (
-                                <img
-                                  src={coin.image_small}
-                                  alt={coin.symbol}
-                                  className="w-10 h-10 rounded-full"
-                                />
+                                <div className="relative">
+                                  <img
+                                    src={coin.image_small}
+                                    alt={coin.symbol}
+                                    className="w-10 h-10 rounded-full"
+                                  />
+                                  {/* Bell icon for coins exceeding price change threshold */}
+                                  {showPriceAlert && (
+                                    <div className="absolute -top-1 -right-1 group cursor-pointer z-[9999]">
+                                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-lg ${priceChangePercent > 0 ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}>
+                                        <FaBell className="text-white text-[12px]" />
+                                      </div>
+                                      {/* Tooltip on hover - positioned to the right of the bell */}
+                                      <div className="invisible group-hover:visible absolute top-0 left-full ml-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                        {alertReason}
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
                               )}
                               <div className="text-center">
-                                <div className="text-xs font-bold text-balck-900">{coin.symbol}</div>
+                                <div className="flex items-center justify-center gap-1">
+                                  <div className="text-xs font-bold text-balck-900">{coin.symbol}</div>
+                                  {coin.mem_coin === true && (
+                                    <span className="relative group cursor-pointer z-[9999]">
+                                      <span className="text-blue-600 text-xs">ⓘ</span>
+                                      <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                        Meme Coin
+                                      </span>
+                                    </span>
+                                  )}
+                                </div>
                                 <div className="text-[10px] text-black-500">
                                   {coin.coin_name.charAt(0).toUpperCase() + coin.coin_name.slice(1)}
                                 </div>
@@ -592,7 +698,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* 24 Hours Column - Display AI Summary from 24hrs timeframe */}
-                          <td className="px-2 py-3 text-left align-top">
+                          <td className="px-2 py-3 text-left align-top w-[40%]">
                             <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
                               {coin24hrs?.ai_summary ? (
                                 <>
@@ -620,7 +726,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* 7 Days Column - Display AI Summary from 7days timeframe */}
-                          <td className="px-2 py-3 text-left align-top">
+                          <td className="px-2 py-3 text-left align-top w-[40%]">
                             <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
                               {coin7days?.ai_summary ? (
                                 <>
