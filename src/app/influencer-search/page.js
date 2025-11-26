@@ -1373,8 +1373,11 @@ export default function InfluencerSearchPage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             {/* Header with centered title */}
             <div className="flex justify-center items-center px-2 py-1.5 border-b border-gray-200 bg-gray-50">
-              <h1 className="text-lg font-semibold text-center">Last 3 Days Posts</h1>
+              <h1 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
+                Last 3 Days Posts
+              </h1>
             </div>
+
 
             <div>
               <table className="w-full relative">
@@ -2207,7 +2210,7 @@ export default function InfluencerSearchPage() {
                                               })()}
                                             </div> */}
 
-                                            {/* Price Difference (Base Price - Current Price) */}
+                                            {/* Price Change % (Base Price to Current Price) */}
                                             <div className="w-[10%] flex flex-col justify-start">
                                               {(() => {
                                                 // Parse base price
@@ -2226,32 +2229,27 @@ export default function InfluencerSearchPage() {
                                                   }
                                                 }
 
-                                                // Calculate difference: base - current
-                                                if (!isNaN(baseValue) && !isNaN(currentValue)) {
-                                                  let difference = baseValue - currentValue;
+                                                // Calculate percentage change: ((current - base) / base) * 100
+                                                if (!isNaN(baseValue) && !isNaN(currentValue) && baseValue !== 0) {
+                                                  let percentChange = ((currentValue - baseValue) / baseValue) * 100;
 
                                                   // ★ APPLY BEARISH SENTIMENT RULE
                                                   if (coinData.sentiment === "bearish") {
-                                                    difference = difference * -1;  // Flip sign
+                                                    percentChange = percentChange * -1;  // Flip sign
                                                   }
 
-                                                  const isPositive = difference > 0;
-                                                  const isNegative = difference < 0;
-
-                                                  const digits = Math.floor(Math.abs(difference)).toString().length;
+                                                  const isPositive = percentChange > 0;
+                                                  const isNegative = percentChange < 0;
 
                                                   return (
                                                     <span
                                                       className={`text-[8px] font-semibold ${isPositive ? "text-green-600" :
-                                                          isNegative ? "text-red-600" :
-                                                            "text-gray-900"
+                                                        isNegative ? "text-red-600" :
+                                                          "text-gray-900"
                                                         }`}
                                                     >
                                                       {isPositive ? "+" : ""}
-                                                      ${difference.toLocaleString(undefined, {
-                                                        minimumFractionDigits: digits <= 3 ? 2 : 0,
-                                                        maximumFractionDigits: digits <= 3 ? 2 : 0
-                                                      })}
+                                                      {percentChange.toFixed(2)}
                                                     </span>
                                                   );
                                                 }
