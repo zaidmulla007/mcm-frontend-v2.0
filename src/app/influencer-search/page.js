@@ -2249,7 +2249,7 @@ export default function InfluencerSearchPage() {
                                                         }`}
                                                     >
                                                       {isPositive ? "+" : ""}
-                                                      {percentChange.toFixed(2)}
+                                                      {percentChange.toFixed(2)}%
                                                     </span>
                                                   );
                                                 }

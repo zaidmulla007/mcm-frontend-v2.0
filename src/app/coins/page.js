@@ -681,20 +681,45 @@ export default function CoinsPage() {
                               <span className="text-xs text-gray-500">N/A</span>
                             )}
                           </td>
-                          {/* 24 Hours Price Change */}
+                          {/* % Price Change (Base Price to Current Price) */}
                           <td className="px-2 py-3 text-center">
-                            <span className={`text-[10px] font-semibold ${priceChangePercent !== null
-                              ? priceChangePercent > 0
-                                ? 'text-green-600'
-                                : priceChangePercent < 0
-                                  ? 'text-red-600'
-                                  : 'text-gray-900'
-                              : 'text-gray-500'
-                              }`}>
-                              {priceChangePercent !== null
-                                ? `${priceChangePercent > 0 ? '+' : ''}${priceChangePercent.toFixed(2)}%`
-                                : 'N/A'}
-                            </span>
+                            {(() => {
+                              // Parse base price
+                              const baseValue = coin.avg_base_price ? Number(coin.avg_base_price) : NaN;
+
+                              // Get current price
+                              let currentValue = currentPrice !== 'N/A' ? Number(currentPrice) : NaN;
+
+                              // Fallback to lastAvailablePrice if live price is not available
+                              if (isNaN(currentValue) || currentPrice === 'N/A') {
+                                if (coin.binance?.last_available_price) {
+                                  currentValue = parseFloat(coin.binance.last_available_price);
+                                }
+                              }
+
+                              // Calculate percentage change: ((current - base) / base) * 100
+                              if (!isNaN(baseValue) && !isNaN(currentValue) && baseValue !== 0) {
+                                const percentChange = ((currentValue - baseValue) / baseValue) * 100;
+
+                                const isPositive = percentChange > 0;
+                                const isNegative = percentChange < 0;
+
+                                return (
+                                  <span
+                                    className={`text-[10px] font-semibold ${
+                                      isPositive ? "text-green-600" :
+                                      isNegative ? "text-red-600" :
+                                      "text-gray-900"
+                                    }`}
+                                  >
+                                    {isPositive ? "+" : ""}
+                                    {percentChange.toFixed(2)}%
+                                  </span>
+                                );
+                              }
+
+                              return <span className="text-[10px] font-semibold text-gray-500">N/A</span>;
+                            })()}
                           </td>
 
                           {/* 24 Hours Column - Display AI Summary from 24hrs timeframe */}
