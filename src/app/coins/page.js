@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { useCoinsLivePrice } from "@/hooks/useCoinsLivePrice";
 import { useTimezone } from "../contexts/TimezoneContext";
+import ReactMarkdown from "react-markdown";
 
 export default function CoinsPage() {
   const router = useRouter();
@@ -13,8 +14,7 @@ export default function CoinsPage() {
   const [selectedTimeframe, setSelectedTimeframe] = useState("6hrs");
   const [coinSymbols, setCoinSymbols] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
-  const [expandedCells, setExpandedCells] = useState({});
-  const [expandedSummaries, setExpandedSummaries] = useState({});
+  const [expandedSummaries, setExpandedSummaries] = useState({}); // Track expanded state for each coin and timeframe
 
   // Use timezone context for local/UTC time switching
   const { formatDate, useLocalTime, toggleTimezone, userTimezone } = useTimezone();
@@ -128,45 +128,38 @@ export default function CoinsPage() {
     return volumeData[symbolWithUSDT] || null;
   }, [volumeData]);
 
-  // Helper function to truncate text to 30 words
-  const truncateText = (text, wordLimit = 30) => {
+  // Helper function to get coin data from a specific timeframe
+  const getCoinFromTimeframe = useCallback((symbol, timeframe) => {
+    if (!coinsData || !coinsData[timeframe]) return null;
+
+    const allCoins = coinsData[timeframe].all_coins || [];
+    const memCoins = coinsData[timeframe].mem_coins || [];
+    const combined = [...allCoins, ...memCoins];
+
+    return combined.find(coin => coin.symbol === symbol);
+  }, [coinsData]);
+
+  // Helper function to truncate text to specified word limit
+  const truncateText = (text, wordLimit = 50) => {
     if (!text) return '';
     const words = text.split(' ');
     if (words.length <= wordLimit) return text;
     return words.slice(0, wordLimit).join(' ');
   };
 
-  // Toggle expand/collapse for a specific cell
-  const toggleExpand = (coinSymbol, columnName) => {
-    const key = `${coinSymbol}-${columnName}`;
-    setExpandedCells(prev => ({
+  // Toggle expand/collapse for summary
+  const toggleSummaryExpand = (coinSymbol, timeframe) => {
+    const key = `${coinSymbol}-${timeframe}`;
+    setExpandedSummaries(prev => ({
       ...prev,
       [key]: !prev[key]
     }));
   };
 
-  // Toggle expand/collapse for summary columns
-  const toggleSummaryExpand = (coinSymbol) => {
-    setExpandedSummaries(prev => ({
-      ...prev,
-      [coinSymbol]: !prev[coinSymbol]
-    }));
-  };
-
   // Check if summary is expanded
-  const isSummaryExpanded = (coinSymbol) => {
-    return expandedSummaries[coinSymbol] || false;
-  };
-
-  // Check if any summary is expanded
-  const isAnySummaryExpanded = () => {
-    return Object.values(expandedSummaries).some(val => val === true);
-  };
-
-  // Check if a cell is expanded
-  const isExpanded = (coinSymbol, columnName) => {
-    const key = `${coinSymbol}-${columnName}`;
-    return expandedCells[key] || false;
+  const isSummaryExpanded = (coinSymbol, timeframe) => {
+    const key = `${coinSymbol}-${timeframe}`;
+    return expandedSummaries[key] || false;
   };
 
   // Get top 10 coins from selected timeframe with memoization
@@ -215,55 +208,46 @@ export default function CoinsPage() {
                   Publish Posts
                 </button>
               </div> */}
-              {/* Last Updated */}
+              {/* Header Title */}
               <div className="flex justify-center mt-2">
-                <p className="text-lg font-semibold text-black-600">
-                  Trending Coins (Updated every 6 Hrs)
+                <p className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                  Trending Coins <br />
+                  (Updated every 6 Hrs)
                 </p>
               </div>
-              {/* Timezone Toggle */}
+
+              {/* Last Updated and Timezone Toggle */}
               <div className="flex items-start gap-6 mt-2">
-
-                {/* LEFT COLUMN — Timezone + Toggle */}
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold text-black-600">
-                    Timezone
-                  </span>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => toggleTimezone()}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${!useLocalTime
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
-                    >
-                      UTC
-                    </button>
-
-                    <button
-                      onClick={() => toggleTimezone()}
-                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${useLocalTime
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        }`}
-                    >
-                      {useLocalTime && userCity ? userCity : 'Local Time'}
-                    </button>
-                  </div>
-                </div>
-
-                {/* RIGHT COLUMN — Last Updated */}
+                {/* LEFT COLUMN — Last Updated */}
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-semibold text-black-600">
                     Last Updated
                   </span>
-
                   <p className="text-xs text-black-600 py-1.5">
                     {lastUpdated ? formatDate(lastUpdated) : "N/A"}
                   </p>
                 </div>
 
+                {/* RIGHT COLUMN — Timezone Switch */}
+                <div className="flex items-center gap-2 py-1.5">
+                  <button
+                    onClick={() => toggleTimezone()}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
+                      useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
+                    }`}
+                    role="switch"
+                    aria-checked={useLocalTime}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${
+                        useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
+                      }`}
+                    />
+                  </button>
+                  <span className="text-xs font-medium text-black-700">
+                    Local Time / UTC
+                  </span>
+                </div>
               </div>
 
             </div>
@@ -333,8 +317,7 @@ export default function CoinsPage() {
                             <span className="text-blue-600 text-sm">ⓘ</span>
 
                             <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl z-[9999] text-left w-48">
-                              Source: Binance <br />
-                              Source: MCM DB Last Updated Price<br />
+                              Source: Binance & CoinGeko <br />
                               N/A : Not Available
                             </span>
                           </span>
@@ -358,50 +341,31 @@ export default function CoinsPage() {
                     <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[10%] align-middle">
                       <div className="flex flex-col items-center">
                         {/* 24 Hours */}
-                        <span>24 HoursPrice</span>
+                        <span>% Price</span>
                         {/* Price + Info icon in same row */}
                         <div className="flex items-center gap-1">
                           <span>Change</span>
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                              Source: Binance <br />
+                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999] text-left">
+                              % Price Change from Base Price <br />
                               N/A : Not Available
                             </span>
                           </span>
                         </div>
                       </div>
                     </th>
-                    <th colSpan={isAnySummaryExpanded() ? "6" : "3"} className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider">
-                      Summary Analysis
-                    </th>
-                    <th rowSpan="2" className="py-3 text-center text-xs font-bold text-black-900 tracking-wider align-middle" style={{ width: '30px', padding: '0.75rem 0.25rem' }}>
-
+                    <th colSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider">
+                      Outlook
                     </th>
                   </tr>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-auto">
-                      Price targets
+                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[35%]">
+                      24 Hours
                     </th>
-                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-auto">
-                      Overall sentiments
+                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[35%]">
+                      7 Days
                     </th>
-                    <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-auto">
-                      outlook (ST/LT)
-                    </th>
-                    {isAnySummaryExpanded() && (
-                      <>
-                        <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-auto">
-                          key Reasons
-                        </th>
-                        <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-auto">
-                          Disagreements
-                        </th>
-                        <th className="px-1 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-auto">
-                          Risk Factors
-                        </th>
-                      </>
-                    )}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -435,6 +399,10 @@ export default function CoinsPage() {
                       const priceChange = (priceChangePercent !== null && currentPrice !== 'N/A')
                         ? (currentPrice * priceChangePercent / 100)
                         : null;
+
+                      // Get coin data from different timeframes for AI summaries
+                      const coin24hrs = getCoinFromTimeframe(coin.symbol, '24hrs');
+                      const coin7days = getCoinFromTimeframe(coin.symbol, '7days');
 
                       return (
                         <tr key={`${coin.symbol}-${index}`} className="hover:bg-gray-50">
@@ -526,14 +494,20 @@ export default function CoinsPage() {
                           <td className="pl-0.5 pr-2 py-3">
                             <div className="flex flex-col justify-start">
                               {coin.avg_base_price && coin.binance_prices && coin.binance_prices.length > 0 ? (
-                                <span className="text-[10px] font-semibold text-gray-900">
-                                  $
-                                  {Number(coin.avg_base_price)
-                                    .toLocaleString("en-US", {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })}
-                                </span>
+                                (() => {
+                                  const num = Number(coin.avg_base_price);
+                                  const isThreeDigitsOrLess = Math.floor(num).toString().length <= 3;
+
+                                  return (
+                                    <span className="text-[10px] font-semibold text-gray-900">
+                                      $
+                                      {num.toLocaleString("en-US", {
+                                        minimumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
+                                        maximumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
+                                      })}
+                                    </span>
+                                  );
+                                })()
                               ) : (
                                 <span className="text-[10px] font-semibold text-gray-900">
                                   No base price available
@@ -544,41 +518,59 @@ export default function CoinsPage() {
                           {/* Current Price */}
                           <td className="px-2 py-3 text-center">
                             {currentPrice !== 'N/A' ? (
-                              <div className="flex flex-col items-center gap-0.5">
-                                {/* Current Price from Binance Live */}
-                                <span className="text-xs font-semibold text-blue-500">
-                                  $
-                                  {typeof currentPrice === "number"
-                                    ? currentPrice.toLocaleString("en-US", {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })
-                                    : currentPrice}
-                                </span>
-                              </div>
-                            ) : coin.binance?.last_available_price ? (
-                              <div className="flex flex-col items-center gap-0.5">
-                                <div className="flex items-center gap-1">
-                                  <span className="text-xs font-semibold text-gray-600">
-                                    $
-                                    {Number(coin.binance.last_available_price).toLocaleString("en-US", {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: 2,
-                                    })}
-                                  </span>
+                              (() => {
+                                const num = Number(currentPrice);
+                                const isNum = typeof num === "number" && !isNaN(num);
 
-                                  {/* Tooltip */}
-                                  <span className="relative group cursor-pointer z-[9999]">
-                                    <span className="text-gray-600 text-xs">ⓘ</span>
-                                    <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                      MCM DB Last Price<br />
-                                      {coin.binance.last_available_timestamp
-                                        ? formatDate(new Date(coin.binance.last_available_timestamp))
-                                        : "N/A"}
+                                // Apply rule: <=3 digits → 2 decimals, else 0 decimals
+                                const isThreeDigitsOrLess =
+                                  isNum && Math.floor(num).toString().length <= 3;
+
+                                return (
+                                  <div className="flex flex-col items-center gap-0.5">
+                                    <span className="text-xs font-semibold text-blue-500">
+                                      $
+                                      {isNum
+                                        ? num.toLocaleString("en-US", {
+                                          minimumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
+                                          maximumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
+                                        })
+                                        : currentPrice}
                                     </span>
-                                  </span>
-                                </div>
-                              </div>
+                                  </div>
+                                );
+                              })()
+                            ) : coin.binance?.last_available_price ? (
+                              (() => {
+                                const num = Number(coin.binance.last_available_price);
+                                const isThreeDigitsOrLess =
+                                  Math.floor(num).toString().length <= 3;
+
+                                return (
+                                  <div className="flex flex-col items-center gap-0.5">
+                                    <div className="flex items-center gap-1">
+                                      <span className="text-xs font-semibold text-gray-600">
+                                        $
+                                        {num.toLocaleString("en-US", {
+                                          minimumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
+                                          maximumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
+                                        })}
+                                      </span>
+
+                                      {/* Tooltip */}
+                                      <span className="relative group cursor-pointer z-[9999]">
+                                        <span className="text-gray-600 text-xs">ⓘ</span>
+                                        <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                          MCM DB Last Price<br />
+                                          {coin.binance.last_available_timestamp
+                                            ? formatDate(new Date(coin.binance.last_available_timestamp))
+                                            : "N/A"}
+                                        </span>
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })()
                             ) : (
                               <span className="text-xs text-gray-500">N/A</span>
                             )}
@@ -599,198 +591,60 @@ export default function CoinsPage() {
                             </span>
                           </td>
 
-
-                          {/* Summary Analysis Columns - Using API Response Data */}
-                          {/* First 3 columns - ALWAYS VISIBLE */}
-                          {/* Price Targets */}
-                          <td className="px-1 py-3 text-left align-top">
-                            <div className="text-[11px] text-gray-700 break-words">
-                              {coin.Price_Targets ? (
+                          {/* 24 Hours Column - Display AI Summary from 24hrs timeframe */}
+                          <td className="px-2 py-3 text-left align-top">
+                            <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
+                              {coin24hrs?.ai_summary ? (
                                 <>
-                                  <p>
-                                    {isExpanded(coin.symbol, 'Price_Targets')
-                                      ? coin.Price_Targets
-                                      : truncateText(coin.Price_Targets, 30)}
-                                    {coin.Price_Targets.split(' ').length > 30 && (
-                                      <>
-                                        {!isExpanded(coin.symbol, 'Price_Targets') && '...'}
-                                      </>
-                                    )}
-                                  </p>
-                                  {coin.Price_Targets.split(' ').length > 30 && (
-                                    <button
-                                      onClick={() => toggleExpand(coin.symbol, 'Price_Targets')}
-                                      className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
-                                    >
-                                      {isExpanded(coin.symbol, 'Price_Targets') ? 'Read less' : 'Read more'}
-                                    </button>
+                                  <ReactMarkdown>
+                                    {isSummaryExpanded(coin.symbol, '24hrs')
+                                      ? coin24hrs.ai_summary
+                                      : truncateText(coin24hrs.ai_summary, 50)}
+                                  </ReactMarkdown>
+                                  {coin24hrs.ai_summary.split(' ').length > 50 && (
+                                    <>
+                                      {!isSummaryExpanded(coin.symbol, '24hrs') && '... '}
+                                      <button
+                                        onClick={() => toggleSummaryExpand(coin.symbol, '24hrs')}
+                                        className="text-blue-600 hover:text-blue-800 font-semibold text-[11px] mt-1 inline-block"
+                                      >
+                                        {isSummaryExpanded(coin.symbol, '24hrs') ? 'Read less' : 'Read more'}
+                                      </button>
+                                    </>
                                   )}
                                 </>
                               ) : (
-                                'N/A'
-                              )}
-                            </div>
-                          </td>
-                          {/* Overall Sentiments */}
-                          <td className="px-1 py-3 text-left align-top">
-                            <div className="text-[11px] text-gray-700 break-words">
-                              {coin.Overall_Sentiment ? (
-                                <>
-                                  <p>
-                                    {isExpanded(coin.symbol, 'Overall_Sentiment')
-                                      ? coin.Overall_Sentiment
-                                      : truncateText(coin.Overall_Sentiment, 30)}
-                                    {coin.Overall_Sentiment.split(' ').length > 30 && (
-                                      <>
-                                        {!isExpanded(coin.symbol, 'Overall_Sentiment') && '...'}
-                                      </>
-                                    )}
-                                  </p>
-                                  {coin.Overall_Sentiment.split(' ').length > 30 && (
-                                    <button
-                                      onClick={() => toggleExpand(coin.symbol, 'Overall_Sentiment')}
-                                      className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
-                                    >
-                                      {isExpanded(coin.symbol, 'Overall_Sentiment') ? 'Read less' : 'Read more'}
-                                    </button>
-                                  )}
-                                </>
-                              ) : (
-                                'N/A'
-                              )}
-                            </div>
-                          </td>
-                          {/* Outlook (ST/LT) */}
-                          <td className="px-1 py-3 text-left align-top">
-                            <div className="text-[11px] text-gray-700 break-words">
-                              {coin.Outlook_ST_LT ? (
-                                <>
-                                  <p>
-                                    {isExpanded(coin.symbol, 'Outlook_ST_LT')
-                                      ? coin.Outlook_ST_LT
-                                      : truncateText(coin.Outlook_ST_LT, 30)}
-                                    {coin.Outlook_ST_LT.split(' ').length > 30 && (
-                                      <>
-                                        {!isExpanded(coin.symbol, 'Outlook_ST_LT') && '...'}
-                                      </>
-                                    )}
-                                  </p>
-                                  {coin.Outlook_ST_LT.split(' ').length > 30 && (
-                                    <button
-                                      onClick={() => toggleExpand(coin.symbol, 'Outlook_ST_LT')}
-                                      className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
-                                    >
-                                      {isExpanded(coin.symbol, 'Outlook_ST_LT') ? 'Read less' : 'Read more'}
-                                    </button>
-                                  )}
-                                </>
-                              ) : (
-                                'N/A'
+                                <span className="text-gray-500">N/A</span>
                               )}
                             </div>
                           </td>
 
-                          {/* Last 3 columns - Only show when THIS row is expanded */}
-                          {isSummaryExpanded(coin.symbol) && (
-                            <>
-                              {/* Key Reasons */}
-                              <td className="px-1 py-3 text-left align-top">
-                                <div className="text-[11px] text-gray-700 break-words">
-                                  {coin.Key_Reasons ? (
+                          {/* 7 Days Column - Display AI Summary from 7days timeframe */}
+                          <td className="px-2 py-3 text-left align-top">
+                            <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
+                              {coin7days?.ai_summary ? (
+                                <>
+                                  <ReactMarkdown>
+                                    {isSummaryExpanded(coin.symbol, '7days')
+                                      ? coin7days.ai_summary
+                                      : truncateText(coin7days.ai_summary, 50)}
+                                  </ReactMarkdown>
+                                  {coin7days.ai_summary.split(' ').length > 50 && (
                                     <>
-                                      <p>
-                                        {isExpanded(coin.symbol, 'Key_Reasons')
-                                          ? coin.Key_Reasons
-                                          : truncateText(coin.Key_Reasons, 30)}
-                                        {coin.Key_Reasons.split(' ').length > 30 && (
-                                          <>
-                                            {!isExpanded(coin.symbol, 'Key_Reasons') && '...'}
-                                          </>
-                                        )}
-                                      </p>
-                                      {coin.Key_Reasons.split(' ').length > 30 && (
-                                        <button
-                                          onClick={() => toggleExpand(coin.symbol, 'Key_Reasons')}
-                                          className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
-                                        >
-                                          {isExpanded(coin.symbol, 'Key_Reasons') ? 'Read less' : 'Read more'}
-                                        </button>
-                                      )}
+                                      {!isSummaryExpanded(coin.symbol, '7days') && '... '}
+                                      <button
+                                        onClick={() => toggleSummaryExpand(coin.symbol, '7days')}
+                                        className="text-blue-600 hover:text-blue-800 font-semibold text-[11px] mt-1 inline-block"
+                                      >
+                                        {isSummaryExpanded(coin.symbol, '7days') ? 'Read less' : 'Read more'}
+                                      </button>
                                     </>
-                                  ) : (
-                                    'N/A'
                                   )}
-                                </div>
-                              </td>
-                              {/* Disagreements */}
-                              <td className="px-1 py-3 text-left align-top">
-                                <div className="text-[11px] text-gray-700 break-words">
-                                  {coin.Disagreements ? (
-                                    <>
-                                      <p>
-                                        {isExpanded(coin.symbol, 'Disagreements')
-                                          ? coin.Disagreements
-                                          : truncateText(coin.Disagreements, 30)}
-                                        {coin.Disagreements.split(' ').length > 30 && (
-                                          <>
-                                            {!isExpanded(coin.symbol, 'Disagreements') && '...'}
-                                          </>
-                                        )}
-                                      </p>
-                                      {coin.Disagreements.split(' ').length > 30 && (
-                                        <button
-                                          onClick={() => toggleExpand(coin.symbol, 'Disagreements')}
-                                          className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
-                                        >
-                                          {isExpanded(coin.symbol, 'Disagreements') ? 'Read less' : 'Read more'}
-                                        </button>
-                                      )}
-                                    </>
-                                  ) : (
-                                    'N/A'
-                                  )}
-                                </div>
-                              </td>
-                              {/* Risk Factors */}
-                              <td className="px-1 py-3 text-left align-top">
-                                <div className="text-[11px] text-gray-700 break-words">
-                                  {coin.Risk_Factors ? (
-                                    <>
-                                      <p>
-                                        {isExpanded(coin.symbol, 'Risk_Factors')
-                                          ? coin.Risk_Factors
-                                          : truncateText(coin.Risk_Factors, 30)}
-                                        {coin.Risk_Factors.split(' ').length > 30 && (
-                                          <>
-                                            {!isExpanded(coin.symbol, 'Risk_Factors') && '...'}
-                                          </>
-                                        )}
-                                      </p>
-                                      {coin.Risk_Factors.split(' ').length > 30 && (
-                                        <button
-                                          onClick={() => toggleExpand(coin.symbol, 'Risk_Factors')}
-                                          className="text-blue-600 hover:text-blue-800 font-semibold mt-1"
-                                        >
-                                          {isExpanded(coin.symbol, 'Risk_Factors') ? 'Read less' : 'Read more'}
-                                        </button>
-                                      )}
-                                    </>
-                                  ) : (
-                                    'N/A'
-                                  )}
-                                </div>
-                              </td>
-                            </>
-                          )}
-
-                          {/* Expand/Collapse Button */}
-                          <td className="py-3 text-center align-top" style={{ width: '30px', padding: '0.75rem 0.25rem' }}>
-                            <button
-                              onClick={() => toggleSummaryExpand(coin.symbol)}
-                              className="text-blue-600 hover:text-blue-800 font-bold text-lg"
-                            >
-                              {isSummaryExpanded(coin.symbol) ? '−' : '+'}
-                            </button>
+                                </>
+                              ) : (
+                                <span className="text-gray-500">N/A</span>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );

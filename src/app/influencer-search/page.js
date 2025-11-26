@@ -1373,7 +1373,7 @@ export default function InfluencerSearchPage() {
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             {/* Header with centered title */}
             <div className="flex justify-center items-center px-2 py-1.5 border-b border-gray-200 bg-gray-50">
-              <h1 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-blue-600">
+              <h1 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                 Last 3 Days Posts
               </h1>
             </div>
