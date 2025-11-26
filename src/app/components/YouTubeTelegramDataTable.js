@@ -214,25 +214,21 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     // };
 
     // Threshold constants for bell alerts
-    const THRESHOLD_50_PERCENT = 50;
+    const THRESHOLD_50_PERCENT = 30;
     const THRESHOLD_TOP10_PERCENT = 15;
-    const TOP_COINS_RANK_LIMIT = 10;
+    const TOP_COINS_RANK_LIMIT = 15;
 
-    // Check if price change exceeds threshold based on timeframe
+    // Check if price change exceeds threshold based on 24hr Binance data
+    // Bell should appear across ALL timeframes when 24hr threshold is met
     const hasPriceAlertForTimeframe = (coin, timeframe) => {
-        // Bell should only show for 24hrs timeframe
-        if (timeframe !== '24hrs') {
-            return false;
-        }
-
-        // Use Binance 24hr live data for 24hrs
+        // Use Binance 24hr live data for alert check (applies to all timeframes)
         const priceChange = getPriceChangePercent(coin?.symbol);
 
         if (priceChange === null) return false;
 
-        // Show bell for 24 hours when:
-        // 1. Price change is ±50%
-        // 2. OR if coin's market_cap_rank <= 10 and price change is ±15%
+        // Show bell when:
+        // 1. Price change is ±30% (THRESHOLD_50_PERCENT)
+        // 2. OR if coin's market_cap_rank <= 15 and price change is ±15%
         const marketCapRank = coin?.market_cap_rank;
 
         if (Math.abs(priceChange) >= THRESHOLD_50_PERCENT) {
@@ -435,8 +431,8 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         const coins = isExpanded ? allCoins : allCoins.slice(0, 5);
         const hasMore = allCoins.length > 5;
 
-        // Check if any coin in this timeframe has a price alert
-        const hasAnyPriceAlert = timeframe === '24hrs' && allCoins.some(coin => hasPriceAlertForTimeframe(coin, timeframe));
+        // Check if any coin in this timeframe has a price alert (based on 24hr data)
+        const hasAnyPriceAlert = allCoins.some(coin => hasPriceAlertForTimeframe(coin, timeframe));
 
         const getFromDateForTimeframe = () => {
             if (combinedData && combinedData.resultsByTimeframe &&
@@ -495,20 +491,21 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     const showPriceAlert = hasPriceAlertForTimeframe(coin, timeframe);
                                     const threshold = getThreshold(timeframe);
 
-                                    // Determine alert reason for tooltip
+                                    // Determine alert reason for tooltip (based on 24hr Binance data)
                                     const getAlertReason = () => {
-                                        if (timeframe === '24hrs' && priceChangePercent !== null) {
-                                            const absChange = Math.abs(priceChangePercent);
-                                            // Check 50% threshold first
+                                        const binance24hrChange = getPriceChangePercent(coin?.symbol);
+                                        if (binance24hrChange !== null) {
+                                            const absChange = Math.abs(binance24hrChange);
+                                            // Check 30% threshold first
                                             if (absChange >= THRESHOLD_50_PERCENT) {
-                                                return `${THRESHOLD_50_PERCENT}% Price Movement`;
+                                                return `24H: ${THRESHOLD_50_PERCENT}% Price Movement`;
                                             }
-                                            // Check top 10 coin with 15% threshold
+                                            // Check top 15 coin with 15% threshold
                                             if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= THRESHOLD_TOP10_PERCENT) {
-                                                return `Top ${TOP_COINS_RANK_LIMIT} coin, ${THRESHOLD_TOP10_PERCENT}% Movement`;
+                                                return `24H: Top ${TOP_COINS_RANK_LIMIT} coin, ${THRESHOLD_TOP10_PERCENT}% Movement`;
                                             }
                                         }
-                                        return 'Price Change';
+                                        return '24H Price Alert';
                                     };
 
                                     return (
@@ -541,12 +538,6 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                     </div>
                                                     <div className="text-sm text-black font-bold mb-1">
                                                         {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
-                                                        {/* Display 24hrs price change only */}
-                                                        {timeframe === '24hrs' && priceChangePercent !== null && (
-                                                            <span className="ml-1 text-gray-600">
-                                                                ({Math.abs(priceChangePercent)?.toFixed(2)}%)
-                                                            </span>
-                                                        )}
                                                     </div>
                                                     <div className="text-xs text-black">
                                                         {sentimentData.mentions} posts

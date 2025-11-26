@@ -1424,7 +1424,7 @@ export default function InfluencerSearchPage() {
                         </div>
                         {/* Info centered */}
                         <div className="flex items-center justify-center gap-1 flex-1">
-                          <span>Info</span>
+                          <span className="font-bold">Info</span>
                         </div>
                         {/* Empty space for balance */}
                         <div className="w-16"></div>
@@ -1569,7 +1569,7 @@ export default function InfluencerSearchPage() {
                                 <span className="text-blue-600 text-sm">ⓘ</span>
 
                                 <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                  Source: Binance ,MCM DB Last Updated Price<br />
+                                  Source: Binance & CoinGeko<br />
                                   N/A : Not Available
                                 </span>
                               </span>
@@ -1583,7 +1583,7 @@ export default function InfluencerSearchPage() {
                           <div className="flex flex-col items-start">
 
                             {/* Title */}
-                            <span>24 Hrs</span>
+                            <span>% Price</span>
 
                             {/* Price + Info Icon on the right */}
                             <div className="flex items-center gap-1">
@@ -1598,7 +1598,7 @@ export default function InfluencerSearchPage() {
                                 <span className="text-blue-600 text-sm">ⓘ</span>
 
                                 <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                  Source: Binance <br />
+                                  % Price Change from Base Price <br />
                                   N/A : Not Available
                                 </span>
                               </span>
@@ -1682,8 +1682,8 @@ export default function InfluencerSearchPage() {
                         const starRatingYearly = influencer?.star_rating_yearly || {};
 
                         // Define timeframes to display vertically
-                        const timeframes = ['7_days', '30_days', '60_days', '90_days', '180_days', '1_year'];
-                        const timeframeLabels = { '7_days': '7D', '30_days': '30D', '60_days': '60D', '90_days': '90D', '180_days': '180D', '1_year': '1Y' };
+                        const timeframes = ['7_days', '30_days', '90_days', '1_year'];
+                        const timeframeLabels = { '7_days': '7D', '30_days': '30D', '90_days': '90D', '1_year': '1Y' };
 
                         // Build star data for 2024 and 2025 with timeframes
                         const starData2024 = [];
@@ -2183,7 +2183,7 @@ export default function InfluencerSearchPage() {
                                             </div>
 
                                             {/* 24 Hours Price Change - From Binance WebSocket */}
-                                            <div className="w-[10%] flex flex-col justify-start">
+                                            {/* <div className="w-[10%] flex flex-col justify-start">
                                               {(() => {
                                                 // Get live 24-hour price change percentage from WebSocket
                                                 const priceChangePercent = getLivePriceChange(coinData.coin);
@@ -2205,8 +2205,60 @@ export default function InfluencerSearchPage() {
 
                                                 return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
                                               })()}
-                                            </div>
+                                            </div> */}
 
+                                            {/* Price Difference (Base Price - Current Price) */}
+                                            <div className="w-[10%] flex flex-col justify-start">
+                                              {(() => {
+                                                // Parse base price
+                                                const baseRaw = coinData.basePrice?.replace(/[^0-9.-]/g, '');
+                                                const baseValue = parseFloat(baseRaw);
+
+                                                // Get current price
+                                                const livePrice = getLivePrice(coinData.coin);
+                                                const currentRaw = livePrice?.replace(/[^0-9.-]/g, '');
+                                                let currentValue = parseFloat(currentRaw);
+
+                                                // Fallback to lastAvailablePrice if live price is not available
+                                                if (isNaN(currentValue) || livePrice === 'N/A') {
+                                                  if (coinData.lastAvailablePrice) {
+                                                    currentValue = parseFloat(coinData.lastAvailablePrice);
+                                                  }
+                                                }
+
+                                                // Calculate difference: base - current
+                                                if (!isNaN(baseValue) && !isNaN(currentValue)) {
+                                                  let difference = baseValue - currentValue;
+
+                                                  // ★ APPLY BEARISH SENTIMENT RULE
+                                                  if (coinData.sentiment === "bearish") {
+                                                    difference = difference * -1;  // Flip sign
+                                                  }
+
+                                                  const isPositive = difference > 0;
+                                                  const isNegative = difference < 0;
+
+                                                  const digits = Math.floor(Math.abs(difference)).toString().length;
+
+                                                  return (
+                                                    <span
+                                                      className={`text-[8px] font-semibold ${isPositive ? "text-green-600" :
+                                                          isNegative ? "text-red-600" :
+                                                            "text-gray-900"
+                                                        }`}
+                                                    >
+                                                      {isPositive ? "+" : ""}
+                                                      ${difference.toLocaleString(undefined, {
+                                                        minimumFractionDigits: digits <= 3 ? 2 : 0,
+                                                        maximumFractionDigits: digits <= 3 ? 2 : 0
+                                                      })}
+                                                    </span>
+                                                  );
+                                                }
+
+                                                return <span className="text-[8px] font-semibold text-gray-900">N/A</span>;
+                                              })()}
+                                            </div>
 
                                             {/* Summary/Title Column - only show for first coin with merged cell effect */}
                                             {isFirstCoin ? (
