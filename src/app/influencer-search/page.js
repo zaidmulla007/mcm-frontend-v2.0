@@ -1616,7 +1616,7 @@ export default function InfluencerSearchPage() {
                           {/* Row with text + AI badge */}
                           <div className="flex items-center">
                             <span className="text-[10px] font-bold mr-1">
-                              Publish Summary
+                              Consolidated Analysis of All Posts
                             </span>
                             {/* AI Badge */}
                             <div className="text-[10px] rounded-2xl font-bold tracking-wide bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
@@ -1944,7 +1944,7 @@ export default function InfluencerSearchPage() {
                                         // Use summary for YouTube and Telegram, title for others
                                         const contentText = (rec.type === 'youtube' || rec.type === 'telegram') ? (rec.summary || '') : (rec.title || '');
                                         // Dynamic word limit based on number of coins
-                                        const wordLimit = visibleCoins.length === 1 ? 30 : visibleCoins.length === 2 ? 60 : 90;
+                                        const wordLimit = visibleCoins.length === 1 ? 25 : visibleCoins.length === 2 ? 45 : visibleCoins.length === 3 ? 75 : 85;
                                         const showReadMore = contentText.split(' ').length > wordLimit;
                                         const isFirstCoin = coinIdx === 0;
                                         const isLastVisibleCoin = coinIdx === visibleCoins.length - 1;
@@ -2050,7 +2050,7 @@ export default function InfluencerSearchPage() {
                                                       changePrice *= -1;
                                                     }
 
-                                                    const percentageChange = (changePrice / currentPrice) * 100;
+                                                    const percentageChange = (changePrice / basePrice) * 100;
                                                     const isPositive = changePrice > 0;
                                                     const isNegative = changePrice < 0;
 
@@ -2091,7 +2091,7 @@ export default function InfluencerSearchPage() {
                                                   if (coinData.type?.toLowerCase().includes("bearish")) {
                                                     changePrice *= -1;
                                                   }
-                                                  const percentageChange = (changePrice / currentPrice) * 100;
+                                                  const percentageChange = (changePrice / basePrice) * 100;
                                                   const isPositive = changePrice > 0;
                                                   const isNegative = changePrice < 0;
 
@@ -2234,7 +2234,8 @@ export default function InfluencerSearchPage() {
                                                   let percentChange = ((currentValue - baseValue) / baseValue) * 100;
 
                                                   // ★ APPLY BEARISH SENTIMENT RULE
-                                                  if (coinData.sentiment === "bearish") {
+                                                  const sentiment = coinData.sentiment || coinData.type || "";
+                                                  if (sentiment.toLowerCase().includes("bearish")) {
                                                     percentChange = percentChange * -1;  // Flip sign
                                                   }
 
@@ -2266,7 +2267,7 @@ export default function InfluencerSearchPage() {
                                                   position: (visibleCoins.length === 1 && isSummaryExpanded) ? 'relative' : 'absolute',
                                                   right: (visibleCoins.length === 1 && isSummaryExpanded) ? 'auto' : 0,
                                                   top: (visibleCoins.length === 1 && isSummaryExpanded) ? 'auto' : 0,
-                                                  minHeight: (visibleCoins.length === 2 && isSummaryExpanded) ? `${visibleCoins.length * 100}%` : (visibleCoins.length === 1 && isSummaryExpanded) ? 'auto' : `${visibleCoins.length * 100}%`,
+                                                  minHeight: isSummaryExpanded ? 'auto' : `${visibleCoins.length * 100}%`,
                                                   height: isSummaryExpanded ? 'auto' : `${visibleCoins.length * 100}%`,
                                                   width: '50%',
                                                   flex: (visibleCoins.length === 1 && isSummaryExpanded) ? '0 0 50%' : 'none',
@@ -2385,6 +2386,11 @@ export default function InfluencerSearchPage() {
                                                       return { ...prev, [postKey]: newCount };
                                                     }
                                                   });
+                                                  // Also expand/collapse the summary when showing more/less coins
+                                                  setExpandedTitles(prev => ({
+                                                    ...prev,
+                                                    [groupedPostKey]: !showingAllCoins
+                                                  }));
                                                 }}
                                                 className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-500 hover:bg-blue-600 text-white transition-colors shadow-md"
                                                 title={showingAllCoins ? "Show less" : `Show more (${remainingCoins} remaining)`}
@@ -2423,11 +2429,11 @@ export default function InfluencerSearchPage() {
                                     const contentText = (rec.type === 'youtube' || rec.type === 'telegram') ? (rec.summary || '') : (rec.title || '');
                                     // Dynamic word limit based on number of coins (for Latest Posts, usually 1 coin per post)
                                     const coinsCount = rec.coins ? rec.coins.length : 1;
-                                    const wordLimit = coinsCount === 1 ? 30 : coinsCount === 2 ? 60 : 90;
+                                    const wordLimit = coinsCount === 1 ? 25 : coinsCount === 2 ? 45 : coinsCount === 3 ? 75 : 85;
                                     const showReadMore = contentText.split(' ').length > wordLimit;
 
                                     return (
-                                      <div key={idx} className={`flex justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full ${isSummaryExpanded ? 'items-start' : 'items-center'}`} style={{ minHeight: isSummaryExpanded ? '150px' : 'initial', position: 'relative' }}>
+                                      <div key={idx} className={`flex justify-start gap-1 px-0.5 py-2 border-b border-gray-100 last:border-b-0 w-full ${isSummaryExpanded ? 'items-start' : 'items-center'}`} style={{ minHeight: 'initial', position: 'relative' }}>
                                         <div className="flex flex-col items-start gap-1 w-[10%] px-1">
                                           {rec.date && rec.time ? (
                                             <>
@@ -2523,8 +2529,11 @@ export default function InfluencerSearchPage() {
                                                 changePrice *= -1;
                                               }
 
-                                              // Calculate percentage change based on current price
-                                              const percentageChange = (changePrice / currentPrice) * 100;
+                                              // Calculate percentage change based on base price
+                                              const percentageChange = (changePrice / basePrice) * 100;
+                                              console.log('Percentage Change Calculation:', {
+                                                percentageChange
+                                              });
 
                                               const isPositive = changePrice > 0;
                                               const isNegative = changePrice < 0;

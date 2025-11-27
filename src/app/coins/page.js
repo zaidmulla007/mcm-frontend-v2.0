@@ -15,6 +15,7 @@ export default function CoinsPage() {
   const [coinSymbols, setCoinSymbols] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [expandedSummaries, setExpandedSummaries] = useState({}); // Track expanded state for each coin and timeframe
+  const [show24Hours, setShow24Hours] = useState(true); // true = 24 hours, false = 7 days
 
   // Use timezone context for local/UTC time switching
   const { formatDate, useLocalTime, toggleTimezone, userTimezone } = useTimezone();
@@ -216,8 +217,10 @@ export default function CoinsPage() {
   // Helper function to truncate text to specified word limit
   const truncateText = (text, wordLimit = 50) => {
     if (!text) return '';
-    const words = text.split(' ');
-    if (words.length <= wordLimit) return text;
+    // Ensure text is a string before calling split
+    const textStr = typeof text === 'string' ? text : String(text);
+    const words = textStr.split(' ');
+    if (words.length <= wordLimit) return textStr;
     return words.slice(0, wordLimit).join(' ');
   };
 
@@ -234,6 +237,100 @@ export default function CoinsPage() {
   const isSummaryExpanded = (coinSymbol, timeframe) => {
     const key = `${coinSymbol}-${timeframe}`;
     return expandedSummaries[key] || false;
+  };
+
+  // Parse AI summary to extract sections
+  const parseAISummary = (summary) => {
+    if (!summary) return null;
+
+    // Check if summary is already an object (new format)
+    if (typeof summary === 'object' && !Array.isArray(summary)) {
+      const sections = {
+        coinInfo: '',
+        tradingInfo: ''
+      };
+
+      // Build Coin Info from summary, why_it_matters, market_trends, key_events, important_alerts
+      const coinInfoParts = [];
+      if (summary.summary) coinInfoParts.push(`**Summary:**\n${summary.summary}`);
+      if (summary.why_it_matters) coinInfoParts.push(`**Why It Matters:**\n${summary.why_it_matters}`);
+      if (summary.market_trends) coinInfoParts.push(`**Market Trends:**\n${summary.market_trends}`);
+      if (summary.key_events) coinInfoParts.push(`**Key Events:**\n${summary.key_events}`);
+      if (summary.important_alerts) coinInfoParts.push(`**Important Alerts:**\n${summary.important_alerts}`);
+
+      sections.coinInfo = coinInfoParts.join('\n\n');
+
+      // Build Trading Info from outlook, buying_range, bullish_factors, selling_range, bearish_concerns, recent_price_movement
+      const tradingInfoParts = [];
+      if (summary.outlook) tradingInfoParts.push(`**Outlook:**\n${summary.outlook}`);
+      if (summary.buying_range) tradingInfoParts.push(`**Buying Range:**\n${summary.buying_range}`);
+      if (summary.bullish_factors) tradingInfoParts.push(`**Bullish Factors:**\n${summary.bullish_factors}`);
+      if (summary.selling_range) tradingInfoParts.push(`**Selling Range:**\n${summary.selling_range}`);
+      if (summary.bearish_concerns) tradingInfoParts.push(`**Bearish Concerns:**\n${summary.bearish_concerns}`);
+      if (summary.recent_price_movement) tradingInfoParts.push(`**Recent Price Movement:**\n${summary.recent_price_movement}`);
+
+      sections.tradingInfo = tradingInfoParts.join('\n\n');
+
+      return sections;
+    }
+
+    // Handle old string format for backward compatibility
+    const sections = {
+      coinInfo: '',
+      tradingInfo: ''
+    };
+
+    // Trading Info sections in the EXACT order they should appear
+    const tradingInfoSectionsOrder = [
+      'Outlook',
+      'Buying Range',
+      'Bullish Factors',
+      'Selling Range',
+      'Bearish Concerns',
+      'Recent Price Movement'
+    ];
+
+    // Split summary by ** headers
+    const allSections = summary.split(/(?=\*\*[A-Za-z\s]+:?\*\*)/);
+
+    let coinInfoParts = [];
+    let tradingInfoMap = {}; // Store trading sections in a map first
+
+    allSections.forEach(section => {
+      const trimmedSection = section.trim();
+      if (!trimmedSection) return;
+
+      // Check if this section matches any Trading Info section
+      let matchedTradingSection = null;
+      for (const tradingSection of tradingInfoSectionsOrder) {
+        const regex = new RegExp(`^\\*\\*${tradingSection}:?\\*\\*`, 'i');
+        if (regex.test(trimmedSection)) {
+          matchedTradingSection = tradingSection;
+          break;
+        }
+      }
+
+      if (matchedTradingSection) {
+        // Store in map to maintain order later
+        tradingInfoMap[matchedTradingSection] = trimmedSection;
+      } else {
+        // All other sections go to Coin Info
+        coinInfoParts.push(trimmedSection);
+      }
+    });
+
+    // Build Trading Info in the specified order
+    let tradingInfoParts = [];
+    tradingInfoSectionsOrder.forEach(sectionName => {
+      if (tradingInfoMap[sectionName]) {
+        tradingInfoParts.push(tradingInfoMap[sectionName]);
+      }
+    });
+
+    sections.coinInfo = coinInfoParts.join('\n\n');
+    sections.tradingInfo = tradingInfoParts.join('\n\n');
+
+    return sections;
   };
 
   // Get top 10 coins from selected timeframe with memoization
@@ -288,15 +385,34 @@ export default function CoinsPage() {
               </div> */}
               {/* Header Title */}
               <div className="flex justify-center mt-2">
-                <p className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                <p className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
                   Trending Coins <br />
-                  (Updated every 6 Hrs)
+                  {/* (Updated every 6 Hrs) */}
                 </p>
               </div>
 
-              {/* Last Updated and Timezone Toggle */}
+              {/* Timezone Switch */}
+              <div className="flex items-center gap-2 mt-2">
+                <button
+                  onClick={() => toggleTimezone()}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-400'
+                    }`}
+                  role="switch"
+                  aria-checked={useLocalTime}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
+                      }`}
+                  />
+                </button>
+                <span className="text-xs font-medium text-black-700">
+                  Local Time / UTC
+                </span>
+              </div>
+
+              {/* Last Updated and 24 Hours / 7 Days Toggle */}
               <div className="flex items-start gap-6 mt-2">
-                {/* LEFT COLUMN — Last Updated */}
+                {/* Last Updated */}
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-semibold text-black-600">
                     Last Updated
@@ -306,24 +422,22 @@ export default function CoinsPage() {
                   </p>
                 </div>
 
-                {/* RIGHT COLUMN — Timezone Switch */}
+                {/* 24 Hours / 7 Days Toggle */}
                 <div className="flex items-center gap-2 py-1.5">
                   <button
-                    onClick={() => toggleTimezone()}
-                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${
-                      useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
-                    }`}
+                    onClick={() => setShow24Hours(!show24Hours)}
+                    className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${show24Hours ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-400'
+                      }`}
                     role="switch"
-                    aria-checked={useLocalTime}
+                    aria-checked={show24Hours}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${
-                        useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${show24Hours ? 'translate-x-4' : 'translate-x-0.5'
+                        }`}
                     />
                   </button>
                   <span className="text-xs font-medium text-black-700">
-                    Local Time / UTC
+                    24 Hours / 7 Days
                   </span>
                 </div>
               </div>
@@ -353,10 +467,10 @@ export default function CoinsPage() {
               <table className="w-full table-fixed">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
+                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[5%] align-middle">
                       Coins
                     </th>
-                    <th rowSpan="2" className="pl-2 pr-0.5 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
+                    <th rowSpan="2" className="pl-2 pr-0.5 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       <div className="flex flex-col items-start gap-0.5">
                         <span>Sentiment</span>
                         <div className="flex items-center justify-start gap-1">
@@ -370,7 +484,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
+                    <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[5%] align-middle">
                       <div className="flex flex-col items-start">
                         <span>Base</span>
                         <div className="flex items-center gap-1">
@@ -419,30 +533,55 @@ export default function CoinsPage() {
                     <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
                       <div className="flex flex-col items-center">
                         {/* 24 Hours */}
-                        <span>% Price</span>
+                        <span>24 Hrs % Price</span>
                         {/* Price + Info icon in same row */}
                         <div className="flex items-center gap-1">
                           <span>Change</span>
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999] text-left">
-                              % Price Change from Base Price <br />
+                              Source: Binance<br />
                               N/A : Not Available
                             </span>
                           </span>
                         </div>
                       </div>
                     </th>
-                    <th colSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider">
-                      Outlook
+                    <th
+                      colSpan="2"
+                      className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider"
+                    >
+                      <div className="flex justify-center items-center gap-1">
+                        <span>Consolidated Analysis of All Posts</span>
+                        <span className="text-[10px] rounded-2xl font-bold tracking-wide bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+                          Ai
+                        </span>
+                      </div>
                     </th>
+
                   </tr>
                   <tr className="bg-gray-50 border-b border-gray-200">
                     <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[40%]">
-                      24 Hours
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Coin Info</span>
+                        <span className="relative group cursor-pointer z-[9999]">
+                          <span className="text-blue-600 text-sm">ⓘ</span>
+                          <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                            Past {show24Hours ? '24 hrs' : '7 days'} All Post Analysis Ai
+                          </span>
+                        </span>
+                      </div>
                     </th>
                     <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[40%]">
-                      7 Days
+                      <div className="flex items-center justify-center gap-1">
+                        <span>Trading Info</span>
+                        <span className="relative group cursor-pointer z-[9999]">
+                          <span className="text-blue-600 text-sm">ⓘ</span>
+                          <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                            Past {show24Hours ? '24 hrs' : '7 days'} All Post Analysis Ai
+                          </span>
+                        </span>
+                      </div>
                     </th>
                   </tr>
                 </thead>
@@ -681,39 +820,23 @@ export default function CoinsPage() {
                               <span className="text-xs text-gray-500">N/A</span>
                             )}
                           </td>
-                          {/* % Price Change (Base Price to Current Price) */}
+                          {/* 24 Hours Price Change - From Binance Live Data */}
                           <td className="px-2 py-3 text-center">
                             {(() => {
-                              // Parse base price
-                              const baseValue = coin.avg_base_price ? Number(coin.avg_base_price) : NaN;
+                              // Get live 24-hour price change percentage directly from Binance WebSocket
+                              const livePriceChange = getLivePriceChange(coin.symbol);
 
-                              // Get current price
-                              let currentValue = currentPrice !== 'N/A' ? Number(currentPrice) : NaN;
-
-                              // Fallback to lastAvailablePrice if live price is not available
-                              if (isNaN(currentValue) || currentPrice === 'N/A') {
-                                if (coin.binance?.last_available_price) {
-                                  currentValue = parseFloat(coin.binance.last_available_price);
-                                }
-                              }
-
-                              // Calculate percentage change: ((current - base) / base) * 100
-                              if (!isNaN(baseValue) && !isNaN(currentValue) && baseValue !== 0) {
-                                const percentChange = ((currentValue - baseValue) / baseValue) * 100;
-
-                                const isPositive = percentChange > 0;
-                                const isNegative = percentChange < 0;
+                              if (livePriceChange !== null) {
+                                const isPositive = livePriceChange > 0;
+                                const isNegative = livePriceChange < 0;
 
                                 return (
                                   <span
-                                    className={`text-[10px] font-semibold ${
-                                      isPositive ? "text-green-600" :
-                                      isNegative ? "text-red-600" :
-                                      "text-gray-900"
-                                    }`}
+                                    className={`text-[10px] font-semibold ${isPositive ? "text-green-600" : isNegative ? "text-red-600" : "text-gray-900"
+                                      }`}
                                   >
                                     {isPositive ? "+" : ""}
-                                    {percentChange.toFixed(2)}%
+                                    {livePriceChange.toFixed(2)}%
                                   </span>
                                 );
                               }
@@ -722,59 +845,79 @@ export default function CoinsPage() {
                             })()}
                           </td>
 
-                          {/* 24 Hours Column - Display AI Summary from 24hrs timeframe */}
+                          {/* Coin Info Column */}
                           <td className="px-2 py-3 text-left align-top w-[40%]">
                             <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
-                              {coin24hrs?.ai_summary ? (
-                                <>
-                                  <ReactMarkdown>
-                                    {isSummaryExpanded(coin.symbol, '24hrs')
-                                      ? coin24hrs.ai_summary
-                                      : truncateText(coin24hrs.ai_summary, 50)}
-                                  </ReactMarkdown>
-                                  {coin24hrs.ai_summary.split(' ').length > 50 && (
-                                    <>
-                                      {!isSummaryExpanded(coin.symbol, '24hrs') && '... '}
-                                      <button
-                                        onClick={() => toggleSummaryExpand(coin.symbol, '24hrs')}
-                                        className="text-blue-600 hover:text-blue-800 font-semibold text-[11px] mt-1 inline-block"
-                                      >
-                                        {isSummaryExpanded(coin.symbol, '24hrs') ? 'Read less' : 'Read more'}
-                                      </button>
-                                    </>
-                                  )}
-                                </>
-                              ) : (
-                                <span className="text-gray-500">N/A</span>
-                              )}
+                              {(() => {
+                                const coinData = show24Hours ? coin24hrs : coin7days;
+                                const timeframeKey = show24Hours ? '24hrs' : '7days';
+
+                                if (!coinData?.ai_summary) {
+                                  return <span className="text-gray-500">N/A</span>;
+                                }
+
+                                const parsed = parseAISummary(coinData.ai_summary);
+                                const content = parsed?.coinInfo || coinData.ai_summary;
+
+                                return (
+                                  <>
+                                    <ReactMarkdown>
+                                      {isSummaryExpanded(coin.symbol, `${timeframeKey}-coin`)
+                                        ? content
+                                        : truncateText(content, 50)}
+                                    </ReactMarkdown>
+                                    {(typeof content === 'string' ? content.split(' ') : String(content).split(' ')).length > 50 && (
+                                      <>
+                                        {!isSummaryExpanded(coin.symbol, `${timeframeKey}-coin`) && '... '}
+                                        <button
+                                          onClick={() => toggleSummaryExpand(coin.symbol, `${timeframeKey}-coin`)}
+                                          className="text-blue-600 hover:text-blue-800 font-semibold text-[11px] mt-1 inline-block"
+                                        >
+                                          {isSummaryExpanded(coin.symbol, `${timeframeKey}-coin`) ? 'Read less' : 'Read more'}
+                                        </button>
+                                      </>
+                                    )}
+                                  </>
+                                );
+                              })()}
                             </div>
                           </td>
 
-                          {/* 7 Days Column - Display AI Summary from 7days timeframe */}
+                          {/* Trading Info Column */}
                           <td className="px-2 py-3 text-left align-top w-[40%]">
                             <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
-                              {coin7days?.ai_summary ? (
-                                <>
-                                  <ReactMarkdown>
-                                    {isSummaryExpanded(coin.symbol, '7days')
-                                      ? coin7days.ai_summary
-                                      : truncateText(coin7days.ai_summary, 50)}
-                                  </ReactMarkdown>
-                                  {coin7days.ai_summary.split(' ').length > 50 && (
-                                    <>
-                                      {!isSummaryExpanded(coin.symbol, '7days') && '... '}
-                                      <button
-                                        onClick={() => toggleSummaryExpand(coin.symbol, '7days')}
-                                        className="text-blue-600 hover:text-blue-800 font-semibold text-[11px] mt-1 inline-block"
-                                      >
-                                        {isSummaryExpanded(coin.symbol, '7days') ? 'Read less' : 'Read more'}
-                                      </button>
-                                    </>
-                                  )}
-                                </>
-                              ) : (
-                                <span className="text-gray-500">N/A</span>
-                              )}
+                              {(() => {
+                                const coinData = show24Hours ? coin24hrs : coin7days;
+                                const timeframeKey = show24Hours ? '24hrs' : '7days';
+
+                                if (!coinData?.ai_summary) {
+                                  return <span className="text-gray-500">N/A</span>;
+                                }
+
+                                const parsed = parseAISummary(coinData.ai_summary);
+                                const content = parsed?.tradingInfo || coinData.ai_summary;
+
+                                return (
+                                  <>
+                                    <ReactMarkdown>
+                                      {isSummaryExpanded(coin.symbol, `${timeframeKey}-trading`)
+                                        ? content
+                                        : truncateText(content, 50)}
+                                    </ReactMarkdown>
+                                    {(typeof content === 'string' ? content.split(' ') : String(content).split(' ')).length > 50 && (
+                                      <>
+                                        {!isSummaryExpanded(coin.symbol, `${timeframeKey}-trading`) && '... '}
+                                        <button
+                                          onClick={() => toggleSummaryExpand(coin.symbol, `${timeframeKey}-trading`)}
+                                          className="text-blue-600 hover:text-blue-800 font-semibold text-[11px] mt-1 inline-block"
+                                        >
+                                          {isSummaryExpanded(coin.symbol, `${timeframeKey}-trading`) ? 'Read less' : 'Read more'}
+                                        </button>
+                                      </>
+                                    )}
+                                  </>
+                                );
+                              })()}
                             </div>
                           </td>
                         </tr>

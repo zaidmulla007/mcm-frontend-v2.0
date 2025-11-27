@@ -638,8 +638,8 @@ export default function InfluencerSearchPage() {
                                   <div className="relative">
                                     {/* Graph container with axes */}
                                     <div className="relative">
-                                      {/* Data columns with stars */}
-                                      <div className="flex items-end gap-3 pl-1 h-16 pb-3">
+                                      {/* Data columns with stars - FIXED: Increased gap and height */}
+                                      <div className="flex items-end gap-6 pl-1 h-24 pb-8">
                                         {scatterData.map((point, idx) => {
                                           const fullStars = Math.floor(point.rating);
                                           const hasHalfStar = point.rating % 1 >= 0.5;
@@ -664,8 +664,11 @@ export default function InfluencerSearchPage() {
                                                   <FaStar key={`empty-${i}`} className="text-gray-300 w-2.5 h-2.5" />
                                                 ))}
                                               </div>
-                                              {/* Year label at bottom (below x-axis) */}
-                                              <span className="text-[8px] text-black-500 font-semibold absolute whitespace-nowrap" style={{ bottom: '-12px' }}>
+                                              {/* Year label at bottom (below x-axis) - FIXED: Better positioning with mt-2 */}
+                                              <span
+                                                className="text-[8px] text-black-500 font-semibold absolute whitespace-nowrap mt-2"
+                                                style={{ top: '100%' }}
+                                              >
                                                 {point.yearLabel}
                                               </span>
                                             </div>
@@ -685,46 +688,46 @@ export default function InfluencerSearchPage() {
                               <div className="flex items-center justify-center h-full">
                                 {/* 2x3 Metrics Grid */}
                                 <div className="grid grid-cols-2 gap-1">
-                                {/* ROI */}
-                                <div className="bg-blue-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
-                                  <div className="text-[9px] text-gray-600 font-medium">ROI</div>
-                                  <div className="text-xs font-bold text-blue-700">
-                                    {influencer.prob_weighted_returns
-                                      ? influencer.prob_weighted_returns.toFixed(1)
-                                      : '0.0'}
+                                  {/* ROI */}
+                                  <div className="bg-blue-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
+                                    <div className="text-[9px] text-gray-600 font-medium">ROI</div>
+                                    <div className="text-xs font-bold text-blue-700">
+                                      {influencer.prob_weighted_returns
+                                        ? influencer.prob_weighted_returns.toFixed(1)
+                                        : '0.0'}
+                                    </div>
                                   </div>
-                                </div>
 
-                                {/* Win Rate */}
-                                <div className="bg-green-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
-                                  <div className="text-[9px] text-gray-600 font-medium">Win Rate</div>
-                                  <div className="text-xs font-bold text-green-700">
-                                    {influencer.win_percentage
-                                      ? `${Math.round(influencer.win_percentage)}%`
-                                      : '0%'}
+                                  {/* Win Rate */}
+                                  <div className="bg-green-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
+                                    <div className="text-[9px] text-gray-600 font-medium">Win Rate</div>
+                                    <div className="text-xs font-bold text-green-700">
+                                      {influencer.win_percentage
+                                        ? `${Math.round(influencer.win_percentage)}%`
+                                        : '0%'}
+                                    </div>
                                   </div>
-                                </div>
 
-                                {/* Recommendations */}
-                                <div className="bg-purple-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
-                                  <div className="text-[9px] text-gray-600 font-medium">No.of Posts</div>
-                                  <div className="text-xs font-bold text-purple-700">
-                                    {influencer.price_counts
-                                      ? influencer.price_counts.toLocaleString()
-                                      : '0'}
+                                  {/* Recommendations */}
+                                  <div className="bg-purple-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
+                                    <div className="text-[9px] text-gray-600 font-medium">No.of Posts</div>
+                                    <div className="text-xs font-bold text-purple-700">
+                                      {influencer.price_counts
+                                        ? influencer.price_counts.toLocaleString()
+                                        : '0'}
+                                    </div>
                                   </div>
-                                </div>
 
-                                {/* Subscribers */}
-                                <div className="bg-orange-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
-                                  <div className="text-[9px] text-gray-600 font-medium">Subscribers</div>
-                                  <div className="text-xs font-bold text-orange-700">
-                                    {influencer.subs
-                                      ? formatNumber(influencer.subs)
-                                      : '0'}
+                                  {/* Subscribers */}
+                                  <div className="bg-orange-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
+                                    <div className="text-[9px] text-gray-600 font-medium">Subscribers</div>
+                                    <div className="text-xs font-bold text-orange-700">
+                                      {influencer.subs
+                                        ? formatNumber(influencer.subs)
+                                        : '0'}
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
                               </div>
                             </td>
 
