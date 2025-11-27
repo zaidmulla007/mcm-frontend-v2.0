@@ -214,13 +214,13 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     // };
 
     // Threshold constants for bell alerts
-    const THRESHOLD_50_PERCENT = 30;
-    const THRESHOLD_TOP15_PERCENT = 15;
+    const THRESHOLD_PERCENT = 30;
+    const THRESHOLD_TOP_PERCENT = 15;
     const TOP_COINS_RANK_LIMIT = 15;
 
     // Threshold constants for meme coins
-    const MEME_THRESHOLD_TOP15_PERCENT = 20;
-    const MEME_THRESHOLD_50_PERCENT = 50;
+    const MEME_THRESHOLD_TOP_PERCENT = 20;
+    const MEME_THRESHOLD_PERCENT = 50;
 
     // Check if price change exceeds threshold based on 24hr Binance data
     // Bell should appear across ALL timeframes when 24hr threshold is met
@@ -239,21 +239,21 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             // 1. Meme coin with rank <= 15 and price change is ±20%
             // 2. OR meme coin with rank > 15 (or no rank) and price change is ±50%
             if (marketCapRank && marketCapRank <= TOP_COINS_RANK_LIMIT) {
-                return Math.abs(priceChange) >= MEME_THRESHOLD_TOP15_PERCENT;
+                return Math.abs(priceChange) >= MEME_THRESHOLD_TOP_PERCENT;
             } else {
-                return Math.abs(priceChange) >= MEME_THRESHOLD_50_PERCENT;
+                return Math.abs(priceChange) >= MEME_THRESHOLD_PERCENT;
             }
         }
 
         // For regular coins (not meme coins), use original thresholds
         // Show bell when:
-        // 1. Price change is ±30% (THRESHOLD_50_PERCENT)
+        // 1. Price change is ±30% (THRESHOLD_PERCENT)
         // 2. OR if coin's market_cap_rank <= 15 and price change is ±15%
-        if (Math.abs(priceChange) >= THRESHOLD_50_PERCENT) {
+        if (Math.abs(priceChange) >= THRESHOLD_PERCENT) {
             return true;
         }
 
-        if (marketCapRank && marketCapRank <= TOP_COINS_RANK_LIMIT && Math.abs(priceChange) >= THRESHOLD_TOP15_PERCENT) {
+        if (marketCapRank && marketCapRank <= TOP_COINS_RANK_LIMIT && Math.abs(priceChange) >= THRESHOLD_TOP_PERCENT) {
             return true;
         }
 
@@ -508,6 +508,8 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     const priceChangePercent = getPriceChangeForTimeframe(coin, timeframe);
                                     const showPriceAlert = hasPriceAlertForTimeframe(coin, timeframe);
                                     const threshold = getThreshold(timeframe);
+                                    // Get 24hr Binance data for bell color (since alert is based on 24hr data)
+                                    const binance24hrChange = getPriceChangePercent(coin?.symbol);
 
                                     // const getAlertReason = () => {
                                     //     const binance24hrChange = getPriceChangePercent(coin?.symbol);
@@ -516,18 +518,18 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     //     if (binance24hrChange !== null) {
                                     //         const absChange = Math.abs(binance24hrChange);
                                     //         if (isMeme) {
-                                    //             if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= MEME_THRESHOLD_TOP15_PERCENT) {
-                                    //                 return `24H: Meme Top ${TOP_COINS_RANK_LIMIT}, ${MEME_THRESHOLD_TOP15_PERCENT}% Movement\nCurrent: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
+                                    //             if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= MEME_THRESHOLD_TOP_PERCENT) {
+                                    //                 return `24H: Meme Top ${TOP_COINS_RANK_LIMIT}, ${MEME_THRESHOLD_TOP_PERCENT}% Movement\nCurrent: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
                                     //             }
-                                    //             if (absChange >= MEME_THRESHOLD_50_PERCENT) {
-                                    //                 return `24H: Meme ${MEME_THRESHOLD_50_PERCENT}% Price Movement\nCurrent: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
+                                    //             if (absChange >= MEME_THRESHOLD_PERCENT) {
+                                    //                 return `24H: Meme ${MEME_THRESHOLD_PERCENT}% Price Movement\nCurrent: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
                                     //             }
                                     //         } else {
-                                    //             if (absChange >= THRESHOLD_50_PERCENT) {
-                                    //                 return `24H: ${THRESHOLD_50_PERCENT}% Price Movement\nCurrent: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
+                                    //             if (absChange >= THRESHOLD_PERCENT) {
+                                    //                 return `24H: ${THRESHOLD_PERCENT}% Price Movement\nCurrent: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
                                     //             }
-                                    //             if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= THRESHOLD_TOP15_PERCENT) {
-                                    //                 return `24H: Top ${TOP_COINS_RANK_LIMIT} coin, ${THRESHOLD_TOP15_PERCENT}% Movement\nCurrent: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
+                                    //             if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= THRESHOLD_TOP_PERCENT) {
+                                    //                 return `24H: Top ${TOP_COINS_RANK_LIMIT} coin, ${THRESHOLD_TOP_PERCENT}% Movement\nCurrent: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
                                     //             }
                                     //         }
                                     //     }
@@ -540,17 +542,17 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                         if (binance24hrChange !== null) {
                                             const absChange = Math.abs(binance24hrChange);
                                             if (isMeme) {
-                                                if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= MEME_THRESHOLD_TOP15_PERCENT) {
+                                                if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= MEME_THRESHOLD_TOP_PERCENT) {
                                                     return `24H % Change: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
                                                 }
-                                                if (absChange >= MEME_THRESHOLD_50_PERCENT) {
+                                                if (absChange >= MEME_THRESHOLD_PERCENT) {
                                                     return `24H % Change: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
                                                 }
                                             } else {
-                                                if (absChange >= THRESHOLD_50_PERCENT) {
+                                                if (absChange >= THRESHOLD_PERCENT) {
                                                     return `24H % Change: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
                                                 }
-                                                if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= THRESHOLD_TOP15_PERCENT) {
+                                                if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= THRESHOLD_TOP_PERCENT) {
                                                     return `24H % Change: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
                                                 }
                                             }
@@ -576,7 +578,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         {/* Bell icon for coins exceeding price change threshold */}
                                                         {showPriceAlert && (
                                                             <div className="absolute -top-1 -right-1 group cursor-pointer z-[9999]">
-                                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-lg ${priceChangePercent > 0 ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}>
+                                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-lg ${binance24hrChange > 0 ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}>
                                                                     <FaBell className="text-white text-[15px]" />
                                                                 </div>
                                                                 {/* Tooltip on hover - positioned below the bell */}
