@@ -1406,9 +1406,11 @@ export default function InfluencerSearchPage() {
                       <div className="flex items-center justify-between w-full">
                         {/* Timezone Switch on Left */}
                         <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-medium text-black-700">
-                            {useLocalTime ? (userCity || 'Local') : 'UTC'}
-                          </span>
+                          {!useLocalTime && (
+                            <span className="text-[9px] font-medium text-black-700">
+                              UTC
+                            </span>
+                          )}
                           <button
                             onClick={() => toggleTimezone()}
                             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
@@ -1421,9 +1423,11 @@ export default function InfluencerSearchPage() {
                                 }`}
                             />
                           </button>
-                          <span className="text-[9px] font-medium text-black-700">
-                            Local Time / UTC
-                          </span>
+                          {useLocalTime && (
+                            <span className="text-[9px] font-medium text-black-700">
+                              {userCity || 'Local'}
+                            </span>
+                          )}
                         </div>
                         {/* Info centered */}
                         <div className="flex items-center justify-center gap-1 flex-1">

@@ -1,9 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import moment from "moment-timezone";
 import { FaBell } from "react-icons/fa";
 
 export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTime = false }) {
+    const router = useRouter();
     const [selectedPlatform, setSelectedPlatform] = useState("Combined");
     const [selectedCoinType, setSelectedCoinType] = useState("top_coins");
     const [combinedData, setCombinedData] = useState(null);
@@ -569,7 +571,8 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         <img
                                                             src={coin.image_small || coin.image_thumb}
                                                             alt={coin.symbol}
-                                                            className="w-14 h-14 rounded-full mb-2"
+                                                            className="w-14 h-14 rounded-full mb-2 cursor-pointer hover:opacity-80 transition-opacity"
+                                                            onClick={() => router.push('/coins')}
                                                             onError={(e) => {
                                                                 e.target.onerror = null;
                                                                 e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;

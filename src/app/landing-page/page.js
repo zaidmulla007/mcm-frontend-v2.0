@@ -1312,9 +1312,8 @@ export default function Home() {
             </div>
 
             {/* Right: Timezone and Update Info */}
-            <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded border border-blue-200 p-1.5 min-w-[160px]">
+            {/* <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded border border-blue-200 p-1.5 min-w-[160px]">
               <div className="flex flex-col gap-1">
-                {/* Timezone Toggle */}
                 <div className="flex gap-1">
                   <button
                     onClick={() => toggleTimezone()}
@@ -1335,8 +1334,6 @@ export default function Home() {
                     Local Time
                   </button>
                 </div>
-
-                {/* Update Times */}
                 <div className="text-[9px] leading-tight">
                   <div className="bg-white/40 rounded p-1 mb-0.5">
                     <div className="font-semibold mb-0.5">Last Updated:</div>
@@ -1348,7 +1345,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           <YouTubeTelegramDataTable useLocalTime={useLocalTime} />

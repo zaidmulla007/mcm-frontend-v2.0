@@ -392,22 +392,28 @@ export default function CoinsPage() {
 
               {/* Timezone Switch */}
               <div className="flex items-center gap-2 mt-2">
+                {!useLocalTime && (
+                  <span className="text-xs font-medium text-black-700">
+                    UTC
+                  </span>
+                )}
                 <button
                   onClick={() => toggleTimezone()}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${!useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-400'
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
                     }`}
                   role="switch"
-                  aria-checked={!useLocalTime}
+                  aria-checked={useLocalTime}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${!useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
                       }`}
                   />
                 </button>
-                <span className="text-xs font-medium text-black-700">
-                  {/* {useLocalTime ? 'Local Time' : 'UTC'} */}
-                  UTC
-                </span>
+                {useLocalTime && (
+                  <span className="text-xs font-medium text-black-700">
+                    {userCity || 'Local'}
+                  </span>
+                )}
               </div>
 
               {/* Last Updated and Timeframe Buttons */}
