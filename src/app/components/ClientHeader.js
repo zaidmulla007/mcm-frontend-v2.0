@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef, Suspense } from "react";
-import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar } from "react-icons/fa";
+import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar, FaChartPie, FaNewspaper } from "react-icons/fa";
 import { useTimezone } from "../contexts/TimezoneContext";
 
 const navLinks = [
@@ -14,6 +14,8 @@ const navLinks = [
   { name: "Trending Coins", href: "/coins", icon: FaCoins },
   { name: "Influencer's Stats", href: "/influencerssearch", icon: FaChartBar },
   { name: "Favorites", href: "/favorites", icon: FaStar },
+  { name: "Market Overview", href: "/market-overview", icon: FaChartPie },
+  { name: "Top News", href: "/top-news", icon: FaNewspaper },
   // { name: "MCM Signal", href: "/mcm-final", icon: FaChartLine },
   // { name: "Backups", href: "/influencer-search/backup", icon: FaHistory },
   // { name: "Plans", href: "/plans", icon: FaTrophy },
@@ -158,29 +160,29 @@ export default function ClientHeader() {
               return true;
             })
             .map((link) => {
-            // Special case for Leaderboard: make it active for influencer detail pages and /posts
-            const isLeaderboardActive = link.href === "/influencer-search" &&
-              (pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/") || pathname === "/posts");
+              // Special case for Leaderboard: make it active for influencer detail pages and /posts
+              const isLeaderboardActive = link.href === "/influencer-search" &&
+                (pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/") || pathname === "/posts");
 
-            const isActive = pathname === link.href ||
-              (link.href !== "/home" && pathname.startsWith(link.href)) ||
-              isLeaderboardActive;
-            const IconComponent = link.icon;
+              const isActive = pathname === link.href ||
+                (link.href !== "/home" && pathname.startsWith(link.href)) ||
+                isLeaderboardActive;
+              const IconComponent = link.icon;
 
-            return (
-              <Link
-                key={link.name}
-                href={link.href}
-                className={`flex items-center gap-2 text-sm font-medium transition ${isActive
-                  ? 'text-blue-600'
-                  : 'text-gray-700 hover:text-blue-600'
-                  }`}
-              >
-                <IconComponent className="text-base" />
-                {link.name}
-              </Link>
-            );
-          })}
+              return (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className={`flex items-center gap-2 text-sm font-medium transition ${isActive
+                    ? 'text-blue-600'
+                    : 'text-gray-700 hover:text-blue-600'
+                    }`}
+                >
+                  <IconComponent className="text-base" />
+                  {link.name}
+                </Link>
+              );
+            })}
         </nav>
 
         {/* Auth Buttons */}
