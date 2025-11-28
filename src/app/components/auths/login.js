@@ -1171,7 +1171,7 @@ export default function Login() {
             timerProgressBar: true,
             showConfirmButton: false
           }).then(() => {
-            router.push('/influencer-search');
+            router.push('/landing-page');
           });
         } else {
           throw new Error('Login failed');
