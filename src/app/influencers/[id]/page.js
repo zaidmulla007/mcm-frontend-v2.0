@@ -1680,7 +1680,7 @@ export default function InfluencerProfilePage() {
             </div>
 
             {/* Sentiment Analysis Charts */}
-            <div className="bg-white rounded-xl p-6 mb-2 border border-gray-200">
+            {/* <div className="bg-white rounded-xl p-6 mb-2 border border-gray-200">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-[#0c0023]">
                   Total Recommendations
@@ -1688,20 +1688,15 @@ export default function InfluencerProfilePage() {
               </div>
               <div className="space-y-6">
                 {(() => {
-                  // Prepare data for charts
                   const currentYear = new Date().getFullYear().toString();
 
-                  // Extract data from API - based on console logs, data is directly under channelData
                   const overallData = channelData?.Yearly || {};
                   const moonshotsData = channelData?.hyperactive?.Yearly || {};
                   const normalData = channelData?.normal?.Yearly || {};
-
-                  // Debug logs
                   console.log('Debug - overallData sample:', overallData['2023']);
                   console.log('Debug - moonshotsData sample:', moonshotsData['2023']);
                   console.log('Debug - normalData sample:', normalData['2023']);
 
-                  // Helper function to transform API data to chart format
                   const transformYearlyData = (yearlyData) => {
                     if (!yearlyData) return [];
                     console.log('Transform input:', yearlyData);
@@ -1713,12 +1708,11 @@ export default function InfluencerProfilePage() {
                       };
                       console.log(`Year ${year}:`, item);
                       return item;
-                    }).sort((a, b) => b.year.localeCompare(a.year)); // Sort by year descending
+                    }).sort((a, b) => b.year.localeCompare(a.year)); 
                     console.log('Transform result:', result);
                     return result;
                   };
 
-                  // Define categories with their properties using API data
                   const categories = [
                     {
                       key: 'overall',
@@ -1736,7 +1730,6 @@ export default function InfluencerProfilePage() {
                       data: transformYearlyData(normalData)
                     },
                   ];
-                  // Format data for charts
                   const chartsData = categories.map(category => {
                     const formattedData = category.data.map(item => ({
                       year: item.year === currentYear ? item.year + '*' : item.year,
@@ -1749,7 +1742,6 @@ export default function InfluencerProfilePage() {
                       hasData: formattedData.length > 0
                     };
                   }).filter(chart => chart.hasData);
-                  // Explanatory text content
                   const explanations = [
                     {
                       title: "Understanding the Categories",
@@ -1764,7 +1756,6 @@ export default function InfluencerProfilePage() {
                         </div>
                       ) : (
                         <>
-                          {/* Mobile single column layout */}
                           <div className="block md:hidden grid grid-cols-1 gap-4">
                             {chartsData.map((category) => (
                               <div key={category.key} className="border border-gray-200 rounded-lg p-4">
@@ -1810,7 +1801,6 @@ export default function InfluencerProfilePage() {
                                 </ResponsiveContainer>
                               </div>
                             ))}
-                            {/* Explanatory box for mobile */}
                             {explanations.map((explanation, index) => (
                               <div key={index} className="bg-gray-50 rounded-lg p-4">
                                 <h4 className="text-sm font-semibold text-[#0c0023] mb-2">{explanation.title}</h4>
@@ -1818,9 +1808,7 @@ export default function InfluencerProfilePage() {
                               </div>
                             ))}
                           </div>
-                          {/* Desktop grid layout - 3 charts + 1 explanatory box */}
                           <div className="hidden md:grid md:grid-cols-4 gap-3">
-                            {/* First 3 columns for charts */}
                             {chartsData.map((category) => (
                               <div key={category.key} className="space-y-2">
                                 <h4 className="text-sm font-semibold text-[#0c0023] text-center mb-2">{category.label}</h4>
@@ -1865,7 +1853,6 @@ export default function InfluencerProfilePage() {
                                 </ResponsiveContainer>
                               </div>
                             ))}
-                            {/* 4th column for explanatory box */}
                             <div className="bg-gray-50 rounded-lg p-4">
                               {explanations.map((explanation, index) => (
                                 <div key={index}>
@@ -1875,7 +1862,6 @@ export default function InfluencerProfilePage() {
                               ))}
                             </div>
                           </div>
-                          {/* Legend */}
                           <div className="flex items-center justify-center gap-6 mt-4">
                             <div className="flex items-center gap-2">
                               <div className="w-4 h-4 rounded" style={{ backgroundColor: "#1e3a8a" }}></div>
@@ -1895,7 +1881,7 @@ export default function InfluencerProfilePage() {
                   );
                 })()}
               </div>
-            </div>
+            </div> */}
 
             <div className="bg-white rounded-xl p-6 border border-gray-200">
               <div className="flex items-center justify-between mb-4">
@@ -3104,11 +3090,11 @@ export default function InfluencerProfilePage() {
                 </div>
               </div>
             </div> */}
-            <YearlyPerformanceTable
+            {/* <YearlyPerformanceTable
               yearlyData={yearlyData}
               quarterlyData={quarterlyData}
               channelData={channelData}
-            />
+            /> */}
           </div>
         )}
         {tab === "overview-dark" && (
