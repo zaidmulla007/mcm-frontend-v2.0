@@ -4,6 +4,7 @@ import React, { useRef, useEffect, useState, useMemo } from "react";
 function CoinFilter({ selectedCoins, onCoinToggle, onSelectAll, onClearAll, availableCoins, isLoading }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const dropdownRef = useRef(null);
 
   const filteredCoins = availableCoins.filter(coin =>
     coin.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -13,8 +14,25 @@ function CoinFilter({ selectedCoins, onCoinToggle, onSelectAll, onClearAll, avai
   const maxCoins = 5;
   const canSelectMore = selectedCoins.length < maxCoins;
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
-    <div style={{ position: "relative", marginBottom: 20 }}>
+    <div ref={dropdownRef} style={{ position: "relative", marginBottom: 20 }}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         style={{
@@ -283,7 +301,11 @@ function TradingViewScreener({ selectedCoins }) {
   useEffect(() => {
     if (!ref.current || selectedCoins.length === 0) return;
     const container = ref.current;
-    container.innerHTML = '<div class="tradingview-widget-container__widget"></div>';
+    container.innerHTML = '';
+
+    const widgetContainer = document.createElement('div');
+    widgetContainer.className = 'tradingview-widget-container__widget';
+    container.appendChild(widgetContainer);
 
     const tickers = selectedCoins.map(coin => `BINANCE:${coin.symbol}USDT`);
 
@@ -303,8 +325,14 @@ function TradingViewScreener({ selectedCoins }) {
       tickers: tickers
     });
 
-    container.appendChild(script);
-    return () => { if (container) container.innerHTML = ''; };
+    // Add a small delay to ensure the container is fully rendered
+    setTimeout(() => {
+      container.appendChild(script);
+    }, 100);
+
+    return () => {
+      if (container) container.innerHTML = '';
+    };
   }, [selectedCoins]);
 
   if (selectedCoins.length === 0) {
@@ -316,10 +344,10 @@ function TradingViewScreener({ selectedCoins }) {
   }
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16, minHeight: 550, overflow: "hidden" }}>
+    <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16, minHeight: 600, overflow: "hidden" }}>
       <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15 }}>Crypto Market Screener (USDT Pairs)</div>
       <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>Advanced screener showing selected USDT pairs with metrics like volume, market cap, and performance</p>
-      <div ref={ref} style={{ height: 490, overflow: "hidden" }} />
+      <div ref={ref} style={{ height: 540, width: "100%", overflow: "hidden" }} />
     </div>
   );
 }
@@ -461,7 +489,7 @@ function TradingViewTopCryptos({ selectedCoins }) {
 }
 
 export default function MarketOverview() {
-  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [activeView, setActiveView] = useState('overview'); // 'overview', 'screener', 'heatmap'
   const [selectedCoins, setSelectedCoins] = useState([]);
   const [availableCoins, setAvailableCoins] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -560,17 +588,26 @@ export default function MarketOverview() {
             {/* Toggle Button */}
             <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
               <button
-                onClick={() => setShowHeatmap(false)}
-                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${!showHeatmap
+                onClick={() => setActiveView('overview')}
+                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${activeView === 'overview'
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
                     : 'bg-transparent text-gray-700 hover:bg-gray-200'
                   }`}
               >
-                OverView
+                Overview
               </button>
               <button
-                onClick={() => setShowHeatmap(true)}
-                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${showHeatmap
+                onClick={() => setActiveView('screener')}
+                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${activeView === 'screener'
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
+                    : 'bg-transparent text-gray-700 hover:bg-gray-200'
+                  }`}
+              >
+                Screener
+              </button>
+              <button
+                onClick={() => setActiveView('heatmap')}
+                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${activeView === 'heatmap'
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
                     : 'bg-transparent text-gray-700 hover:bg-gray-200'
                   }`}
@@ -580,8 +617,8 @@ export default function MarketOverview() {
             </div>
           </div>
 
-          {/* Coin Filter - Only show in Standard View */}
-          {!showHeatmap && (
+          {/* Coin Filter - Show in Overview and Screener views */}
+          {(activeView === 'overview' || activeView === 'screener') && (
             <CoinFilter
               selectedCoins={selectedCoins.map(c => c.symbol)}
               onCoinToggle={handleCoinToggle}
@@ -592,19 +629,24 @@ export default function MarketOverview() {
             />
           )}
 
-          {/* Heatmap View - Hidden when not active */}
-          <div style={{ display: showHeatmap ? 'block' : 'none' }}>
-            <TradingViewHeatmap />
-          </div>
+          {/* Overview View */}
+          {activeView === 'overview' && (
+            <>
+              <TradingViewMarketOverview selectedCoins={selectedCoins} />
+              <TradingViewTopCryptos selectedCoins={selectedCoins} />
+              <TradingViewFullMarket />
+            </>
+          )}
 
-          {/* Standard View - Hidden when not active */}
-          <div style={{ display: !showHeatmap ? 'block' : 'none' }}>
-            <TradingViewMarketOverview selectedCoins={selectedCoins} />
-            <TradingViewTopCryptos selectedCoins={selectedCoins} />
+          {/* Screener View */}
+          {activeView === 'screener' && (
             <TradingViewScreener selectedCoins={selectedCoins} />
-            <TradingViewFullMarket />
-            <TradingViewCrossRates selectedCoins={selectedCoins} />
-          </div>
+          )}
+
+          {/* Heatmap View */}
+          {activeView === 'heatmap' && (
+            <TradingViewHeatmap />
+          )}
         </div>
       </main>
     </div>
