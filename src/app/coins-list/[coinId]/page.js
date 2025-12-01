@@ -229,6 +229,86 @@ function AISummaryCard({ title, data }) {
   );
 }
 
+/* Fundamental Analysis Display Component with Markdown Support */
+function FundamentalAnalysisCard({ data }) {
+  if (!data) {
+    return (
+      <div style={{
+        background: "#fff",
+        borderRadius: 12,
+        padding: 24,
+        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        marginTop: 16
+      }}>
+        <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 16 }}>🔍 Deep Fundamental Analysis</div>
+        <div style={{ fontSize: 13, color: "#6b7280" }}>No fundamental analysis available</div>
+      </div>
+    );
+  }
+
+  // Function to parse markdown-style bold text (**text**)
+  const parseMarkdown = (text) => {
+    if (!text || typeof text !== 'string') return text;
+
+    const parts = [];
+    let lastIndex = 0;
+    const boldRegex = /\*\*(.+?)\*\*/g;
+    let match;
+    let key = 0;
+
+    while ((match = boldRegex.exec(text)) !== null) {
+      // Add text before the bold part
+      if (match.index > lastIndex) {
+        parts.push(text.substring(lastIndex, match.index));
+      }
+      // Add the bold part
+      parts.push(
+        <strong key={`bold-${key++}`} style={{ fontWeight: 800, color: "#111" }}>
+          {match[1]}
+        </strong>
+      );
+      lastIndex = match.index + match[0].length;
+    }
+
+    // Add remaining text
+    if (lastIndex < text.length) {
+      parts.push(text.substring(lastIndex));
+    }
+
+    return parts.length > 0 ? parts : text;
+  };
+
+  return (
+    <div style={{
+      background: "#fff",
+      borderRadius: 12,
+      padding: 24,
+      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+      marginTop: 16
+    }}>
+      <div style={{
+        fontWeight: 800,
+        marginBottom: 20,
+        fontSize: 16,
+        paddingBottom: 12,
+        borderBottom: "2px solid #e5e7eb",
+        color: "#111"
+      }}>
+        🔍 Deep Fundamental Analysis
+      </div>
+      <div style={{
+        fontSize: 13.5,
+        color: "#374151",
+        lineHeight: 1.8,
+        whiteSpace: "pre-wrap",
+        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+      }}>
+        {parseMarkdown(data)}
+      </div>
+    </div>
+  );
+}
+
 export default function CoinDetail() {
   const params = useParams();
   const router = useRouter();
@@ -456,6 +536,7 @@ export default function CoinDetail() {
   const ai7 = aiSummary?.["7_days"] ?? aiSummary?.["7days"] ?? null;
   const ai24 = aiSummary?.["24_hours"] ?? aiSummary?.["24hours"] ?? null;
   const ai6 = aiSummary?.["6_hours"] ?? aiSummary?.["6hours"] ?? null;
+  const fundamentalAnalysis = coin?.fundamental_analysis ?? coin?.coin_summary ?? null;
 
   const priceChangeColor = binanceLive?.priceChangePercent >= 0 ? "#16a34a" : "#ef4444";
 
@@ -1227,12 +1308,8 @@ export default function CoinDetail() {
         </div>
       </div>
 
-      {/* AI Summaries - Three Timeframes */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16, marginTop: 16 }}>
-        <AISummaryCard title="AI Summary — 6 Hours" data={ai6} />
-        <AISummaryCard title="AI Summary — 24 Hours" data={ai24} />
-        <AISummaryCard title="AI Summary — 7 Days" data={ai7} />
-      </div>
+      {/* Fundamental Analysis - Single Column */}
+      <FundamentalAnalysisCard data={fundamentalAnalysis} />
     </div>
   );
 }

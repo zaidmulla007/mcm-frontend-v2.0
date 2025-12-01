@@ -3,6 +3,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  color-scheme: light only;
 }
 
 @theme inline {
@@ -12,11 +13,21 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Force light theme even if user prefers dark mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff;
+    --foreground: #171717;
+    color-scheme: light only;
   }
+}
+
+html {
+  color-scheme: light only;
+}
+
+html, body {
+  color-scheme: light only;
 }
 
 body {

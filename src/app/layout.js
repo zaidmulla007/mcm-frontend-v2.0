@@ -20,11 +20,15 @@ const geistMono = Geist_Mono({
 export const metadata = {
   title: "MCM",
   description: "MCM",
+  colorScheme: "light",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" style={{ colorScheme: "light" }}>
+      <head>
+        <meta name="color-scheme" content="light" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
