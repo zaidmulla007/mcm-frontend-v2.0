@@ -229,28 +229,29 @@ export default function ClientHeader() {
 
                     <div className="px-4 py-2 border-t border-gray-200 mt-2">
                       <div className="text-xs text-gray-900 mb-2">Timezone</div>
-                      <div className="flex gap-2">
+                      <div className="flex items-center gap-2">
+                        {!useLocalTime && (
+                          <span className="text-xs font-medium text-gray-700">
+                            UTC
+                          </span>
+                        )}
                         <button
-                          onClick={toggleTimezone}
-                          className={`text-xs px-2 py-1 rounded transition flex flex-col items-center ${useLocalTime
-                            ? 'bg-blue-100 text-blue-600'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                          onClick={() => toggleTimezone()}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
                             }`}
+                          role="switch"
+                          aria-checked={useLocalTime}
                         >
-                          <span>Local Time</span>
-                          {useLocalTime && userCity && (
-                            <span className="text-[10px] opacity-80 mt-0.5">{userCity}</span>
-                          )}
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
+                              }`}
+                          />
                         </button>
-                        <button
-                          onClick={toggleTimezone}
-                          className={`text-xs px-2 py-1 rounded transition ${!useLocalTime
-                            ? 'bg-blue-100 text-blue-600'
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                            }`}
-                        >
-                          Default UTC
-                        </button>
+                        {useLocalTime && (
+                          <span className="text-xs font-medium text-gray-700">
+                            {userCity || 'Local'}
+                          </span>
+                        )}
                       </div>
                     </div>
 
