@@ -572,7 +572,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                             src={coin.image_small || coin.image_thumb}
                                                             alt={coin.symbol}
                                                             className="w-14 h-14 rounded-full mb-2 cursor-pointer hover:opacity-80 transition-opacity"
-                                                            onClick={() => router.push('/coins')}
+                                                            onClick={() => router.push(`/coins-list/${coin.source_id}`)}
                                                             onError={(e) => {
                                                                 e.target.onerror = null;
                                                                 e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;

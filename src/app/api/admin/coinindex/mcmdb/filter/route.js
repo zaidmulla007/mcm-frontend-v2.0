@@ -4,16 +4,30 @@ export async function GET(request) {
   try {
     const url = new URL(request.url);
     const symbols = url.searchParams.get('symbols');
+    const coinindex = url.searchParams.get('coinindex');
+    const source_id = url.searchParams.get('source_id');
 
-    if (!symbols) {
+    // Build the external API URL with query parameters
+    const params = new URLSearchParams();
+    if (symbols) {
+      params.append('symbols', symbols);
+    }
+    if (coinindex) {
+      params.append('coinindex', coinindex);
+    }
+    if (source_id) {
+      params.append('source_id', source_id);
+    }
+
+    // If no parameters provided, return error
+    if (params.toString() === '') {
       return NextResponse.json(
-        { error: 'symbols parameter is required' },
+        { error: 'At least one query parameter is required (symbols, coinindex, or source_id)' },
         { status: 400 }
       );
     }
 
-    // Build the external API URL
-    const externalApiUrl = `http://37.27.120.45:5901/api/admin/coinindex/mcmdb/filter?symbols=${encodeURIComponent(symbols)}`;
+    const externalApiUrl = `http://37.27.120.45:5901/api/admin/coinindex/mcmdb/filter?${params.toString()}`;
 
     const response = await fetch(externalApiUrl, {
       method: 'GET',

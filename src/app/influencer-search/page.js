@@ -102,6 +102,7 @@ const formatRecommendations = (lastPostsData, livePrices = {}, volumeData = {}) 
             volume: volume,
             sentiment: sentiment,
             outlook: outlook,
+            mcm_source_id: coinData.mcm_source_id || null,
           };
         })
       };
@@ -186,7 +187,8 @@ const formatRecommendations = (lastPostsData, livePrices = {}, volumeData = {}) 
       volume: volume,
       title: post.title,
       type: post.type || "youtube",
-      channel_name: post.channel_name
+      channel_name: post.channel_name,
+      mcm_source_id: coinData.mcm_source_id || null
     };
   });
 
@@ -1985,7 +1987,15 @@ export default function InfluencerSearchPage() {
                                             <div className="w-[10%]" />
 
                                             {/* Coin Icon and Name */}
-                                            <div className="flex items-center justify-start gap-0.5 w-[6%] pl-2">
+                                            <div
+                                              className="flex items-center justify-start gap-0.5 w-[6%] pl-2 cursor-pointer hover:opacity-80 transition-opacity"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (coinData.mcm_source_id) {
+                                                  router.push(`/coins-list/${coinData.mcm_source_id}`);
+                                                }
+                                              }}
+                                            >
                                               <div className="flex items-center justify-center w-3">
                                                 {coinData.icon}
                                               </div>
@@ -2453,7 +2463,15 @@ export default function InfluencerSearchPage() {
                                           )}
                                         </div>
                                         {/* Coin Icon and Name */}
-                                        <div className="flex items-center justify-start gap-0.5 w-[6%] pl-2">
+                                        <div
+                                          className="flex items-center justify-start gap-0.5 w-[6%] pl-2 cursor-pointer hover:opacity-80 transition-opacity"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (rec.mcm_source_id) {
+                                              router.push(`/coins-list/${rec.mcm_source_id}`);
+                                            }
+                                          }}
+                                        >
                                           <div className="flex items-center justify-center w-3">
                                             {rec.icon}
                                           </div>

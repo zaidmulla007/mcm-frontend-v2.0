@@ -12,6 +12,7 @@ const navLinks = [
   // { name: "Top 10", href: "/influencer-search", icon: FaDrum },
   { name: "Latest Posts", href: "/influencer-search", icon: FaBullhorn },
   { name: "Trending Coins", href: "/coins", icon: FaCoins },
+  { name: "All Coins", href: "/coins-list", icon: FaCoins },
   { name: "Influencer's Stats", href: "/influencerssearch", icon: FaChartBar },
   { name: "Favorites", href: "/favorites", icon: FaStar },
   { name: "Market Overview", href: "/market-overview", icon: FaChartPie },
@@ -150,23 +151,38 @@ export default function ClientHeader() {
         </Link>
 
         {/* Navigation */}
-        <nav className="hidden md:flex gap-8 flex-1 justify-center">
-          {navLinks
-            .filter((link) => {
+        <nav className="hidden md:flex flex-col gap-2 flex-1 justify-center">
+          {(() => {
+            const filteredLinks = navLinks.filter((link) => {
               // Hide "Landing Page" (/home) when user is logged in
               if (link.href === "/home" && isLoggedIn) {
                 return false;
               }
               return true;
-            })
-            .map((link) => {
+            });
+
+            // Split links into two rows: first 5 in top row, rest in bottom row
+            const topRowLinks = filteredLinks.slice(0, 4);
+            const bottomRowLinks = filteredLinks.slice(4);
+
+            const renderLink = (link) => {
               // Special case for Leaderboard: make it active for influencer detail pages and /posts
               const isLeaderboardActive = link.href === "/influencer-search" &&
                 (pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/") || pathname === "/posts");
 
+              // Special case for All Coins: make it active for /coins-list and coin detail pages
+              const isAllCoinsActive = link.href === "/coins-list" &&
+                pathname.startsWith("/coins-list");
+
+              // Special case for Trending Coins: only active for exact /coins path, not /coins-list
+              const isTrendingCoinsActive = link.href === "/coins" &&
+                pathname === "/coins";
+
               const isActive = pathname === link.href ||
-                (link.href !== "/home" && pathname.startsWith(link.href)) ||
-                isLeaderboardActive;
+                (link.href !== "/home" && link.href !== "/coins" && pathname.startsWith(link.href)) ||
+                isLeaderboardActive ||
+                isAllCoinsActive ||
+                isTrendingCoinsActive;
               const IconComponent = link.icon;
 
               return (
@@ -182,7 +198,23 @@ export default function ClientHeader() {
                   {link.name}
                 </Link>
               );
-            })}
+            };
+
+            return (
+              <>
+                {/* Top row - max 5 links */}
+                <div className="flex gap-8 justify-center">
+                  {topRowLinks.map(renderLink)}
+                </div>
+                {/* Bottom row - remaining links */}
+                {bottomRowLinks.length > 0 && (
+                  <div className="flex gap-8 justify-center">
+                    {bottomRowLinks.map(renderLink)}
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </nav>
 
         {/* Auth Buttons */}

@@ -1577,6 +1577,7 @@ export default function Home() {
           <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-purple-100 to-transparent pointer-events-none"></div>
         </div>
 
+
         <div className="space-y-6 mt-4">
           {/* Top 3 Coins (3rd, 4th, 5th) - Horizontal Row with Drag & Drop */}
           <motion.div

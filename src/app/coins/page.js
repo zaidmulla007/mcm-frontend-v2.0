@@ -657,7 +657,8 @@ export default function CoinsPage() {
                                   <img
                                     src={coin.image_small}
                                     alt={coin.symbol}
-                                    className="w-10 h-10 rounded-full"
+                                    className="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+                                    onClick={() => router.push(`/coins-list/${coin.source_id}`)}
                                   />
                                   {/* Bell icon for coins exceeding price change threshold */}
                                   {showPriceAlert && (
