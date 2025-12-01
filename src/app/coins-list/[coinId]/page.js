@@ -246,6 +246,11 @@ function FundamentalAnalysisCard({ data }) {
     );
   }
 
+  // Extract first line as header and rest as content
+  const lines = data.split('\n');
+  const header = lines[0] || '🔍 Deep Fundamental Analysis';
+  const content = lines.slice(1).join('\n').trim();
+
   // Function to parse markdown-style bold text (**text**)
   const parseMarkdown = (text) => {
     if (!text || typeof text !== 'string') return text;
@@ -294,7 +299,7 @@ function FundamentalAnalysisCard({ data }) {
         borderBottom: "2px solid #e5e7eb",
         color: "#111"
       }}>
-        🔍 Deep Fundamental Analysis
+        {header}
       </div>
       <div style={{
         fontSize: 13.5,
@@ -303,7 +308,7 @@ function FundamentalAnalysisCard({ data }) {
         whiteSpace: "pre-wrap",
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
       }}>
-        {parseMarkdown(data)}
+        {parseMarkdown(content)}
       </div>
     </div>
   );
