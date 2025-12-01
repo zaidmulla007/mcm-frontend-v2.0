@@ -300,6 +300,7 @@ function TradingViewScreener({ selectedCoins }) {
 
   useEffect(() => {
     if (!ref.current || selectedCoins.length === 0) return;
+
     const container = ref.current;
     container.innerHTML = '';
 

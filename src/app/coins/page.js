@@ -436,31 +436,28 @@ export default function CoinsPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setSelectedSummaryTimeframe("6hrs")}
-                      className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
-                        selectedSummaryTimeframe === "6hrs"
-                          ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
+                      className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${selectedSummaryTimeframe === "6hrs"
+                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
                     >
                       6 Hours
                     </button>
                     <button
                       onClick={() => setSelectedSummaryTimeframe("24hrs")}
-                      className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
-                        selectedSummaryTimeframe === "24hrs"
-                          ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
+                      className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${selectedSummaryTimeframe === "24hrs"
+                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
                     >
                       24 Hours
                     </button>
                     <button
                       onClick={() => setSelectedSummaryTimeframe("7days")}
-                      className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${
-                        selectedSummaryTimeframe === "7days"
-                          ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
+                      className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${selectedSummaryTimeframe === "7days"
+                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
                     >
                       7 Days
                     </button>
@@ -700,65 +697,76 @@ export default function CoinsPage() {
 
                           {/* Sentiment - All 4 sentiments stacked vertically */}
                           <td className="pl-2 pr-0.5 py-3">
-                            <div className="flex flex-col items-start gap-1">
-                              {/* ST Bullish */}
+                            <div className="flex flex-col items-start gap-2">
+
+                              {/* Bullish ST */}
                               {coin.yt_tg_bullish_short_term > 0 && (
-                                <div className="flex items-center gap-1">
-                                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-green-100 text-green-700">
-                                    <div className="flex items-center gap-0.5">
-                                      <FaArrowUp className="text-[6px]" />
-                                      <span className="text-[6px] font-semibold">ST</span>
-                                    </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                  {/* Pill */}
+                                  <div className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-semibold">
+                                    Bullish ST
                                   </div>
-                                  <span className="text-[10px] text-black-600 min-w-[45px]">
-                                    {coin.yt_tg_bullish_short_term} {coin.yt_tg_bullish_short_term === 1 ? "post" : "posts"}
+
+                                  {/* Posts (centered) */}
+                                  <span className="text-[10px] text-black-500 text-center">
+                                    {coin.yt_tg_bullish_short_term}{" "}
+                                    {coin.yt_tg_bullish_short_term === 1 ? "post" : "posts"}
                                   </span>
                                 </div>
                               )}
-                              {/* ST Bearish */}
+
+                              {/* Bearish ST */}
                               {coin.yt_tg_bearish_short_term > 0 && (
-                                <div className="flex items-center gap-1">
-                                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-red-100 text-red-700">
-                                    <div className="flex items-center gap-0.5">
-                                      <FaArrowDown className="text-[6px]" />
-                                      <span className="text-[6px] font-semibold">ST</span>
-                                    </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                  {/* Pill */}
+                                  <div className="px-2 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-semibold">
+                                    Bearish ST
                                   </div>
-                                  <span className="text-[10px] text-black-600 min-w-[45px]">
-                                    {coin.yt_tg_bearish_short_term} {coin.yt_tg_bearish_short_term === 1 ? "post" : "posts"}
+
+                                  {/* Posts (centered) */}
+                                  <span className="text-[10px] text-black-500 text-center">
+                                    {coin.yt_tg_bearish_short_term}{" "}
+                                    {coin.yt_tg_bearish_short_term === 1 ? "post" : "posts"}
                                   </span>
                                 </div>
                               )}
-                              {/* LT Bullish */}
+
+                              {/* Bullish LT */}
                               {coin.yt_tg_bullish_long_term > 0 && (
-                                <div className="flex items-center gap-1">
-                                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-green-100 text-green-700">
-                                    <div className="flex items-center gap-0.5">
-                                      <FaArrowUp className="text-[6px]" />
-                                      <span className="text-[6px] font-semibold">LT</span>
-                                    </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                  {/* Pill */}
+                                  <div className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-semibold">
+                                    Bullish LT
                                   </div>
-                                  <span className="text-[10px] text-black-600 min-w-[45px]">
-                                    {coin.yt_tg_bullish_long_term} {coin.yt_tg_bullish_long_term === 1 ? "post" : "posts"}
+
+                                  {/* Posts (centered) */}
+                                  <span className="text-[10px] text-black-500 text-center">
+                                    {coin.yt_tg_bullish_long_term}{" "}
+                                    {coin.yt_tg_bullish_long_term === 1 ? "post" : "posts"}
                                   </span>
                                 </div>
                               )}
-                              {/* LT Bearish */}
+
+                              {/* Bearish LT */}
                               {coin.yt_tg_bearish_long_term > 0 && (
-                                <div className="flex items-center gap-1">
-                                  <div className="w-6 h-6 rounded-full flex items-center justify-center bg-red-100 text-red-700">
-                                    <div className="flex items-center gap-0.5">
-                                      <FaArrowDown className="text-[6px]" />
-                                      <span className="text-[6px] font-semibold">LT</span>
-                                    </div>
+                                <div className="flex flex-col items-center gap-0.5">
+                                  {/* Pill */}
+                                  <div className="px-2 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-semibold">
+                                    Bearish LT
                                   </div>
-                                  <span className="text-[10px] text-black-600 min-w-[45px]">
-                                    {coin.yt_tg_bearish_long_term} {coin.yt_tg_bearish_long_term === 1 ? "post" : "posts"}
+
+                                  {/* Posts (centered) */}
+                                  <span className="text-[10px] text-black-500 text-center">
+                                    {coin.yt_tg_bearish_long_term}{" "}
+                                    {coin.yt_tg_bearish_long_term === 1 ? "post" : "posts"}
                                   </span>
                                 </div>
                               )}
+
                             </div>
                           </td>
+
+
 
                           {/* Publish Price + Price Change % */}
                           <td className="pl-0.5 pr-2 py-3">

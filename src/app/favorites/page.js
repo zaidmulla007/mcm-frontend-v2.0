@@ -2,31 +2,75 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { FaArrowLeft, FaYoutube, FaGlobe, FaHeart } from "react-icons/fa";
+import { FaArrowLeft, FaYoutube, FaGlobe, FaHeart, FaUsers, FaCoins } from "react-icons/fa";
 import { FaTelegram } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { useFavorites } from "../contexts/FavoritesContext";
 
-const platforms = [
+// Dummy coins data
+const dummyCoinsData = [
   {
-    label: "Overall",
-    value: "overall",
-    logo: <FaGlobe className="text-xl" />
+    id: "bitcoin",
+    name: "Bitcoin",
+    symbol: "BTC",
+    image: "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png",
+    current_price: 43250.50,
+    price_change_24h: 2.5,
+    market_cap: 845000000000,
   },
   {
-    label: "YouTube",
-    value: "youtube",
-    logo: <FaYoutube className="text-xl" />
+    id: "ethereum",
+    name: "Ethereum",
+    symbol: "ETH",
+    image: "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png",
+    current_price: 2280.75,
+    price_change_24h: -1.3,
+    market_cap: 274000000000,
   },
   {
-    label: "Telegram",
-    value: "telegram",
-    logo: <FaTelegram className="text-xl" />
+    id: "solana",
+    name: "Solana",
+    symbol: "SOL",
+    image: "https://coin-images.coingecko.com/coins/images/4128/large/solana.png",
+    current_price: 98.45,
+    price_change_24h: 5.8,
+    market_cap: 43000000000,
+  },
+  {
+    id: "cardano",
+    name: "Cardano",
+    symbol: "ADA",
+    image: "https://coin-images.coingecko.com/coins/images/975/large/cardano.png",
+    current_price: 0.52,
+    price_change_24h: -0.5,
+    market_cap: 18000000000,
+  },
+  {
+    id: "ripple",
+    name: "XRP",
+    symbol: "XRP",
+    image: "https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png",
+    current_price: 0.61,
+    price_change_24h: 3.2,
+    market_cap: 33000000000,
+  },
+];
+
+const tabs = [
+  {
+    label: "Influencers",
+    value: "influencers",
+    icon: <FaUsers className="text-xl" />
+  },
+  {
+    label: "Coins",
+    value: "coins",
+    icon: <FaCoins className="text-xl" />
   },
 ];
 
 export default function FavoritesPage() {
-  const [selectedPlatform, setSelectedPlatform] = useState("overall");
+  const [activeTab, setActiveTab] = useState("influencers");
   const [favoritesData, setFavoritesData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -79,18 +123,9 @@ export default function FavoritesPage() {
   }
 
   const getFilteredData = () => {
-    // Filter favorites based on selected platform
-    let filtered = favoritesData;
-
-    if (selectedPlatform === "youtube") {
-      filtered = favoritesData.filter(fav => fav.medium === "YOUTUBE");
-    } else if (selectedPlatform === "telegram") {
-      filtered = favoritesData.filter(fav => fav.medium === "TELEGRAM");
-    }
-    // "overall" shows all favorites (no filtering)
-
+    // Show all favorites (no platform filtering)
     // Filter out favorites without channel data and transform
-    return filtered
+    return favoritesData
       .filter(fav => fav.channel && fav.channel.length > 0) // Only include favorites with channel data
       .map(fav => {
         const channelData = fav.channel[0];
@@ -164,10 +199,10 @@ export default function FavoritesPage() {
     return pages;
   };
 
-  // Reset to page 1 when platform changes
+  // Reset to page 1 when tab changes
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedPlatform]);
+  }, [activeTab]);
 
   // Handle remove from favorites
   const handleRemoveFavorite = async (channelId, medium) => {
@@ -234,65 +269,64 @@ export default function FavoritesPage() {
   return (
     <div className="min-h-screen bg-white text-gray-900 font-sans pb-16">
       <div className="max-w-5xl mx-auto px-4">
-        <Link
+        {/* <Link
           href="/profile"
           className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 mb-6 transition pt-8"
         >
           <FaArrowLeft />
           <span>Back to Profile</span>
-        </Link>
+        </Link> */}
 
         <section className="pt-8 pb-6 flex flex-col items-center gap-6">
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight bg-gradient-to-r from-purple-600 via-pink-500 to-blue-600 bg-clip-text text-transparent text-center">
+          <h1 className="text-4xl md:text-5xl font-bold leading-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-center">
             My Favorites
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl text-center">
-            Your favorite crypto influencers in one place
-          </p>
         </section>
 
-        {/* Platform Toggle */}
+        {/* Tabs Toggle */}
         <section className="max-w-5xl mx-auto px-4 pb-6">
           <div className="flex justify-center gap-3">
-            {platforms.map((platform) => (
+            {tabs.map((tab) => (
               <button
-                key={platform.value}
-                onClick={() => setSelectedPlatform(platform.value)}
+                key={tab.value}
+                onClick={() => setActiveTab(tab.value)}
                 className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${
-                  selectedPlatform === platform.value
+                  activeTab === tab.value
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
                     : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
                 }`}
               >
-                {platform.logo}
-                <span>{platform.label}</span>
+                {tab.icon}
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>
         </section>
 
         <section className="max-w-5xl mx-auto">
-          {loading ? (
-            <div className="text-center text-gray-500 py-8">
-              Loading influencers...
-            </div>
-          ) : error ? (
-            <div className="text-center text-red-600 py-8">{error}</div>
-          ) : filteredData.length > 0 ? (
-            <>
-              {/* Table View */}
-              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-                      <tr>
-                        <th className="px-6 py-4 text-left text-sm font-semibold">Influencer Icon</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold">Influencer Name</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold">Platform</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold">Channel URL</th>
-                        <th className="px-6 py-4 text-center text-sm font-semibold">Details</th>
-                      </tr>
-                    </thead>
+          {activeTab === "influencers" ? (
+            // Influencers Tab Content
+            loading ? (
+              <div className="text-center text-gray-500 py-8">
+                Loading influencers...
+              </div>
+            ) : error ? (
+              <div className="text-center text-red-600 py-8">{error}</div>
+            ) : filteredData.length > 0 ? (
+              <>
+                {/* Influencers Table View */}
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-sm font-semibold">Influencer Icon</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold">Influencer Name</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold">Platform</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold">Channel URL</th>
+                          <th className="px-6 py-4 text-center text-sm font-semibold">Details</th>
+                        </tr>
+                      </thead>
                     <tbody className="divide-y divide-gray-200">
                       {visibleInfluencers.map((inf, index) => (
                         <tr
@@ -390,8 +424,8 @@ export default function FavoritesPage() {
                 </div>
               </div>
 
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
               <div className="flex flex-col items-center mt-8 space-y-4">
                 {/* Pagination Info */}
                 <div className="text-sm text-gray-700 text-center">
@@ -553,14 +587,121 @@ export default function FavoritesPage() {
                   </button>
                 </div>
               </div>
-            )}
-          </>
+              )}
+            </>
+            ) : (
+              <div className="text-center text-gray-500 py-16">
+                No favorites found
+              </div>
+            )
           ) : (
-            <div className="text-center text-gray-500 py-16">
-              {selectedPlatform === "telegram"
-                ? "Telegram favorites"
-                : "No favorites found"}
-            </div>
+            // Coins Tab Content
+            <>
+              {/* Coins Table View */}
+              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                      <tr>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Coin Icon</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Coin Name</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Symbol</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">Current Price</th>
+                        <th className="px-6 py-4 text-left text-sm font-semibold">24h Change</th>
+                        <th className="px-6 py-4 text-center text-sm font-semibold">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {dummyCoinsData.map((coin, index) => (
+                        <tr
+                          key={coin.id}
+                          className={`hover:bg-gray-50 transition-colors ${
+                            index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                          }`}
+                        >
+                          {/* Coin Image */}
+                          <td className="px-6 py-4">
+                            <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
+                              <Image
+                                src={coin.image}
+                                alt={coin.name}
+                                width={48}
+                                height={48}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          </td>
+
+                          {/* Coin Name */}
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-semibold text-gray-900">
+                              {coin.name}
+                            </div>
+                          </td>
+
+                          {/* Symbol */}
+                          <td className="px-6 py-4">
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                              {coin.symbol}
+                            </span>
+                          </td>
+
+                          {/* Current Price */}
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-semibold text-gray-900">
+                              ${coin.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </div>
+                          </td>
+
+                          {/* 24h Change */}
+                          <td className="px-6 py-4">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                              coin.price_change_24h >= 0
+                                ? "bg-green-100 text-green-700"
+                                : "bg-red-100 text-red-700"
+                            }`}>
+                              {coin.price_change_24h >= 0 ? '+' : ''}{coin.price_change_24h.toFixed(2)}%
+                            </span>
+                          </td>
+
+                          {/* Action Buttons */}
+                          <td className="px-6 py-4">
+                            <div className="flex items-center justify-center gap-3">
+                              <Link
+                                href={`/coins/${coin.id}`}
+                                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                              >
+                                View Details
+                              </Link>
+                              <button
+                                onClick={() => {
+                                  Swal.fire({
+                                    title: 'Remove from Favorites?',
+                                    text: `Remove ${coin.name} from favorites?`,
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonText: 'Yes, remove it',
+                                    cancelButtonText: 'No, keep it',
+                                    background: '#ffffff',
+                                    color: '#1f2937',
+                                    confirmButtonColor: '#ef4444',
+                                    cancelButtonColor: '#8b5cf6',
+                                  });
+                                }}
+                                className="p-2 rounded-lg hover:bg-red-50 transition-all duration-200 group"
+                                aria-label="Remove from favorites"
+                              >
+                                <FaHeart className="text-red-500 text-xl group-hover:scale-110 transition-transform" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           )}
         </section>
       </div>

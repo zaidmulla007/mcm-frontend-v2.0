@@ -1311,41 +1311,31 @@ export default function Home() {
               <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mt-5"></div>
             </div>
 
-            {/* Right: Timezone and Update Info */}
-            {/* <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded border border-blue-200 p-1.5 min-w-[160px]">
-              <div className="flex flex-col gap-1">
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => toggleTimezone()}
-                    className={`px-1.5 py-0.5 text-[9px] rounded transition-all flex-1 ${!useLocalTime
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-white'
-                      : 'text-gray-700'
-                      }`}
-                  >
-                    UTC
-                  </button>
-                  <button
-                    onClick={() => toggleTimezone()}
-                    className={`px-1.5 py-0.5 text-[9px] rounded transition-all flex-1 ${useLocalTime
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-white'
-                      : 'text-gray-700'
-                      }`}
-                  >
-                    Local Time
-                  </button>
-                </div>
-                <div className="text-[9px] leading-tight">
-                  <div className="bg-white/40 rounded p-1 mb-0.5">
-                    <div className="font-semibold mb-0.5">Last Updated:</div>
-                    <div>{lastUpdated ? formatDate(lastUpdated) : "Loading..."}</div>
-                  </div>
-                  <div className="bg-white/40 rounded p-1">
-                    <div className="font-semibold mb-0.5">Next Update:</div>
-                    <div>{nextUpdate ? formatDate(nextUpdate) : "Loading..."}</div>
-                  </div>
-                </div>
-              </div>
-            </div> */}
+            {/* Right: Timezone Switch */}
+            <div className="flex items-center gap-2 mt-2">
+              {!useLocalTime && (
+                <span className="text-xs font-medium text-black-700">
+                  UTC
+                </span>
+              )}
+              <button
+                onClick={() => toggleTimezone()}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
+                  }`}
+                role="switch"
+                aria-checked={useLocalTime}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
+                    }`}
+                />
+              </button>
+              {useLocalTime && (
+                <span className="text-xs font-medium text-black-700">
+                  {Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop().replace(/_/g, ' ') || 'Local'}
+                </span>
+              )}
+            </div>
           </div>
 
           <YouTubeTelegramDataTable useLocalTime={useLocalTime} />
