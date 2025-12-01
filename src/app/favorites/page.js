@@ -278,7 +278,7 @@ export default function FavoritesPage() {
         </Link> */}
 
         <section className="pt-8 pb-6 flex flex-col items-center gap-6">
-          <h1 className="text-4xl md:text-5xl font-bold leading-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent text-center">
+          <h1 className="text-lg md:text-2xl font-bold leading-tight bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent text-center">
             My Favorites
           </h1>
         </section>
@@ -292,7 +292,7 @@ export default function FavoritesPage() {
                 onClick={() => setActiveTab(tab.value)}
                 className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${
                   activeTab === tab.value
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg scale-105'
+                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105'
                     : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
                 }`}
               >
@@ -318,7 +318,7 @@ export default function FavoritesPage() {
                 <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                      <thead className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
                         <tr>
                           <th className="px-6 py-4 text-left text-sm font-semibold">Influencer Icon</th>
                           <th className="px-6 py-4 text-left text-sm font-semibold">Influencer Name</th>
@@ -601,7 +601,7 @@ export default function FavoritesPage() {
               <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gradient-to-r from-purple-600 to-blue-600 text-white">
+                    <thead className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
                       <tr>
                         <th className="px-6 py-4 text-left text-sm font-semibold">Coin Icon</th>
                         <th className="px-6 py-4 text-left text-sm font-semibold">Coin Name</th>
