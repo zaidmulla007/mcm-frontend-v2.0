@@ -675,7 +675,7 @@ export default function YouTubeTelegramInfluencers() {
                                     </div>
 
                                     {/* Post Summary */}
-                                    <div className="p-3 border-b border-gray-700 h-35">
+                                    <div className="p-3 border-b border-gray-700">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="font-bold text-xs text-black">Post Summary</span>
                                             <button
@@ -686,7 +686,7 @@ export default function YouTubeTelegramInfluencers() {
                                             </button>
                                         </div>
 
-                                        <div className="min-h-[96px] mb-2">
+                                        <div className="mb-2">
                                             <div
                                                 className={`text-xs text-black leading-tight transition-all duration-300 ${expandedSummaries[post.id] ? '' : 'line-clamp-4'
                                                     }`}
