@@ -7,8 +7,16 @@ export default function RootPage() {
   const router = useRouter();
 
   useEffect(() => {
-    // Redirect to /home on mount
-    router.push("/home");
+    // Check if user is logged in by checking userData in localStorage
+    const userData = localStorage.getItem('userData');
+
+    if (userData) {
+      // User is logged in, redirect to /landing-page
+      router.push("/landing-page");
+    } else {
+      // User is not logged in, redirect to /home
+      router.push("/home");
+    }
   }, [router]);
 
   return (
