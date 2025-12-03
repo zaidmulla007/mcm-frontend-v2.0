@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { FaArrowUp, FaArrowDown, FaBell } from "react-icons/fa";
+import { FaArrowUp, FaArrowDown, FaBell, FaYoutube, FaTelegramPlane } from "react-icons/fa";
 import { useCoinsLivePrice } from "@/hooks/useCoinsLivePrice";
 import { useTimezone } from "../contexts/TimezoneContext";
 import ReactMarkdown from "react-markdown";
@@ -15,6 +15,7 @@ export default function CoinsPage() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const [expandedSummaries, setExpandedSummaries] = useState({}); // Track expanded state for each coin and timeframe
   const [selectedSummaryTimeframe, setSelectedSummaryTimeframe] = useState("6hrs"); // 6hrs, 24hrs, or 7days
+  const [influencerModal, setInfluencerModal] = useState({ isOpen: false, type: '', influencers: {}, coinName: '', position: { x: 0, y: 0 } });
 
   // Use timezone context for local/UTC time switching
   const { formatDate, useLocalTime, toggleTimezone, userTimezone } = useTimezone();
@@ -570,6 +571,24 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
+                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
+                      <div className="flex flex-col items-center">
+                        <span>TA</span>
+                        <div className="flex items-center gap-1">
+                          <span className="relative group cursor-pointer z-[9999]">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999] text-left">
+                              Technical Analysis:
+                              We calculate all MA indicators (SMA & EMA for 5,10,20,50,100,200)
+                              <br />
+                              and all oscillator indicators (RSI, Stochastic, CCI, ADX, MACD, AO, Momentum, Williams %R, BullBear).
+                              <br />
+                              Each indicator gives a BUY/SELL/NEUTRAL vote, and we simply total how many votes fall into each category.
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </th>
                     <th
                       colSpan="2"
                       className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider"
@@ -611,7 +630,7 @@ export default function CoinsPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan="10" className="px-6 py-12 text-center">
+                      <td colSpan="11" className="px-6 py-12 text-center">
                         <div className="flex justify-center items-center">
                           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                         </div>
@@ -619,13 +638,13 @@ export default function CoinsPage() {
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan="10" className="px-6 py-12 text-center text-red-600">
+                      <td colSpan="11" className="px-6 py-12 text-center text-red-600">
                         {error}
                       </td>
                     </tr>
                   ) : top10Coins.length === 0 ? (
                     <tr>
-                      <td colSpan="10" className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan="11" className="px-6 py-12 text-center text-gray-500">
                         No coins data available for this timeframe
                       </td>
                     </tr>
@@ -676,7 +695,7 @@ export default function CoinsPage() {
                               )}
                               <div className="text-center">
                                 <div className="flex items-center justify-center gap-1">
-                                  <div className="text-xs font-bold text-balck-900">{coin.symbol}</div>
+                                  <div className="text-xs font-bold text-balck-900"> {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}</div>
                                   {coin.mem_coin === true && (
                                     <span className="relative group cursor-pointer z-[9999]">
                                       <span className="text-blue-600 text-xs">ⓘ</span>
@@ -692,75 +711,111 @@ export default function CoinsPage() {
                                 <div className="text-[10px] font-semibold text-black-900 mt-1">
                                   {coin.total_mentions} posts
                                 </div>
+
+                                {/* YouTube Influencer Count */}
+                                {coin.yt_unique_influencers_count > 0 && (
+                                  <div
+                                    className="cursor-pointer mt-1"
+                                    onClick={(e) => {
+                                      if (coin.yt_unique_names && Object.keys(coin.yt_unique_names).length > 0) {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        setInfluencerModal({
+                                          isOpen: true,
+                                          type: 'YouTube',
+                                          influencers: coin.yt_unique_names,
+                                          // coinName: coin.coin_name,
+                                          position: { x: rect.right + 10, y: rect.top }
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    <div className="text-[10px] text-red-600 font-semibold flex items-center justify-center gap-1 hover:text-red-700 transition-colors">
+                                      <FaYoutube className="text-xs" />
+                                      <span>{coin.yt_unique_influencers_count} YT</span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {/* Telegram Influencer Count */}
+                                {coin.tg_unique_influencers_count > 0 && (
+                                  <div
+                                    className="cursor-pointer mt-1"
+                                    onClick={(e) => {
+                                      if (coin.tg_unique_names && Object.keys(coin.tg_unique_names).length > 0) {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        setInfluencerModal({
+                                          isOpen: true,
+                                          type: 'Telegram',
+                                          influencers: coin.tg_unique_names,
+                                          // coinName: coin.coin_name,
+                                          position: { x: rect.right + 10, y: rect.top }
+                                        });
+                                      }
+                                    }}
+                                  >
+                                    <div className="text-[10px] text-blue-600 font-semibold flex items-center justify-center gap-1 hover:text-blue-700 transition-colors">
+                                      <FaTelegramPlane className="text-xs" />
+                                      <span>{coin.tg_unique_influencers_count} TG</span>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </td>
 
-                          {/* Sentiment - All 4 sentiments stacked vertically */}
+                          {/* Sentiment - Bullish and Bearish */}
                           <td className="pl-2 pr-0.5 py-3">
                             <div className="flex flex-col items-start gap-2">
 
-                              {/* Bullish ST */}
-                              {coin.yt_tg_bullish_short_term > 0 && (
-                                <div className="flex flex-col items-center gap-0.5">
+                              {/* Bullish - Show if either ST or LT exists */}
+                              {(coin.yt_tg_bullish_short_term > 0 || coin.yt_tg_bullish_long_term > 0) && (
+                                <div className="relative group cursor-pointer">
                                   {/* Pill */}
                                   <div className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-semibold">
-                                    Bullish ST
+                                    Bullish
                                   </div>
 
-                                  {/* Posts (centered) */}
-                                  <span className="text-[10px] text-black-500 text-center">
-                                    {coin.yt_tg_bullish_short_term}{" "}
-                                    {coin.yt_tg_bullish_short_term === 1 ? "post" : "posts"}
-                                  </span>
+                                  {/* Tooltip with ST and LT counts */}
+                                  <div className="invisible group-hover:visible absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-2 rounded shadow-xl z-[9999] min-w-[130px]">
+                                    {coin.yt_tg_bullish_short_term > 0 && (
+                                      <div className="text-[10px] mb-1">
+                                        <span className="font-semibold">Short Term:</span> {coin.yt_tg_bullish_short_term}{" "}
+                                        {coin.yt_tg_bullish_short_term === 1 ? "post" : "posts"}
+                                      </div>
+                                    )}
+                                    {coin.yt_tg_bullish_long_term > 0 && (
+                                      <div className="text-[10px]">
+                                        <span className="font-semibold">Long Term:</span> {coin.yt_tg_bullish_long_term}{" "}
+                                        {coin.yt_tg_bullish_long_term === 1 ? "post" : "posts"}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               )}
 
-                              {/* Bearish ST */}
-                              {coin.yt_tg_bearish_short_term > 0 && (
-                                <div className="flex flex-col items-center gap-0.5">
+                              {/* Bearish - Show if either ST or LT exists */}
+                              {(coin.yt_tg_bearish_short_term > 0 || coin.yt_tg_bearish_long_term > 0) && (
+                                <div className="relative group cursor-pointer">
                                   {/* Pill */}
                                   <div className="px-2 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-semibold">
-                                    Bearish ST
+                                    Bearish
                                   </div>
 
-                                  {/* Posts (centered) */}
-                                  <span className="text-[10px] text-black-500 text-center">
-                                    {coin.yt_tg_bearish_short_term}{" "}
-                                    {coin.yt_tg_bearish_short_term === 1 ? "post" : "posts"}
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* Bullish LT */}
-                              {coin.yt_tg_bullish_long_term > 0 && (
-                                <div className="flex flex-col items-center gap-0.5">
-                                  {/* Pill */}
-                                  <div className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-semibold">
-                                    Bullish LT
+                                  {/* Tooltip with ST and LT counts */}
+                                  <div className="invisible group-hover:visible absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-2 rounded shadow-xl z-[9999] min-w-[130px]">
+                                    {coin.yt_tg_bearish_short_term > 0 && (
+                                      <div className="text-[10px] mb-1">
+                                        <span className="font-semibold">Short Term:</span> {coin.yt_tg_bearish_short_term}{" "}
+                                        {coin.yt_tg_bearish_short_term === 1 ? "post" : "posts"}
+                                      </div>
+                                    )}
+                                    {coin.yt_tg_bearish_long_term > 0 && (
+                                      <div className="text-[10px]">
+                                        <span className="font-semibold">Long Term:</span> {coin.yt_tg_bearish_long_term}{" "}
+                                        {coin.yt_tg_bearish_long_term === 1 ? "post" : "posts"}
+                                      </div>
+                                    )}
                                   </div>
-
-                                  {/* Posts (centered) */}
-                                  <span className="text-[10px] text-black-500 text-center">
-                                    {coin.yt_tg_bullish_long_term}{" "}
-                                    {coin.yt_tg_bullish_long_term === 1 ? "post" : "posts"}
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* Bearish LT */}
-                              {coin.yt_tg_bearish_long_term > 0 && (
-                                <div className="flex flex-col items-center gap-0.5">
-                                  {/* Pill */}
-                                  <div className="px-2 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-semibold">
-                                    Bearish LT
-                                  </div>
-
-                                  {/* Posts (centered) */}
-                                  <span className="text-[10px] text-black-500 text-center">
-                                    {coin.yt_tg_bearish_long_term}{" "}
-                                    {coin.yt_tg_bearish_long_term === 1 ? "post" : "posts"}
-                                  </span>
                                 </div>
                               )}
 
@@ -879,6 +934,41 @@ export default function CoinsPage() {
                             })()}
                           </td>
 
+                          {/* TA (Technical Analysis) Column */}
+                          <td className="px-2 py-3 text-center">
+                            {(() => {
+                              // Get TA data from coin object
+                              const taData = coin?.TA_data?.total_counts;
+
+                              // Debug logging
+                              if (index === 0) {
+                                console.log('Coin TA_data:', coin?.TA_data);
+                                console.log('Total counts:', taData);
+                              }
+
+                              if (taData && (taData.BUY !== undefined || taData.NEUTRAL !== undefined || taData.SELL !== undefined)) {
+                                return (
+                                  <div className="flex flex-col gap-0.5">
+                                    <div className="flex items-center justify-center gap-1">
+                                      <span className="text-[9px] font-semibold text-green-600">BUY:</span>
+                                      <span className="text-[9px] font-bold text-green-700">{taData.BUY || 0}</span>
+                                    </div>
+                                    <div className="flex items-center justify-center gap-1">
+                                      <span className="text-[9px] font-semibold text-gray-600">NEUTRAL:</span>
+                                      <span className="text-[9px] font-bold text-gray-700">{taData.NEUTRAL || 0}</span>
+                                    </div>
+                                    <div className="flex items-center justify-center gap-1">
+                                      <span className="text-[9px] font-semibold text-red-600">SELL:</span>
+                                      <span className="text-[9px] font-bold text-red-700">{taData.SELL || 0}</span>
+                                    </div>
+                                  </div>
+                                );
+                              }
+
+                              return <span className="text-[10px] font-semibold text-gray-500">N/A</span>;
+                            })()}
+                          </td>
+
                           {/* Coin Info Column */}
                           <td className="px-2 py-3 text-left align-top w-[40%]">
                             <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
@@ -958,6 +1048,69 @@ export default function CoinsPage() {
           </div>
         </div>
       </main>
+
+      {/* Influencer Popup */}
+      {influencerModal.isOpen && (
+        <>
+          {/* Transparent overlay to close on click */}
+          <div
+            className="fixed inset-0 z-[9999]"
+            onClick={() => setInfluencerModal({ isOpen: false, type: '', influencers: {}, coinName: '', position: { x: 0, y: 0 } })}
+          />
+
+          {/* Popup positioned near clicked element */}
+          <div
+            className="fixed z-[10000] bg-gray-800 text-white rounded-lg shadow-2xl p-3 w-[250px] max-h-[400px] overflow-hidden flex flex-col"
+            style={{
+              left: `${influencerModal.position.x}px`,
+              top: `${influencerModal.position.y}px`,
+            }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-600">
+              <h3 className="text-xs font-bold flex items-center gap-1.5">
+                {influencerModal.type === 'YouTube' ? (
+                  <FaYoutube className="text-red-500 text-xs" />
+                ) : (
+                  <FaTelegramPlane className="text-blue-400 text-xs" />
+                )}
+                {influencerModal.type} Influencers
+              </h3>
+              <button
+                onClick={() => setInfluencerModal({ isOpen: false, type: '', influencers: {}, coinName: '', position: { x: 0, y: 0 } })}
+                className="text-gray-400 hover:text-white text-lg leading-none"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Coin Name */}
+            <div className="mb-2 text-[10px] text-gray-300">
+              <span className="font-semibold text-white">{influencerModal.coinName}</span>
+            </div>
+
+            {/* Influencer List */}
+            <div className="overflow-y-auto flex-1 pr-1" style={{ scrollbarWidth: 'thin' }}>
+              <div className="space-y-1">
+                {Object.entries(influencerModal.influencers).map(([channelId, name]) => (
+                  <div
+                    key={channelId}
+                    className="text-[10px] py-1 text-gray-200 hover:text-white cursor-pointer hover:bg-gray-700 px-1 rounded transition-colors"
+                    onClick={() => {
+                      const route = influencerModal.type === 'YouTube'
+                        ? `/influencers/${channelId}`
+                        : `/telegram-influencer/${channelId}`;
+                      router.push(route);
+                    }}
+                  >
+                    • {name}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

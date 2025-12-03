@@ -7,55 +7,6 @@ import { FaTelegram } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { useFavorites } from "../contexts/FavoritesContext";
 
-// Dummy coins data
-const dummyCoinsData = [
-  {
-    id: "bitcoin",
-    name: "Bitcoin",
-    symbol: "BTC",
-    image: "https://coin-images.coingecko.com/coins/images/1/large/bitcoin.png",
-    current_price: 43250.50,
-    price_change_24h: 2.5,
-    market_cap: 845000000000,
-  },
-  {
-    id: "ethereum",
-    name: "Ethereum",
-    symbol: "ETH",
-    image: "https://coin-images.coingecko.com/coins/images/279/large/ethereum.png",
-    current_price: 2280.75,
-    price_change_24h: -1.3,
-    market_cap: 274000000000,
-  },
-  {
-    id: "solana",
-    name: "Solana",
-    symbol: "SOL",
-    image: "https://coin-images.coingecko.com/coins/images/4128/large/solana.png",
-    current_price: 98.45,
-    price_change_24h: 5.8,
-    market_cap: 43000000000,
-  },
-  {
-    id: "cardano",
-    name: "Cardano",
-    symbol: "ADA",
-    image: "https://coin-images.coingecko.com/coins/images/975/large/cardano.png",
-    current_price: 0.52,
-    price_change_24h: -0.5,
-    market_cap: 18000000000,
-  },
-  {
-    id: "ripple",
-    name: "XRP",
-    symbol: "XRP",
-    image: "https://coin-images.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png",
-    current_price: 0.61,
-    price_change_24h: 3.2,
-    market_cap: 33000000000,
-  },
-];
-
 const tabs = [
   {
     label: "Influencers",
@@ -122,11 +73,14 @@ export default function FavoritesPage() {
     }
   }
 
-  const getFilteredData = () => {
-    // Show all favorites (no platform filtering)
-    // Filter out favorites without channel data and transform
+  const getFilteredInfluencers = () => {
+    // Filter only influencers (YOUTUBE and TELEGRAM)
     return favoritesData
-      .filter(fav => fav.channel && fav.channel.length > 0) // Only include favorites with channel data
+      .filter(fav =>
+        (fav.medium === "YOUTUBE" || fav.medium === "TELEGRAM") &&
+        fav.channel &&
+        fav.channel.length > 0
+      )
       .map(fav => {
         const channelData = fav.channel[0];
         const isTelegram = fav.medium === "TELEGRAM";
@@ -157,7 +111,30 @@ export default function FavoritesPage() {
       });
   };
 
-  const filteredData = getFilteredData();
+  const getFilteredCoins = () => {
+    // Filter only coins (CRYPTO medium)
+    return favoritesData
+      .filter(fav => fav.medium === "CRYPTO" && fav.favouriteType === "COIN")
+      .map(fav => {
+        const coinData = fav.coin && fav.coin.length > 0 ? fav.coin[0] : null;
+
+        return {
+          id: fav.favouriteId,
+          source_id: fav.favouriteId,
+          name: coinData?.name || fav.name || "Unknown",
+          symbol: coinData?.symbol || "?",
+          image: coinData?.image_large || coinData?.image_small || coinData?.image_thumb || "",
+          current_price: coinData?.current_price_usd || 0,
+          price_change_24h: coinData?.price_change_percentage_24h || 0,
+          market_cap: coinData?.market_cap_usd || 0,
+          market_cap_rank: coinData?.market_cap_rank || null,
+        };
+      });
+  };
+
+  const filteredInfluencers = getFilteredInfluencers();
+  const filteredCoins = getFilteredCoins();
+  const filteredData = activeTab === "influencers" ? filteredInfluencers : filteredCoins;
 
   // Pagination logic
   const totalInfluencers = filteredData.length;
@@ -204,7 +181,7 @@ export default function FavoritesPage() {
     setCurrentPage(1);
   }, [activeTab]);
 
-  // Handle remove from favorites
+  // Handle remove from favorites (influencers)
   const handleRemoveFavorite = async (channelId, medium) => {
     // Show confirmation dialog
     const result = await Swal.fire({
@@ -250,6 +227,93 @@ export default function FavoritesPage() {
       }
     } catch (error) {
       console.error("Error removing favorite:", error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to remove from favorites. Please try again.',
+        icon: 'error',
+        background: '#ffffff',
+        color: '#1f2937',
+        confirmButtonColor: '#8b5cf6',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end',
+      });
+    }
+  };
+
+  // Handle remove coin from favorites
+  const handleRemoveCoinFavorite = async (coinId) => {
+    // Show confirmation dialog
+    const result = await Swal.fire({
+      title: 'Remove from Favorites?',
+      text: 'Do you want to remove this coin from your favorites?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Yes, remove it',
+      cancelButtonText: 'No, keep it',
+      background: '#ffffff',
+      color: '#1f2937',
+      confirmButtonColor: '#ef4444',
+      cancelButtonColor: '#8b5cf6',
+    });
+
+    // If user clicks "No" or closes the dialog, don't proceed
+    if (!result.isConfirmed) {
+      return;
+    }
+
+    try {
+      // Get userId from localStorage
+      const userData = localStorage.getItem('userData');
+      if (!userData) {
+        throw new Error('User not logged in');
+      }
+
+      const user = JSON.parse(userData);
+      const userId = user._id || user.id;
+
+      const payload = {
+        op: 'DEL',
+        medium: 'CRYPTO',
+        userId: userId,
+        favouriteId: coinId,
+        favouriteType: 'COIN'
+      };
+
+      const response = await fetch('http://37.27.120.45:5901/api/user/favourite/toggleFavourite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Show success message
+        Swal.fire({
+          title: 'Removed from favorites!',
+          icon: 'success',
+          background: '#ffffff',
+          color: '#1f2937',
+          confirmButtonColor: '#8b5cf6',
+          timer: 2000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end',
+        });
+
+        // Refresh the favorites list
+        await fetchFavoritesData();
+      } else {
+        throw new Error(data.message || 'Failed to remove favorite');
+      }
+    } catch (error) {
+      console.error("Error removing coin favorite:", error);
       Swal.fire({
         title: 'Error',
         text: 'Failed to remove from favorites. Please try again.',
@@ -596,112 +660,263 @@ export default function FavoritesPage() {
             )
           ) : (
             // Coins Tab Content
-            <>
-              {/* Coins Table View */}
-              <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-                      <tr>
-                        <th className="px-6 py-4 text-left text-sm font-semibold">Coin Icon</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold">Coin Name</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold">Symbol</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold">Current Price</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold">24h Change</th>
-                        <th className="px-6 py-4 text-center text-sm font-semibold">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {dummyCoinsData.map((coin, index) => (
-                        <tr
-                          key={coin.id}
-                          className={`hover:bg-gray-50 transition-colors ${
-                            index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                          }`}
-                        >
-                          {/* Coin Image */}
-                          <td className="px-6 py-4">
-                            <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
-                              <Image
-                                src={coin.image}
-                                alt={coin.name}
-                                width={48}
-                                height={48}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          </td>
-
-                          {/* Coin Name */}
-                          <td className="px-6 py-4">
-                            <div className="text-sm font-semibold text-gray-900">
-                              {coin.name}
-                            </div>
-                          </td>
-
-                          {/* Symbol */}
-                          <td className="px-6 py-4">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
-                              {coin.symbol}
-                            </span>
-                          </td>
-
-                          {/* Current Price */}
-                          <td className="px-6 py-4">
-                            <div className="text-sm font-semibold text-gray-900">
-                              ${coin.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </div>
-                          </td>
-
-                          {/* 24h Change */}
-                          <td className="px-6 py-4">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                              coin.price_change_24h >= 0
-                                ? "bg-green-100 text-green-700"
-                                : "bg-red-100 text-red-700"
-                            }`}>
-                              {coin.price_change_24h >= 0 ? '+' : ''}{coin.price_change_24h.toFixed(2)}%
-                            </span>
-                          </td>
-
-                          {/* Action Buttons */}
-                          <td className="px-6 py-4">
-                            <div className="flex items-center justify-center gap-3">
-                              <Link
-                                href={`/coins/${coin.id}`}
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
-                              >
-                                View Details
-                              </Link>
-                              <button
-                                onClick={() => {
-                                  Swal.fire({
-                                    title: 'Remove from Favorites?',
-                                    text: `Remove ${coin.name} from favorites?`,
-                                    icon: 'warning',
-                                    showCancelButton: true,
-                                    confirmButtonText: 'Yes, remove it',
-                                    cancelButtonText: 'No, keep it',
-                                    background: '#ffffff',
-                                    color: '#1f2937',
-                                    confirmButtonColor: '#ef4444',
-                                    cancelButtonColor: '#8b5cf6',
-                                  });
-                                }}
-                                className="p-2 rounded-lg hover:bg-red-50 transition-all duration-200 group"
-                                aria-label="Remove from favorites"
-                              >
-                                <FaHeart className="text-red-500 text-xl group-hover:scale-110 transition-transform" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+            loading ? (
+              <div className="text-center text-gray-500 py-8">
+                Loading coins...
               </div>
-            </>
+            ) : error ? (
+              <div className="text-center text-red-600 py-8">{error}</div>
+            ) : filteredCoins.length > 0 ? (
+              <>
+                {/* Coins Table View */}
+                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                        <tr>
+                          <th className="px-6 py-4 text-left text-sm font-semibold">Coin Icon</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold">Coin Name</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold">Symbol</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold">Current Price</th>
+                          <th className="px-6 py-4 text-left text-sm font-semibold">24h Change</th>
+                          <th className="px-6 py-4 text-center text-sm font-semibold">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {visibleInfluencers.map((coin, index) => (
+                          <tr
+                            key={coin.id}
+                            className={`hover:bg-gray-50 transition-colors ${
+                              index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                            }`}
+                          >
+                            {/* Coin Image */}
+                            <td className="px-6 py-4">
+                              {coin.image ? (
+                                <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
+                                  <Image
+                                    src={coin.image}
+                                    alt={coin.name}
+                                    width={48}
+                                    height={48}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
+                              ) : (
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold shadow-md">
+                                  {coin.symbol?.[0] || "?"}
+                                </div>
+                              )}
+                            </td>
+
+                            {/* Coin Name */}
+                            <td className="px-6 py-4">
+                              <div className="text-sm font-semibold text-gray-900">
+                                {coin.name}
+                              </div>
+                            </td>
+
+                            {/* Symbol */}
+                            <td className="px-6 py-4">
+                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                                {coin.symbol?.toUpperCase()}
+                              </span>
+                            </td>
+
+                            {/* Current Price */}
+                            <td className="px-6 py-4">
+                              <div className="text-sm font-semibold text-gray-900">
+                                {coin.current_price > 0
+                                  ? `$${coin.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                  : "N/A"
+                                }
+                              </div>
+                            </td>
+
+                            {/* 24h Change */}
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
+                                coin.price_change_24h >= 0
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-red-100 text-red-700"
+                              }`}>
+                                {coin.price_change_24h >= 0 ? '+' : ''}{coin.price_change_24h.toFixed(2)}%
+                              </span>
+                            </td>
+
+                            {/* Action Buttons */}
+                            <td className="px-6 py-4">
+                              <div className="flex items-center justify-center gap-3">
+                                <Link
+                                  href={`/coins-list/${coin.source_id}`}
+                                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                                >
+                                  View Details
+                                </Link>
+                                <button
+                                  onClick={() => handleRemoveCoinFavorite(coin.source_id)}
+                                  className="p-2 rounded-lg hover:bg-red-50 transition-all duration-200 group"
+                                  aria-label="Remove from favorites"
+                                >
+                                  <FaHeart className="text-red-500 text-xl group-hover:scale-110 transition-transform" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Pagination Controls for Coins */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col items-center mt-8 space-y-4">
+                    {/* Pagination Info */}
+                    <div className="text-sm text-gray-700 text-center">
+                      Showing {startIndex + 1} to {Math.min(endIndex, totalInfluencers)} of {totalInfluencers} coins
+                    </div>
+
+                    {/* Mobile Pagination */}
+                    <div className="flex sm:hidden items-center justify-center space-x-1 w-full">
+                      <button
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                        className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        ‹‹
+                      </button>
+                      <button
+                        onClick={handlePrevious}
+                        disabled={currentPage === 1}
+                        className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        ‹
+                      </button>
+                      <div className="flex items-center space-x-2 px-2">
+                        <span className="text-xs text-gray-600">Page</span>
+                        <span className="px-2 py-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded text-xs font-medium">
+                          {currentPage}
+                        </span>
+                        <span className="text-xs text-gray-600">of {totalPages}</span>
+                      </div>
+                      <button
+                        onClick={handleNext}
+                        disabled={currentPage === totalPages}
+                        className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        ›
+                      </button>
+                      <button
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        ››
+                      </button>
+                    </div>
+
+                    {/* Desktop Pagination */}
+                    <div className="hidden sm:flex items-center space-x-1 md:space-x-2 flex-wrap justify-center">
+                      <button
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                        className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        &lt;&lt;
+                      </button>
+                      <button
+                        onClick={handlePrevious}
+                        disabled={currentPage === 1}
+                        className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        &lt;
+                      </button>
+                      {getPageNumbers()[0] > 1 && (
+                        <>
+                          <button
+                            onClick={() => handlePageChange(1)}
+                            className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500 transition-all duration-200"
+                          >
+                            1
+                          </button>
+                          {getPageNumbers()[0] > 2 && (
+                            <span className="text-gray-500 text-xs">...</span>
+                          )}
+                        </>
+                      )}
+                      {getPageNumbers().map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === page
+                            ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                            }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      {getPageNumbers()[getPageNumbers().length - 1] < totalPages && (
+                        <>
+                          {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
+                            <span className="text-gray-500 text-xs">...</span>
+                          )}
+                          <button
+                            onClick={() => handlePageChange(totalPages)}
+                            className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500 transition-all duration-200"
+                          >
+                            {totalPages}
+                          </button>
+                        </>
+                      )}
+                      <button
+                        onClick={handleNext}
+                        disabled={currentPage === totalPages}
+                        className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        &gt;
+                      </button>
+                      <button
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        &gt;&gt;
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center text-gray-500 py-16">
+                No favorite coins found
+              </div>
+            )
           )}
         </section>
       </div>

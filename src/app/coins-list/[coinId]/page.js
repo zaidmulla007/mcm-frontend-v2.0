@@ -2,9 +2,13 @@
 
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 /* Your internal API (returns coin data) */
 const API_BASE = "/api/admin/coinindex/mcmdb/filter";
+
+/* Favorites API Base URL */
+const FAVORITES_API_BASE = "http://37.27.120.45:5901/api/user/favourite";
 
 /* TradingView Widget Component */
 function TradingViewWidget({ widgetType, symbol, config = {} }) {
@@ -343,6 +347,10 @@ export default function CoinDetail() {
   /* Check if coin has USDT pair on Binance */
   const [hasUsdtPair, setHasUsdtPair] = useState(true);
 
+  /* Favorite state */
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [favoriteLoading, setFavoriteLoading] = useState(false);
+
   // Fetch all coins for comparison selector and filter only USDT pairs from Binance
   useEffect(() => {
     async function fetchAllCoins() {
@@ -442,6 +450,141 @@ export default function CoinDetail() {
 
     loadCoinData();
   }, [coinId]);
+
+  // Check if coin is favorited
+  useEffect(() => {
+    if (!coin?.source_id) return;
+
+    async function checkFavoriteStatus() {
+      try {
+        const userData = localStorage.getItem('userData');
+        if (!userData) return;
+
+        const user = JSON.parse(userData);
+        const userId = user._id || user.id;
+
+        const response = await fetch(`${FAVORITES_API_BASE}?userId=${userId}&medium=CRYPTO&favouriteType=COIN`);
+        const data = await response.json();
+
+        if (data.success && data.results) {
+          const isFav = data.results.some(fav => fav.favouriteId === coin.source_id);
+          setIsFavorite(isFav);
+        }
+      } catch (error) {
+        console.error('Error checking favorite status:', error);
+      }
+    }
+
+    checkFavoriteStatus();
+  }, [coin?.source_id]);
+
+  // Toggle favorite status
+  const toggleFavorite = async () => {
+    try {
+      const userData = localStorage.getItem('userData');
+      if (!userData) {
+        Swal.fire({
+          title: 'Login Required',
+          text: 'Please login to add favorites',
+          icon: 'warning',
+          background: '#ffffff',
+          color: '#111827',
+          confirmButtonColor: '#2563eb',
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end',
+          customClass: {
+            popup: 'colored-toast'
+          }
+        });
+        return;
+      }
+
+      const user = JSON.parse(userData);
+      const userId = user._id || user.id;
+
+      setFavoriteLoading(true);
+      const newFavoriteState = !isFavorite;
+
+      const payload = {
+        op: isFavorite ? 'DEL' : 'ADD',
+        medium: 'CRYPTO',
+        userId: userId,
+        favouriteId: coin.source_id,
+        favouriteType: 'COIN'
+      };
+
+      const response = await fetch(`${FAVORITES_API_BASE}/toggleFavourite`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setIsFavorite(!isFavorite);
+
+        // Show SweetAlert with layout colors based on action
+        Swal.fire({
+          title: newFavoriteState ? 'Added to favourites' : 'Removed from favourite list',
+          icon: newFavoriteState ? 'success' : 'info',
+          background: '#ffffff',
+          color: '#111827',
+          confirmButtonColor: '#2563eb',
+          timer: 2000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end',
+          customClass: {
+            popup: 'colored-toast'
+          }
+        });
+      } else {
+        Swal.fire({
+          title: 'Error',
+          text: data.message || 'Failed to update favorite',
+          icon: 'error',
+          background: '#ffffff',
+          color: '#111827',
+          confirmButtonColor: '#2563eb',
+          timer: 3000,
+          timerProgressBar: true,
+          showConfirmButton: false,
+          toast: true,
+          position: 'top-end',
+          customClass: {
+            popup: 'colored-toast'
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      Swal.fire({
+        title: 'Error',
+        text: 'Failed to update favorite status. Please try again.',
+        icon: 'error',
+        background: '#ffffff',
+        color: '#111827',
+        confirmButtonColor: '#2563eb',
+        timer: 3000,
+        timerProgressBar: true,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end',
+        customClass: {
+          popup: 'colored-toast'
+        }
+      });
+    } finally {
+      setFavoriteLoading(false);
+    }
+  };
 
   // Connect to Binance WebSocket using enhanced helper
   useEffect(() => {
@@ -635,9 +778,48 @@ export default function CoinDetail() {
                   fontSize: 16,
                   fontWeight: 900,
                   lineHeight: 1.2,
-                  color: "#111"
+                  color: "#111",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8
                 }}>
                   {coin.name}
+                  {/* Favorite Button */}
+                  <button
+                    onClick={toggleFavorite}
+                    disabled={favoriteLoading}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: favoriteLoading ? "not-allowed" : "pointer",
+                      padding: 4,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      opacity: favoriteLoading ? 0.5 : 1,
+                      transition: "transform 0.2s ease"
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!favoriteLoading) e.currentTarget.style.transform = "scale(1.2)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = "scale(1)";
+                    }}
+                    title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill={isFavorite ? "#ef4444" : "none"}
+                      stroke={isFavorite ? "#ef4444" : "#6b7280"}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                  </button>
                 </div>
                 <div style={{
                   color: "#6b7280",
@@ -717,142 +899,13 @@ export default function CoinDetail() {
           )}
         </div>
 
-        {/* RIGHT CARD: Live Binance Data Table */}
+        {/* RIGHT CARD: Advanced Chart */}
         {hasUsdtPair && (
-          <div style={{
-          background: "#fff",
-          borderRadius: 12,
-          padding: 20,
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-        }}>
-          <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
-            Live Market Data (Binance)
-            {binanceLive && (
-              <span style={{
-                fontSize: 11,
-                color: "#16a34a",
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.5px"
-              }}>
-                • LIVE
-              </span>
-            )}
-          </div>
-
-          {wsError && (
-            <div style={{ color: "#ef4444", fontSize: 12, marginBottom: 12 }}>
-              WebSocket Error: {wsError}
-            </div>
-          )}
-
-          {binanceLive ? (
-            <div style={{ overflow: "hidden" }}>
-              <table style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                fontSize: "13px"
-              }}>
-                <thead>
-                  <tr style={{ borderBottom: "2px solid #e5e7eb" }}>
-                    <th style={{ padding: "10px 12px", textAlign: "left", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Metric</th>
-                    <th style={{ padding: "10px 12px", textAlign: "right", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Value</th>
-                    <th style={{ padding: "10px 12px", textAlign: "left", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Metric</th>
-                    <th style={{ padding: "10px 12px", textAlign: "right", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>24h High</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                      {binanceLive.highPrice ? `$${binanceLive.highPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
-                    </td>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>24h Low</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                      {binanceLive.lowPrice ? `$${binanceLive.lowPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
-                    </td>
-                  </tr>
-                  <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Open Price</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                      {binanceLive.openPrice ? `$${binanceLive.openPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
-                    </td>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Prev Close</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                      {binanceLive.prevClosePrice ? `$${binanceLive.prevClosePrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
-                    </td>
-                  </tr>
-                  <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Weighted Avg</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                      {binanceLive.weightedAvgPrice ? `$${binanceLive.weightedAvgPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
-                    </td>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Price Change</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: priceChangeColor, fontSize: "13px" }}>
-                      {binanceLive.priceChange ? `$${binanceLive.priceChange.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
-                    </td>
-                  </tr>
-                  <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Bid Price</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                      {binanceLive.bidPrice ? `$${binanceLive.bidPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
-                    </td>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Bid Qty</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                      {binanceLive.bidQty ? binanceLive.bidQty.toLocaleString(undefined, {maximumFractionDigits: 4}) : "—"}
-                    </td>
-                  </tr>
-                  <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Ask Price</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                      {binanceLive.askPrice ? `$${binanceLive.askPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
-                    </td>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Ask Qty</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                      {binanceLive.askQty ? binanceLive.askQty.toLocaleString(undefined, {maximumFractionDigits: 4}) : "—"}
-                    </td>
-                  </tr>
-                  <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Volume (24h)</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                      {binanceLive.volume ? binanceLive.volume.toLocaleString(undefined, {maximumFractionDigits: 2}) : "—"}
-                    </td>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Quote Volume</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                      {binanceLive.quoteVolume ? `$${binanceLive.quoteVolume.toLocaleString(undefined, {maximumFractionDigits: 0})}` : "—"}
-                    </td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Trade Count</td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                      {binanceLive.tradeCount ? binanceLive.tradeCount.toLocaleString() : "—"}
-                    </td>
-                    <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}></td>
-                    <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}></td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div style={{ color: "#6b7280", fontSize: 13 }}>
-              Connecting to Binance WebSocket...
-            </div>
-          )}
-        </div>
-        )}
-      </div>
-
-      {/* TradingView Widgets Section - Coin Specific Only (Only if USDT pair exists) */}
-      {coin?.symbol && hasUsdtPair && (
-        <>
-          {/* 1. Advanced Chart */}
           <div style={{
             background: "#fff",
             borderRadius: 12,
             padding: 20,
             boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-            marginBottom: 16,
-            overflow: "hidden"
           }}>
             <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15 }}>
               {coin.name} Advanced Chart
@@ -860,7 +913,7 @@ export default function CoinDetail() {
             <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
               Professional trading chart with technical indicators, drawing tools, and multiple timeframes for detailed price analysis
             </p>
-            <div style={{ height: 600, overflow: "hidden" }}>
+            <div style={{ height: 400, overflow: "hidden" }}>
               <TradingViewWidget
                 widgetType="advanced-chart"
                 symbol={coin.symbol}
@@ -879,8 +932,142 @@ export default function CoinDetail() {
               />
             </div>
           </div>
+        )}
+      </div>
 
-          {/* 2. Symbol Overview - Coin vs Selected Comparison Coins */}
+      {/* TradingView Widgets Section - Coin Specific Only (Only if USDT pair exists) */}
+      {coin?.symbol && hasUsdtPair && (
+        <>
+          {/* 1. Technical Analysis - MOVED TO TOP */}
+          <div style={{
+            background: "#fff",
+            borderRadius: 12,
+            padding: 20,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+            marginBottom: 16,
+            overflow: "hidden"
+          }}>
+            <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15 }}>
+              {coin.name} Technical Analysis
+            </div>
+            <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
+              Real-time buy/sell signals based on moving averages, oscillators, and technical indicators across multiple timeframes
+            </p>
+            <div style={{ height: 400, overflow: "hidden" }}>
+              <TradingViewWidget
+                widgetType="technical-analysis"
+                symbol={coin.symbol}
+                config={{
+                  interval: "1h",
+                  width: "100%",
+                  height: "100%",
+                  isTransparent: false,
+                  showIntervalTabs: true,
+                  displayMode: "single",
+                  locale: "en",
+                  colorTheme: "light"
+                }}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Fundamental Analysis - Right after Technical Analysis */}
+      <FundamentalAnalysisCard data={fundamentalAnalysis} />
+
+      {/* Live Market Data Section */}
+      {coin?.symbol && hasUsdtPair && (
+        <>
+          {/* Live Binance Data Table */}
+          <div style={{
+            background: "#fff",
+            borderRadius: 12,
+            padding: 20,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+            marginBottom: 16,
+            overflow: "hidden"
+          }}>
+            <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
+              Live Market Data (Binance)
+              {binanceLive && (
+                <span style={{
+                  fontSize: 11,
+                  color: "#16a34a",
+                  fontWeight: 700,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px"
+                }}>
+                  • LIVE
+                </span>
+              )}
+            </div>
+
+            {binanceLive ? (
+              <div style={{ overflow: "hidden" }}>
+                <table style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  fontSize: "13px"
+                }}>
+                  <thead>
+                    <tr style={{ borderBottom: "2px solid #e5e7eb" }}>
+                      <th style={{ padding: "10px 12px", textAlign: "left", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Metric</th>
+                      <th style={{ padding: "10px 12px", textAlign: "right", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Value</th>
+                      <th style={{ padding: "10px 12px", textAlign: "left", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Metric</th>
+                      <th style={{ padding: "10px 12px", textAlign: "right", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Value</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
+                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>24h High</td>
+                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
+                        {binanceLive.highPrice ? `$${binanceLive.highPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
+                      </td>
+                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>24h Low</td>
+                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
+                        {binanceLive.lowPrice ? `$${binanceLive.lowPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
+                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Open Price</td>
+                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
+                        {binanceLive.openPrice ? `$${binanceLive.openPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
+                      </td>
+                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Prev Close</td>
+                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
+                        {binanceLive.prevClosePrice ? `$${binanceLive.prevClosePrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
+                      </td>
+                    </tr>
+                    <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
+                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Price Change</td>
+                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: priceChangeColor, fontSize: "13px" }}>
+                        {binanceLive.priceChange ? `$${binanceLive.priceChange.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
+                      </td>
+                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Volume (24h)</td>
+                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
+                        {binanceLive.volume ? binanceLive.volume.toLocaleString(undefined, {maximumFractionDigits: 2}) : "—"}
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}></td>
+                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}></td>
+                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Quote Volume</td>
+                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
+                        {binanceLive.quoteVolume ? `$${binanceLive.quoteVolume.toLocaleString(undefined, {maximumFractionDigits: 0})}` : "—"}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div style={{ color: "#6b7280", fontSize: 13 }}>
+                Connecting to Binance WebSocket...
+              </div>
+            )}
+          </div>
+
+          {/* Symbol Overview - Coin vs Selected Comparison Coins */}
           <div style={{
             background: "#fff",
             borderRadius: 12,
@@ -1091,67 +1278,6 @@ export default function CoinDetail() {
             </div>
           </div>
 
-          {/* 3. Symbol Info */}
-          <div style={{
-            background: "#fff",
-            borderRadius: 12,
-            padding: 20,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-            marginBottom: 16,
-            overflow: "hidden"
-          }}>
-            <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15 }}>
-              {coin.name} Symbol Info
-            </div>
-            <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12, lineHeight: 1.5 }}>
-              Quick snapshot of key trading metrics including current price, volume, market cap, and price changes
-            </p>
-            <div style={{ height: 250, overflow: "hidden" }}>
-              <TradingViewWidget
-                widgetType="symbol-info"
-                symbol={coin.symbol}
-                config={{
-                  width: "100%",
-                  colorTheme: "light",
-                  isTransparent: false,
-                  locale: "en"
-                }}
-              />
-            </div>
-          </div>
-
-          {/* 4. Technical Analysis */}
-          <div style={{
-            background: "#fff",
-            borderRadius: 12,
-            padding: 20,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-            marginBottom: 16,
-            overflow: "hidden"
-          }}>
-            <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15 }}>
-              {coin.name} Technical Analysis
-            </div>
-            <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
-              Real-time buy/sell signals based on moving averages, oscillators, and technical indicators across multiple timeframes
-            </p>
-            <div style={{ height: 400, overflow: "hidden" }}>
-              <TradingViewWidget
-                widgetType="technical-analysis"
-                symbol={coin.symbol}
-                config={{
-                  interval: "1h",
-                  width: "100%",
-                  height: "100%",
-                  isTransparent: false,
-                  showIntervalTabs: true,
-                  displayMode: "single",
-                  locale: "en",
-                  colorTheme: "light"
-                }}
-              />
-            </div>
-          </div>
         </>
       )}
 
@@ -1312,9 +1438,6 @@ export default function CoinDetail() {
           </div>
         </div>
       </div>
-
-      {/* Fundamental Analysis - Single Column */}
-      <FundamentalAnalysisCard data={fundamentalAnalysis} />
     </div>
   );
 }

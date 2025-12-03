@@ -86,7 +86,7 @@ const TelegramIcon = ({ className }) => (
 );
 
 export default function YouTubeTelegramInfluencers() {
-    const { useLocalTime, formatDate } = useTimezone();
+    const { useLocalTime, formatDate, toggleTimezone } = useTimezone();
     const [selectedPlatform, setSelectedPlatform] = useState("Combined");
     const [loading, setLoading] = useState(false);
     const [lastUpdated, setLastUpdated] = useState(new Date());
@@ -101,6 +101,7 @@ export default function YouTubeTelegramInfluencers() {
     const [expandedMarketing, setExpandedMarketing] = useState({});
     const [hoveredPost, setHoveredPost] = useState(null);
     const [apiData, setApiData] = useState(null);
+    const [selectedCoin, setSelectedCoin] = useState(null);
 
     // Toggle summary expansion
     const toggleSummary = (postId) => {
@@ -198,6 +199,20 @@ export default function YouTubeTelegramInfluencers() {
         fetchData();
     }, []);
 
+    // Listen for coin filter event
+    useEffect(() => {
+        const handleFilterByCoin = (event) => {
+            const { source_id, name, symbol } = event.detail;
+            setSelectedCoin({ source_id, name, symbol });
+        };
+
+        window.addEventListener('filterByCoin', handleFilterByCoin);
+
+        return () => {
+            window.removeEventListener('filterByCoin', handleFilterByCoin);
+        };
+    }, []);
+
     // Get combined data based on selected platform
     const getDisplayData = () => {
         if (!apiData) return [];
@@ -225,6 +240,16 @@ export default function YouTubeTelegramInfluencers() {
                     allPosts.push(transformPostData(item));
                 });
             }
+        }
+
+        // Filter by selected coin if one is selected
+        if (selectedCoin) {
+            allPosts = allPosts.filter(post => {
+                // Check if any of the mentioned coins match the selected coin's source_id
+                return post.mentionedCoins.some(coin =>
+                    coin.mcm_source_id === selectedCoin.source_id
+                );
+            });
         }
 
         return allPosts.sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));
@@ -389,19 +414,60 @@ export default function YouTubeTelegramInfluencers() {
     }
 
     return (
-        <div className="jsx-816192472cbeba0e w-full">
+        <div id="youtube-telegram-influencers" className="jsx-816192472cbeba0e w-full">
             <div className="w-full">
-                <div className="text-center mt-2">
-                    <h1 className="text-3xl font-bold text-black mb-2">
-                        Latest Posts
-                    </h1>
+                <div className="mt-2">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h2 className="text-4xl md:text-5xl font-bold">
+                                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                                    Latest Post&apos;s
+                                </span>
+                            </h2>
+                            <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mt-5"></div>
+                        </div>
+
+                        {/* Right: Timezone Switch */}
+                        <div className="flex items-center gap-2 mt-2">
+                            {!useLocalTime && (
+                                <span className="text-xs font-medium text-black-700">
+                                    UTC
+                                </span>
+                            )}
+                            <button
+                                onClick={() => toggleTimezone()}
+                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
+                                    }`}
+                                role="switch"
+                                aria-checked={useLocalTime}
+                            >
+                                <span
+                                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
+                                        }`}
+                                />
+                            </button>
+                            {useLocalTime && (
+                                <span className="text-xs font-medium text-black-700">
+                                    {Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop().replace(/_/g, ' ') || 'Local'}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                        <p className="text-xl text-gray-600">
+                            {lastUpdated ? formatDate(lastUpdated) : "N/A"}
+                        </p>
+                        <p className="text-sm text-gray-500 self-end mb-0.5">
+                            Update
+                        </p>
+                    </div>
                 </div>
 
                 {/* Platform Selection */}
                 <div className="flex justify-center mb-8">
                     <div className="jsx-816192472cbeba0e bg-white rounded-xl p-4" style={{ width: '672px' }}>
                         <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 flex-wrap">
                                 <label className="text-lg text-black font-semibold">Platform:</label>
                                 <select
                                     value={selectedPlatform}
@@ -412,6 +478,21 @@ export default function YouTubeTelegramInfluencers() {
                                     <option value="YouTube" className="bg-white text-black">YouTube</option>
                                     <option value="Telegram" className="bg-white text-black">Telegram</option>
                                 </select>
+
+                                {selectedCoin && (
+                                    <div className="flex items-center gap-2 bg-blue-100 border border-blue-300 rounded-lg px-3 py-1.5">
+                                        <span className="text-sm text-black font-medium">
+                                            {selectedCoin.symbol}
+                                        </span>
+                                        <button
+                                            onClick={() => setSelectedCoin(null)}
+                                            className="text-red-600 hover:text-red-800 font-bold text-lg leading-none"
+                                            title="Clear filter"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex items-center gap-2">

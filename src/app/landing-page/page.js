@@ -1,8 +1,8 @@
 "use client";
-import { motion, AnimatePresence, useMotionValue, useAnimationControls } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import moment from "moment-timezone";
 import { useTimezone } from "../contexts/TimezoneContext";
 import DragDropCards from "../../components/DragDropCards";
@@ -10,7 +10,7 @@ import MarketHeatmap from "../components/MarketHeatmap";
 import YouTubeTelegramDataTable from "../components/YouTubeTelegramDataTable";
 import YoutubeTelegramDataTableLight from "../components/YoutubeTelegramDataTableLight";
 import YouTubeTelegramInfluencers from "../components/YouTubeTelegramInfluencers";
-import { useTop10LivePrice } from "../livePriceTop10";
+import LivePriceScroller from "../components/LivePriceScroller";
 
 // Major cities with their timezones for display
 const worldCities = [
@@ -1140,20 +1140,12 @@ const ProfessionalTrendingTable = ({ title, data, isLocked = false }) => {
 };
 
 export default function Home() {
-  const { top10Data, isConnected } = useTop10LivePrice();
   const { useLocalTime, toggleTimezone, formatDate } = useTimezone();
-  const scrollingData = [...top10Data, ...top10Data];
-  const [isMounted, setIsMounted] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false); // This would come from auth context
   const [shouldScroll, setShouldScroll] = useState(false);
   const [loading, setLoading] = useState(false); // No loading needed for static data
   const [lastUpdated, setLastUpdated] = useState(null);
   const [nextUpdate, setNextUpdate] = useState(null);
-  const [isPaused, setIsPaused] = useState(false);
-  const scrollContainerRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const x = useMotionValue(0);
-  const controls = useAnimationControls();
 
   // Fetch combined data for update times
   const fetchUpdateTimes = async () => {
@@ -1207,74 +1199,7 @@ export default function Home() {
     return `${momentDate.format('ddd DD MMM hh:mm A')}${locationDisplay}`;
   };
 
-  // Get the width of one loop of scrolling data
-  const getLoopWidth = () => {
-    if (!scrollContainerRef.current) return 0;
-    const firstItem = scrollContainerRef.current.querySelector('.price-item');
-    if (!firstItem) return 0;
-    return firstItem.offsetWidth * scrollingData.length;
-  };
-
-  // Handle mouse wheel scroll with infinite loop
-  const handleWheel = (e) => {
-    e.preventDefault();
-    const currentX = x.get();
-    const newX = currentX - e.deltaY;
-    const loopWidth = getLoopWidth();
-
-    // Wrap around for infinite scroll
-    if (newX < -loopWidth) {
-      x.set(newX + loopWidth);
-    } else if (newX > 0) {
-      x.set(newX - loopWidth);
-    } else {
-      x.set(newX);
-    }
-  };
-
-  // Handle drag
-  const handleDrag = (event, info) => {
-    const loopWidth = getLoopWidth();
-    const currentX = x.get();
-
-    // Wrap around during drag
-    if (currentX < -loopWidth) {
-      x.set(currentX + loopWidth);
-    } else if (currentX > 0) {
-      x.set(currentX - loopWidth);
-    }
-  };
-
-  // Auto-scroll animation
   useEffect(() => {
-    if (isPaused || isDragging) {
-      controls.stop();
-      return;
-    }
-
-    const loopWidth = getLoopWidth();
-    if (loopWidth === 0) return;
-
-    const animate = async () => {
-      const currentX = x.get();
-      await controls.start({
-        x: currentX - loopWidth,
-        transition: {
-          duration: 60,
-          ease: "linear",
-        },
-      });
-      x.set(0);
-      animate();
-    };
-
-    animate();
-
-    return () => controls.stop();
-  }, [isPaused, isDragging, scrollingData, controls, x]);
-
-  useEffect(() => {
-    setIsMounted(true);
     fetchUpdateTimes();
   }, []);
 
@@ -1283,8 +1208,6 @@ export default function Home() {
 
   // Get dynamic trending data using static profiles
   const trendingData = getTrendingData(topInfluencers);
-
-  if (!isMounted) return null;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 text-gray-900 font-sans pb-16 overflow-x-hidden">
@@ -1305,7 +1228,7 @@ export default function Home() {
             <div>
               <h2 className="text-4xl md:text-5xl font-bold">
                 <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  What&apos;s Trending
+                  Trending Coin&apos;s
                 </span>
               </h2>
               <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mt-5"></div>
@@ -1346,6 +1269,9 @@ export default function Home() {
         <div className="mt-5">
           <YouTubeTelegramInfluencers />
         </div>
+
+        <LivePriceScroller />
+
         {/* Display Purpose Text */}
         {/* <p className="text-center text-gray-600 text-sm italic mb-4 mt-1">
           The coins are listed for display purpose
@@ -1502,84 +1428,7 @@ export default function Home() {
         </div> */}
         {/* Top Mentioned Coins - Redesigned UI */}
 
-        {/* Influencer Flash News Text */}
-        <h2 className="text-center text-gray-900 text-2xl font-bold mb-0 mt-4">
-          Live Prices <span className="text-gray-600 text-sm">(Source Binance)</span>
-        </h2>
-        <h2 className="text-center text-gray-900 text-2xl font-bold mb-3 mt-0">
-          <span className="text-gray-600 text-sm">(Price change percentage in last 24 hours)</span>
-        </h2>
-
-        {/* Influencer News Scroller Container */}
-        <div
-          ref={scrollContainerRef}
-          className="relative h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl border border-blue-200 overflow-hidden shadow-2xl mb-4"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          onWheel={handleWheel}
-        >
-          {/* Continuous Left-to-Right Scrolling News */}
-          <div className="absolute inset-0 flex items-center">
-            <motion.div
-              drag="x"
-              dragConstraints={false}
-              dragElastic={0}
-              dragMomentum={false}
-              onDrag={handleDrag}
-              onDragStart={() => setIsDragging(true)}
-              onDragEnd={() => setIsDragging(false)}
-              style={{ x }}
-              animate={controls}
-              className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
-            >
-              {[...scrollingData, ...scrollingData, ...scrollingData, ...scrollingData].map((item, index) => (
-                <div
-                  key={item.symbol + index}
-                  className="price-item flex items-center gap-3 px-5 py-3 mx-4 flex-shrink-0"
-                >
-                  {item.image && (
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-8 h-8 rounded-full flex-shrink-0"
-                    />
-                  )}
-                  <div className="flex flex-col flex-1 min-w-0">
-                    <span className="text-purple-600 font-bold text-xs uppercase truncate">
-                      {item.symbol}
-                    </span>
-                    <span className="text-gray-600 text-xs capitalize truncate">
-                      {item.name}
-                    </span>
-                  </div>
-                  <div className="flex flex-col items-center">
-                    <span className="text-gray-900 font-bold text-sm whitespace-nowrap">
-                      ${typeof item.price === 'number' ? item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : item.price}
-                    </span>
-                    <span className={`text-xs font-semibold whitespace-nowrap ${typeof item.priceChange24h === 'number'
-                      ? item.priceChange24h >= 0
-                        ? 'text-green-600'
-                        : 'text-red-600'
-                      : 'text-gray-500'
-                      }`}>
-                      {typeof item.priceChange24h === 'number'
-                        ? `${item.priceChange24h >= 0 ? '+' : ''}${item.priceChange24h.toFixed(2)}%`
-                        : '0.00%'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* Gradient Overlay Edges */}
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-blue-100 to-transparent pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-purple-100 to-transparent pointer-events-none"></div>
-        </div>
-
-
         <div className="space-y-6 mt-4">
-          {/* Top 3 Coins (3rd, 4th, 5th) - Horizontal Row with Drag & Drop */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -1587,14 +1436,10 @@ export default function Home() {
             transition={{ duration: 0.6 }}
           >
             <div className="text-center mb-4">
-              <h3 className="text-3xl font-bold text-gray-900 mb-2">Trending Top Influencers</h3>
+              {/* <h3 className="text-3xl font-bold text-gray-900 mb-2">Trending Top Influencers</h3> */}
             </div>
-
-            {/* Static Cards Row - No Scrolling */}
-            {/* Desktop: Static Cards, Mobile: Continuous Scrolling */}
             <div className="relative w-full">
-              {/* Desktop View - Static Cards */}
-              <div className="hidden md:flex items-center justify-center gap-8 mx-auto">
+              {/* <div className="hidden md:flex items-center justify-center gap-8 mx-auto">
                 {topMentionedCoins.slice(2, 5).map((coin, index) => (
                   <motion.div
                     key={`desktop-${coin.symbol}`}
@@ -1608,9 +1453,7 @@ export default function Home() {
                       y: -5
                     }}
                   >
-                    {/* Desktop Card */}
                     <div className="relative bg-white rounded-2xl p-6 w-72 h-80 overflow-hidden shadow-lg">
-                      {/* Blurred Background Content */}
                       <div className="absolute inset-0 p-6 filter blur-sm opacity-30">
                         <div className="flex flex-col items-center space-y-4">
                           <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-blue-600 rounded-full flex items-center justify-center">
@@ -1636,34 +1479,23 @@ export default function Home() {
                           </div>
                         </div>
                       </div>
-
-                      {/* Rank Number - Top Left */}
                       <div className="absolute top-4 left-4 bg-purple-600 rounded-full px-2 py-1 flex items-center justify-center">
                         <span className="text-white font-bold text-xs">Rank {coin.rank}</span>
                       </div>
-
-                      {/* Lock Icon - Top Right */}
                       <div className="absolute top-4 right-4 w-8 h-8 bg-white rounded-full border border-purple-600 flex items-center justify-center">
                         <svg className="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z" />
                         </svg>
                       </div>
-
-                      {/* Clear Foreground Content */}
                       <div className="relative z-10 flex flex-col items-center justify-center h-full pt-8 pb-6">
-                        {/* Coin Icon Circle */}
                         <div className="w-16 h-16 bg-gradient-to-br from-purple-500/40 to-blue-600/40 rounded-full flex items-center justify-center mb-3 shadow-2xl">
                           <span className="text-gray-900 font-bold text-2xl">
                             {coin.symbol === 'LINK' ? '🔗' : coin.symbol === 'SOL' ? '☀️' : coin.symbol === 'XRP' ? '💰' : '₿'}
                           </span>
                         </div>
-
-                        {/* Coin Name */}
                         <div className="text-center mb-4">
                           <div className="text-gray-900 font-bold text-xl mb-1">{coin.name}</div>
                         </div>
-
-                        {/* Unlock Full Data Section */}
                         <div className="text-center mb-4">
                           <div className="text-purple-600 text-sm font-semibold mb-2">Unlock Full Data:</div>
                           <div className="space-y-1 text-balck-700 text-xs">
@@ -1678,8 +1510,6 @@ export default function Home() {
                             </div>
                           </div>
                         </div>
-
-                        {/* CTA Button */}
                         <Link href="/login">
                           <motion.button
                             className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-6 py-3 rounded-xl font-bold text-white shadow-lg transition-all duration-200"
@@ -1693,7 +1523,7 @@ export default function Home() {
                     </div>
                   </motion.div>
                 ))}
-              </div>
+              </div> */}
 
               {/* Mobile View - Continuous Scrolling */}
               <div className="md:hidden relative overflow-hidden w-full">
@@ -1814,8 +1644,6 @@ export default function Home() {
               </div>
             </div>
           </motion.div>
-
-          {/* Top 2 Coins - Animated Text Box */}
           <motion.div
             className="mx-auto"
             initial={{ opacity: 0, y: 30 }}

@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import moment from "moment-timezone";
-import { FaBell } from "react-icons/fa";
+import { FaBell, FaYoutube, FaTelegramPlane } from "react-icons/fa";
 
 export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTime = false }) {
     const router = useRouter();
@@ -20,6 +20,13 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         "24hrs": false,
         "7days": false,
         "30days": false
+    });
+
+    const [influencerModal, setInfluencerModal] = useState({
+        isOpen: false,
+        type: '',
+        influencers: {},
+        position: { x: 0, y: 0 }
     });
 
     const fetchCombinedData = async () => {
@@ -65,6 +72,20 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             "30days": false
         });
     }, [selectedPlatform, selectedCoinType]);
+
+    // Close modal on scroll
+    useEffect(() => {
+        const handleScroll = () => {
+            if (influencerModal.isOpen) {
+                setInfluencerModal({ isOpen: false, type: '', influencers: {}, position: { x: 0, y: 0 } });
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, true);
+        return () => {
+            window.removeEventListener('scroll', handleScroll, true);
+        };
+    }, [influencerModal.isOpen]);
 
     // Fetch initial Binance 24hr price data and setup WebSocket for live updates
     useEffect(() => {
@@ -470,7 +491,9 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     <h3 className="text-xl font-bold text-white text-center mb-1 flex items-center justify-center gap-2">
                         {title}
                         {hasAnyPriceAlert && (
-                            <FaBell className="text-yellow-300 text-lg animate-pulse" />
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center shadow-lg bg-green-500 animate-pulse">
+                                <FaBell className="text-white text-[15px]" />
+                            </div>
                         )}
                     </h3>
                     {/* <div className="text-xs text-white text-center">
@@ -566,7 +589,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                         <tr key={index} className="border-b border-gray-800">
                                             {/* Coin Column */}
                                             <td className="py-4 px-4 w-1/2">
-                                                <div className="flex flex-col items-center text-center">
+                                                <div className="flex flex-col items-center text-center h-full min-h-[140px] justify-start">
                                                     <div className="relative">
                                                         <img
                                                             src={coin.image_small || coin.image_thumb}
@@ -594,9 +617,142 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                     <div className="text-sm text-black font-bold mb-1">
                                                         {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
                                                     </div>
-                                                    <div className="text-xs text-black">
+                                                    <div
+                                                        className={`text-xs text-black ${timeframe === '6hrs' ? 'cursor-pointer hover:text-blue-600 transition-colors' : ''}`}
+                                                        onClick={() => {
+                                                            if (timeframe === '6hrs') {
+                                                                // Scroll to YouTubeTelegramInfluencers section
+                                                                const influencersSection = document.getElementById('youtube-telegram-influencers');
+                                                                if (influencersSection) {
+                                                                    influencersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                                    // Dispatch custom event with coin data
+                                                                    const event = new CustomEvent('filterByCoin', {
+                                                                        detail: {
+                                                                            source_id: coin.source_id,
+                                                                            name: coin.coin_name,
+                                                                            symbol: coin.symbol
+                                                                        }
+                                                                    });
+                                                                    window.dispatchEvent(event);
+                                                                }
+                                                            }
+                                                        }}
+                                                    >
                                                         {sentimentData.mentions} posts
                                                     </div>
+
+                                                    {/* YouTube Influencer Count */}
+                                                    {coin.yt_unique_influencers_count > 0 && (
+                                                        <div
+                                                            className="cursor-pointer mt-1"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (coin.yt_unique_names && Object.keys(coin.yt_unique_names).length > 0) {
+                                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                                    const modalWidth = 250;
+                                                                    const influencerCount = Object.keys(coin.yt_unique_names).length;
+                                                                    // Calculate approximate modal height based on content
+                                                                    // Header: ~50px, Each item: ~28px, Padding: ~20px
+                                                                    const estimatedModalHeight = Math.min(400, 70 + (influencerCount * 28));
+                                                                    const viewportWidth = window.innerWidth;
+                                                                    const viewportHeight = window.innerHeight;
+                                                                    const gap = 5;
+                                                                    const padding = 10;
+
+                                                                    // Calculate horizontal position - prefer right side
+                                                                    let x = rect.right + gap;
+                                                                    // If modal would overflow right, position it to the left of button
+                                                                    if (x + modalWidth > viewportWidth - padding) {
+                                                                        x = rect.left - modalWidth - gap;
+                                                                        // If still overflowing left, clamp to left edge with padding
+                                                                        if (x < padding) {
+                                                                            x = padding;
+                                                                        }
+                                                                    }
+
+                                                                    // Calculate vertical position - align with button top
+                                                                    let y = rect.top;
+                                                                    // If modal would overflow bottom, adjust to fit
+                                                                    if (y + estimatedModalHeight > viewportHeight - padding) {
+                                                                        y = Math.max(padding, viewportHeight - estimatedModalHeight - padding);
+                                                                    }
+                                                                    // Ensure not above viewport
+                                                                    if (y < padding) {
+                                                                        y = padding;
+                                                                    }
+
+                                                                    setInfluencerModal({
+                                                                        isOpen: true,
+                                                                        type: 'YouTube',
+                                                                        influencers: coin.yt_unique_names,
+                                                                        position: { x, y }
+                                                                    });
+                                                                }
+                                                            }}
+                                                        >
+                                                            <div className="text-[10px] text-red-600 font-semibold flex items-center justify-center gap-1 hover:text-red-700 transition-colors">
+                                                                <FaYoutube className="text-xs" />
+                                                                <span>{coin.yt_unique_influencers_count} YT</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Telegram Influencer Count */}
+                                                    {coin.tg_unique_influencers_count > 0 && (
+                                                        <div
+                                                            className="cursor-pointer mt-1"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                if (coin.tg_unique_names && Object.keys(coin.tg_unique_names).length > 0) {
+                                                                    const rect = e.currentTarget.getBoundingClientRect();
+                                                                    const modalWidth = 250;
+                                                                    const influencerCount = Object.keys(coin.tg_unique_names).length;
+                                                                    // Calculate approximate modal height based on content
+                                                                    // Header: ~50px, Each item: ~28px, Padding: ~20px
+                                                                    const estimatedModalHeight = Math.min(400, 70 + (influencerCount * 28));
+                                                                    const viewportWidth = window.innerWidth;
+                                                                    const viewportHeight = window.innerHeight;
+                                                                    const gap = 5;
+                                                                    const padding = 10;
+
+                                                                    // Calculate horizontal position - prefer right side
+                                                                    let x = rect.right + gap;
+                                                                    // If modal would overflow right, position it to the left of button
+                                                                    if (x + modalWidth > viewportWidth - padding) {
+                                                                        x = rect.left - modalWidth - gap;
+                                                                        // If still overflowing left, clamp to left edge with padding
+                                                                        if (x < padding) {
+                                                                            x = padding;
+                                                                        }
+                                                                    }
+
+                                                                    // Calculate vertical position - align with button top
+                                                                    let y = rect.top;
+                                                                    // If modal would overflow bottom, adjust to fit
+                                                                    if (y + estimatedModalHeight > viewportHeight - padding) {
+                                                                        y = Math.max(padding, viewportHeight - estimatedModalHeight - padding);
+                                                                    }
+                                                                    // Ensure not above viewport
+                                                                    if (y < padding) {
+                                                                        y = padding;
+                                                                    }
+
+                                                                    setInfluencerModal({
+                                                                        isOpen: true,
+                                                                        type: 'Telegram',
+                                                                        influencers: coin.tg_unique_names,
+                                                                        position: { x, y }
+                                                                    });
+                                                                }
+                                                            }}
+                                                        >
+                                                            <div className="text-[10px] text-blue-600 font-semibold flex items-center justify-center gap-1 hover:text-blue-700 transition-colors">
+                                                                <FaTelegramPlane className="text-xs" />
+                                                                <span>{coin.tg_unique_influencers_count} TG</span>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
                                                     {/* Price change display - COMMENTED OUT - 24hrs uses live Binance data, others use coin's percentage_change */}
                                                     {/* {priceChangePercent !== null && (
                                                         <div className={`text-xs font-semibold mt-1 ${priceChangePercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -1031,12 +1187,17 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         <div className="space-y-2">
             {/* Header */}
             <div className="text-center">
-                <h2 className="text-3xl md:text-4xl font-bold mt-0 text-black">
+                {/* <h2 className="text-3xl md:text-4xl font-bold mt-0 text-black">
                     Trending Coins
-                </h2>
-                <p className="text-xl text-gray-600 mt-1">
-                    {lastUpdated ? formatDate(lastUpdated) : "N/A"}
-                </p>
+                </h2> */}
+                <div className="flex items-center justify-center gap-2 mt-1">
+                    <p className="text-xl text-gray-600">
+                        {lastUpdated ? formatDate(lastUpdated) : "N/A"}
+                    </p>
+                    <p className="text-sm text-gray-500 self-end mb-0.5">
+                        Update
+                    </p>
+                </div>
             </div>
 
             {/* Channel and Coin Type Dropdowns */}
@@ -1112,6 +1273,13 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                 </div>
             </div>
 
+            {/* Hover Instruction Text */}
+            <div className="text-center mt-4">
+                <p className="text-gray-600 text-md">
+                    Hover Mouse for coin and post below
+                </p>
+            </div>
+
             {/* Four Tables in One Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
                 {renderTable("6hrs", "Last 6 Hours")}
@@ -1119,6 +1287,67 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                 {renderTable("7days", "Last 7 Days")}
                 {renderTable("30days", "Last 30 Days")}
             </div>
+
+            {/* Influencer Popup */}
+            {influencerModal.isOpen && (
+                <>
+                    {/* Click outside to close */}
+                    <div
+                        className="fixed inset-0 z-[9999]"
+                        onClick={() => setInfluencerModal({ isOpen: false, type: '', influencers: {}, position: { x: 0, y: 0 } })}
+                        onScroll={() => setInfluencerModal({ isOpen: false, type: '', influencers: {}, position: { x: 0, y: 0 } })}
+                    />
+
+                    {/* Popup positioned near clicked element */}
+                    <div
+                        className="fixed z-[10000] bg-gray-800 text-white rounded-lg shadow-2xl p-3 w-[250px] flex flex-col"
+                        style={{
+                            left: `${influencerModal.position.x}px`,
+                            top: `${influencerModal.position.y}px`,
+                            maxHeight: '400px',
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-600 flex-shrink-0">
+                            <h3 className="text-xs font-bold flex items-center gap-1.5">
+                                {influencerModal.type === 'YouTube' ? (
+                                    <FaYoutube className="text-red-500 text-xs" />
+                                ) : (
+                                    <FaTelegramPlane className="text-blue-400 text-xs" />
+                                )}
+                                {influencerModal.type} Influencers
+                            </h3>
+                            <button
+                                onClick={() => setInfluencerModal({ isOpen: false, type: '', influencers: {}, position: { x: 0, y: 0 } })}
+                                className="text-gray-400 hover:text-white text-lg leading-none"
+                            >
+                                ×
+                            </button>
+                        </div>
+
+                        {/* Influencer List */}
+                        <div className="overflow-y-auto pr-1 min-h-0 flex-1" style={{ scrollbarWidth: 'thin' }}>
+                            <div className="space-y-1">
+                                {Object.entries(influencerModal.influencers).map(([channelId, name]) => (
+                                    <div
+                                        key={channelId}
+                                        className="text-[10px] py-1 text-gray-200 hover:text-white cursor-pointer hover:bg-gray-700 px-1 rounded transition-colors"
+                                        onClick={() => {
+                                            const route = influencerModal.type === 'YouTube'
+                                                ? `/influencers/${channelId}`
+                                                : `/telegram-influencer/${channelId}`;
+                                            router.push(route);
+                                        }}
+                                    >
+                                        • {name}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </>
+            )}
 
             {/* CSS Styles for Segmented Bars */}
             <style jsx>{`
