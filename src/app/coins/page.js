@@ -16,6 +16,7 @@ export default function CoinsPage() {
   const [expandedSummaries, setExpandedSummaries] = useState({}); // Track expanded state for each coin and timeframe
   const [selectedSummaryTimeframe, setSelectedSummaryTimeframe] = useState("6hrs"); // 6hrs, 24hrs, or 7days
   const [influencerModal, setInfluencerModal] = useState({ isOpen: false, type: '', influencers: {}, coinName: '', position: { x: 0, y: 0 } });
+  const [isMouseOverModal, setIsMouseOverModal] = useState(false);
 
   // Use timezone context for local/UTC time switching
   const { formatDate, useLocalTime, toggleTimezone, userTimezone } = useTimezone();
@@ -96,6 +97,27 @@ export default function CoinsPage() {
 
     fetchCoinsData();
   }, []);
+
+  // Close modal on scroll only if mouse is not over the modal
+  useEffect(() => {
+    const handleScroll = () => {
+      if (influencerModal.isOpen && !isMouseOverModal) {
+        setInfluencerModal({ isOpen: false, type: '', influencers: {}, coinName: '', position: { x: 0, y: 0 } });
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, true);
+    return () => {
+      window.removeEventListener('scroll', handleScroll, true);
+    };
+  }, [influencerModal.isOpen, isMouseOverModal]);
+
+  // Reset mouse over state when modal closes
+  useEffect(() => {
+    if (!influencerModal.isOpen) {
+      setIsMouseOverModal(false);
+    }
+  }, [influencerModal.isOpen]);
 
   const timeframeOptions = [
     { value: "6hrs", label: "6 Hours" },
@@ -1065,6 +1087,8 @@ export default function CoinsPage() {
               left: `${influencerModal.position.x}px`,
               top: `${influencerModal.position.y}px`,
             }}
+            onMouseEnter={() => setIsMouseOverModal(true)}
+            onMouseLeave={() => setIsMouseOverModal(false)}
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-600">

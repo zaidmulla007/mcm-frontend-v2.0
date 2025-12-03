@@ -29,6 +29,8 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         position: { x: 0, y: 0 }
     });
 
+    const [isMouseOverModal, setIsMouseOverModal] = useState(false);
+
     const fetchCombinedData = async () => {
         try {
             const response = await fetch(`/api/admin/strategyyoutubedata/ytandtg`);
@@ -73,10 +75,10 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         });
     }, [selectedPlatform, selectedCoinType]);
 
-    // Close modal on scroll
+    // Close modal on scroll only if mouse is not over the modal
     useEffect(() => {
         const handleScroll = () => {
-            if (influencerModal.isOpen) {
+            if (influencerModal.isOpen && !isMouseOverModal) {
                 setInfluencerModal({ isOpen: false, type: '', influencers: {}, position: { x: 0, y: 0 } });
             }
         };
@@ -85,6 +87,13 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         return () => {
             window.removeEventListener('scroll', handleScroll, true);
         };
+    }, [influencerModal.isOpen, isMouseOverModal]);
+
+    // Reset mouse over state when modal closes
+    useEffect(() => {
+        if (!influencerModal.isOpen) {
+            setIsMouseOverModal(false);
+        }
     }, [influencerModal.isOpen]);
 
     // Fetch initial Binance 24hr price data and setup WebSocket for live updates
@@ -1307,6 +1316,8 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                             maxHeight: '400px',
                         }}
                         onClick={(e) => e.stopPropagation()}
+                        onMouseEnter={() => setIsMouseOverModal(true)}
+                        onMouseLeave={() => setIsMouseOverModal(false)}
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-600 flex-shrink-0">
