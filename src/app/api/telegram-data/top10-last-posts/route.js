@@ -10,7 +10,7 @@ export async function GET(request) {
 
   try {
     // Build the external API URL
-    const url = `http://37.27.120.45:5901/api/admin/influencertelegramdata/top10-last-posts?type=${type}&limit=${limit}&timeframe=${timeframe}`;
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/influencertelegramdata/top10-last-posts?type=${type}&limit=${limit}&timeframe=${timeframe}`;
 
     console.log('Fetching Telegram top10-last-posts from:', url);
 

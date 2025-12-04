@@ -17,7 +17,7 @@ export async function GET(request) {
     console.log(`Fetching Telegram ranking data with params: timeframe=${timeframe}, year=${year}, quarter=${quarter}, rating=${rating}, starValue=${starValue}`);
 
     // Build the external URL with query parameters
-    const externalUrl = `http://37.27.120.45:5901/api/admin/rankingstelegramdata/ranking?timeframe=${timeframe}&year=${year}&quarter=${quarter}${starParam}`;
+    const externalUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/rankingstelegramdata/ranking?timeframe=${timeframe}&year=${year}&quarter=${quarter}${starParam}`;
     console.log(`Making request to: ${externalUrl}`);
 
     // Make request to external API

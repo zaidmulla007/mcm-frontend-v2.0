@@ -10,11 +10,11 @@ export async function GET(request, { params }) {
     const symbol = url.searchParams.get('symbol');
 
     // Build the external API URL
-    let externalApiUrl = `http://37.27.120.45:5901/api/admin/strategytelegramdata/page/${page}`;
-    
+    let externalApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/strategytelegramdata/page/${page}`;
+
     // Add query parameters if they exist
     const queryParams = new URLSearchParams();
-    
+
     if (startDate && startDate.trim() !== '') {
       queryParams.append('startDate', startDate);
     }
@@ -66,7 +66,7 @@ export async function GET(request, { params }) {
     });
   } catch (error) {
     console.error('Error fetching strategy telegram data:', error);
-    
+
     let errorMessage = 'Failed to fetch strategy telegram data';
     let statusCode = 500;
 

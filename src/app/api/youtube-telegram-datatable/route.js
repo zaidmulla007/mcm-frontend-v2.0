@@ -11,7 +11,7 @@ export async function GET(request) {
   const quarter = searchParams.get('quarter') || 'all';
 
   try {
-    const response = await fetch(`https://mcm.showmyui.com:5000/api/admin/strategyyoutubedata/ytandtg`,
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/strategyyoutubedata/ytandtg`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -60,7 +60,7 @@ export async function GET(request) {
     );
   } catch (error) {
     console.error('Error fetching YouTube Telegram DataTable data:', error);
-    
+
     let errorMessage = 'Failed to fetch YouTube Telegram DataTable data';
     let statusCode = 500;
 

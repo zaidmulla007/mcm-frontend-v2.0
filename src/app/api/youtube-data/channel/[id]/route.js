@@ -6,7 +6,7 @@ export async function GET(request, { params }) {
   try {
     console.log(`Fetching channel data for ID: ${id}`);
 
-    const externalUrl = `http://37.27.120.45:5000/api/admin/youtubedata/channel/${id}`;
+    const externalUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/youtubedata/channel/${id}`;
     console.log(`Making request to: ${externalUrl}`);
 
     // Test if the external API is accessible

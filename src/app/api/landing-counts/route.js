@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const response = await fetch('http://37.27.120.45:5901/api/admin/influenceryoutubedata/counts', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/influenceryoutubedata/counts`, {
       cache: 'no-store'
     });
 

@@ -12,7 +12,7 @@ export default function YoutubeTelegramDataTableLight() {
     // Fetch combined YouTube and Telegram data from API
     const fetchCombinedData = async () => {
         try {
-            const response = await fetch('http://37.27.120.45:5000/api/admin/strategyyoutubedata/ytandtg');
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/strategyyoutubedata/ytandtg`);
             //https://mcmapi.showmyui.com:3035/api/admin/youtubedata/ytandtg
             const data = await response.json();
             setCombinedData(data);
@@ -51,24 +51,24 @@ export default function YoutubeTelegramDataTableLight() {
     // Format date to display string (treating input as exact UTC time)
     const formatDateDisplay = (dateStr) => {
         if (!dateStr) return "N/A";
-        
+
         // Parse the date string directly without creating Date object
         const [datePart, timePart] = dateStr.split(' ');
         const [year, month, day] = datePart.split('-').map(Number);
         const [hours, minutes] = timePart.split(':').map(Number);
-        
+
         const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
         const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        
+
         // Calculate day of week manually for the given date
         const date = new Date(year, month - 1, day); // Just for day calculation
         const dayName = days[date.getDay()];
         const monthName = months[month - 1];
-        
+
         const ampm = hours >= 12 ? 'PM' : 'AM';
         const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
         const formattedHour = displayHour.toString().padStart(2, '0');
-        
+
         return `${dayName} ${day} ${monthName} ${year} ${formattedHour} ${ampm} UTC`;
     };
 
@@ -182,8 +182,8 @@ export default function YoutubeTelegramDataTableLight() {
 
         // Get the from date for this timeframe
         const getFromDateForTimeframe = () => {
-            if (combinedData && combinedData.resultsByTimeframe && 
-                combinedData.resultsByTimeframe[timeframe] && 
+            if (combinedData && combinedData.resultsByTimeframe &&
+                combinedData.resultsByTimeframe[timeframe] &&
                 combinedData.resultsByTimeframe[timeframe].dateRange) {
                 const fromTimeStr = combinedData.resultsByTimeframe[timeframe].dateRange.from;
                 console.log(`API Data for ${timeframe}:`, combinedData.resultsByTimeframe[timeframe].dateRange);

@@ -12,7 +12,7 @@ export async function GET(request, { params }) {
     }
 
     // Build the external API URL
-    const externalApiUrl = `http://37.27.120.45:5901/api/admin/influencertelegramdata/channel/${encodeURIComponent(channelId)}`;
+    const externalApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/influencertelegramdata/channel/${encodeURIComponent(channelId)}`;
 
     const response = await fetch(externalApiUrl, {
       headers: {
@@ -47,7 +47,7 @@ export async function GET(request, { params }) {
     });
   } catch (error) {
     console.error('Error fetching influencer telegram data:', error);
-    
+
     let errorMessage = 'Failed to fetch influencer telegram data';
     let statusCode = 500;
 

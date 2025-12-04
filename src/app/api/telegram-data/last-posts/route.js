@@ -13,7 +13,7 @@ export async function GET(request) {
 
   try {
     // Build the external API URL
-    const url = `http://37.27.120.45:5901/api/admin/influencertelegramdata/last-posts?channel_ids=${encodeURIComponent(channelIds)}`;
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/influencertelegramdata/last-posts?channel_ids=${encodeURIComponent(channelIds)}`;
 
     const response = await fetch(url, {
       headers: {

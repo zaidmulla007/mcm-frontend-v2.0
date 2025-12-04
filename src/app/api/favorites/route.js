@@ -1,6 +1,6 @@
 import api from "../axios";
 
-const API_BASE_URL = "http://37.27.120.45:5901/api/user/favourite";
+const API_BASE_URL = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/favourite`;
 
 export const favoritesAPI = {
   toggleFavorite: async (data) => {
@@ -17,7 +17,7 @@ export const favoritesAPI = {
     try {
       const config = {
         params: { userId },
-        headers: { 
+        headers: {
           'Content-Type': 'application/json'
         }
       };

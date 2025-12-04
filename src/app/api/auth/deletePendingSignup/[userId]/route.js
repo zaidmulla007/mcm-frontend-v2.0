@@ -6,7 +6,7 @@ export async function DELETE(request, { params }) {
     console.log('DeletePendingSignup request for userId:', userId);
 
     // Forward the request to your backend API
-    const response = await fetch(`http://37.27.120.45:5901/api/auth/deletePendingSignup/${userId}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/deletePendingSignup/${userId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ export async function POST(request, { params }) {
     console.log('DeletePendingSignup (sendBeacon) request for userId:', userId);
 
     // Forward the request to your backend API as DELETE
-    const response = await fetch(`http://37.27.120.45:5901/api/auth/deletePendingSignup/${userId}`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/deletePendingSignup/${userId}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

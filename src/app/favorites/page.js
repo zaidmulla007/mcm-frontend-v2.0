@@ -282,7 +282,7 @@ export default function FavoritesPage() {
         favouriteType: 'COIN'
       };
 
-      const response = await fetch('http://37.27.120.45:5901/api/user/favourite/toggleFavourite', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/favourite/toggleFavourite`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -354,11 +354,10 @@ export default function FavoritesPage() {
               <button
                 key={tab.value}
                 onClick={() => setActiveTab(tab.value)}
-                className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${
-                  activeTab === tab.value
+                className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${activeTab === tab.value
                     ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105'
                     : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
-                }`}
+                  }`}
               >
                 {tab.icon}
                 <span>{tab.label}</span>
@@ -391,268 +390,266 @@ export default function FavoritesPage() {
                           <th className="px-6 py-4 text-center text-sm font-semibold">Details</th>
                         </tr>
                       </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {visibleInfluencers.map((inf, index) => (
-                        <tr
-                          key={inf.id}
-                          className={`hover:bg-gray-50 transition-colors ${
-                            index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                          }`}
-                        >
-                          {/* Profile Image */}
-                          <td className="px-6 py-4">
-                            {inf.channel_thumbnails?.high?.url ? (
-                              <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
-                                <Image
-                                  src={inf.channel_thumbnails.high.url}
-                                  alt={inf.name || "Channel"}
-                                  width={48}
-                                  height={48}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold shadow-md">
-                                {inf.channel_id?.match(/\b\w/g)?.join("") || "?"}
-                              </div>
-                            )}
-                          </td>
-
-                          {/* Name */}
-                          <td className="px-6 py-4">
-                            <div className="text-sm font-semibold text-gray-900">
-                              {inf.name?.replace(/_/g, " ") || "Unknown"}
-                            </div>
-                          </td>
-
-                          {/* Platform */}
-                          <td className="px-6 py-4">
-                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                              inf.platform === "YouTube"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-blue-100 text-blue-700"
-                            }`}>
-                              {inf.platform === "YouTube" ? (
-                                <FaYoutube className="mr-1" />
+                      <tbody className="divide-y divide-gray-200">
+                        {visibleInfluencers.map((inf, index) => (
+                          <tr
+                            key={inf.id}
+                            className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                              }`}
+                          >
+                            {/* Profile Image */}
+                            <td className="px-6 py-4">
+                              {inf.channel_thumbnails?.high?.url ? (
+                                <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
+                                  <Image
+                                    src={inf.channel_thumbnails.high.url}
+                                    alt={inf.name || "Channel"}
+                                    width={48}
+                                    height={48}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
                               ) : (
-                                <FaTelegram className="mr-1" />
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold shadow-md">
+                                  {inf.channel_id?.match(/\b\w/g)?.join("") || "?"}
+                                </div>
                               )}
-                              {inf.platform}
-                            </span>
-                          </td>
+                            </td>
 
-                          {/* Channel URL */}
-                          <td className="px-6 py-4">
-                            <a
-                              href={
-                                inf.platform === "YouTube"
-                                  ? `https://www.youtube.com/channel/${inf.channel_id}`
-                                  : `https://t.me/${inf.channel_id}`
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm text-purple-600 hover:text-purple-800 hover:underline flex items-center gap-1"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <FaGlobe className="text-xs" />
-                              View Channel
-                            </a>
-                          </td>
+                            {/* Name */}
+                            <td className="px-6 py-4">
+                              <div className="text-sm font-semibold text-gray-900">
+                                {inf.name?.replace(/_/g, " ") || "Unknown"}
+                              </div>
+                            </td>
 
-                          {/* Action Link and Heart Icon */}
-                          <td className="px-6 py-4">
-                            <div className="flex items-center justify-center gap-3">
-                              <Link
+                            {/* Platform */}
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${inf.platform === "YouTube"
+                                  ? "bg-red-100 text-red-700"
+                                  : "bg-blue-100 text-blue-700"
+                                }`}>
+                                {inf.platform === "YouTube" ? (
+                                  <FaYoutube className="mr-1" />
+                                ) : (
+                                  <FaTelegram className="mr-1" />
+                                )}
+                                {inf.platform}
+                              </span>
+                            </td>
+
+                            {/* Channel URL */}
+                            <td className="px-6 py-4">
+                              <a
                                 href={
                                   inf.platform === "YouTube"
-                                    ? `/influencers/${inf.channel_id}`
-                                    : `/telegram-influencer/${inf.channel_id}`
+                                    ? `https://www.youtube.com/channel/${inf.channel_id}`
+                                    : `https://t.me/${inf.channel_id}`
                                 }
-                                className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-sm text-purple-600 hover:text-purple-800 hover:underline flex items-center gap-1"
+                                onClick={(e) => e.stopPropagation()}
                               >
-                                View Details
-                              </Link>
-                              <button
-                                onClick={() => handleRemoveFavorite(inf.channel_id, inf.platform === "YouTube" ? "YOUTUBE" : "TELEGRAM")}
-                                className="p-2 rounded-lg hover:bg-red-50 transition-all duration-200 group"
-                                aria-label="Remove from favorites"
-                              >
-                                <FaHeart className="text-red-500 text-xl group-hover:scale-110 transition-transform" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                                <FaGlobe className="text-xs" />
+                                View Channel
+                              </a>
+                            </td>
 
-              {/* Pagination Controls */}
-              {totalPages > 1 && (
-              <div className="flex flex-col items-center mt-8 space-y-4">
-                {/* Pagination Info */}
-                <div className="text-sm text-gray-700 text-center">
-                  Showing {startIndex + 1} to {Math.min(endIndex, totalInfluencers)} of {totalInfluencers} influencers
-                </div>
-
-                {/* Mobile Pagination - Show only on small screens */}
-                <div className="flex sm:hidden items-center justify-center space-x-1 w-full">
-                  {/* First Button - Mobile */}
-                  <button
-                    onClick={() => handlePageChange(1)}
-                    disabled={currentPage === 1}
-                    className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    ‹‹
-                  </button>
-
-                  {/* Previous Button - Mobile */}
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentPage === 1}
-                    className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    ‹
-                  </button>
-
-                  {/* Current Page Info */}
-                  <div className="flex items-center space-x-2 px-2">
-                    <span className="text-xs text-gray-600">Page</span>
-                    <span className="px-2 py-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded text-xs font-medium">
-                      {currentPage}
-                    </span>
-                    <span className="text-xs text-gray-600">of {totalPages}</span>
+                            {/* Action Link and Heart Icon */}
+                            <td className="px-6 py-4">
+                              <div className="flex items-center justify-center gap-3">
+                                <Link
+                                  href={
+                                    inf.platform === "YouTube"
+                                      ? `/influencers/${inf.channel_id}`
+                                      : `/telegram-influencer/${inf.channel_id}`
+                                  }
+                                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                                >
+                                  View Details
+                                </Link>
+                                <button
+                                  onClick={() => handleRemoveFavorite(inf.channel_id, inf.platform === "YouTube" ? "YOUTUBE" : "TELEGRAM")}
+                                  className="p-2 rounded-lg hover:bg-red-50 transition-all duration-200 group"
+                                  aria-label="Remove from favorites"
+                                >
+                                  <FaHeart className="text-red-500 text-xl group-hover:scale-110 transition-transform" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-
-                  {/* Next Button - Mobile */}
-                  <button
-                    onClick={handleNext}
-                    disabled={currentPage === totalPages}
-                    className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    ›
-                  </button>
-
-                  {/* Last Button - Mobile */}
-                  <button
-                    onClick={() => handlePageChange(totalPages)}
-                    disabled={currentPage === totalPages}
-                    className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    ››
-                  </button>
                 </div>
 
-                {/* Desktop/Tablet Pagination - Show on medium screens and up */}
-                <div className="hidden sm:flex items-center space-x-1 md:space-x-2 flex-wrap justify-center">
-                  {/* First Button - Desktop */}
-                  <button
-                    onClick={() => handlePageChange(1)}
-                    disabled={currentPage === 1}
-                    className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    &lt;&lt;
-                  </button>
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col items-center mt-8 space-y-4">
+                    {/* Pagination Info */}
+                    <div className="text-sm text-gray-700 text-center">
+                      Showing {startIndex + 1} to {Math.min(endIndex, totalInfluencers)} of {totalInfluencers} influencers
+                    </div>
 
-                  {/* Previous Button - Desktop */}
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentPage === 1}
-                    className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    &lt;
-                  </button>
-
-                  {/* First Page */}
-                  {getPageNumbers()[0] > 1 && (
-                    <>
+                    {/* Mobile Pagination - Show only on small screens */}
+                    <div className="flex sm:hidden items-center justify-center space-x-1 w-full">
+                      {/* First Button - Mobile */}
                       <button
                         onClick={() => handlePageChange(1)}
-                        className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500 transition-all duration-200"
+                        disabled={currentPage === 1}
+                        className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
                       >
-                        1
+                        ‹‹
                       </button>
-                      {getPageNumbers()[0] > 2 && (
-                        <span className="text-gray-500 text-xs">...</span>
-                      )}
-                    </>
-                  )}
 
-                  {/* Page Numbers */}
-                  {getPageNumbers().map((page) => (
-                    <button
-                      key={page}
-                      onClick={() => handlePageChange(page)}
-                      className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === page
-                        ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
-                        : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                        }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
+                      {/* Previous Button - Mobile */}
+                      <button
+                        onClick={handlePrevious}
+                        disabled={currentPage === 1}
+                        className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === 1
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        ‹
+                      </button>
 
-                  {/* Last Page */}
-                  {getPageNumbers()[getPageNumbers().length - 1] < totalPages && (
-                    <>
-                      {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
-                        <span className="text-gray-500 text-xs">...</span>
-                      )}
+                      {/* Current Page Info */}
+                      <div className="flex items-center space-x-2 px-2">
+                        <span className="text-xs text-gray-600">Page</span>
+                        <span className="px-2 py-1 bg-gradient-to-r from-purple-500 to-blue-500 text-white rounded text-xs font-medium">
+                          {currentPage}
+                        </span>
+                        <span className="text-xs text-gray-600">of {totalPages}</span>
+                      </div>
+
+                      {/* Next Button - Mobile */}
+                      <button
+                        onClick={handleNext}
+                        disabled={currentPage === totalPages}
+                        className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        ›
+                      </button>
+
+                      {/* Last Button - Mobile */}
                       <button
                         onClick={() => handlePageChange(totalPages)}
-                        className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500 transition-all duration-200"
+                        disabled={currentPage === totalPages}
+                        className={`px-2 py-2 rounded-lg font-medium text-xs transition-all duration-200 ${currentPage === totalPages
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
                       >
-                        {totalPages}
+                        ››
                       </button>
-                    </>
-                  )}
+                    </div>
 
-                  {/* Next Button - Desktop */}
-                  <button
-                    onClick={handleNext}
-                    disabled={currentPage === totalPages}
-                    className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    &gt;
-                  </button>
+                    {/* Desktop/Tablet Pagination - Show on medium screens and up */}
+                    <div className="hidden sm:flex items-center space-x-1 md:space-x-2 flex-wrap justify-center">
+                      {/* First Button - Desktop */}
+                      <button
+                        onClick={() => handlePageChange(1)}
+                        disabled={currentPage === 1}
+                        className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        &lt;&lt;
+                      </button>
 
-                  {/* Last Button - Desktop */}
-                  <button
-                    onClick={() => handlePageChange(totalPages)}
-                    disabled={currentPage === totalPages}
-                    className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
-                      ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
-                      }`}
-                  >
-                    &gt;&gt;
-                  </button>
-                </div>
-              </div>
-              )}
-            </>
+                      {/* Previous Button - Desktop */}
+                      <button
+                        onClick={handlePrevious}
+                        disabled={currentPage === 1}
+                        className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === 1
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        &lt;
+                      </button>
+
+                      {/* First Page */}
+                      {getPageNumbers()[0] > 1 && (
+                        <>
+                          <button
+                            onClick={() => handlePageChange(1)}
+                            className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500 transition-all duration-200"
+                          >
+                            1
+                          </button>
+                          {getPageNumbers()[0] > 2 && (
+                            <span className="text-gray-500 text-xs">...</span>
+                          )}
+                        </>
+                      )}
+
+                      {/* Page Numbers */}
+                      {getPageNumbers().map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === page
+                            ? 'bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-lg'
+                            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                            }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+
+                      {/* Last Page */}
+                      {getPageNumbers()[getPageNumbers().length - 1] < totalPages && (
+                        <>
+                          {getPageNumbers()[getPageNumbers().length - 1] < totalPages - 1 && (
+                            <span className="text-gray-500 text-xs">...</span>
+                          )}
+                          <button
+                            onClick={() => handlePageChange(totalPages)}
+                            className="px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500 transition-all duration-200"
+                          >
+                            {totalPages}
+                          </button>
+                        </>
+                      )}
+
+                      {/* Next Button - Desktop */}
+                      <button
+                        onClick={handleNext}
+                        disabled={currentPage === totalPages}
+                        className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        &gt;
+                      </button>
+
+                      {/* Last Button - Desktop */}
+                      <button
+                        onClick={() => handlePageChange(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className={`px-2 md:px-4 py-2 rounded-lg font-medium text-xs md:text-sm transition-all duration-200 ${currentPage === totalPages
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                          : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-300 hover:border-purple-500'
+                          }`}
+                      >
+                        &gt;&gt;
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="text-center text-gray-500 py-16">
                 No favorites found
@@ -686,9 +683,8 @@ export default function FavoritesPage() {
                         {visibleInfluencers.map((coin, index) => (
                           <tr
                             key={coin.id}
-                            className={`hover:bg-gray-50 transition-colors ${
-                              index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                            }`}
+                            className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
+                              }`}
                           >
                             {/* Coin Image */}
                             <td className="px-6 py-4">
@@ -735,11 +731,10 @@ export default function FavoritesPage() {
 
                             {/* 24h Change */}
                             <td className="px-6 py-4">
-                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                                coin.price_change_24h >= 0
+                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${coin.price_change_24h >= 0
                                   ? "bg-green-100 text-green-700"
                                   : "bg-red-100 text-red-700"
-                              }`}>
+                                }`}>
                                 {coin.price_change_24h >= 0 ? '+' : ''}{coin.price_change_24h.toFixed(2)}%
                               </span>
                             </td>

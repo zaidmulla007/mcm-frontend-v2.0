@@ -7,7 +7,7 @@ export async function GET(request) {
 
   try {
     // Build the external API URL
-    const url = `http://37.27.120.45:5901/api/admin/influenceryoutubedata/3days-all-posts?page=${page}&limit=${limit}`;
+    const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/influenceryoutubedata/3days-all-posts?page=${page}&limit=${limit}`;
 
     const response = await fetch(url, {
       headers: {

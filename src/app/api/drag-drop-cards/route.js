@@ -5,7 +5,7 @@ export async function GET(request) {
 
   // Extract selectedUserId with default
   const selectedUserId = searchParams.get('selectedUserId') || searchParams.get('userId') || 'UC4c5FPpwCpb6q8J--i8QHtA';
-  
+
   // Create params object and convert to URLSearchParams
   const params = new URLSearchParams();
   searchParams.forEach((value, key) => {
@@ -13,15 +13,15 @@ export async function GET(request) {
       params.append(key, value);
     }
   });
-  
+
   // Add default params if not provided
   if (!params.has('sentiment')) params.set('sentiment', 'strong_bullish');
   if (!params.has('type')) params.set('type', 'yearly');
 
   try {
-    const apiUrl = `https://mcm.showmyui.com:5000/api/admin/influenceryoutubedata/channel/${selectedUserId}?${params.toString()}`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/influenceryoutubedata/channel/${selectedUserId}?${params.toString()}`;
     console.log('Fetching from:', apiUrl);
-    
+
     const response = await fetch(apiUrl,
       {
         headers: {
@@ -77,7 +77,7 @@ export async function GET(request) {
     console.error('Error name:', error.name);
     console.error('Error message:', error.message);
     console.error('Error cause:', error.cause);
-    
+
     let errorMessage = 'Failed to fetch Drag Drop Cards data';
     let statusCode = 500;
 

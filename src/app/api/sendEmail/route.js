@@ -4,9 +4,9 @@ export async function POST(request) {
   try {
     const body = await request.json();
     console.log('SendEmail request body:', body);
-    
+
     // Forward the request to your backend API
-    const response = await fetch('http://37.27.120.45:5901/api/sendEmail', {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/sendEmail`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -20,7 +20,7 @@ export async function POST(request) {
 
     // Return the response from the backend (whether success or error)
     return NextResponse.json(data, { status: response.status });
-    
+
   } catch (error) {
     console.error('SendEmail API error:', error);
     return NextResponse.json(

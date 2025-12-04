@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request, { params }) {
   const { id } = params;
-  
+
   // Set fixed parameters
   const searchParams = new URLSearchParams({
     sentiment: 'strong_bullish',
@@ -10,9 +10,9 @@ export async function GET(request, { params }) {
   });
 
   try {
-    const apiUrl = `http://37.27.120.45:5901/api/admin/influenceryoutubedata/channel/${id}?${searchParams.toString()}`;
+    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/influenceryoutubedata/channel/${id}?${searchParams.toString()}`;
     console.log('Fetching from:', apiUrl);
-    
+
     const response = await fetch(apiUrl, {
       headers: {
         'Content-Type': 'application/json',
@@ -23,7 +23,7 @@ export async function GET(request, { params }) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`External API returned status: ${response.status}, body: ${errorText}`);
-      
+
       return NextResponse.json(
         {
           error: `External API error: ${response.status}`,
@@ -47,7 +47,7 @@ export async function GET(request, { params }) {
     console.error('Error fetching influencer data:', error);
     console.error('Error name:', error.name);
     console.error('Error message:', error.message);
-    
+
     let errorMessage = 'Failed to fetch influencer data';
     let statusCode = 500;
 

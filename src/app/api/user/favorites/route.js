@@ -14,7 +14,7 @@ export async function GET(request) {
 
     // Fetch favorites from external API
     const response = await fetch(
-      `http://37.27.120.45:5901/api/user/favourite?userId=${userId}`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/favourite?userId=${userId}`,
       {
         method: 'GET',
         headers: {

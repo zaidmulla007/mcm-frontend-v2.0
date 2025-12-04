@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET(request) {
   try {
     const response = await fetch(
-      `http://37.27.120.45:5901/api/admin/strategyyoutubedata/ytandtg`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/strategyyoutubedata/ytandtg`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ export async function GET(request) {
     });
   } catch (error) {
     console.error('Error fetching YouTube Telegram data:', error);
-    
+
     let errorMessage = 'Failed to fetch YouTube Telegram data';
     let statusCode = 500;
 

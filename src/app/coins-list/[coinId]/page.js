@@ -8,7 +8,7 @@ import Swal from "sweetalert2";
 const API_BASE = "/api/admin/coinindex/mcmdb/filter";
 
 /* Favorites API Base URL */
-const FAVORITES_API_BASE = "http://37.27.120.45:5901/api/user/favourite";
+const FAVORITES_API_BASE = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/favourite`;
 
 /* TradingView Widget Component */
 function TradingViewWidget({ widgetType, symbol, config = {} }) {
@@ -68,7 +68,7 @@ function connectBinanceTicker(binanceSymbol, onMessage, onError) {
     ws = new WebSocket(url);
   } catch (err) {
     if (onError) onError(err);
-    return () => {};
+    return () => { };
   }
 
   ws.onopen = () => {
@@ -126,7 +126,7 @@ function connectBinanceTicker(binanceSymbol, onMessage, onError) {
       if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) {
         ws.close();
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 }
 
@@ -842,7 +842,7 @@ export default function CoinDetail() {
                     letterSpacing: "-0.3px"
                   }}>
                     {binanceLive.lastPrice
-                      ? `$${binanceLive.lastPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`
+                      ? `$${binanceLive.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                       : "—"
                     }
                   </div>
@@ -1022,31 +1022,31 @@ export default function CoinDetail() {
                     <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
                       <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>24h High</td>
                       <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                        {binanceLive.highPrice ? `$${binanceLive.highPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
+                        {binanceLive.highPrice ? `$${binanceLive.highPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
                       </td>
                       <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>24h Low</td>
                       <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                        {binanceLive.lowPrice ? `$${binanceLive.lowPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
+                        {binanceLive.lowPrice ? `$${binanceLive.lowPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
                       </td>
                     </tr>
                     <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
                       <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Open Price</td>
                       <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                        {binanceLive.openPrice ? `$${binanceLive.openPrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
+                        {binanceLive.openPrice ? `$${binanceLive.openPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
                       </td>
                       <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Prev Close</td>
                       <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                        {binanceLive.prevClosePrice ? `$${binanceLive.prevClosePrice.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
+                        {binanceLive.prevClosePrice ? `$${binanceLive.prevClosePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
                       </td>
                     </tr>
                     <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
                       <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Price Change</td>
                       <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: priceChangeColor, fontSize: "13px" }}>
-                        {binanceLive.priceChange ? `$${binanceLive.priceChange.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : "—"}
+                        {binanceLive.priceChange ? `$${binanceLive.priceChange.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
                       </td>
                       <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Volume (24h)</td>
                       <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                        {binanceLive.volume ? binanceLive.volume.toLocaleString(undefined, {maximumFractionDigits: 2}) : "—"}
+                        {binanceLive.volume ? binanceLive.volume.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—"}
                       </td>
                     </tr>
                     <tr>
@@ -1054,7 +1054,7 @@ export default function CoinDetail() {
                       <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}></td>
                       <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Quote Volume</td>
                       <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                        {binanceLive.quoteVolume ? `$${binanceLive.quoteVolume.toLocaleString(undefined, {maximumFractionDigits: 0})}` : "—"}
+                        {binanceLive.quoteVolume ? `$${binanceLive.quoteVolume.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "—"}
                       </td>
                     </tr>
                   </tbody>

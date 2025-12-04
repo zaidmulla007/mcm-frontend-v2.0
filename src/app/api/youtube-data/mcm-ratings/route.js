@@ -4,7 +4,7 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const timeframe = searchParams.get('timeframe') || '1_hour';
 
-  const apiUrl = `http://37.27.120.45:5901/api/admin/rankingsyoutubedata/specificFieldRankings?&fields=star_rating.yearly.*.${timeframe}`;
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/rankingsyoutubedata/specificFieldRankings?&fields=star_rating.yearly.*.${timeframe}`;
 
   console.log('Fetching YouTube MCM ratings from:', apiUrl);
 

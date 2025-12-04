@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const response = await fetch(
-      "http://37.27.120.45:5901/api/admin/coinindex/mcmdb/filter?symbols=btc,eth,bnb,xrp,ada,doge,sol,dot,matic,ltc",
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/coinindex/mcmdb/filter?symbols=btc,eth,bnb,xrp,ada,doge,sol,dot,matic,ltc`,
       {
         cache: "no-store",
       }

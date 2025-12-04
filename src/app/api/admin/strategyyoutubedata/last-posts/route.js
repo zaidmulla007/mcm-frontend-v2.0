@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 export async function GET(request) {
   try {
     const response = await fetch(
-      `http://37.27.120.45:5901/api/admin/strategyyoutubedata/last-posts`,
+      `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/strategyyoutubedata/last-posts`,
       {
         headers: {
           'Content-Type': 'application/json',

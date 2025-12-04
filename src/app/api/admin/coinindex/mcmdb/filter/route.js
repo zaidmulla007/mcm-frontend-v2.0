@@ -27,7 +27,7 @@ export async function GET(request) {
       );
     }
 
-    const externalApiUrl = `http://37.27.120.45:5901/api/admin/coinindex/mcmdb/filter?${params.toString()}`;
+    const externalApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/coinindex/mcmdb/filter?${params.toString()}`;
 
     const response = await fetch(externalApiUrl, {
       method: 'GET',
@@ -64,7 +64,7 @@ export async function GET(request) {
     });
   } catch (error) {
     console.error('Error fetching coin index data:', error);
-    
+
     let errorMessage = 'Failed to fetch coin index data';
     let statusCode = 500;
 

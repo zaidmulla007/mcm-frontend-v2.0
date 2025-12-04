@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request) {
     try {
-        const apiUrl = `http://37.27.120.45:5901/api/admin/influenceryoutubedata/channelids`;
+        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/influenceryoutubedata/channelids`;
 
         const response = await fetch(apiUrl, {
             method: 'GET',

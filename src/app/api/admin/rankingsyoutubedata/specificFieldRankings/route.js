@@ -21,7 +21,7 @@ export async function GET(request) {
     }
 
     // Build the external API URL with query parameters
-    const externalApiUrl = `http://37.27.120.45:5901/api/admin/rankingsyoutubedata/specificFieldRankings?channel_id=${encodeURIComponent(channelId)}&fields=${encodeURIComponent(fields)}`;
+    const externalApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/rankingsyoutubedata/specificFieldRankings?channel_id=${encodeURIComponent(channelId)}&fields=${encodeURIComponent(fields)}`;
 
     console.log('Fetching YouTube rankings data from:', externalApiUrl);
 
