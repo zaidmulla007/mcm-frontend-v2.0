@@ -730,7 +730,13 @@ export default function CoinsPage() {
                                 <div className="text-[10px] text-black-500">
                                   {coin.coin_name.charAt(0).toUpperCase() + coin.coin_name.slice(1)}
                                 </div>
-                                <div className="text-[10px] font-semibold text-black-900 mt-1">
+                                <div
+                                  className="text-[10px] font-semibold text-black-900 mt-1 cursor-pointer hover:text-blue-600 transition-colors"
+                                  onClick={() => {
+                                    // Navigate to landing page with coin data as query parameters
+                                    router.push(`/landing-page?source_id=${coin.source_id}&name=${encodeURIComponent(coin.coin_name)}&symbol=${coin.symbol}`);
+                                  }}
+                                >
                                   {coin.total_mentions} posts
                                 </div>
 
@@ -1123,8 +1129,8 @@ export default function CoinsPage() {
                       className="text-[10px] py-1 text-gray-200 hover:text-white cursor-pointer hover:bg-gray-700 px-1 rounded transition-colors"
                       onClick={() => {
                         const route = influencerModal.type === 'YouTube'
-                          ? `/influencers/${influencer.channel_id}`
-                          : `/telegram-influencer/${influencer.channel_id}`;
+                          ? `/influencers/${influencer.channel_id}?tab=recentActivities`
+                          : `/telegram-influencer/${influencer.channel_id}?tab=recentActivities`;
                         router.push(route);
                       }}
                     >
@@ -1138,8 +1144,8 @@ export default function CoinsPage() {
                       className="text-[10px] py-1 text-gray-200 hover:text-white cursor-pointer hover:bg-gray-700 px-1 rounded transition-colors"
                       onClick={() => {
                         const route = influencerModal.type === 'YouTube'
-                          ? `/influencers/${channelId}`
-                          : `/telegram-influencer/${channelId}`;
+                          ? `/influencers/${channelId}?tab=recentActivities`
+                          : `/telegram-influencer/${channelId}?tab=recentActivities`;
                         router.push(route);
                       }}
                     >

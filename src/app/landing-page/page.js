@@ -3,6 +3,7 @@ import { motion, AnimatePresence, useMotionValue, useAnimationControls } from "f
 import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import moment from "moment-timezone";
 import { useTimezone } from "../contexts/TimezoneContext";
 import DragDropCards from "../../components/DragDropCards";
@@ -1140,6 +1141,7 @@ const ProfessionalTrendingTable = ({ title, data, isLocked = false }) => {
 };
 
 export default function Home() {
+  const searchParams = useSearchParams();
   const { useLocalTime, toggleTimezone, formatDate } = useTimezone();
   const { top10Data, isConnected } = useTop10LivePrice();
   const scrollingData = [...top10Data, ...top10Data];
@@ -1209,6 +1211,45 @@ export default function Home() {
   useEffect(() => {
     fetchUpdateTimes();
   }, []);
+
+  // Handle query parameters from /coins page navigation
+  useEffect(() => {
+    const source_id = searchParams.get('source_id');
+    const name = searchParams.get('name');
+    const symbol = searchParams.get('symbol');
+
+    if (source_id && name && symbol) {
+      // Wait for the component to mount and render
+      const checkAndDispatch = () => {
+        const influencersSection = document.getElementById('youtube-telegram-influencers');
+        if (influencersSection) {
+          // Scroll to YouTubeTelegramInfluencers section
+          influencersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+          // Wait a bit more after scroll to ensure component is ready
+          setTimeout(() => {
+            // Dispatch custom event with coin data and reset source to Combined
+            const event = new CustomEvent('filterByCoin', {
+              detail: {
+                source_id: source_id,
+                name: name,
+                symbol: symbol,
+                resetSource: 'Combined'
+              }
+            });
+            window.dispatchEvent(event);
+            console.log('Event dispatched with:', { source_id, name, symbol });
+          }, 300);
+        } else {
+          // If element not found, try again after a short delay
+          setTimeout(checkAndDispatch, 200);
+        }
+      };
+
+      // Initial delay to let the page load
+      setTimeout(checkAndDispatch, 800);
+    }
+  }, [searchParams]);
 
   // Use static YouTube profiles data - no API calls
   const topInfluencers = staticYouTubeProfiles;
