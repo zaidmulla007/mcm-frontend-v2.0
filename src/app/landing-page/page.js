@@ -2,7 +2,7 @@
 import { motion, AnimatePresence, useMotionValue, useAnimationControls } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import moment from "moment-timezone";
 import { useTimezone } from "../contexts/TimezoneContext";
@@ -1140,7 +1140,8 @@ const ProfessionalTrendingTable = ({ title, data, isLocked = false }) => {
   );
 };
 
-export default function Home() {
+// Component that uses searchParams - wrapped in Suspense
+function LandingPageContent() {
   const searchParams = useSearchParams();
   const { useLocalTime, toggleTimezone, formatDate } = useTimezone();
   const { top10Data, isConnected } = useTop10LivePrice();
@@ -1898,5 +1899,19 @@ export default function Home() {
         </div>
       </footer> */}
     </div>
+  );
+}
+
+// Wrapper component with Suspense boundary
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+        <p className="mt-4 text-gray-600">Loading...</p>
+      </div>
+    </div>}>
+      <LandingPageContent />
+    </Suspense>
   );
 }
