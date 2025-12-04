@@ -506,19 +506,19 @@ export default function YouTubeTelegramInfluencers() {
                                     {selectedPlatform === "Combined" ? (
                                         <>
                                             <YouTubeIcon className="text-red-900" />
-                                            <span className="text-sm text-black font-medium">YouTube</span>
+                                            {/* <span className="text-sm text-black font-medium">YouTube</span> */}
                                             <TelegramIcon className="text-blue-900" />
-                                            <span className="text-sm text-black font-medium">Telegram</span>
+                                            {/* <span className="text-sm text-black font-medium">Telegram</span> */}
                                         </>
                                     ) : selectedPlatform === "YouTube" ? (
                                         <>
                                             <YouTubeIcon className="text-red-900" />
-                                            <span className="text-sm text-black font-medium">YouTube</span>
+                                            {/* <span className="text-sm text-black font-medium">YouTube</span> */}
                                         </>
                                     ) : (
                                         <>
                                             <TelegramIcon className="text-blue-900" />
-                                            <span className="text-sm text-black font-medium">Telegram</span>
+                                            {/* <span className="text-sm text-black font-medium">Telegram</span> */}
                                         </>
                                     )}
                                 </div>

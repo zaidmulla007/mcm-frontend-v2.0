@@ -890,21 +890,21 @@ export default function CoinsPage() {
                                   <div
                                     className="cursor-pointer mt-1"
                                     onClick={(e) => {
-                                      if (coin.yt_unique_names && Object.keys(coin.yt_unique_names).length > 0) {
+                                      if (coin.yt_unique_inf && coin.yt_unique_inf.length > 0) {
                                         const rect = e.currentTarget.getBoundingClientRect();
                                         setInfluencerModal({
                                           isOpen: true,
                                           type: 'YouTube',
-                                          influencers: coin.yt_unique_names,
+                                          influencers: coin.yt_unique_inf,
                                           // coinName: coin.coin_name,
                                           position: { x: rect.right + 10, y: rect.top }
                                         });
                                       }
                                     }}
                                   >
-                                    <div className="text-[10px] text-red-600 font-semibold flex items-center justify-center gap-1 hover:text-red-700 transition-colors">
-                                      <FaYoutube className="text-xs" />
-                                      <span>{coin.yt_unique_influencers_count} YT</span>
+                                    <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
+                                      <FaYoutube className="text-red-600 text-xs" />
+                                      <span className="text-black">{coin.yt_unique_influencers_count} YT</span>
                                     </div>
                                   </div>
                                 )}
@@ -914,21 +914,21 @@ export default function CoinsPage() {
                                   <div
                                     className="cursor-pointer mt-1"
                                     onClick={(e) => {
-                                      if (coin.tg_unique_names && Object.keys(coin.tg_unique_names).length > 0) {
+                                      if (coin.tg_unique_inf && coin.tg_unique_inf.length > 0) {
                                         const rect = e.currentTarget.getBoundingClientRect();
                                         setInfluencerModal({
                                           isOpen: true,
                                           type: 'Telegram',
-                                          influencers: coin.tg_unique_names,
+                                          influencers: coin.tg_unique_inf,
                                           // coinName: coin.coin_name,
                                           position: { x: rect.right + 10, y: rect.top }
                                         });
                                       }
                                     }}
                                   >
-                                    <div className="text-[10px] text-blue-600 font-semibold flex items-center justify-center gap-1 hover:text-blue-700 transition-colors">
-                                      <FaTelegramPlane className="text-xs" />
-                                      <span>{coin.tg_unique_influencers_count} TG</span>
+                                    <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
+                                      <FaTelegramPlane className="text-blue-600 text-xs" />
+                                      <span className="text-black">{coin.tg_unique_influencers_count} TG</span>
                                     </div>
                                   </div>
                                 )}
@@ -1267,20 +1267,37 @@ export default function CoinsPage() {
             {/* Influencer List */}
             <div className="overflow-y-auto flex-1 pr-1" style={{ scrollbarWidth: 'thin' }}>
               <div className="space-y-1">
-                {Object.entries(influencerModal.influencers).map(([channelId, name]) => (
-                  <div
-                    key={channelId}
-                    className="text-[10px] py-1 text-gray-200 hover:text-white cursor-pointer hover:bg-gray-700 px-1 rounded transition-colors"
-                    onClick={() => {
-                      const route = influencerModal.type === 'YouTube'
-                        ? `/influencers/${channelId}`
-                        : `/telegram-influencer/${channelId}`;
-                      router.push(route);
-                    }}
-                  >
-                    • {name}
-                  </div>
-                ))}
+                {Array.isArray(influencerModal.influencers) ? (
+                  influencerModal.influencers.map((influencer) => (
+                    <div
+                      key={influencer.channel_id}
+                      className="text-[10px] py-1 text-gray-200 hover:text-white cursor-pointer hover:bg-gray-700 px-1 rounded transition-colors"
+                      onClick={() => {
+                        const route = influencerModal.type === 'YouTube'
+                          ? `/influencers/${influencer.channel_id}`
+                          : `/telegram-influencer/${influencer.channel_id}`;
+                        router.push(route);
+                      }}
+                    >
+                      • {influencer.influencer_name}
+                    </div>
+                  ))
+                ) : (
+                  Object.entries(influencerModal.influencers).map(([channelId, name]) => (
+                    <div
+                      key={channelId}
+                      className="text-[10px] py-1 text-gray-200 hover:text-white cursor-pointer hover:bg-gray-700 px-1 rounded transition-colors"
+                      onClick={() => {
+                        const route = influencerModal.type === 'YouTube'
+                          ? `/influencers/${channelId}`
+                          : `/telegram-influencer/${channelId}`;
+                        router.push(route);
+                      }}
+                    >
+                      • {name}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>
