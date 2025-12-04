@@ -849,7 +849,7 @@ export default function CoinsPage() {
                           {/* Publish Price + Price Change % */}
                           <td className="pl-0.5 pr-2 py-3">
                             <div className="flex flex-col justify-start">
-                              {coin.avg_base_price && coin.binance_prices && coin.binance_prices.length > 0 ? (
+                              {coin.avg_base_price ? (
                                 (() => {
                                   const num = Number(coin.avg_base_price);
                                   const isThreeDigitsOrLess = Math.floor(num).toString().length <= 3;

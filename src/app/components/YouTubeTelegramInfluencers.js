@@ -202,8 +202,13 @@ export default function YouTubeTelegramInfluencers() {
     // Listen for coin filter event
     useEffect(() => {
         const handleFilterByCoin = (event) => {
-            const { source_id, name, symbol } = event.detail;
+            const { source_id, name, symbol, resetSource } = event.detail;
             setSelectedCoin({ source_id, name, symbol });
+
+            // Reset platform to Combined if resetSource is provided
+            if (resetSource) {
+                setSelectedPlatform(resetSource);
+            }
         };
 
         window.addEventListener('filterByCoin', handleFilterByCoin);

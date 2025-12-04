@@ -634,12 +634,13 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                 const influencersSection = document.getElementById('youtube-telegram-influencers');
                                                                 if (influencersSection) {
                                                                     influencersSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                                                                    // Dispatch custom event with coin data
+                                                                    // Dispatch custom event with coin data and reset source to Combined
                                                                     const event = new CustomEvent('filterByCoin', {
                                                                         detail: {
                                                                             source_id: coin.source_id,
                                                                             name: coin.coin_name,
-                                                                            symbol: coin.symbol
+                                                                            symbol: coin.symbol,
+                                                                            resetSource: 'Combined'
                                                                         }
                                                                     });
                                                                     window.dispatchEvent(event);
@@ -656,10 +657,10 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                             className="cursor-pointer mt-1"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                if (coin.yt_unique_names && Object.keys(coin.yt_unique_names).length > 0) {
+                                                                if (coin.yt_unique_inf && coin.yt_unique_inf.length > 0) {
                                                                     const rect = e.currentTarget.getBoundingClientRect();
                                                                     const modalWidth = 250;
-                                                                    const influencerCount = Object.keys(coin.yt_unique_names).length;
+                                                                    const influencerCount = coin.yt_unique_inf.length;
                                                                     // Calculate approximate modal height based on content
                                                                     // Header: ~50px, Each item: ~28px, Padding: ~20px
                                                                     const estimatedModalHeight = Math.min(400, 70 + (influencerCount * 28));
@@ -693,7 +694,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                     setInfluencerModal({
                                                                         isOpen: true,
                                                                         type: 'YouTube',
-                                                                        influencers: coin.yt_unique_names,
+                                                                        influencers: coin.yt_unique_inf,
                                                                         position: { x, y }
                                                                     });
                                                                 }
@@ -712,10 +713,10 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                             className="cursor-pointer mt-1"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                if (coin.tg_unique_names && Object.keys(coin.tg_unique_names).length > 0) {
+                                                                if (coin.tg_unique_inf && coin.tg_unique_inf.length > 0) {
                                                                     const rect = e.currentTarget.getBoundingClientRect();
                                                                     const modalWidth = 250;
-                                                                    const influencerCount = Object.keys(coin.tg_unique_names).length;
+                                                                    const influencerCount = coin.tg_unique_inf.length;
                                                                     // Calculate approximate modal height based on content
                                                                     // Header: ~50px, Each item: ~28px, Padding: ~20px
                                                                     const estimatedModalHeight = Math.min(400, 70 + (influencerCount * 28));
@@ -749,7 +750,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                     setInfluencerModal({
                                                                         isOpen: true,
                                                                         type: 'Telegram',
-                                                                        influencers: coin.tg_unique_names,
+                                                                        influencers: coin.tg_unique_inf,
                                                                         position: { x, y }
                                                                     });
                                                                 }
@@ -1340,20 +1341,22 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                         {/* Influencer List */}
                         <div className="overflow-y-auto pr-1 min-h-0 flex-1" style={{ scrollbarWidth: 'thin' }}>
                             <div className="space-y-1">
-                                {Object.entries(influencerModal.influencers).map(([channelId, name]) => (
-                                    <div
-                                        key={channelId}
-                                        className="text-[10px] py-1 text-gray-200 hover:text-white cursor-pointer hover:bg-gray-700 px-1 rounded transition-colors"
-                                        onClick={() => {
-                                            const route = influencerModal.type === 'YouTube'
-                                                ? `/influencers/${channelId}`
-                                                : `/telegram-influencer/${channelId}`;
-                                            router.push(route);
-                                        }}
-                                    >
-                                        • {name}
-                                    </div>
-                                ))}
+                                {Array.isArray(influencerModal.influencers) ? (
+                                    influencerModal.influencers.map((influencer) => (
+                                        <div
+                                            key={influencer.channel_id}
+                                            className="text-[10px] py-1 text-gray-200 hover:text-white cursor-pointer hover:bg-gray-700 px-1 rounded transition-colors"
+                                            onClick={() => {
+                                                const route = influencerModal.type === 'YouTube'
+                                                    ? `/influencers/${influencer.channel_id}?tab=recentActivities`
+                                                    : `/telegram-influencer/${influencer.channel_id}?tab=recentActivities`;
+                                                router.push(route);
+                                            }}
+                                        >
+                                            • {influencer.influencer_name}
+                                        </div>
+                                    ))
+                                ) : null}
                             </div>
                         </div>
                     </div>
