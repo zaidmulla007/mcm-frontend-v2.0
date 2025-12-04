@@ -623,7 +623,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <div className="text-sm text-black font-bold mb-1">
+                                                    <div className="text-xs text-black font-bold mb-1">
                                                         {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
                                                     </div>
                                                     <div
@@ -700,10 +700,11 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                 }
                                                             }}
                                                         >
-                                                            <div className="text-[10px] text-red-600 font-semibold flex items-center justify-center gap-1 hover:text-red-700 transition-colors">
-                                                                <FaYoutube className="text-xs" />
-                                                                <span>{coin.yt_unique_influencers_count} YT</span>
+                                                            <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
+                                                                <FaYoutube className="text-red-600 text-xs" />
+                                                                <span className="text-black">{coin.yt_unique_influencers_count} YT</span>
                                                             </div>
+
                                                         </div>
                                                     )}
 
@@ -756,9 +757,9 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                 }
                                                             }}
                                                         >
-                                                            <div className="text-[10px] text-blue-600 font-semibold flex items-center justify-center gap-1 hover:text-blue-700 transition-colors">
-                                                                <FaTelegramPlane className="text-xs" />
-                                                                <span>{coin.tg_unique_influencers_count} TG</span>
+                                                            <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
+                                                                <FaTelegramPlane className="text-blue-600 text-xs" />
+                                                                <span className="text-black">{coin.tg_unique_influencers_count} TG</span>
                                                             </div>
                                                         </div>
                                                     )}
@@ -1284,9 +1285,10 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             </div>
 
             {/* Hover Instruction Text */}
-            <div className="text-center mt-4">
-                <p className="text-gray-600 text-md">
-                    Hover Mouse for coin and post below
+            <div className="text-left mt-4 ml-13">
+                <p className="text-black-600 text-sm">
+                    Click Coin for Coin details <br />
+                    Click Post for Post details
                 </p>
             </div>
 
