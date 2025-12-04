@@ -10,7 +10,7 @@ export async function GET(request, { params }) {
     const symbol = url.searchParams.get('symbol');
 
     // Build the external API URL
-    let externalApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/strategytelegramdata/page/${page}`;
+    let externalApiUrl = `http://37.27.120.45:5901/api/admin/strategytelegramdata/page/${page}`;
 
     // Add query parameters if they exist
     const queryParams = new URLSearchParams();

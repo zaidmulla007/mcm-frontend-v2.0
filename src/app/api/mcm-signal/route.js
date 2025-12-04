@@ -17,7 +17,7 @@ export async function GET(request) {
         if (searchParams.get('post_range_min')) params.append('post_range_min', searchParams.get('post_range_min'));
         if (searchParams.get('post_range_max')) params.append('post_range_max', searchParams.get('post_range_max'));
 
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/strategyyoutubedata/mcmsignal?${params.toString()}`;
+        const apiUrl = `http://37.27.120.45:5901/api/admin/strategyyoutubedata/mcmsignal?${params.toString()}`;
 
         const response = await fetch(apiUrl, {
             method: 'GET',

@@ -107,7 +107,7 @@ export default function SeparateLogin() {
     try {
       const fullPhoneNumber = `${selectedCountry.dial_code.replace('+', '')}${phoneNumber}`;
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/signin`, {
+      const response = await fetch('http://37.27.120.45:5000/api/auth/signin', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -295,8 +295,8 @@ export default function SeparateLogin() {
             type="submit"
             disabled={isLoading}
             className={`w-full px-6 py-3 rounded-lg font-semibold shadow-lg transition ${isLoading
-                ? "bg-gray-600 cursor-not-allowed opacity-50"
-                : "bg-gradient-to-r from-purple-500 to-blue-500 hover:scale-105"
+              ? "bg-gray-600 cursor-not-allowed opacity-50"
+              : "bg-gradient-to-r from-purple-500 to-blue-500 hover:scale-105"
               }`}
           >
             {isLoading ? 'Signing in...' : 'Sign In'}

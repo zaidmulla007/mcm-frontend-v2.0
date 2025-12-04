@@ -6,7 +6,7 @@ export async function GET(request, { params }) {
     console.log('CheckSignupStatus request for userId:', userId);
 
     // Forward the request to your backend API
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/checkSignupStatus/${userId}`, {
+    const response = await fetch(`http://37.27.120.45:5901/api/auth/checkSignupStatus/${userId}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

@@ -8,7 +8,7 @@ import Swal from "sweetalert2";
 const API_BASE = "/api/admin/coinindex/mcmdb/filter";
 
 /* Favorites API Base URL */
-const FAVORITES_API_BASE = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/favourite`;
+const FAVORITES_API_BASE = 'http://37.27.120.45:5901/api/user/favourite';
 
 /* TradingView Widget Component */
 function TradingViewWidget({ widgetType, symbol, config = {} }) {

@@ -5,7 +5,7 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const timeframe = searchParams.get('timeframe') || '1_hour';
 
-    const externalUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/rankingstelegramdata/specificFieldRankings?&fields=star_rating.yearly.*.${timeframe}`;
+    const externalUrl = `http://37.27.120.45:5901/api/admin/rankingstelegramdata/specificFieldRankings?&fields=star_rating.yearly.*.${timeframe}`;
 
     console.log(`Fetching Telegram MCM ratings from: ${externalUrl}`);
 

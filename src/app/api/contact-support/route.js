@@ -17,7 +17,7 @@ export async function POST(request) {
     }
 
     // Make request to the backend API
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/user/contact`, {
+    const response = await fetch(`http://37.27.120.45:5901/api/user/contact`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

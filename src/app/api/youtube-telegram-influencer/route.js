@@ -11,7 +11,7 @@ export async function GET(request) {
   const quarter = searchParams.get('quarter') || 'all';
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/strategyyoutubedata/getlast6hrsytandtg`,
+    const response = await fetch(`https://mcm.showmyui.com:5000/api/admin/strategyyoutubedata/getlast6hrsytandtg`,
       {
         headers: {
           'Content-Type': 'application/json',

@@ -40,7 +40,7 @@ export async function GET(request) {
         if (searchParams.get('long_term_min_percent')) params.append('long_term_min_percent', searchParams.get('long_term_min_percent'));
         if (searchParams.get('long_term_influencer_min_rating')) params.append('long_term_influencer_min_rating', searchParams.get('long_term_influencer_min_rating'));
 
-        const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/mcmsignal/mcm-signal?${params.toString()}`;
+        const apiUrl = `http://37.27.120.45:5901/api/admin/mcmsignal/mcm-signal?${params.toString()}`;
 
         const response = await fetch(apiUrl, {
             method: 'GET',

@@ -19,7 +19,7 @@ export async function GET(request) {
   if (!params.has('type')) params.set('type', 'yearly');
 
   try {
-    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/influenceryoutubedata/channel/${selectedUserId}?${params.toString()}`;
+    const apiUrl = `https://mcm.showmyui.com:5000/api/admin/influenceryoutubedata/channel/${selectedUserId}?${params.toString()}`;
     console.log('Fetching from:', apiUrl);
 
     const response = await fetch(apiUrl,

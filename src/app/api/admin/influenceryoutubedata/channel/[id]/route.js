@@ -10,7 +10,7 @@ export async function GET(request, { params }) {
   });
 
   try {
-    const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/influenceryoutubedata/channel/${id}?${searchParams.toString()}`;
+    const apiUrl = `http://37.27.120.45:5901/api/admin/influenceryoutubedata/channel/${id}?${searchParams.toString()}`;
     console.log('Fetching from:', apiUrl);
 
     const response = await fetch(apiUrl, {

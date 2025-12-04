@@ -12,7 +12,7 @@ export async function GET(request, { params }) {
     const endDate = url.searchParams.get('endDate');
 
     // Build the external API URL
-    let externalApiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/strategyyoutubedata/page/${page}?channelID=${channelID}&limit=${limit}`;
+    let externalApiUrl = `http://37.27.120.45:5901/api/admin/strategyyoutubedata/page/${page}?channelID=${channelID}&limit=${limit}`;
 
     // Add optional query parameters
     if (symbol && symbol.trim() !== '') {

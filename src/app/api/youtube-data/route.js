@@ -14,7 +14,7 @@ export async function GET(request) {
   let starValue = rating === 'all' ? 'all' : `>=${rating}`;
   const starParam = `&star=${starValue}`;
 
-  const apiUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/rankingsyoutubedata/ranking?timeframe=${timeframe}&year=${year}&quarter=${quarter}${starParam}`;
+  const apiUrl = `http://37.27.120.45:5901/api/admin/rankingsyoutubedata/ranking?timeframe=${timeframe}&year=${year}&quarter=${quarter}${starParam}`;
 
   console.log('Fetching YouTube data from:', apiUrl);
 
