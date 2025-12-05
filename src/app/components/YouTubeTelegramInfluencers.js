@@ -460,8 +460,8 @@ export default function YouTubeTelegramInfluencers() {
                             )}
                         </div>
                     </div>
-                    <div className="flex items-center justify-center gap-2 mb-3">
-                        <p className="text-xl text-gray-600">
+                    <div className="flex items-center gap-2 mb-3">
+                        <p className="text-lg text-gray-600">
                             {lastUpdated ? formatDate(lastUpdated) : "N/A"}
                         </p>
                         <p className="text-sm text-gray-500 self-end mb-0.5">
@@ -471,10 +471,10 @@ export default function YouTubeTelegramInfluencers() {
                 </div>
 
                 {/* Platform Selection */}
-                <div className="flex justify-center mb-8">
-                    <div className="jsx-816192472cbeba0e bg-white rounded-xl p-4" style={{ width: '672px' }}>
-                        <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3 flex-wrap">
+                <div className="flex justify-start mb-8">
+                    <div className="jsx-816192472cbeba0e bg-white rounded-xl p-3">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
                                 <label className="text-lg text-black font-semibold">Platform:</label>
                                 <select
                                     value={selectedPlatform}
@@ -485,43 +485,35 @@ export default function YouTubeTelegramInfluencers() {
                                     <option value="YouTube" className="bg-white text-black">YouTube</option>
                                     <option value="Telegram" className="bg-white text-black">Telegram</option>
                                 </select>
-
-                                {selectedCoin && (
-                                    <div className="flex items-center gap-2 bg-blue-100 border border-blue-300 rounded-lg px-3 py-1.5">
-                                        <span className="text-sm text-black font-medium">
-                                            {selectedCoin.symbol}
-                                        </span>
-                                        <button
-                                            onClick={() => setSelectedCoin(null)}
-                                            className="text-red-600 hover:text-red-800 font-bold text-lg leading-none"
-                                            title="Clear filter"
-                                        >
-                                            ×
-                                        </button>
-                                    </div>
-                                )}
                             </div>
 
+                            {selectedCoin && (
+                                <div className="flex items-center gap-2 bg-blue-100 border border-blue-300 rounded-lg px-3 py-1.5">
+                                    <span className="text-sm text-black font-medium">
+                                        {selectedCoin.symbol}
+                                    </span>
+                                    <button
+                                        onClick={() => setSelectedCoin(null)}
+                                        className="text-red-600 hover:text-red-800 font-bold text-lg leading-none"
+                                        title="Clear filter"
+                                    >
+                                        ×
+                                    </button>
+                                </div>
+                            )}
+
                             <div className="flex items-center gap-2">
-                                <span className="text-sm text-black font-medium">Source: </span>
-                                <div className="flex items-center gap-2 min-w-[100px]">
+                                <span className="text-sm text-black font-medium">Source:</span>
+                                <div className="flex items-center gap-2">
                                     {selectedPlatform === "Combined" ? (
                                         <>
-                                            <YouTubeIcon className="text-red-900" />
-                                            {/* <span className="text-sm text-black font-medium">YouTube</span> */}
-                                            <TelegramIcon className="text-blue-900" />
-                                            {/* <span className="text-sm text-black font-medium">Telegram</span> */}
+                                            <YouTubeIcon className="text-red-600" />
+                                            <TelegramIcon className="text-blue-600" />
                                         </>
                                     ) : selectedPlatform === "YouTube" ? (
-                                        <>
-                                            <YouTubeIcon className="text-red-900" />
-                                            {/* <span className="text-sm text-black font-medium">YouTube</span> */}
-                                        </>
+                                        <YouTubeIcon className="text-red-600" />
                                     ) : (
-                                        <>
-                                            <TelegramIcon className="text-blue-900" />
-                                            {/* <span className="text-sm text-black font-medium">Telegram</span> */}
-                                        </>
+                                        <TelegramIcon className="text-blue-600" />
                                     )}
                                 </div>
                             </div>

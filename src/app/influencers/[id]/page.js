@@ -16,17 +16,17 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 const TABS = [
   // { label: "Overviewoption1", value: "overview-light" },
   { label: "Overview", value: "overview-light1" },
-  { label: "Recent Activities", value: "recentActivities" },
   // { label: "Overviewoption2", value: "overview-dark" },
   // { label: "Overviewoption3", value: "overview1" },
   // { label: "Overviewoption4", value: "overview2" },
   // { label: "Overviewoption5", value: "overview3" },
   // { label: "Overviewoption6", value: "overview4" },
   // { label: "Correlation Summary", value: "correlationSummary" },
-  // { label: "Performance Summary", value: "correlationSummaryV2" },
+  { label: "Performance Summary", value: "correlationSummaryV2" },
   // { label: "Correlation Summary V2 Dark", value: "correlationSummaryV2Dark" },
   // { label: "Correlation Summary V2 Light", value: "correlationSummaryV2Light" },
-  // { label: "Recommendations", value: "recommendations" },
+  { label: "Recommendations", value: "recommendations" },
+  { label: "Recent Activities", value: "recentActivities" },
   // { label: "Recommendations-Light", value: "recommendations-light" },
   // { label: "Performance Charts", value: "charts" },
   // { label: "Portfolio Simulator", value: "simulator" },
@@ -46,7 +46,7 @@ export default function InfluencerProfilePage() {
   const searchParams = useSearchParams();
   const channelID = params.id;
   const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+  const [isReadMore, setIsReadMore] = useState(false);
   const [hoveredColumn, setHoveredColumn] = useState(null);
   const [hoveredRow, setHoveredRow] = useState(null);
   // Add these to your existing useState declarations
@@ -161,6 +161,11 @@ export default function InfluencerProfilePage() {
     }
   }, [summaryType, selectedPeriod]);
 
+  // Reset isReadMore when period or summary type changes
+  useEffect(() => {
+    setIsReadMore(false);
+  }, [selectedPeriod, summaryType]);
+
   // Loading state
   if (loading) {
     return (
@@ -232,7 +237,7 @@ export default function InfluencerProfilePage() {
   const availableYears = Object.keys(yearlyData).sort().reverse();
 
   return (
-    <div className="min-h-screen bg-white text-black-900 font-sans pb-16">
+    <div className="min-h-screen bg-gradient-to-br from-gray-70 via-blue-50 to-purple-50 text-black-900 font-sans pb-16">
       {/* Profile Header */}
       <InfluencerProfileHeader
         channelData={channelData}
@@ -1246,167 +1251,170 @@ export default function InfluencerProfilePage() {
                 About {channelData.influencer_name || channelData.channel_title}
               </h3>
 
-              {/* Toggle button */}
+              {/* Description text with line clamp */}
+              <p
+                className={`text-to-purple mb-2 transition-all duration-300 ${isAboutOpen ? "line-clamp-none" : "line-clamp-2"
+                  }`}
+              >
+                {channelData.channel_description ||
+                  channelData.branding_channel_description ||
+                  "No description available."}
+              </p>
+
+              {/* Read More / Read Less button BELOW text */}
               <button
                 onClick={() => setIsAboutOpen(!isAboutOpen)}
-                className="text-sm text-purple-600 hover:underline mb-2"
+                className="text-sm text-purple-600 hover:underline mt-1"
               >
-                {isAboutOpen ? "Hide Details" : "Read More"}
+                {isAboutOpen ? "Read Less" : "Read More"}
               </button>
 
-              {/* Collapsible content */}
+              {/* Collapsible additional content */}
               {isAboutOpen && (
                 <>
-                  <p className="text-to-purple mb-4">
-                    {channelData.channel_description ||
-                      channelData.branding_channel_description ||
-                      "No description available."}
-                  </p>
-
+                  {/* Your original commented code — unchanged */}
                   {/* <div className="flex gap-8 mt-6">
-                    <div className="bg-green-100 rounded-2xl p-6 flex-1 text-center transform hover:scale-105 transition">
-                      <div className="text-5xl font-black text-green-600 mb-2">
-                        {bullishPercentage}%
-                      </div>
-                      <div className="text-sm font-bold text-green-700 uppercase">ROI</div>
-                      <div className="text-sm text-green-700">(Avg. Rate of Investment)</div>
-                    </div>
+        <div className="bg-green-100 rounded-2xl p-6 flex-1 text-center transform hover:scale-105 transition">
+          <div className="text-5xl font-black text-green-600 mb-2">
+            {bullishPercentage}%
+          </div>
+          <div className="text-sm font-bold text-green-700 uppercase">ROI</div>
+          <div className="text-sm text-green-700">(Avg. Rate of Investment)</div>
+        </div>
 
-                    <div className="bg-green-100 rounded-2xl p-6 flex-1 text-center transform hover:scale-105 transition">
-                      <div className="text-5xl font-black text-green-600 mb-2">
-                        {bearishPercentage}%
-                      </div>
-                      <div className="text-sm font-bold text-green-700 uppercase">RRR</div>
-                      <div className="text-sm text-green-700">(Avg. Rate of Return)</div>
-                    </div>
+        <div className="bg-green-100 rounded-2xl p-6 flex-1 text-center transform hover:scale-105 transition">
+          <div className="text-5xl font-black text-green-600 mb-2">
+            {bearishPercentage}%
+          </div>
+          <div className="text-sm font-bold text-green-700 uppercase">RRR</div>
+          <div className="text-sm text-green-700">(Avg. Rate of Return)</div>
+        </div>
 
-                    <div className="bg-green-100 rounded-2xl p-6 flex-1 text-center transform hover:scale-105 transition">
-                      <div className="text-5xl font-black text-green-600 mb-2">12</div>
-                      <div className="text-sm font-bold text-green-700 uppercase">
-                        MCM Ranking
-                      </div>
-                    </div>
-                  </div> */}
+        <div className="bg-green-100 rounded-2xl p-6 flex-1 text-center transform hover:scale-105 transition">
+          <div className="text-5xl font-black text-green-600 mb-2">12</div>
+          <div className="text-sm font-bold text-green-700 uppercase">
+            MCM Ranking
+          </div>
+        </div>
+      </div> */}
                 </>
               )}
             </div>
 
 
+
             {/* Summary Dropdown Section */}
             <div className="bg-white rounded-xl p-6 mb-2 border border-gray-200">
-              <h3 className="font-bold mb-2 text-[#0c0023]">
+              <h3 className="font-bold mb-4 text-[#0c0023]">
                 Channel Summary Analysis
               </h3>
 
-              {/* Toggle Button */}
-              <button
-                onClick={() => setIsSummaryOpen(!isSummaryOpen)}
-                className="text-sm text-purple-600 hover:underline mb-2"
-              >
-                {isSummaryOpen ? "Hide Summary" : "View Summary"}
-              </button>
+              {/* Type Selection Buttons */}
+              <div className="flex gap-2 mb-4">
+                <button
+                  onClick={() => {
+                    setSummaryType("yearly");
+                    setSelectedPeriod("");
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium transition ${summaryType === "yearly"
+                    ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white"
+                    : "bg-gray-100 text-[#0c0023] hover:bg-gray-200"
+                    }`}
+                >
+                  Year
+                </button>
+                <button
+                  onClick={() => {
+                    setSummaryType("quarterly");
+                    setSelectedPeriod("");
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium transition ${summaryType === "quarterly"
+                    ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white"
+                    : "bg-gray-100 text-[#0c0023] hover:bg-gray-200"
+                    }`}
+                >
+                  Quarter
+                </button>
+                <button
+                  onClick={() => {
+                    setSummaryType("overall");
+                    setSelectedPeriod("overall");
+                  }}
+                  className={`px-4 py-2 rounded-lg font-medium transition ${summaryType === "overall"
+                    ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white"
+                    : "bg-gray-100 text-[#0c0023] hover:bg-gray-200"
+                    }`}
+                >
+                  Cumulative
+                </button>
+              </div>
 
-              {isSummaryOpen && (
-                <>
-                  {/* Type Selection Buttons */}
-                  <div className="flex gap-2 mb-4">
-                    <button
-                      onClick={() => {
-                        setSummaryType("yearly");
-                        setSelectedPeriod("");
-                      }}
-                      className={`px-4 py-2 rounded-lg font-medium transition ${summaryType === "yearly"
-                        ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white"
-                        : "bg-gray-100 text-[#0c0023] hover:bg-gray-200"
-                        }`}
-                    >
-                      Year
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSummaryType("quarterly");
-                        setSelectedPeriod("");
-                      }}
-                      className={`px-4 py-2 rounded-lg font-medium transition ${summaryType === "quarterly"
-                        ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white"
-                        : "bg-gray-100 text-[#0c0023] hover:bg-gray-200"
-                        }`}
-                    >
-                      Quarter
-                    </button>
-                    <button
-                      onClick={() => {
-                        setSummaryType("overall");
-                        setSelectedPeriod("overall");
-                      }}
-                      className={`px-4 py-2 rounded-lg font-medium transition ${summaryType === "overall"
-                        ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white"
-                        : "bg-gray-100 text-[#0c0023] hover:bg-gray-200"
-                        }`}
-                    >
-                      Cumulative
-                    </button>
-                  </div>
+              {/* Period Selection Dropdown */}
+              {summaryType !== "overall" && (
+                <div className="mb-4">
+                  <select
+                    value={selectedPeriod}
+                    onChange={(e) => setSelectedPeriod(e.target.value)}
+                    className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-lg text-[#0c0023] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">
+                      Select a {summaryType === "quarterly" ? "quarter" : "year"}...
+                    </option>
+                    {summaryType === "quarterly"
+                      ? channelData?.Gemini?.Quarterly &&
+                      Object.keys(channelData.Gemini.Quarterly)
+                        .sort((a, b) => {
+                          const [yearA, qA] = a.split("_");
+                          const [yearB, qB] = b.split("_");
+                          if (yearA !== yearB) return parseInt(yearB) - parseInt(yearA);
+                          return qB.localeCompare(qA);
+                        })
+                        .map((quarter) => (
+                          <option key={quarter} value={quarter}>
+                            {quarter.replace("_", " ")}
+                          </option>
+                        ))
+                      : channelData?.Gemini?.Yearly &&
+                      Object.keys(channelData.Gemini.Yearly)
+                        .sort((a, b) => parseInt(b) - parseInt(a))
+                        .map((year) => (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        ))}
+                  </select>
+                </div>
+              )}
 
-                  {/* Period Selection Dropdown */}
-                  {summaryType !== "overall" && (
-                    <div className="mb-4">
-                      <select
-                        value={selectedPeriod}
-                        onChange={(e) => setSelectedPeriod(e.target.value)}
-                        className="w-full md:w-auto px-4 py-2 border border-gray-300 rounded-lg text-[#0c0023] bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      >
-                        <option value="">
-                          Select a {summaryType === "quarterly" ? "quarter" : "year"}...
-                        </option>
-                        {summaryType === "quarterly"
-                          ? channelData?.Gemini?.Quarterly &&
-                          Object.keys(channelData.Gemini.Quarterly)
-                            .sort((a, b) => {
-                              const [yearA, qA] = a.split("_");
-                              const [yearB, qB] = b.split("_");
-                              if (yearA !== yearB) return parseInt(yearB) - parseInt(yearA);
-                              return qB.localeCompare(qA);
-                            })
-                            .map((quarter) => (
-                              <option key={quarter} value={quarter}>
-                                {quarter.replace("_", " ")}
-                              </option>
-                            ))
-                          : channelData?.Gemini?.Yearly &&
-                          Object.keys(channelData.Gemini.Yearly)
-                            .sort((a, b) => parseInt(b) - parseInt(a))
-                            .map((year) => (
-                              <option key={year} value={year}>
-                                {year}
-                              </option>
-                            ))}
-                      </select>
-                    </div>
-                  )}
+              {/* Summary Display */}
+              {selectedPeriod && (
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  {(() => {
+                    const data =
+                      summaryType === "quarterly"
+                        ? channelData?.Gemini?.Quarterly?.[selectedPeriod]
+                        : summaryType === "yearly"
+                          ? channelData?.Gemini?.Yearly?.[selectedPeriod]
+                          : channelData?.Gemini?.Overall;
 
-                  {/* Summary Display */}
-                  {selectedPeriod && (
-                    <div className="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                      {(() => {
-                        const data =
-                          summaryType === "quarterly"
-                            ? channelData?.Gemini?.Quarterly?.[selectedPeriod]
-                            : summaryType === "yearly"
-                              ? channelData?.Gemini?.Yearly?.[selectedPeriod]
-                              : channelData?.Gemini?.Overall;
+                    if (!data)
+                      return (
+                        <p className="text-gray-500">
+                          No data available for this period.
+                        </p>
+                      );
 
-                        if (!data)
-                          return (
-                            <p className="text-gray-500">
-                              No data available for this period.
-                            </p>
-                          );
+                    // Helper function to truncate text to 5-7 lines (approximately 350-500 characters)
+                    const truncateText = (text, maxLength = 450) => {
+                      if (!text) return "";
+                      if (text.length <= maxLength) return text;
+                      return text.substring(0, maxLength) + "...";
+                    };
 
-                        return (
-                          <div className="space-y-4">
-                            <div className="flex flex-wrap gap-4 mb-4">
-                              {/* <div className="bg-white p-3 rounded-lg border border-gray-200 flex-1 min-w-[200px]">
+                    return (
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap gap-4 mb-4">
+                          {/* <div className="bg-white p-3 rounded-lg border border-gray-200 flex-1 min-w-[200px]">
                                 <div className="text-sm text-gray-600">Period</div>
                                 <div className="font-semibold text-[#0c0023]">
                                   {summaryType === "quarterly"
@@ -1416,7 +1424,7 @@ export default function InfluencerProfilePage() {
                                       : "Overall"}
                                 </div>
                               </div> */}
-                              {/* <div className="bg-white p-3 rounded-lg border border-gray-200 flex-1 min-w-[200px]">
+                          {/* <div className="bg-white p-3 rounded-lg border border-gray-200 flex-1 min-w-[200px]">
                                 <div className="text-sm text-gray-600">
                                   Credibility Score
                                 </div>
@@ -1424,13 +1432,17 @@ export default function InfluencerProfilePage() {
                                   {data.overall_credibility_score}/10
                                 </div>
                               </div> */}
-                            </div>
+                        </div>
 
-                            <div>
-                              <h4 className="font-semibold text-[#0c0023] mb-2">Summary</h4>
-                              <p className="text-gray-700 leading-relaxed">{data.summary}</p>
-                            </div>
+                        <div>
+                          <h4 className="font-semibold text-[#0c0023] mb-2">Summary</h4>
+                          <p className="text-gray-700 leading-relaxed">
+                            {isReadMore ? data.summary : truncateText(data.summary)}
+                          </p>
+                        </div>
 
+                        {isReadMore && (
+                          <>
                             {data.posting_frequency_analysis && (
                               <div>
                                 <h4 className="font-semibold text-[#0c0023] mb-2">
@@ -1452,12 +1464,22 @@ export default function InfluencerProfilePage() {
                                 </p>
                               </div>
                             )}
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  )}
-                </>
+                          </>
+                        )}
+
+                        {/* Read More / Read Less Button */}
+                        {data.summary && data.summary.length > 450 && (
+                          <button
+                            onClick={() => setIsReadMore(!isReadMore)}
+                            className="text-sm text-purple-600 hover:underline font-medium mt-2"
+                          >
+                            {isReadMore ? "Read Less" : "Read More"}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </div>
               )}
             </div>
 
@@ -1680,7 +1702,7 @@ export default function InfluencerProfilePage() {
             </div>
 
             {/* Sentiment Analysis Charts */}
-            {/* <div className="bg-white rounded-xl p-6 mb-2 border border-gray-200">
+            <div className="bg-white rounded-xl p-6 mb-2 border border-gray-200">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="font-semibold text-[#0c0023]">
                   Total Recommendations
@@ -1708,7 +1730,7 @@ export default function InfluencerProfilePage() {
                       };
                       console.log(`Year ${year}:`, item);
                       return item;
-                    }).sort((a, b) => b.year.localeCompare(a.year)); 
+                    }).sort((a, b) => b.year.localeCompare(a.year));
                     console.log('Transform result:', result);
                     return result;
                   };
@@ -1881,7 +1903,7 @@ export default function InfluencerProfilePage() {
                   );
                 })()}
               </div>
-            </div> */}
+            </div>
 
             <div className="bg-white rounded-xl p-6 border border-gray-200">
               <div className="flex items-center justify-between mb-4">
@@ -3090,11 +3112,11 @@ export default function InfluencerProfilePage() {
                 </div>
               </div>
             </div> */}
-            {/* <YearlyPerformanceTable
+            <YearlyPerformanceTable
               yearlyData={yearlyData}
               quarterlyData={quarterlyData}
               channelData={channelData}
-            /> */}
+            />
           </div>
         )}
         {tab === "overview-dark" && (

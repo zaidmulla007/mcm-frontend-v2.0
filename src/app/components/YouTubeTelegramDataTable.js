@@ -13,6 +13,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     const [lastUpdated, setLastUpdated] = useState(null);
     const [nextUpdate, setNextUpdate] = useState(null);
     const [binancePriceData, setBinancePriceData] = useState({});
+    const [binanceLivePrice, setBinanceLivePrice] = useState({});
     const useLocalTime = propUseLocalTime;
 
     const [expandedTables, setExpandedTables] = useState({
@@ -22,6 +23,11 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         "30days": false
     });
 
+    const TelegramIcon = ({ className }) => (
+        <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" className={className} height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+            <path d="M446.7 98.6l-67.6 318.8c-5.1 22.5-18.4 28.1-37.3 17.5l-103-75.9-49.7 47.8c-5.5 5.5-10.1 10.1-20.7 10.1l7.4-104.9 190.9-172.5c8.3-7.4-1.8-11.5-12.9-4.1L117.8 284 16.2 252.2c-22.1-6.9-22.5-22.1 4.6-32.7L418.2 66.4c18.4-6.9 34.5 4.1 28.5 32.2z"></path>
+        </svg>
+    );
     const [influencerModal, setInfluencerModal] = useState({
         isOpen: false,
         type: '',
@@ -109,16 +115,19 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
                 if (!isMounted) return;
 
-                // Create a map of symbol to priceChangePercent (only USDT pairs)
+                // Create a map of symbol to priceChangePercent and lastPrice (only USDT pairs)
                 const priceMap = {};
+                const livePriceMap = {};
                 data.forEach(ticker => {
                     if (ticker.symbol.endsWith('USDT')) {
                         const symbol = ticker.symbol.replace('USDT', '').toLowerCase();
                         priceMap[symbol] = parseFloat(ticker.priceChangePercent);
+                        livePriceMap[symbol] = parseFloat(ticker.lastPrice);
                     }
                 });
 
                 setBinancePriceData(priceMap);
+                setBinanceLivePrice(livePriceMap);
             } catch (error) {
                 console.error('Error fetching Binance price data:', error);
             }
@@ -146,6 +155,19 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                 const symbol = ticker.s.replace('USDT', '').toLowerCase();
                                 // P = 24hr price change percent
                                 newData[symbol] = parseFloat(ticker.P);
+                            }
+                        });
+                        return newData;
+                    });
+
+                    // Update live price with current price
+                    setBinanceLivePrice(prevData => {
+                        const newData = { ...prevData };
+                        data.forEach(ticker => {
+                            if (ticker.s && ticker.s.endsWith('USDT')) {
+                                const symbol = ticker.s.replace('USDT', '').toLowerCase();
+                                // c = current/last price
+                                newData[symbol] = parseFloat(ticker.c);
                             }
                         });
                         return newData;
@@ -192,6 +214,13 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         if (!symbol) return null;
         const lowerSymbol = symbol.toLowerCase();
         return binancePriceData[lowerSymbol] ?? null;
+    };
+
+    // Helper function to get live price for a coin symbol (from Binance)
+    const getLivePrice = (symbol) => {
+        if (!symbol) return null;
+        const lowerSymbol = symbol.toLowerCase();
+        return binanceLivePrice[lowerSymbol] ?? null;
     };
 
     // Helper function to get price change from coin's percentage_change data for specific timeframe
@@ -571,23 +600,27 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     // };
                                     const getAlertReason = () => {
                                         const binance24hrChange = getPriceChangePercent(coin?.symbol);
+                                        const livePrice = getLivePrice(coin?.symbol);
                                         const isMeme = coin?.mem_coin === true;
 
                                         if (binance24hrChange !== null) {
                                             const absChange = Math.abs(binance24hrChange);
+                                            const priceChangeText = `24H % Change: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
+                                            const livePriceText = livePrice !== null ? `\nLive Price: $${livePrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}` : '';
+
                                             if (isMeme) {
                                                 if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= MEME_THRESHOLD_TOP_PERCENT) {
-                                                    return `24H % Change: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
+                                                    return `${priceChangeText}${livePriceText}`;
                                                 }
                                                 if (absChange >= MEME_THRESHOLD_PERCENT) {
-                                                    return `24H % Change: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
+                                                    return `${priceChangeText}${livePriceText}`;
                                                 }
                                             } else {
                                                 if (absChange >= THRESHOLD_PERCENT) {
-                                                    return `24H % Change: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
+                                                    return `${priceChangeText}${livePriceText}`;
                                                 }
                                                 if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= THRESHOLD_TOP_PERCENT) {
-                                                    return `24H % Change: ${binance24hrChange > 0 ? '+' : ''}${binance24hrChange.toFixed(2)}%`;
+                                                    return `${priceChangeText}${livePriceText}`;
                                                 }
                                             }
                                         }
@@ -599,7 +632,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                             {/* Coin Column */}
                                             <td className="py-4 px-4 w-1/2">
                                                 <div className="flex flex-col items-center text-center h-full min-h-[140px] justify-start">
-                                                    <div className="relative">
+                                                    <div className="relative group">
                                                         <img
                                                             src={coin.image_small || coin.image_thumb}
                                                             alt={coin.symbol}
@@ -612,14 +645,20 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         />
                                                         {/* Bell icon for coins exceeding price change threshold */}
                                                         {showPriceAlert && (
-                                                            <div className="absolute -top-1 -right-1 group cursor-pointer z-[9999]">
+                                                            <div className="absolute -top-1 -right-1 group/bell cursor-pointer z-[9999]">
                                                                 <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-lg ${binance24hrChange > 0 ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}>
                                                                     <FaBell className="text-white text-[15px]" />
                                                                 </div>
                                                                 {/* Tooltip on hover - positioned below the bell */}
-                                                                <div className="invisible group-hover:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                                                <div className="invisible group-hover/bell:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-pre-line z-[9999] min-w-[200px] text-center">
                                                                     {getAlertReason()}
                                                                 </div>
+                                                            </div>
+                                                        )}
+                                                        {/* Show live price tooltip when hovering on coin image (only if NO bell) */}
+                                                        {!showPriceAlert && getLivePrice(coin?.symbol) !== null && (
+                                                            <div className="invisible group-hover:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                                                Live Price: ${getLivePrice(coin?.symbol).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}
                                                             </div>
                                                         )}
                                                     </div>
@@ -1197,12 +1236,12 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     return (
         <div className="space-y-2">
             {/* Header */}
-            <div className="text-center">
+            <div className="text-left">
                 {/* <h2 className="text-3xl md:text-4xl font-bold mt-0 text-black">
                     Trending Coins
                 </h2> */}
-                <div className="flex items-center justify-center gap-2 mt-1">
-                    <p className="text-xl text-gray-600">
+                <div className="flex items-center gap-2 mt-1">
+                    <p className="text-lg text-gray-600">
                         {lastUpdated ? formatDate(lastUpdated) : "N/A"}
                     </p>
                     <p className="text-sm text-gray-500 self-end mb-0.5">
@@ -1212,26 +1251,50 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             </div>
 
             {/* Channel and Coin Type Dropdowns */}
-            <div className="flex justify-center">
-                <div className="bg-white rounded-2xl overflow-hidden shadow-2xl p-6">
-                    <div className="flex items-center gap-6">
-                        {/* Channel Dropdown */}
-                        <div className="flex items-center gap-3">
-                            <label className="text-lg text-black font-semibold">Channel:</label>
-                            <select
-                                value={selectedPlatform}
-                                onChange={(e) => setSelectedPlatform(e.target.value)}
-                                className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
-                            >
-                                {platformOptions.map((option) => (
-                                    <option key={option.key} value={option.key} className="bg-white text-black">
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
+            <div className="flex justify-start">
+                <div className="bg-white rounded-2xl overflow-hidden shadow-2xl p-3">
+                    <div className="flex items-start gap-6">
+                        {/* Left Side - Channel with Source Icons below */}
+                        <div className="flex flex-col gap-3">
+                            {/* Channel Dropdown */}
+                            <div className="flex items-center gap-3">
+                                <label className="text-lg text-black font-semibold">Channel:</label>
+                                <select
+                                    value={selectedPlatform}
+                                    onChange={(e) => setSelectedPlatform(e.target.value)}
+                                    className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
+                                >
+                                    {platformOptions.map((option) => (
+                                        <option key={option.key} value={option.key} className="bg-white text-black">
+                                            {option.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Source Icons - Below Channel */}
+                            <div className="flex items-center gap-2 ml-2">
+                                <span className="text-sm text-black font-medium">Source:</span>
+                                <div className="flex items-center gap-2">
+                                    {selectedPlatform === "Combined" ? (
+                                        <>
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-600">
+                                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                            </svg>
+                                            <TelegramIcon className="text-blue-600 w-4 h-4" />
+                                        </>
+                                    ) : selectedPlatform === "YouTube" ? (
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-600">
+                                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                        </svg>
+                                    ) : selectedPlatform === "Telegram" ? (
+                                        <TelegramIcon className="text-blue-600 w-4 h-4" />
+                                    ) : null}
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Coin Type Dropdown */}
+                        {/* Right Side - Coin Type Dropdown */}
                         <div className="flex items-center gap-3">
                             <label className="text-lg text-black font-semibold">Coins:</label>
                             <select
@@ -1246,50 +1309,20 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                 ))}
                             </select>
                         </div>
-
-                        {/* Source Icons */}
-                        <div className="flex items-center gap-2">
-                            <span className="text-sm text-black font-medium">Source: </span>
-                            <div className="flex items-center gap-2">
-                                {selectedPlatform === "Combined" ? (
-                                    <>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-900">
-                                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                                        </svg>
-                                        {/* <span className="text-sm text-black font-medium">YouTube</span> */}
-
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-blue-900">
-                                            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                                        </svg>
-                                        {/* <span className="text-sm text-black font-medium">Telegram</span> */}
-                                    </>
-                                ) : selectedPlatform === "YouTube" ? (
-                                    <>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-900">
-                                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                                        </svg>
-                                        {/* <span className="text-sm text-black font-medium">YouTube</span> */}
-                                    </>
-                                ) : selectedPlatform === "Telegram" ? (
-                                    <>
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-blue-900">
-                                            <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-                                        </svg>
-                                        {/* <span className="text-sm text-black font-medium">Telegram</span> */}
-                                    </>
-                                ) : null}
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
 
             {/* Hover Instruction Text */}
-            <div className="text-left mt-4 ml-13">
-                <p className="text-black-600 text-sm">
+            <div className="flex justify-between items-center mt-4">
+                <p className="text-black-600 text-sm ml-16">
                     Click Coin for Coin details <br />
                     Click Post for Post details
                 </p>
+                <p className="text-black-600 text-sm absolute left-1/2 transform -translate-x-1/2">
+                    Hover on Coin to see live price
+                </p>
+                <div className="mr-16"></div>
             </div>
 
             {/* Four Tables in One Row */}

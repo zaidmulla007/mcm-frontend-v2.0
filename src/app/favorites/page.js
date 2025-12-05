@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { FaArrowLeft, FaYoutube, FaGlobe, FaHeart, FaUsers, FaCoins } from "react-icons/fa";
 import { FaTelegram } from "react-icons/fa";
 import Swal from "sweetalert2";
@@ -26,12 +26,106 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [binancePrices, setBinancePrices] = useState({});
   const itemsPerPage = 9;
   const { removeFavorite } = useFavorites();
+  const wsRef = useRef(null);
 
   useEffect(() => {
     fetchFavoritesData();
   }, []);
+
+  // Set up WebSocket for live prices when coins tab is active
+  useEffect(() => {
+    if (activeTab !== 'coins' || !favoritesData.length) return;
+
+    const coins = favoritesData.filter(fav => fav.medium === "CRYPTO" && fav.favouriteType === "COIN");
+    if (coins.length === 0) return;
+
+    // Get symbols for WebSocket
+    const symbols = coins
+      .map(fav => fav.coin?.symbol?.toUpperCase())
+      .filter(Boolean)
+      .map(sym => `${sym}USDT`);
+
+    if (symbols.length === 0) return;
+
+    // Fetch initial snapshot
+    fetchBinanceSnapshot(symbols);
+
+    // Open WebSocket for live updates
+    openBinanceWebSocket(symbols);
+
+    return () => {
+      if (wsRef.current) {
+        try {
+          wsRef.current.close();
+        } catch (e) { }
+        wsRef.current = null;
+      }
+    };
+  }, [activeTab, favoritesData]);
+
+  // Fetch initial Binance snapshot
+  async function fetchBinanceSnapshot(symbols) {
+    try {
+      const q = `?symbols=${encodeURIComponent(JSON.stringify(symbols))}`;
+      const response = await fetch(`https://api.binance.com/api/v3/ticker/24hr${q}`);
+      const data = await response.json();
+
+      const priceMap = {};
+      data.forEach(ticker => {
+        const symbol = ticker.symbol.replace('USDT', '').toLowerCase();
+        priceMap[symbol] = {
+          lastPrice: parseFloat(ticker.lastPrice),
+          priceChangePercent: parseFloat(ticker.priceChangePercent)
+        };
+      });
+
+      setBinancePrices(priceMap);
+    } catch (error) {
+      console.error('Error fetching Binance snapshot:', error);
+    }
+  }
+
+  // Open WebSocket for live price updates
+  function openBinanceWebSocket(symbols) {
+    if (!symbols || symbols.length === 0) return;
+
+    const streams = symbols.map(s => `${s.toLowerCase()}@ticker`).join('/');
+    const url = `wss://stream.binance.com:9443/stream?streams=${streams}`;
+
+    try {
+      const ws = new WebSocket(url);
+      wsRef.current = ws;
+
+      ws.onmessage = (evt) => {
+        try {
+          const msg = JSON.parse(evt.data);
+          const data = msg.data ?? msg;
+          const sym = data.s; // BTCUSDT
+          if (!sym) return;
+
+          const base = sym.replace(/USDT$/i, '').toLowerCase();
+          const payload = {
+            lastPrice: data.c !== undefined ? Number(data.c) : null,
+            priceChangePercent: data.P !== undefined ? Number(data.P) : null,
+          };
+
+          setBinancePrices(prev => ({
+            ...prev,
+            [base]: payload
+          }));
+        } catch (err) {
+          console.error('WebSocket parse error:', err);
+        }
+      };
+
+      ws.onerror = (err) => console.error('Binance WebSocket error:', err);
+    } catch (e) {
+      console.error('WebSocket connection error:', e);
+    }
+  }
 
   async function fetchFavoritesData() {
     setLoading(true);
@@ -116,18 +210,41 @@ export default function FavoritesPage() {
     return favoritesData
       .filter(fav => fav.medium === "CRYPTO" && fav.favouriteType === "COIN")
       .map(fav => {
-        const coinData = fav.coin && fav.coin.length > 0 ? fav.coin[0] : null;
+        // Handle coin data - it's an object, not an array
+        const coinData = fav.coin;
+
+        console.log('Coin Data:', coinData); // Debug log
+        console.log('Binance Prices:', binancePrices); // Debug log
+
+        // Get Binance data for this coin
+        const symbol = coinData?.symbol?.toLowerCase() || "";
+        const binanceData = binancePrices[symbol] || null;
+
+        console.log('Symbol:', symbol, 'Binance Data:', binanceData); // Debug log
+
+        // Format name: First letter capital, rest lowercase
+        const formatName = (name) => {
+          if (!name) return "Unknown";
+          return name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+        };
+
+        // Format symbol: First letter capital, rest lowercase
+        const formatSymbol = (sym) => {
+          if (!sym) return "?";
+          return sym.charAt(0).toUpperCase() + sym.slice(1).toLowerCase();
+        };
 
         return {
           id: fav.favouriteId,
           source_id: fav.favouriteId,
-          name: coinData?.name || fav.name || "Unknown",
-          symbol: coinData?.symbol || "?",
+          name: formatName(coinData?.name || fav.name),
+          symbol: formatSymbol(coinData?.symbol),
           image: coinData?.image_large || coinData?.image_small || coinData?.image_thumb || "",
-          current_price: coinData?.current_price_usd || 0,
-          price_change_24h: coinData?.price_change_percentage_24h || 0,
+          current_price: binanceData?.lastPrice || coinData?.end_timestamp_price || 0,
+          price_change_24h: binanceData?.priceChangePercent || 0,
           market_cap: coinData?.market_cap_usd || 0,
           market_cap_rank: coinData?.market_cap_rank || null,
+          hasBinanceData: !!binanceData, // Debug flag
         };
       });
   };
@@ -715,7 +832,7 @@ export default function FavoritesPage() {
                             {/* Symbol */}
                             <td className="px-6 py-4">
                               <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
-                                {coin.symbol?.toUpperCase()}
+                                {coin.symbol}
                               </span>
                             </td>
 
@@ -723,7 +840,10 @@ export default function FavoritesPage() {
                             <td className="px-6 py-4">
                               <div className="text-sm font-semibold text-gray-900">
                                 {coin.current_price > 0
-                                  ? `$${coin.current_price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                  ? `$${coin.current_price.toLocaleString('en-US', {
+                                      minimumFractionDigits: 2,
+                                      maximumFractionDigits: coin.current_price < 1 ? 8 : 2
+                                    })}`
                                   : "N/A"
                                 }
                               </div>

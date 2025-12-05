@@ -70,7 +70,7 @@ export default function InfluencerProfileHeader({ channelData }) {
     }
   };
   return (
-    <section className="w-full bg-white border-b border-gray-200 mb-3 py-5">
+    <section className="w-full bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 border-b border-gray-200 mb-3 py-5">
       <div className="flex flex-col gap-6 px-4">
         <div className="flex flex-col md:flex-row items-center gap-8">
           {/* Avatar */}
