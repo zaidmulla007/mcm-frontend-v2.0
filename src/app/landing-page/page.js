@@ -1349,6 +1349,15 @@ function LandingPageContent() {
               <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mt-5"></div>
             </div>
 
+            {/* Center: MCM Talk Header */}
+            <div className="text-center flex-1 self-start mt-9">
+              <h3 className="text-xl font-bold text-black">MCM Talk</h3>
+              <p className="text-xs text-gray-600 mb-1">Update every 2 hrs</p>
+              <p className="text-xs text-gray-700 font-medium">
+                Last Update: {lastUpdated ? formatDisplayDate(lastUpdated) : "N/A"}
+              </p>
+            </div>
+
             {/* Right: Timezone Switch */}
             <div className="flex items-center gap-2 mt-2">
               {!useLocalTime && (
