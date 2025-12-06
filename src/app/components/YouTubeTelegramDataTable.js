@@ -1415,7 +1415,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     Click Post for Post details
                 </p>
                 <p className="text-black-600 text-sm absolute left-1/2 transform -translate-x-1/2">
-                    Hover on Coin to see live price
+                    Hover on Coin to see Live Price
                 </p>
                 <div className="mr-16"></div>
             </div>
