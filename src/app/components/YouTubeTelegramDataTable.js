@@ -1414,14 +1414,28 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     Click Coin for Coin details <br />
                     Click Post for Post details
                 </p>
-                <p className="text-black-600 text-sm absolute left-1/2 transform -translate-x-1/2">
-                    Hover on Coin to see Live Price
-                </p>
                 <div className="mr-16"></div>
             </div>
 
+            {/* Info Icons Row - One above each table */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+                {['6hrs', '24hrs', '7days', '30days'].map((timeframe, index) => (
+                    <div key={timeframe} className="flex justify-center">
+                        <div className="relative group/info">
+                            <div className="w-5 h-5 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-colors">
+                                <span className="text-gray-700 text-xs font-bold">ℹ</span>
+                            </div>
+                            {/* Tooltip */}
+                            <div className="invisible group-hover/info:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                Hover on Coin to see Live Price
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
             {/* Four Tables in One Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start mt-2">
                 {renderTable("6hrs", "Last 6 Hours")}
                 {renderTable("24hrs", "Last 24 Hours")}
                 {renderTable("7days", "Last 7 Days")}
