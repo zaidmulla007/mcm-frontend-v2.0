@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import moment from "moment-timezone";
 import { FaBell, FaYoutube, FaTelegramPlane } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTime = false }) {
     const router = useRouter();
@@ -36,6 +37,9 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     });
 
     const [isMouseOverModal, setIsMouseOverModal] = useState(false);
+
+    // State for trending messages scroller
+    const [trendingMessages, setTrendingMessages] = useState([]);
 
     const fetchCombinedData = async () => {
         try {
@@ -101,6 +105,37 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             setIsMouseOverModal(false);
         }
     }, [influencerModal.isOpen]);
+
+    // Generate trending messages from data
+    useEffect(() => {
+        if (combinedData && combinedData.resultsByTimeframe && combinedData.resultsByTimeframe["6hrs"]) {
+            const messages = [];
+            const coins = getTimeframeData("6hrs", selectedCoinType).slice(0, 10);
+
+            coins.forEach(coin => {
+                const priceChange = getPriceChangePercent(coin?.symbol);
+                if (priceChange !== null && Math.abs(priceChange) > 3) {
+                    const direction = priceChange > 0 ? 'Rallying' : 'Down';
+                    const symbol = coin.symbol ? coin.symbol.toUpperCase() : '';
+                    messages.push(`${symbol}: ${direction} ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}% in last 2 hours`);
+                }
+
+                // Add mention-based messages
+                const sentimentData = getSentimentData(coin);
+                if (sentimentData.mentions > 0) {
+                    const symbol = coin.symbol ? coin.symbol.toUpperCase() : '';
+                    messages.push(`${symbol}: Coin talked about in last 6 hours (${sentimentData.mentions} posts)`);
+                }
+            });
+
+            // Ensure we have at least some messages
+            if (messages.length === 0) {
+                messages.push("Loading trending coin updates...");
+            }
+
+            setTrendingMessages(messages);
+        }
+    }, [combinedData, selectedCoinType, selectedPlatform, binancePriceData]);
 
     // Fetch initial Binance 24hr price data and setup WebSocket for live updates
     useEffect(() => {
@@ -1250,64 +1285,124 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                 </div>
             </div>
 
-            {/* Channel and Coin Type Dropdowns */}
-            <div className="flex justify-start">
-                <div className="bg-white rounded-2xl overflow-hidden shadow-2xl p-3">
-                    <div className="flex items-start gap-6">
-                        {/* Left Side - Channel with Source Icons below */}
-                        <div className="flex flex-col gap-3">
-                            {/* Channel Dropdown */}
+            {/* Combined Section - Filters (40%) and Scroller (60%) in one row */}
+            <div className="flex gap-4 items-start">
+                {/* Channel and Coin Type Dropdowns - 40% */}
+                <div className="w-[40%]">
+                    <div className="bg-white rounded-2xl overflow-hidden shadow-2xl p-3">
+                        <div className="flex items-start gap-6">
+                            {/* Left Side - Channel with Source Icons below */}
+                            <div className="flex flex-col gap-3">
+                                {/* Channel Dropdown */}
+                                <div className="flex items-center gap-3">
+                                    <label className="text-lg text-black font-semibold">Channel:</label>
+                                    <select
+                                        value={selectedPlatform}
+                                        onChange={(e) => setSelectedPlatform(e.target.value)}
+                                        className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
+                                    >
+                                        {platformOptions.map((option) => (
+                                            <option key={option.key} value={option.key} className="bg-white text-black">
+                                                {option.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Source Icons - Below Channel */}
+                                <div className="flex items-center gap-2 ml-2">
+                                    <span className="text-sm text-black font-medium">Source:</span>
+                                    <div className="flex items-center gap-2">
+                                        {selectedPlatform === "Combined" ? (
+                                            <>
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-600">
+                                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                                </svg>
+                                                <TelegramIcon className="text-blue-600 w-4 h-4" />
+                                            </>
+                                        ) : selectedPlatform === "YouTube" ? (
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-600">
+                                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                            </svg>
+                                        ) : selectedPlatform === "Telegram" ? (
+                                            <TelegramIcon className="text-blue-600 w-4 h-4" />
+                                        ) : null}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Right Side - Coin Type Dropdown */}
                             <div className="flex items-center gap-3">
-                                <label className="text-lg text-black font-semibold">Channel:</label>
+                                <label className="text-lg text-black font-semibold">Coins:</label>
                                 <select
-                                    value={selectedPlatform}
-                                    onChange={(e) => setSelectedPlatform(e.target.value)}
+                                    value={selectedCoinType}
+                                    onChange={(e) => setSelectedCoinType(e.target.value)}
                                     className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
                                 >
-                                    {platformOptions.map((option) => (
+                                    {coinTypeOptions.map((option) => (
                                         <option key={option.key} value={option.key} className="bg-white text-black">
                                             {option.label}
                                         </option>
                                     ))}
                                 </select>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            {/* Source Icons - Below Channel */}
-                            <div className="flex items-center gap-2 ml-2">
-                                <span className="text-sm text-black font-medium">Source:</span>
-                                <div className="flex items-center gap-2">
-                                    {selectedPlatform === "Combined" ? (
-                                        <>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-600">
-                                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                                            </svg>
-                                            <TelegramIcon className="text-blue-600 w-4 h-4" />
-                                        </>
-                                    ) : selectedPlatform === "YouTube" ? (
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-600">
-                                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                                        </svg>
-                                    ) : selectedPlatform === "Telegram" ? (
-                                        <TelegramIcon className="text-blue-600 w-4 h-4" />
-                                    ) : null}
+                {/* Infinite Scroller - 60% */}
+                <div className="w-[60%]">
+                    <div className="bg-white rounded-lg overflow-hidden shadow-lg relative border-2 border-purple-500">
+                        <div className="px-4 py-3">
+                            {/* Scrolling Messages Container with purple border box */}
+                            <div className=" rounded-md p-4 relative overflow-hidden">
+                                <motion.div
+                                    className="flex whitespace-nowrap"
+                                    animate={{
+                                        x: ["0%", "-50%"],
+                                    }}
+                                    transition={{
+                                        x: {
+                                            repeat: Infinity,
+                                            repeatType: "loop",
+                                            duration: 25,
+                                            ease: "linear",
+                                        },
+                                    }}
+                                >
+                                    {/* Duplicate the messages for seamless loop */}
+                                    {[...trendingMessages, ...trendingMessages].map((message, index) => (
+                                        <span key={index} className="inline-flex items-center">
+                                            <span className="text-black-700 font-semibold text-base px-2">
+                                                {message}
+                                            </span>
+                                            {index < trendingMessages.length * 2 - 1 && (
+                                                <span className="text-black-500 font-bold text-base px-2">,</span>
+                                            )}
+                                        </span>
+                                    ))}
+                                </motion.div>
+
+                                {/* Down arrow indicator */}
+                                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
+                                    <svg
+                                        width="40"
+                                        height="40"
+                                        viewBox="0 0 40 40"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="text-black"
+                                    >
+                                        <path
+                                            d="M20 5 L20 30 M20 30 L10 20 M20 30 L30 20"
+                                            stroke="currentColor"
+                                            strokeWidth="3"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        />
+                                    </svg>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Right Side - Coin Type Dropdown */}
-                        <div className="flex items-center gap-3">
-                            <label className="text-lg text-black font-semibold">Coins:</label>
-                            <select
-                                value={selectedCoinType}
-                                onChange={(e) => setSelectedCoinType(e.target.value)}
-                                className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
-                            >
-                                {coinTypeOptions.map((option) => (
-                                    <option key={option.key} value={option.key} className="bg-white text-black">
-                                        {option.label}
-                                    </option>
-                                ))}
-                            </select>
                         </div>
                     </div>
                 </div>
