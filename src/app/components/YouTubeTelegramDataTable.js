@@ -658,7 +658,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                         <tbody>
                             {coins.length === 0 ? (
                                 <tr>
-                                    <td colSpan="2" className="text-center py-8 text-black">No data available</td>
+                                    <td colSpan="2" className="text-center py-8 text-black">No Post available</td>
                                 </tr>
                             ) : (
                                 coins.map((coin, index) => {
@@ -1035,7 +1035,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                             {coins.length === 0 ? (
                                 <tr>
                                     <td colSpan="2" className="text-center py-8 text-black">
-                                        No data available
+                                        No Post available
                                     </td>
                                 </tr>
                             ) : (
@@ -1207,7 +1207,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                         <tbody>
                             {coins.length === 0 ? (
                                 <tr>
-                                    <td colSpan="2" className="text-center py-8 text-black">No data available</td>
+                                    <td colSpan="2" className="text-center py-8 text-black">No Post available</td>
                                 </tr>
                             ) : (
                                 coins.map((coin, index) => {
