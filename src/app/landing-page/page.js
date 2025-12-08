@@ -1206,7 +1206,7 @@ function LandingPageContent() {
       locationDisplay = ' UTC';
     }
 
-    return `${momentDate.format('ddd DD MMM hh:mm A')}${locationDisplay}`;
+    return `${momentDate.format('DD MMM hh:mm A')}${locationDisplay}`;
   };
 
   useEffect(() => {
@@ -1351,7 +1351,7 @@ function LandingPageContent() {
 
             {/* Center: MCM Talk Header */}
             <div className="text-center flex-1 self-start mt-9">
-              <h3 className="text-xl font-bold text-black">MCM Talk</h3>
+              <h3 className="text-xl font-bold text-black">MCM Latest Talk</h3>
               <p className="text-xs text-gray-600 mb-1">Update every 2 hrs</p>
               <p className="text-xs text-gray-700 font-medium">
                 Last Update: {lastUpdated ? formatDisplayDate(lastUpdated) : "N/A"}
@@ -1395,23 +1395,22 @@ function LandingPageContent() {
         </div>
 
         {/* Influencer Flash News Text */}
-        <h2 className="text-center text-gray-900 text-2xl font-bold mb-0 mt-10">
+        {/* <h2 className="text-center text-gray-900 text-2xl font-bold mb-0 mt-10">
           Live Prices <span className="text-gray-600 text-sm">(Source Binance)</span>
 
         </h2>
         <h2 className="text-center text-gray-900 text-2xl font-bold mb-3 mt-0">
           <span className="text-gray-600 text-sm">(Price change percentage in last 24 hours)</span>
-        </h2>
+        </h2> */}
 
         {/* Influencer News Scroller Container */}
-        <div
+        {/* <div
           ref={scrollContainerRef}
           className="relative h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl border border-blue-200 overflow-hidden shadow-2xl mb-4"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onWheel={handleWheel}
         >
-          {/* Continuous Left-to-Right Scrolling News */}
           <div className="absolute inset-0 flex items-center">
             <motion.div
               drag="x"
@@ -1465,10 +1464,9 @@ function LandingPageContent() {
             </motion.div>
           </div>
 
-          {/* Gradient Overlay Edges */}
           <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-blue-100 to-transparent pointer-events-none"></div>
           <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-purple-100 to-transparent pointer-events-none"></div>
-        </div>
+        </div> */}
 
         {/* Display Purpose Text */}
         {/* <p className="text-center text-gray-600 text-sm italic mb-4 mt-1">

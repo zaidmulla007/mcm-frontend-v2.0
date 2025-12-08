@@ -1,12 +1,15 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import moment from "moment-timezone";
 import { FaBell, FaYoutube, FaTelegramPlane } from "react-icons/fa";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useAnimationControls } from "framer-motion";
+import { useTop10LivePrice } from "../livePriceTop10";
 
 export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTime = false }) {
     const router = useRouter();
+    const { top10Data, isConnected } = useTop10LivePrice();
+    const scrollingData = [...top10Data, ...top10Data];
     const [selectedPlatform, setSelectedPlatform] = useState("Combined");
     const [selectedCoinType, setSelectedCoinType] = useState("top_coins");
     const [combinedData, setCombinedData] = useState(null);
@@ -40,6 +43,13 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
     // State for trending messages scroller
     const [trendingMessages, setTrendingMessages] = useState([]);
+
+    // State for live prices scroller (from /home)
+    const [isPaused, setIsPaused] = useState(false);
+    const scrollContainerRef = useRef(null);
+    const [isDragging, setIsDragging] = useState(false);
+    const xLive = useMotionValue(0);
+    const controlsLive = useAnimationControls();
 
     const fetchCombinedData = async () => {
         try {
@@ -136,6 +146,69 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             setTrendingMessages(messages);
         }
     }, [combinedData, selectedCoinType, selectedPlatform, binancePriceData]);
+
+    // Live prices scroller helper functions (from /home)
+    const getLoopWidth = () => {
+        if (!scrollContainerRef.current) return 0;
+        const firstItem = scrollContainerRef.current.querySelector('.price-item');
+        if (!firstItem) return 0;
+        // Calculate width for half the rendered items (since we render data twice for seamless loop)
+        return firstItem.offsetWidth * top10Data.length;
+    };
+
+    const handleWheel = (e) => {
+        e.preventDefault();
+        const currentX = xLive.get();
+        const newX = currentX - e.deltaY;
+        const loopWidth = getLoopWidth();
+
+        if (newX < -loopWidth) {
+            xLive.set(newX + loopWidth);
+        } else if (newX > 0) {
+            xLive.set(newX - loopWidth);
+        } else {
+            xLive.set(newX);
+        }
+    };
+
+    const handleDrag = (event, info) => {
+        const loopWidth = getLoopWidth();
+        const currentX = xLive.get();
+
+        if (currentX < -loopWidth) {
+            xLive.set(currentX + loopWidth);
+        } else if (currentX > 0) {
+            xLive.set(currentX - loopWidth);
+        }
+    };
+
+    // Auto-scroll animation for live prices
+    useEffect(() => {
+        if (isPaused || isDragging) {
+            controlsLive.stop();
+            return;
+        }
+
+        const loopWidth = getLoopWidth();
+        if (loopWidth === 0) return;
+
+        const animate = async () => {
+            const currentX = xLive.get();
+            await controlsLive.start({
+                x: currentX - loopWidth,
+                transition: {
+                    duration: 60,
+                    ease: "linear",
+                },
+            });
+            xLive.set(0);
+            animate();
+        };
+
+        animate();
+
+        return () => controlsLive.stop();
+    }, [isPaused, isDragging, scrollingData, controlsLive, xLive]);
 
     // Fetch initial Binance 24hr price data and setup WebSocket for live updates
     useEffect(() => {
@@ -423,9 +496,9 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             const localDate = momentDate.tz(userTimeZone);
             const cityName = userTimeZone.split('/').pop().replace(/_/g, ' ');
             locationDisplay = ` ${cityName}`;
-            formattedDate = localDate.format('ddd DD MMM hh:mm A');
+            formattedDate = localDate.format('DD MMM hh:mm A');
         } else {
-            formattedDate = momentDate.utc().format('ddd DD MMM hh:mm A');
+            formattedDate = momentDate.utc().format('DD MMM hh:mm A');
             locationDisplay = ' UTC';
         }
 
@@ -666,7 +739,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                         <tr key={index} className="border-b border-gray-800">
                                             {/* Coin Column */}
                                             <td className="py-4 px-4 w-1/2">
-                                                <div className="flex flex-col items-center text-center h-full min-h-[140px] justify-start">
+                                                <div className="flex flex-col items-center text-center h-full min-h-[155px] justify-start">
                                                     <div className="relative group">
                                                         <img
                                                             src={coin.image_small || coin.image_thumb}
@@ -728,7 +801,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                     {/* YouTube Influencer Count */}
                                                     {coin.yt_unique_influencers_count > 0 && (
                                                         <div
-                                                            className="cursor-pointer mt-1"
+                                                            className="cursor-pointer mt-3"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 if (coin.yt_unique_inf && coin.yt_unique_inf.length > 0) {
@@ -776,7 +849,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         >
                                                             <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
                                                                 <FaYoutube className="text-red-600 text-xs" />
-                                                                <span className="text-black">{coin.yt_unique_influencers_count} YT</span>
+                                                                <span className="text-black">{coin.yt_unique_influencers_count} Channels</span>
                                                             </div>
 
                                                         </div>
@@ -785,7 +858,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                     {/* Telegram Influencer Count */}
                                                     {coin.tg_unique_influencers_count > 0 && (
                                                         <div
-                                                            className="cursor-pointer mt-1"
+                                                            className="cursor-pointer mt-3"
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 if (coin.tg_unique_inf && coin.tg_unique_inf.length > 0) {
@@ -833,7 +906,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         >
                                                             <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
                                                                 <FaTelegramPlane className="text-blue-600 text-xs" />
-                                                                <span className="text-black">{coin.tg_unique_influencers_count} TG</span>
+                                                                <span className="text-black">{coin.tg_unique_influencers_count} Channels</span>
                                                             </div>
                                                         </div>
                                                     )}
@@ -1270,139 +1343,175 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
     return (
         <div className="space-y-2">
-            {/* Header */}
-            <div className="text-left">
-                {/* <h2 className="text-3xl md:text-4xl font-bold mt-0 text-black">
-                    Trending Coins
-                </h2> */}
-                <div className="flex items-center gap-2 mt-1">
-                    <p className="text-lg text-gray-600">
-                        {lastUpdated ? formatDate(lastUpdated) : "N/A"}
-                    </p>
-                    <p className="text-sm text-gray-500 self-end mb-0.5">
-                        Update
-                    </p>
-                </div>
-            </div>
-
-            {/* Combined Section - Filters (40%) and Scroller (60%) in one row */}
-            <div className="flex gap-4 items-start">
-                {/* Channel and Coin Type Dropdowns - 40% */}
-                <div className="w-[40%]">
-                    <div className="bg-white rounded-2xl overflow-hidden shadow-2xl p-3">
-                        <div className="flex items-start gap-6">
-                            {/* Left Side - Channel with Source Icons below */}
-                            <div className="flex flex-col gap-3">
-                                {/* Channel Dropdown */}
-                                <div className="flex items-center gap-3">
-                                    <label className="text-lg text-black font-semibold">Channel:</label>
-                                    <select
-                                        value={selectedPlatform}
-                                        onChange={(e) => setSelectedPlatform(e.target.value)}
-                                        className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
-                                    >
-                                        {platformOptions.map((option) => (
-                                            <option key={option.key} value={option.key} className="bg-white text-black">
-                                                {option.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                {/* Source Icons - Below Channel */}
-                                <div className="flex items-center gap-2 ml-2">
-                                    <span className="text-sm text-black font-medium">Source:</span>
-                                    <div className="flex items-center gap-2">
-                                        {selectedPlatform === "Combined" ? (
-                                            <>
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-600">
-                                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                                                </svg>
-                                                <TelegramIcon className="text-blue-600 w-4 h-4" />
-                                            </>
-                                        ) : selectedPlatform === "YouTube" ? (
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-600">
-                                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
-                                            </svg>
-                                        ) : selectedPlatform === "Telegram" ? (
-                                            <TelegramIcon className="text-blue-600 w-4 h-4" />
-                                        ) : null}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Right Side - Coin Type Dropdown */}
-                            <div className="flex items-center gap-3">
-                                <label className="text-lg text-black font-semibold">Coins:</label>
-                                <select
-                                    value={selectedCoinType}
-                                    onChange={(e) => setSelectedCoinType(e.target.value)}
-                                    className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
-                                >
-                                    {coinTypeOptions.map((option) => (
-                                        <option key={option.key} value={option.key} className="bg-white text-black">
-                                            {option.label}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+            {/* Post Scroller - Full Width */}
+            <div className="w-full">
+                <div className="bg-white rounded-lg overflow-hidden shadow-lg relative border-2 border-purple-500">
+                    <div className="px-4 py-3">
+                        <div className="rounded-md p-4 relative overflow-hidden">
+                            <motion.div
+                                className="flex whitespace-nowrap"
+                                animate={{
+                                    x: ["0%", "-50%"],
+                                }}
+                                transition={{
+                                    x: {
+                                        repeat: Infinity,
+                                        repeatType: "loop",
+                                        duration: 25,
+                                        ease: "linear",
+                                    },
+                                }}
+                            >
+                                {[...trendingMessages, ...trendingMessages].map((message, index) => (
+                                    <span key={index} className="inline-flex items-center">
+                                        <span className="text-black-700 font-semibold text-base px-2">
+                                            {message}
+                                        </span>
+                                        {index < trendingMessages.length * 2 - 1 && (
+                                            <span className="text-black-500 font-bold text-base px-2">,</span>
+                                        )}
+                                    </span>
+                                ))}
+                            </motion.div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {/* Infinite Scroller - 60% */}
-                <div className="w-[60%]">
-                    <div className="bg-white rounded-lg overflow-hidden shadow-lg relative border-2 border-purple-500">
-                        <div className="px-4 py-3">
-                            {/* Scrolling Messages Container with purple border box */}
-                            <div className=" rounded-md p-4 relative overflow-hidden">
-                                <motion.div
-                                    className="flex whitespace-nowrap"
-                                    animate={{
-                                        x: ["0%", "-50%"],
-                                    }}
-                                    transition={{
-                                        x: {
-                                            repeat: Infinity,
-                                            repeatType: "loop",
-                                            duration: 25,
-                                            ease: "linear",
-                                        },
-                                    }}
+            {/* Live Prices Scroller - Full Width */}
+            <div className="w-full mt-4">
+                <h2 className="text-center text-gray-900 text-2xl font-bold mb-2">
+                    Live Prices <span className="text-gray-600 text-sm">(Source Binance)</span>
+                </h2>
+                <h2 className="text-center text-gray-900 text-sm mb-3">
+                    <span className="text-gray-600 text-sm">(Price change percentage in last 24 hours)</span>
+                </h2>
+                <div
+                    ref={scrollContainerRef}
+                    className="relative h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl border border-blue-200 overflow-hidden shadow-2xl"
+                    onMouseEnter={() => setIsPaused(true)}
+                    onMouseLeave={() => setIsPaused(false)}
+                    onWheel={handleWheel}
+                >
+                    <div className="absolute inset-0 flex items-center">
+                        <motion.div
+                            drag="x"
+                            dragConstraints={false}
+                            dragElastic={0}
+                            dragMomentum={false}
+                            onDrag={handleDrag}
+                            onDragStart={() => setIsDragging(true)}
+                            onDragEnd={() => setIsDragging(false)}
+                            style={{ x: xLive }}
+                            animate={controlsLive}
+                            className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
+                        >
+                            {[...scrollingData, ...scrollingData].map((item, index) => (
+                                <div
+                                    key={item.symbol + index}
+                                    className="price-item flex items-center gap-3 px-5 py-3 mx-4 flex-shrink-0"
                                 >
-                                    {/* Duplicate the messages for seamless loop */}
-                                    {[...trendingMessages, ...trendingMessages].map((message, index) => (
-                                        <span key={index} className="inline-flex items-center">
-                                            <span className="text-black-700 font-semibold text-base px-2">
-                                                {message}
-                                            </span>
-                                            {index < trendingMessages.length * 2 - 1 && (
-                                                <span className="text-black-500 font-bold text-base px-2">,</span>
-                                            )}
-                                        </span>
-                                    ))}
-                                </motion.div>
-
-                                {/* Down arrow indicator */}
-                                <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
-                                    <svg
-                                        width="40"
-                                        height="40"
-                                        viewBox="0 0 40 40"
-                                        fill="none"
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="text-black"
-                                    >
-                                        <path
-                                            d="M20 5 L20 30 M20 30 L10 20 M20 30 L30 20"
-                                            stroke="currentColor"
-                                            strokeWidth="3"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
+                                    {item.image && (
+                                        <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="w-8 h-8 rounded-full flex-shrink-0"
                                         />
-                                    </svg>
+                                    )}
+                                    <div className="flex flex-col flex-1 min-w-0">
+                                        <span className="text-purple-600 font-bold text-xs uppercase truncate">
+                                            {item.symbol}
+                                        </span>
+                                        <span className="text-gray-600 text-xs capitalize truncate">
+                                            {item.name}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                        <span className="text-gray-900 font-bold text-sm whitespace-nowrap">
+                                            ${typeof item.price === 'number' ? item.price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : item.price}
+                                        </span>
+                                        <span className={`text-xs font-semibold whitespace-nowrap ${typeof item.priceChange24h === 'number'
+                                            ? item.priceChange24h >= 0
+                                                ? 'text-green-600'
+                                                : 'text-red-600'
+                                            : 'text-gray-500'
+                                            }`}>
+                                            {typeof item.priceChange24h === 'number'
+                                                ? `${item.priceChange24h >= 0 ? '+' : ''}${item.priceChange24h.toFixed(2)}%`
+                                                : '0.00%'}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
+                            ))}
+                        </motion.div>
+                    </div>
+
+                    {/* Gradient Overlay Edges */}
+                    <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-blue-100 to-transparent pointer-events-none"></div>
+                    <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-purple-100 to-transparent pointer-events-none"></div>
+                </div>
+            </div>
+
+            {/* Last Update - Above Filters */}
+            <div className="flex items-start gap-2 mt-4">
+                <p className="text-sm text-gray-600">
+                    Update: {lastUpdated ? formatDate(lastUpdated) : "N/A"}
+                </p>
+            </div>
+
+            {/* Filters Section - Compact Single Line */}
+            <div className="w-full mt-2 flex justify-start">
+                <div className="bg-white rounded-2xl overflow-hidden shadow-2xl px-6 py-4 inline-flex items-center gap-6">
+                    {/* Channel Dropdown */}
+                    <div className="flex items-center gap-3">
+                        <label className="text-lg text-black font-semibold">Channel:</label>
+                        <select
+                            value={selectedPlatform}
+                            onChange={(e) => setSelectedPlatform(e.target.value)}
+                            className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
+                        >
+                            {platformOptions.map((option) => (
+                                <option key={option.key} value={option.key} className="bg-white text-black">
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Coin Type Dropdown */}
+                    <div className="flex items-center gap-3">
+                        <label className="text-lg text-black font-semibold">Coins:</label>
+                        <select
+                            value={selectedCoinType}
+                            onChange={(e) => setSelectedCoinType(e.target.value)}
+                            className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
+                        >
+                            {coinTypeOptions.map((option) => (
+                                <option key={option.key} value={option.key} className="bg-white text-black">
+                                    {option.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Source Icons - Inline */}
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm text-black font-medium">Source:</span>
+                        <div className="flex items-center gap-2">
+                            {selectedPlatform === "Combined" ? (
+                                <>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-600">
+                                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                    </svg>
+                                    <TelegramIcon className="text-blue-600 w-4 h-4" />
+                                </>
+                            ) : selectedPlatform === "YouTube" ? (
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-red-600">
+                                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                                </svg>
+                            ) : selectedPlatform === "Telegram" ? (
+                                <TelegramIcon className="text-blue-600 w-4 h-4" />
+                            ) : null}
                         </div>
                     </div>
                 </div>
@@ -1410,9 +1519,10 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
             {/* Hover Instruction Text */}
             <div className="flex justify-between items-center mt-4">
-                <p className="text-black-600 text-sm ml-16">
+                <p className="text-black-600 text-sm ml-13">
                     Click Coin for Coin details <br />
-                    Click Post for Post details
+                    Click Post for Post details<br/>
+                    Click Channel for Channel details
                 </p>
                 <div className="mr-16"></div>
             </div>
