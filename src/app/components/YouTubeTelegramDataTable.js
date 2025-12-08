@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import moment from "moment-timezone";
-import { FaBell, FaYoutube, FaTelegramPlane } from "react-icons/fa";
+import { FaBell, FaYoutube, FaTelegramPlane, FaInfoCircle } from "react-icons/fa";
 import { motion, useMotionValue, useAnimationControls } from "framer-motion";
 import { useTop10LivePrice } from "../livePriceTop10";
 
@@ -118,7 +118,55 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
     // Generate trending messages from data
     useEffect(() => {
-        if (combinedData && combinedData.resultsByTimeframe && combinedData.resultsByTimeframe["6hrs"]) {
+        if (combinedData && combinedData.notifications) {
+            const messages = [];
+            const notifications = combinedData.notifications;
+
+            // Add new coins notifications
+            if (notifications.new_coins && notifications.new_coins.length > 0) {
+                notifications.new_coins.forEach(coin => {
+                    if (coin.summary) messages.push(coin.summary);
+                });
+            }
+
+            // Add price alerts
+            if (notifications.price_alerts && notifications.price_alerts.length > 0) {
+                notifications.price_alerts.forEach(alert => {
+                    if (alert.summary) messages.push(alert.summary);
+                });
+            }
+
+            // Add old coins notifications
+            if (notifications.old_coins && notifications.old_coins.length > 0) {
+                notifications.old_coins.forEach(coin => {
+                    if (coin.summary) messages.push(coin.summary);
+                });
+            }
+
+            // Fallback if no notifications
+            if (messages.length === 0) {
+                // Keep existing logic as fallback or just show loading
+                if (combinedData.resultsByTimeframe && combinedData.resultsByTimeframe["6hrs"]) {
+                    const coins = getTimeframeData("6hrs", selectedCoinType).slice(0, 5);
+                    coins.forEach(coin => {
+                        const priceChange = getPriceChangePercent(coin?.symbol);
+                        if (priceChange !== null && Math.abs(priceChange) > 5) {
+                            const direction = priceChange > 0 ? 'Rallying' : 'Down';
+                            const symbol = coin.symbol ? coin.symbol.toUpperCase() : '';
+                            messages.push(`${symbol}: ${direction} ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}%`);
+                        }
+                    });
+                }
+            }
+
+            // Ensure we have at least some messages
+            if (messages.length === 0) {
+                messages.push("Waiting for market updates...");
+            }
+
+            setTrendingMessages(messages);
+        } else if (combinedData && combinedData.resultsByTimeframe && combinedData.resultsByTimeframe["6hrs"]) {
+            // Backward compatibility if notifications object is missing
             const messages = [];
             const coins = getTimeframeData("6hrs", selectedCoinType).slice(0, 10);
 
@@ -130,7 +178,6 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     messages.push(`${symbol}: ${direction} ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}% in last 2 hours`);
                 }
 
-                // Add mention-based messages
                 const sentimentData = getSentimentData(coin);
                 if (sentimentData.mentions > 0) {
                     const symbol = coin.symbol ? coin.symbol.toUpperCase() : '';
@@ -138,11 +185,9 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                 }
             });
 
-            // Ensure we have at least some messages
             if (messages.length === 0) {
                 messages.push("Loading trending coin updates...");
             }
-
             setTrendingMessages(messages);
         }
     }, [combinedData, selectedCoinType, selectedPlatform, binancePriceData]);
@@ -651,7 +696,27 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     <table className="w-full min-w-full table-fixed">
                         <thead>
                             <tr className="border-b border-gray-700">
-                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-1/2">Coin</th>
+                                <th className="text-center py-2 px-2 text-black font-semibold text-md w-1/2">
+                                    <div className="flex items-center justify-center gap-1">
+                                        Coin
+                                        <div className="relative group/info cursor-pointer">
+                                            <FaInfoCircle className="text-gray-500 text-xs" />
+                                            <div className="invisible group-hover/info:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[99999]">
+                                                {timeframe === '6hrs' ? (
+                                                    <div className="text-left space-y-1">
+                                                        <div>Click Coin for Coin details</div>
+                                                        <div>Click Post for Post details</div>
+                                                        <div>Click Channel for Channel details</div>
+                                                        <div>Hover on Coin to see Live price</div>
+                                                    </div>
+                                                ) : (
+                                                    "Hover on Coin to see Live price"
+                                                )}
+                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-b-gray-900"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
                                 <th className="text-center py-2 px-2 text-black font-semibold text-md w-1/2">Outlook</th>
                             </tr>
                         </thead>
@@ -1516,31 +1581,30 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             </div>
 
             {/* Hover Instruction Text */}
-            <div className="flex justify-between items-center mt-4">
+            {/* <div className="flex justify-between items-center mt-4">
                 <p className="text-black-600 text-sm ml-13">
                     Click Coin for Coin details <br />
                     Click Post for Post details<br />
                     Click Channel for Channel details
                 </p>
                 <div className="mr-16"></div>
-            </div>
+            </div> */}
 
             {/* Info Icons Row - One above each table */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
+            {/* <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-2">
                 {['6hrs', '24hrs', '7days', '30days'].map((timeframe, index) => (
                     <div key={timeframe} className="flex justify-center">
                         <div className="relative group/info">
                             <div className="w-5 h-5 rounded-full bg-gray-300 flex items-center justify-center cursor-pointer hover:bg-gray-400 transition-colors">
                                 <span className="text-gray-700 text-xs font-bold">ℹ</span>
                             </div>
-                            {/* Tooltip */}
                             <div className="invisible group-hover/info:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
                                 Hover on Coin to see Live Price
                             </div>
                         </div>
                     </div>
                 ))}
-            </div>
+            </div> */}
 
             {/* Four Tables in One Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-start mt-2">

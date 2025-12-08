@@ -144,7 +144,7 @@ export default function Login() {
   useEffect(() => {
     const showSignUp = searchParams.get('signup') === 'true';
     setIsLogin(!showSignUp);
-    
+
     // Cleanup function when switching forms
     const cleanup = async () => {
       // Stop polling
@@ -270,7 +270,7 @@ export default function Login() {
         clearInterval(intervalRef.current);
       }
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      
+
       if (userId && isSignupPending) {
         try {
           await axios.delete(`/api/auth/deletePendingSignup/${userId}`);
@@ -1433,6 +1433,18 @@ export default function Login() {
             background: '#ffffff',
             color: '#000000'
           });
+        } else if (data.message === 'CONTACT_SUPPORT') {
+          Swal.fire({
+            title: 'Maximum Retries Reached',
+            text: 'Your 3 OTP attempts are over. Please contact support.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#8b5cf6',
+            background: '#ffffff',
+            color: '#000000'
+          }).then(() => {
+            setShowContactModal(true);
+          });
         } else {
           throw new Error(data.message || 'Failed to resend OTP');
         }
@@ -1579,6 +1591,18 @@ export default function Login() {
             confirmButtonColor: '#8b5cf6',
             background: '#ffffff',
             color: '#000000'
+          });
+        } else if (data.message === 'CONTACT_SUPPORT') {
+          Swal.fire({
+            title: 'Maximum Retries Reached',
+            text: 'Your 3 OTP attempts are over. Please contact support.',
+            icon: 'error',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#8b5cf6',
+            background: '#ffffff',
+            color: '#000000'
+          }).then(() => {
+            setShowContactModal(true);
           });
         } else {
           // Get error message from API

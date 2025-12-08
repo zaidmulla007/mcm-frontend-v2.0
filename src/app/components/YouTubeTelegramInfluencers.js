@@ -432,7 +432,7 @@ export default function YouTubeTelegramInfluencers() {
                         </div>
 
                         {/* Right: Timezone Switch */}
-                        <div className="flex items-center gap-2 mt-2">
+                        {/* <div className="flex items-center gap-2 mt-2">
                             {!useLocalTime && (
                                 <span className="text-xs font-medium text-black-700">
                                     UTC
@@ -455,11 +455,11 @@ export default function YouTubeTelegramInfluencers() {
                                     {Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop().replace(/_/g, ' ') || 'Local'}
                                 </span>
                             )}
-                        </div>
+                        </div> */}
                     </div>
                     <div className="flex items-center gap-2 mb-3">
                         <p className="text-sm text-gray-600">
-                            Update: {lastUpdated ? formatDate(lastUpdated) : "N/A"}
+                            Update: {lastUpdated ? formatDate(lastUpdated, 'DD MMM hh:mm A') : "N/A"}
                         </p>
                     </div>
                 </div>

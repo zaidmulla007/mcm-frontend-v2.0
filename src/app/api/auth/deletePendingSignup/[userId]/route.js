@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function DELETE(request, { params }) {
   try {
-    const { userId } = params;
+    const { userId } = await params;
     console.log('DeletePendingSignup request for userId:', userId);
 
     // Forward the request to your backend API
@@ -32,7 +32,7 @@ export async function DELETE(request, { params }) {
 // Also handle POST for sendBeacon (which sends as POST with Blob)
 export async function POST(request, { params }) {
   try {
-    const { userId } = params;
+    const { userId } = await params;
     console.log('DeletePendingSignup (sendBeacon) request for userId:', userId);
 
     // Forward the request to your backend API as DELETE
