@@ -1311,7 +1311,7 @@ export default function CoinDetail() {
             <div style={{ fontWeight: 900, fontSize: 18, color: "#111" }}>CoinGecko Data</div>
             {coin?.last_updated && (
               <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
-                Last Updated: {new Date(coin.last_updated).toLocaleString('en-US', { timeZone: 'UTC', hour: 'numeric', minute: 'numeric', hour12: true })}
+                Last Updated: {new Date(coin.last_updated).toLocaleString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })} UTC
               </div>
             )}
           </div>
