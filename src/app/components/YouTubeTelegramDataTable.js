@@ -1432,9 +1432,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                         <span className="text-black-700 font-semibold text-base px-2">
                                             {message}
                                         </span>
-                                        {index < trendingMessages.length * 2 - 1 && (
-                                            <span className="text-black-500 font-bold text-base px-2">,</span>
-                                        )}
+                                        <span className="text-black-500 font-bold text-base px-2">,</span>
                                     </span>
                                 ))}
                             </motion.div>

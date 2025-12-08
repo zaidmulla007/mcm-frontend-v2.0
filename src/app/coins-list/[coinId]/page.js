@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import { useSelectedCoin } from "../../contexts/SelectedCoinContext";
 
 /* Your internal API (returns coin data) */
 const API_BASE = "/api/admin/coinindex/mcmdb/filter";
@@ -322,11 +323,20 @@ export default function CoinDetail() {
   const params = useParams();
   const router = useRouter();
   const coinId = params.coinId;
+  const { setSelectedSymbol } = useSelectedCoin();
 
   console.log("CoinDetail component mounted/rendered with coinId:", coinId);
 
   const [coin, setCoin] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Update header context with selected coin symbol
+  useEffect(() => {
+    if (coin?.symbol) {
+      setSelectedSymbol(coin.symbol.toUpperCase());
+    }
+    return () => setSelectedSymbol(null);
+  }, [coin, setSelectedSymbol]);
 
   /* Binance live data using the enhanced socket */
   const [binanceLive, setBinanceLive] = useState(null);
@@ -1301,7 +1311,7 @@ export default function CoinDetail() {
             <div style={{ fontWeight: 900, fontSize: 18, color: "#111" }}>CoinGecko Data</div>
             {coin?.last_updated && (
               <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
-                Last Updated: {new Date(coin.last_updated).toLocaleString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true })} UTC
+                Last Updated: {new Date(coin.last_updated).toLocaleString('en-US', { timeZone: 'UTC', hour: 'numeric', minute: 'numeric', hour12: true })}
               </div>
             )}
           </div>

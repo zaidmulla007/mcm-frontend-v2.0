@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef, Suspense } from "react";
 import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar, FaChartPie, FaNewspaper } from "react-icons/fa";
 import { useTimezone } from "../contexts/TimezoneContext";
+import { useSelectedCoin } from "../contexts/SelectedCoinContext";
 
 const navLinks = [
   { name: "Landing Page", href: "/home", icon: FaGlobe },
@@ -67,6 +68,7 @@ export default function ClientHeader() {
   const pathname = usePathname();
   const router = useRouter();
   const { useLocalTime, toggleTimezone } = useTimezone();
+  const { selectedSymbol } = useSelectedCoin();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userInfo, setUserInfo] = useState({
     firstName: '',
@@ -153,7 +155,12 @@ export default function ClientHeader() {
         {/* Navigation */}
         <nav className="hidden md:flex flex-col gap-2 flex-1 justify-center">
           {(() => {
-            const filteredLinks = navLinks.filter((link) => {
+            const processedLinks = navLinks.map(link => {
+              if (link.name === "All Coins" && selectedSymbol) {
+                return { ...link, name: `All Coins (${selectedSymbol})` };
+              }
+              return link;
+            }).filter(link => {
               // Hide "Landing Page" (/home) when user is logged in
               if (link.href === "/home" && isLoggedIn) {
                 return false;
@@ -162,8 +169,8 @@ export default function ClientHeader() {
             });
 
             // Split links into two rows: first 5 in top row, rest in bottom row
-            const topRowLinks = filteredLinks.slice(0, 4);
-            const bottomRowLinks = filteredLinks.slice(4);
+            const topRowLinks = processedLinks.slice(0, 4);
+            const bottomRowLinks = processedLinks.slice(4);
 
             const renderLink = (link) => {
               // Special case for Leaderboard: make it active for influencer detail pages and /posts
