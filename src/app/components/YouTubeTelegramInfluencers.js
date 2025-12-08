@@ -370,7 +370,6 @@ export default function YouTubeTelegramInfluencers() {
         let dayName, day, month, year, hours, minutes, displayHours, ampm, timezone;
 
         if (useLocalTime) {
-            // Use local time
             dayName = days[date.getDay()];
             day = date.getDate();
             month = months[date.getMonth()];
@@ -380,11 +379,9 @@ export default function YouTubeTelegramInfluencers() {
             ampm = hours >= 12 ? 'PM' : 'AM';
             displayHours = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
 
-            // Get user's timezone and map to abbreviation
             const userTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
             timezone = timeZoneAbbreviations[userTimeZone] || userTimeZone;
         } else {
-            // Use UTC time
             dayName = days[date.getUTCDay()];
             day = date.getUTCDate();
             month = months[date.getUTCMonth()];
@@ -461,11 +458,8 @@ export default function YouTubeTelegramInfluencers() {
                         </div>
                     </div>
                     <div className="flex items-center gap-2 mb-3">
-                        <p className="text-lg text-gray-600">
-                            {lastUpdated ? formatDate(lastUpdated) : "N/A"}
-                        </p>
-                        <p className="text-sm text-gray-500 self-end mb-0.5">
-                            Update
+                        <p className="text-sm text-gray-600">
+                            Update: {lastUpdated ? formatDate(lastUpdated) : "N/A"}
                         </p>
                     </div>
                 </div>

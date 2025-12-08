@@ -1379,7 +1379,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             </div>
 
             {/* Live Prices Scroller - Full Width */}
-            <div className="w-full mt-4">
+            {/* <div className="w-full mt-4">
                 <h2 className="text-center text-gray-900 text-2xl font-bold mb-2">
                     Live Prices <span className="text-gray-600 text-sm">(Source Binance)</span>
                 </h2>
@@ -1445,12 +1445,10 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                             ))}
                         </motion.div>
                     </div>
-
-                    {/* Gradient Overlay Edges */}
                     <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-blue-100 to-transparent pointer-events-none"></div>
                     <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-purple-100 to-transparent pointer-events-none"></div>
                 </div>
-            </div>
+            </div> */}
 
             {/* Last Update - Above Filters */}
             <div className="flex items-start gap-2 mt-4">
@@ -1521,7 +1519,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             <div className="flex justify-between items-center mt-4">
                 <p className="text-black-600 text-sm ml-13">
                     Click Coin for Coin details <br />
-                    Click Post for Post details<br/>
+                    Click Post for Post details<br />
                     Click Channel for Channel details
                 </p>
                 <div className="mr-16"></div>
