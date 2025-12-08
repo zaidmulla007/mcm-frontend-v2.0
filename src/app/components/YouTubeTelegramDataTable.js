@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import moment from "moment-timezone";
 import { FaBell, FaYoutube, FaTelegramPlane, FaInfoCircle } from "react-icons/fa";
-import { motion, useMotionValue, useAnimationControls } from "framer-motion";
+import { motion, useMotionValue, useAnimationControls, useAnimationFrame } from "framer-motion";
 import { useTop10LivePrice } from "../livePriceTop10";
 
 export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTime = false }) {
@@ -43,6 +43,50 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
     // State for trending messages scroller
     const [trendingMessages, setTrendingMessages] = useState([]);
+    const [isTrendingPaused, setIsTrendingPaused] = useState(false);
+    const [isTrendingDragging, setIsTrendingDragging] = useState(false);
+    const trendingContainerRef = useRef(null);
+    const [trendingContentWidth, setTrendingContentWidth] = useState(0);
+    const xTrending = useMotionValue(0);
+    const baseTrendingVelocity = 50; // pixels per second
+
+    // Measure content width
+    useEffect(() => {
+        if (trendingContainerRef.current) {
+            const firstItem = trendingContainerRef.current.querySelector('.trending-content-group');
+            if (firstItem) {
+                setTrendingContentWidth(firstItem.offsetWidth);
+            }
+        }
+    }, [trendingMessages]);
+
+    // Continuous scroll animation
+    useAnimationFrame((t, delta) => {
+        if (isTrendingPaused || isTrendingDragging) return;
+
+        const moveBy = (baseTrendingVelocity * (delta / 1000));
+        let newX = xTrending.get() - moveBy;
+
+        // Wrap logic
+        if (trendingContentWidth > 0 && newX <= -trendingContentWidth) {
+            newX += trendingContentWidth;
+        }
+
+        xTrending.set(newX);
+    });
+
+    const handleTrendingDrag = (event, info) => {
+        // Optional: Implement edge wrapping during drag if desired
+        // For now, simpler drag behavior is usually sufficient
+        const currentX = xTrending.get();
+        if (trendingContentWidth > 0) {
+            if (currentX <= -trendingContentWidth) {
+                xTrending.set(currentX + trendingContentWidth);
+            } else if (currentX > 0) {
+                xTrending.set(currentX - trendingContentWidth);
+            }
+        }
+    };
 
     // State for live prices scroller (from /home)
     const [isPaused, setIsPaused] = useState(false);
@@ -1414,27 +1458,59 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     <div className="px-4 py-3">
                         <div className="rounded-md p-4 relative overflow-hidden">
                             <motion.div
-                                className="flex whitespace-nowrap"
-                                animate={{
-                                    x: ["0%", "-50%"],
-                                }}
-                                transition={{
-                                    x: {
-                                        repeat: Infinity,
-                                        repeatType: "loop",
-                                        duration: 25,
-                                        ease: "linear",
-                                    },
-                                }}
+                                ref={trendingContainerRef}
+                                className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
+                                style={{ x: xTrending }}
+                                drag="x"
+                                dragConsumption={false} // Allow page scroll on drag? user said NO scroll wheel but drag ok. 
+                                // Actually user said: "when i dont hover continue scrolling... when hover dont scroll based on mouse scroll wheel only drag ok"
+                                // drag="x" handles drag. We won't add onWheel listener.
+                                onDragStart={() => setIsTrendingDragging(true)}
+                                onDragEnd={() => setIsTrendingDragging(false)}
+                                onDrag={handleTrendingDrag}
+                                onMouseEnter={() => setIsTrendingPaused(true)}
+                                onMouseLeave={() => setIsTrendingPaused(false)}
                             >
-                                {[...trendingMessages, ...trendingMessages].map((message, index) => (
-                                    <span key={index} className="inline-flex items-center">
-                                        <span className="text-black-700 font-semibold text-base px-2">
-                                            {message}
-                                        </span>
-                                        <span className="text-black-500 font-bold text-base px-2">,</span>
-                                    </span>
-                                ))}
+                                {/* Render multiple copies for seamless loop. 3 should be safe for most screens */}
+                                {[...trendingMessages, ...trendingMessages, ...trendingMessages].length > 0 ? (
+                                    <>
+                                        {/* Group 1 */}
+                                        <div className="flex trending-content-group">
+                                            {trendingMessages.map((message, index) => (
+                                                <span key={`g1-${index}`} className="inline-flex items-center">
+                                                    <span className="text-black-700 font-semibold text-base px-2">
+                                                        {message}
+                                                    </span>
+                                                    <span className="text-black-500 font-bold text-base px-2">,</span>
+                                                </span>
+                                            ))}
+                                        </div>
+                                        {/* Group 2 */}
+                                        <div className="flex">
+                                            {trendingMessages.map((message, index) => (
+                                                <span key={`g2-${index}`} className="inline-flex items-center">
+                                                    <span className="text-black-700 font-semibold text-base px-2">
+                                                        {message}
+                                                    </span>
+                                                    <span className="text-black-500 font-bold text-base px-2">,</span>
+                                                </span>
+                                            ))}
+                                        </div>
+                                        {/* Group 3 */}
+                                        <div className="flex">
+                                            {trendingMessages.map((message, index) => (
+                                                <span key={`g3-${index}`} className="inline-flex items-center">
+                                                    <span className="text-black-700 font-semibold text-base px-2">
+                                                        {message}
+                                                    </span>
+                                                    <span className="text-black-500 font-bold text-base px-2">,</span>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <div className="text-gray-500 italic px-4">Loading trending updates...</div>
+                                )}
                             </motion.div>
                         </div>
                     </div>
@@ -1667,7 +1743,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                 router.push(route);
                                             }}
                                         >
-                                            • {influencer.influencer_name}
+                                            • {influencer.influencer_name === "N/A" ? influencer.channel_id : influencer.influencer_name}
                                         </div>
                                     ))
                                 ) : null}
