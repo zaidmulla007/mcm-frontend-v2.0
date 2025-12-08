@@ -1002,7 +1002,7 @@ export default function CoinsPage() {
                             <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
                               {(() => {
                                 if (!coinDataForTimeframe?.ai_summary) {
-                                  return <span className="text-gray-500">N/A</span>;
+                                  return <span className="text-gray-500">Summary processing under progress....</span>;
                                 }
 
                                 const parsed = parseAISummary(coinDataForTimeframe.ai_summary);
@@ -1037,7 +1037,7 @@ export default function CoinsPage() {
                             <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
                               {(() => {
                                 if (!coinDataForTimeframe?.ai_summary) {
-                                  return <span className="text-gray-500">N/A</span>;
+                                  return <span className="text-gray-500">Summary processing under progress....</span>;
                                 }
 
                                 const parsed = parseAISummary(coinDataForTimeframe.ai_summary);
