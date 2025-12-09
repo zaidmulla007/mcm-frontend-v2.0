@@ -5,6 +5,8 @@ import { FaBell, FaYoutube, FaTelegramPlane } from "react-icons/fa";
 import { useCoinsLivePrice } from "@/hooks/useCoinsLivePrice";
 import { useTimezone } from "../contexts/TimezoneContext";
 import ReactMarkdown from "react-markdown";
+import SimpleTAGauge from "@/components/SimpleTAGauge";
+import GaugeComponent from "react-gauge-component";
 
 export default function CoinsPage() {
   const router = useRouter();
@@ -23,6 +25,17 @@ export default function CoinsPage() {
 
   // Get city name from timezone
   const userCity = userTimezone ? userTimezone.split('/').pop().replace(/_/g, ' ') : 'Local Time';
+
+  // ========================================
+  // DYNAMIC COLUMN WIDTH CONFIGURATION
+  // ========================================
+  // To adjust column widths, simply change TRADING_INFO_WIDTH below
+  // Example: Change to 40 for 40% Trading Info width, other columns will auto-adjust to 15% each
+  // Example: Change to 25 for 25% Trading Info width, other columns will auto-adjust to 18.75% each
+  const TRADING_INFO_WIDTH = 55; // Trading Info column width percentage (%)
+  const NUM_OTHER_COLUMNS = 4; // Number of other columns (Coins, Social Media Sentiment, Fundamental Score, Technical Analysis)
+  const OTHER_COLUMN_WIDTH = (100 - TRADING_INFO_WIDTH) / NUM_OTHER_COLUMNS; // Automatically calculated for equal distribution
+  // ========================================
 
   // Threshold constants for bell alerts
   const THRESHOLD_50_PERCENT = 30;
@@ -513,14 +526,14 @@ export default function CoinsPage() {
               <table className="w-full table-fixed">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[5%] align-middle">
+                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider align-middle" style={{ width: `${OTHER_COLUMN_WIDTH}%` }}>
                       Coins
                     </th>
-                    <th rowSpan="2" className="pl-2 pr-0.5 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
+                    <th rowSpan="2" className="pl-2 pr-0.5 py-3 text-left text-xs font-bold text-black-900 tracking-wider align-middle" style={{ width: `${OTHER_COLUMN_WIDTH}%` }}>
                       <div className="flex flex-col items-start gap-0.5">
-                        <span>Sentiment</span>
+                        <span>Social Media</span>
                         <div className="flex items-center justify-start gap-1">
-                          <span>ST/LT</span>
+                          <span>Sentiment</span>
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
@@ -530,7 +543,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[5%] align-middle">
+                    {/* <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[5%] align-middle">
                       <div className="flex flex-col items-start">
                         <span>Base</span>
                         <div className="flex items-center gap-1">
@@ -543,17 +556,14 @@ export default function CoinsPage() {
                           </span>
                         </div>
                       </div>
-                    </th>
-                    <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
+                    </th> */}
+                    {/* <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
                       <div className="flex flex-col items-center">
-                        {/* 24 Hours */}
                         <span>Current</span>
-                        {/* Price + Info icon in same row */}
                         <div className="flex items-center gap-1">
                           <span>Price</span>
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
-
                             <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl z-[9999] text-left w-48">
                               Source: Binance & CoinGeko <br />
                               N/A : Not Available
@@ -561,7 +571,7 @@ export default function CoinsPage() {
                           </span>
                         </div>
                       </div>
-                    </th>
+                    </th> */}
                     {/* <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       <div className="flex flex-col items-center">
                         <span>Price Change</span>
@@ -576,11 +586,24 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th> */}
-                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
+                    {/* Fundamental Score Header */}
+                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider align-middle" style={{ width: `${OTHER_COLUMN_WIDTH}%` }}>
                       <div className="flex flex-col items-center">
-                        {/* 24 Hours */}
+                        <span>Fundamental</span>
+                        <div className="flex items-center gap-1">
+                          <span>Score</span>
+                          <span className="relative group cursor-pointer z-[9999]">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                              Score (1-10) based <br /> on deep fundamental analysis
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </th>
+                    {/* <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
+                      <div className="flex flex-col items-center">
                         <span>24 Hrs %</span>
-                        {/* Price + Info icon in same row */}
                         <div className="flex items-center gap-1">
                           <span>Price Change</span>
                           <span className="relative group cursor-pointer z-[9999]">
@@ -592,14 +615,14 @@ export default function CoinsPage() {
                           </span>
                         </div>
                       </div>
-                    </th>
-                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
+                    </th> */}
+                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider align-middle" style={{ width: `${OTHER_COLUMN_WIDTH}%` }}>
                       <div className="flex flex-col items-center">
-                        <span>TA</span>
+                        <span>Technical Analysis</span>
                         <div className="flex items-center gap-1">
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999] text-left">
+                            <span className="invisible group-hover:visible absolute top-full mt-1 left-[-40px] bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999] text-left">
                               Technical Analysis:
                               We calculate all MA indicators (SMA & EMA for 5,10,20,50,100,200)
                               <br />
@@ -612,8 +635,9 @@ export default function CoinsPage() {
                       </div>
                     </th>
                     <th
-                      colSpan="2"
+                      colSpan="1"
                       className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider"
+                      style={{ width: `${TRADING_INFO_WIDTH}%` }}
                     >
                       <div className="flex justify-center items-center gap-1">
                         <span>Consolidated Analysis of All Posts</span>
@@ -625,7 +649,7 @@ export default function CoinsPage() {
 
                   </tr>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[40%]">
+                    {/* <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[40%]">
                       <div className="flex items-center justify-center gap-1">
                         <span>Coin Info</span>
                         <span className="relative group cursor-pointer z-[9999]">
@@ -635,8 +659,8 @@ export default function CoinsPage() {
                           </span>
                         </span>
                       </div>
-                    </th>
-                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[40%]">
+                    </th> */}
+                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider" style={{ width: `${TRADING_INFO_WIDTH}%` }}>
                       <div className="flex items-center justify-center gap-1">
                         <span>Trading Info</span>
                         <span className="relative group cursor-pointer z-[9999]">
@@ -791,69 +815,144 @@ export default function CoinsPage() {
                             </div>
                           </td>
 
-                          {/* Sentiment - Bullish and Bearish */}
-                          <td className="pl-2 pr-0.5 py-3">
-                            <div className="flex flex-col items-start gap-2">
+                          {/* Sentiment - Bullish and Bearish Gauges */}
+                          <td className="px-2 py-3 text-center">
+                            <div className="flex flex-col items-start justify-start gap-4">
 
-                              {/* Bullish - Show if either ST or LT exists */}
-                              {(coin.yt_tg_bullish_short_term > 0 || coin.yt_tg_bullish_long_term > 0) && (
+                              {/* Bullish Gauge */}
+                              {(coin.yt_tg_bullish_short_term > 0 || coin.yt_tg_bullish_long_term > 0) && coin.bullish_percent !== undefined && (
                                 <div className="relative group cursor-pointer">
-                                  {/* Pill */}
-                                  <div className="px-2 py-1 rounded-full bg-green-100 text-green-700 text-[10px] font-semibold">
-                                    Bullish
+                                  <div className="flex justify-center">
+                                    <GaugeComponent
+                                      id={`gauge-bullish-${coin.symbol}-${index}`}
+                                      type="radial"
+                                      style={{ width: 60, height: 60 }}
+                                      labels={{
+                                        valueLabel: { hide: true },
+                                        tickLabels: {
+                                          ticks: [
+                                            { value: 20 },
+                                            { value: 50 },
+                                            { value: 80 },
+                                            { value: 100 }
+                                          ]
+                                        }
+                                      }}
+                                      arc={{
+                                        colorArray: ['#CE1F1F', '#00FF15'], // Red to Green
+                                        nbSubArcs: 90,
+                                        padding: 0.01,
+                                        width: 0.4
+                                      }}
+                                      pointer={{
+                                        animationDelay: 0,
+                                        strokeWidth: 7
+                                      }}
+                                      value={coin.bullish_percent}
+                                    />
+                                  </div>
+                                  <div className="text-[10px] font-bold text-center mt-[-5px]">
+                                    <span className="text-black">
+                                      {Math.round(coin.bullish_percent)}% Bullish
+                                    </span>
                                   </div>
 
-                                  {/* Tooltip with ST and LT counts */}
-                                  <div className="invisible group-hover:visible absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-2 rounded shadow-xl z-[9999] min-w-[130px]">
+                                  {/* Tooltip for Bullish */}
+                                  <div className="invisible group-hover:visible absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs p-3 rounded-lg shadow-xl z-[9999] min-w-[160px] border border-gray-700">
+                                    <div className="text-green-400 font-bold border-b border-gray-700 pb-1 mb-1 text-[11px] uppercase tracking-wide">
+                                      Bullish Mentions
+                                    </div>
                                     {coin.yt_tg_bullish_short_term > 0 && (
-                                      <div className="text-[10px] mb-1">
-                                        <span className="font-semibold">Short Term:</span> {coin.yt_tg_bullish_short_term}{" "}
-                                        {coin.yt_tg_bullish_short_term === 1 ? "post" : "posts"}
+                                      <div className="flex justify-between text-[10px] mb-0.5">
+                                        <span>Short Term:</span>
+                                        <span className="font-mono ml-2 text-green-200">{coin.yt_tg_bullish_short_term} posts</span>
                                       </div>
                                     )}
                                     {coin.yt_tg_bullish_long_term > 0 && (
-                                      <div className="text-[10px]">
-                                        <span className="font-semibold">Long Term:</span> {coin.yt_tg_bullish_long_term}{" "}
-                                        {coin.yt_tg_bullish_long_term === 1 ? "post" : "posts"}
+                                      <div className="flex justify-between text-[10px]">
+                                        <span>Long Term:</span>
+                                        <span className="font-mono ml-2 text-green-200">{coin.yt_tg_bullish_long_term} posts</span>
                                       </div>
                                     )}
+                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-2 border-4 border-transparent border-t-gray-900"></div>
                                   </div>
                                 </div>
                               )}
 
-                              {/* Bearish - Show if either ST or LT exists */}
-                              {(coin.yt_tg_bearish_short_term > 0 || coin.yt_tg_bearish_long_term > 0) && (
+                              {/* Bearish Gauge */}
+                              {(coin.yt_tg_bearish_short_term > 0 || coin.yt_tg_bearish_long_term > 0) && coin.bullish_percent !== undefined && (
                                 <div className="relative group cursor-pointer">
-                                  {/* Pill */}
-                                  <div className="px-2 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-semibold">
-                                    Bearish
+                                  <div className="flex justify-center">
+                                    <GaugeComponent
+                                      id={`gauge-bearish-${coin.symbol}-${index}`}
+                                      type="radial"
+                                      style={{ width: 60, height: 60 }}
+                                      labels={{
+                                        valueLabel: { hide: true },
+                                        tickLabels: {
+                                          ticks: [
+                                            { value: 20 },
+                                            { value: 50 },
+                                            { value: 80 },
+                                            { value: 100 }
+                                          ]
+                                        }
+                                      }}
+                                      arc={{
+                                        colorArray: ['#00FF15', '#CE1F1F'], // Green to Red (Inverted for Bearish)
+                                        nbSubArcs: 90,
+                                        padding: 0.01,
+                                        width: 0.4
+                                      }}
+                                      pointer={{
+                                        animationDelay: 0,
+                                        strokeWidth: 7
+                                      }}
+                                      value={100 - coin.bullish_percent}
+                                    />
+                                  </div>
+                                  <div className="text-[10px] font-bold text-center mt-[-5px]">
+                                    <span className="text-black">
+                                      {Math.round(100 - coin.bullish_percent)}% Bearish
+                                    </span>
                                   </div>
 
-                                  {/* Tooltip with ST and LT counts */}
-                                  <div className="invisible group-hover:visible absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs px-3 py-2 rounded shadow-xl z-[9999] min-w-[130px]">
+                                  {/* Tooltip for Bearish */}
+                                  <div className="invisible group-hover:visible absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs p-3 rounded-lg shadow-xl z-[9999] min-w-[160px] border border-gray-700">
+                                    <div className="text-red-400 font-bold border-b border-gray-700 pb-1 mb-1 text-[11px] uppercase tracking-wide">
+                                      Bearish Mentions
+                                    </div>
                                     {coin.yt_tg_bearish_short_term > 0 && (
-                                      <div className="text-[10px] mb-1">
-                                        <span className="font-semibold">Short Term:</span> {coin.yt_tg_bearish_short_term}{" "}
-                                        {coin.yt_tg_bearish_short_term === 1 ? "post" : "posts"}
+                                      <div className="flex justify-between text-[10px] mb-0.5">
+                                        <span>Short Term:</span>
+                                        <span className="font-mono ml-2 text-red-200">{coin.yt_tg_bearish_short_term} posts</span>
                                       </div>
                                     )}
                                     {coin.yt_tg_bearish_long_term > 0 && (
-                                      <div className="text-[10px]">
-                                        <span className="font-semibold">Long Term:</span> {coin.yt_tg_bearish_long_term}{" "}
-                                        {coin.yt_tg_bearish_long_term === 1 ? "post" : "posts"}
+                                      <div className="flex justify-between text-[10px]">
+                                        <span>Long Term:</span>
+                                        <span className="font-mono ml-2 text-red-200">{coin.yt_tg_bearish_long_term} posts</span>
                                       </div>
                                     )}
+                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-2 border-4 border-transparent border-t-gray-900"></div>
                                   </div>
                                 </div>
                               )}
 
+                              {/* Display N/A if no bullish or bearish data */}
+                              {!(
+                                (coin.yt_tg_bullish_short_term > 0 || coin.yt_tg_bullish_long_term > 0) ||
+                                (coin.yt_tg_bearish_short_term > 0 || coin.yt_tg_bearish_long_term > 0)
+                              ) && (
+                                  <span className="text-xs text-gray-400">N/A</span>
+                                )}
                             </div>
                           </td>
 
 
 
                           {/* Publish Price + Price Change % */}
-                          <td className="pl-0.5 pr-2 py-3">
+                          {/* <td className="pl-0.5 pr-2 py-3">
                             <div className="flex flex-col justify-start">
                               {coin.avg_base_price ? (
                                 (() => {
@@ -876,18 +975,15 @@ export default function CoinsPage() {
                                 </span>
                               )}
                             </div>
-                          </td>
+                          </td> */}
                           {/* Current Price */}
-                          <td className="px-2 py-3 text-center">
+                          {/* <td className="px-2 py-3 text-center">
                             {currentPrice !== 'N/A' ? (
                               (() => {
                                 const num = Number(currentPrice);
                                 const isNum = typeof num === "number" && !isNaN(num);
-
-                                // Apply rule: <=3 digits → 2 decimals, else 0 decimals
                                 const isThreeDigitsOrLess =
                                   isNum && Math.floor(num).toString().length <= 3;
-
                                 return (
                                   <div className="flex flex-col items-center gap-0.5">
                                     <span className="text-xs font-semibold text-blue-500">
@@ -918,8 +1014,6 @@ export default function CoinsPage() {
                                           maximumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
                                         })}
                                       </span>
-
-                                      {/* Tooltip */}
                                       <span className="relative group cursor-pointer z-[9999]">
                                         <span className="text-gray-600 text-xs">ⓘ</span>
                                         <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
@@ -936,17 +1030,14 @@ export default function CoinsPage() {
                             ) : (
                               <span className="text-xs text-gray-500">N/A</span>
                             )}
-                          </td>
+                          </td> */}
                           {/* 24 Hours Price Change - From Binance Live Data */}
-                          <td className="px-2 py-3 text-center">
+                          {/* <td className="px-2 py-3 text-center">
                             {(() => {
-                              // Get live 24-hour price change percentage directly from Binance WebSocket
                               const livePriceChange = getLivePriceChange(coin.symbol);
-
                               if (livePriceChange !== null) {
                                 const isPositive = livePriceChange > 0;
                                 const isNegative = livePriceChange < 0;
-
                                 return (
                                   <span
                                     className={`text-[10px] font-semibold ${isPositive ? "text-green-600" : isNegative ? "text-red-600" : "text-gray-900"
@@ -957,8 +1048,51 @@ export default function CoinsPage() {
                                   </span>
                                 );
                               }
-
                               return <span className="text-[10px] font-semibold text-gray-500">N/A</span>;
+                            })()}
+                          </td> */}
+
+                          {/* Fundamental Score Column */}
+                          <td className="px-2 py-3 text-center">
+                            {(() => {
+                              // Pick up fundamental_score directly from coin object
+                              const fundamentalScore = coin.fundamental_score;
+                              const numScore = parseFloat(fundamentalScore);
+
+                              if (fundamentalScore === undefined || fundamentalScore === null || isNaN(numScore)) {
+                                return <span className="text-[10px] font-semibold text-gray-500">N/A</span>;
+                              }
+
+                              // Calculate position percentage (0-10 scale to 0-100%)
+                              // Clamp between 6% and 94% to keep ball within bar limits similar to reference
+                              const position = (numScore / 10) * 100;
+                              const clampedPosition = Math.min(Math.max(position, 6), 94);
+
+                              // Determine color based on score (>= 5 is green, < 5 is red)
+                              const isHigh = numScore >= 5;
+
+                              return (
+                                <div className="flex flex-col items-center justify-center gap-1">
+                                  <div className="segmented-bar-container" style={{ width: '80px' }}>
+                                    <div className="segmented-bar-background">
+                                      <div className="segment segment-red" />
+                                      <div className="segment segment-yellow" />
+                                      <div className="segment segment-green" />
+                                    </div>
+                                    <div
+                                      className="percentage-ball"
+                                      style={{
+                                        left: `${clampedPosition}%`,
+                                        backgroundColor: isHigh ? '#00ff15' : '#ff2121',
+                                        borderColor: isHigh ? '#00cc11' : '#cc1a1a'
+                                      }}
+                                    />
+                                  </div>
+                                  <span className="text-xs font-bold text-black">
+                                    {numScore.toFixed(1)}/10
+                                  </span>
+                                </div>
+                              );
                             })()}
                           </td>
 
@@ -976,19 +1110,12 @@ export default function CoinsPage() {
 
                               if (taData && (taData.BUY !== undefined || taData.NEUTRAL !== undefined || taData.SELL !== undefined)) {
                                 return (
-                                  <div className="flex flex-col gap-0.5">
-                                    <div className="flex items-center justify-center gap-1">
-                                      <span className="text-[9px] font-semibold text-green-600">BUY:</span>
-                                      <span className="text-[9px] font-bold text-green-700">{taData.BUY || 0}</span>
-                                    </div>
-                                    <div className="flex items-center justify-center gap-1">
-                                      <span className="text-[9px] font-semibold text-gray-600">NEUTRAL:</span>
-                                      <span className="text-[9px] font-bold text-gray-700">{taData.NEUTRAL || 0}</span>
-                                    </div>
-                                    <div className="flex items-center justify-center gap-1">
-                                      <span className="text-[9px] font-semibold text-red-600">SELL:</span>
-                                      <span className="text-[9px] font-bold text-red-700">{taData.SELL || 0}</span>
-                                    </div>
+                                  <div className="w-full flex items-center justify-center">
+                                    <SimpleTAGauge
+                                      buy={taData.BUY || 0}
+                                      neutral={taData.NEUTRAL || 0}
+                                      sell={taData.SELL || 0}
+                                    />
                                   </div>
                                 );
                               }
@@ -998,7 +1125,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* Coin Info Column */}
-                          <td className="px-2 py-3 text-left align-top w-[40%]">
+                          {/* <td className="px-2 py-3 text-left align-top w-[40%]">
                             <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
                               {(() => {
                                 if (!coinDataForTimeframe?.ai_summary) {
@@ -1030,10 +1157,10 @@ export default function CoinsPage() {
                                 );
                               })()}
                             </div>
-                          </td>
+                          </td> */}
 
                           {/* Trading Info Column */}
-                          <td className="px-2 py-3 text-left align-top w-[40%]">
+                          <td className="px-2 py-3 text-left align-top" style={{ width: `${TRADING_INFO_WIDTH}%` }}>
                             <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
                               {(() => {
                                 if (!coinDataForTimeframe?.ai_summary) {

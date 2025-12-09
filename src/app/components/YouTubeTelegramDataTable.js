@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import moment from "moment-timezone";
 import { FaBell, FaYoutube, FaTelegramPlane, FaInfoCircle } from "react-icons/fa";
@@ -50,6 +50,16 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     const xTrending = useMotionValue(0);
     const baseTrendingVelocity = 50; // pixels per second
 
+    // State for 2-hour scroller
+    const [is2HourPaused, setIs2HourPaused] = useState(false);
+    const [is2HourDragging, setIs2HourDragging] = useState(false);
+    const x2Hour = useMotionValue(0);
+
+    // State for 6-hour scroller
+    const [is6HourPaused, setIs6HourPaused] = useState(false);
+    const [is6HourDragging, setIs6HourDragging] = useState(false);
+    const x6Hour = useMotionValue(0);
+
     // Measure content width
     useEffect(() => {
         if (trendingContainerRef.current) {
@@ -86,6 +96,40 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                 xTrending.set(currentX - trendingContentWidth);
             }
         }
+    };
+
+    // Animation for 2-hour scroller
+    useAnimationFrame((t, delta) => {
+        if (is2HourPaused || is2HourDragging) return;
+        const moveBy = (baseTrendingVelocity * (delta / 1000));
+        let newX = x2Hour.get() - moveBy;
+        // Simple wrap - assuming content is repeated 3 times
+        if (newX <= -2000) { // Arbitrary large number for wrapping
+            newX = 0;
+        }
+        x2Hour.set(newX);
+    });
+
+    // Animation for 6-hour scroller
+    useAnimationFrame((t, delta) => {
+        if (is6HourPaused || is6HourDragging) return;
+        const moveBy = (baseTrendingVelocity * (delta / 1000));
+        let newX = x6Hour.get() - moveBy;
+        // Simple wrap - assuming content is repeated 3 times
+        if (newX <= -2000) { // Arbitrary large number for wrapping
+            newX = 0;
+        }
+        x6Hour.set(newX);
+    });
+
+    const handle2HourDrag = (event, info) => {
+        const currentX = x2Hour.get();
+        if (currentX > 0) x2Hour.set(0);
+    };
+
+    const handle6HourDrag = (event, info) => {
+        const currentX = x6Hour.get();
+        if (currentX > 0) x6Hour.set(0);
     };
 
     // State for live prices scroller (from /home)
@@ -160,30 +204,77 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         }
     }, [influencerModal.isOpen]);
 
-    // Generate trending messages from data
+    // Helper function to parse content and replace YT/TG with icons
+    const formatContentWithIcons = (content) => {
+        if (!content) return null;
+
+        // Split by common delimiters while preserving them
+        const parts = content.split(/(\s*,\s*|\s+)/);
+
+        return parts.map((part, index) => {
+            // Check if this part contains YT or TG
+            if (part.includes('YT:')) {
+                const text = part.replace('YT:', '').trim();
+                return (
+                    <span key={index} className="inline-flex items-center gap-1">
+                        <FaYoutube className="text-red-500 text-sm" />
+                        <span>{text}</span>
+                    </span>
+                );
+            } else if (part.includes('TG:')) {
+                const text = part.replace('TG:', '').trim();
+                return (
+                    <span key={index} className="inline-flex items-center gap-1">
+                        <FaTelegramPlane className="text-blue-500 text-sm" />
+                        <span>{text}</span>
+                    </span>
+                );
+            } else {
+                return <span key={index}>{part}</span>;
+            }
+        });
+    };
+
+    // Generate trending messages from data with labels for 2-hour and 6-hour summaries
     useEffect(() => {
         if (combinedData && combinedData.notifications) {
             const messages = [];
             const notifications = combinedData.notifications;
 
-            // Add new coins notifications
+            // Add 2-hour hourly alerts summary
+            if (notifications.hourly_alerts_summary) {
+                messages.push({
+                    label: "2 Hours",
+                    content: notifications.hourly_alerts_summary
+                });
+            }
+
+            // Add 6-hour new coins summary
+            if (notifications.new_coins_summary) {
+                messages.push({
+                    label: "6 Hours",
+                    content: notifications.new_coins_summary
+                });
+            }
+
+            // Add new coins notifications (legacy support)
             if (notifications.new_coins && notifications.new_coins.length > 0) {
                 notifications.new_coins.forEach(coin => {
-                    if (coin.summary) messages.push(coin.summary);
+                    if (coin.summary) messages.push({ label: null, content: coin.summary });
                 });
             }
 
-            // Add price alerts
+            // Add price alerts (legacy support)
             if (notifications.price_alerts && notifications.price_alerts.length > 0) {
                 notifications.price_alerts.forEach(alert => {
-                    if (alert.summary) messages.push(alert.summary);
+                    if (alert.summary) messages.push({ label: null, content: alert.summary });
                 });
             }
 
-            // Add old coins notifications
+            // Add old coins notifications (legacy support)
             if (notifications.old_coins && notifications.old_coins.length > 0) {
                 notifications.old_coins.forEach(coin => {
-                    if (coin.summary) messages.push(coin.summary);
+                    if (coin.summary) messages.push({ label: null, content: coin.summary });
                 });
             }
 
@@ -197,7 +288,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                         if (priceChange !== null && Math.abs(priceChange) > 5) {
                             const direction = priceChange > 0 ? 'Rallying' : 'Down';
                             const symbol = coin.symbol ? coin.symbol.toUpperCase() : '';
-                            messages.push(`${symbol}: ${direction} ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}%`);
+                            messages.push({ label: null, content: `${symbol}: ${direction} ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}%` });
                         }
                     });
                 }
@@ -205,7 +296,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
             // Ensure we have at least some messages
             if (messages.length === 0) {
-                messages.push("Waiting for market updates...");
+                messages.push({ label: null, content: "Waiting for market updates..." });
             }
 
             setTrendingMessages(messages);
@@ -219,18 +310,18 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                 if (priceChange !== null && Math.abs(priceChange) > 3) {
                     const direction = priceChange > 0 ? 'Rallying' : 'Down';
                     const symbol = coin.symbol ? coin.symbol.toUpperCase() : '';
-                    messages.push(`${symbol}: ${direction} ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}% in last 2 hours`);
+                    messages.push({ label: null, content: `${symbol}: ${direction} ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(1)}% in last 2 hours` });
                 }
 
                 const sentimentData = getSentimentData(coin);
                 if (sentimentData.mentions > 0) {
                     const symbol = coin.symbol ? coin.symbol.toUpperCase() : '';
-                    messages.push(`${symbol}: Coin talked about in last 6 hours (${sentimentData.mentions} posts)`);
+                    messages.push({ label: null, content: `${symbol}: Coin talked about in last 6 hours (${sentimentData.mentions} posts)` });
                 }
             });
 
             if (messages.length === 0) {
-                messages.push("Loading trending coin updates...");
+                messages.push({ label: null, content: "Loading trending coin updates..." });
             }
             setTrendingMessages(messages);
         }
@@ -851,7 +942,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                 <div className="flex flex-col items-center text-center h-full min-h-[155px] justify-start">
                                                     <div className="relative group">
                                                         <img
-                                                            src={coin.image_small || coin.image_thumb}
+                                                            src={coin.image_small || coin.image_thumb || coin.image_large}
                                                             alt={coin.symbol}
                                                             className="w-14 h-14 rounded-full mb-2 cursor-pointer hover:opacity-80 transition-opacity"
                                                             onClick={() => router.push(`/coins-list/${coin.source_id}`)}
@@ -1452,67 +1543,267 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
     return (
         <div className="space-y-2">
-            {/* Post Scroller - Full Width */}
+            {/* Two Column Scroller - 2 Hours and 6 Hours Side by Side */}
             <div className="w-full">
                 <div className="bg-white rounded-lg overflow-hidden shadow-lg relative border-2 border-purple-500">
-                    <div className="px-4 py-3">
-                        <div className="rounded-md p-4 relative overflow-hidden">
-                            <motion.div
-                                ref={trendingContainerRef}
-                                className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
-                                style={{ x: xTrending }}
-                                drag="x"
-                                dragConsumption={false} // Allow page scroll on drag? user said NO scroll wheel but drag ok. 
-                                // Actually user said: "when i dont hover continue scrolling... when hover dont scroll based on mouse scroll wheel only drag ok"
-                                // drag="x" handles drag. We won't add onWheel listener.
-                                onDragStart={() => setIsTrendingDragging(true)}
-                                onDragEnd={() => setIsTrendingDragging(false)}
-                                onDrag={handleTrendingDrag}
-                                onMouseEnter={() => setIsTrendingPaused(true)}
-                                onMouseLeave={() => setIsTrendingPaused(false)}
-                            >
-                                {/* Render multiple copies for seamless loop. 3 should be safe for most screens */}
-                                {[...trendingMessages, ...trendingMessages, ...trendingMessages].length > 0 ? (
-                                    <>
-                                        {/* Group 1 */}
-                                        <div className="flex trending-content-group">
-                                            {trendingMessages.map((message, index) => (
-                                                <span key={`g1-${index}`} className="inline-flex items-center">
-                                                    <span className="text-black-700 font-semibold text-base px-2">
-                                                        {message}
+                    <div className="flex">
+                        {/* 2 Hours Column - 50% Width */}
+                        <div className="w-1/2 border-r border-gray-300">
+                            {/* Fixed Label */}
+                            <div className="px-4 pt-3 pb-2 bg-gradient-to-r from-purple-100 to-purple-200">
+                                <span className="text-white bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-sm px-4 py-1.5 rounded-full inline-block">
+                                    2 Hours
+                                </span>
+                            </div>
+                            {/* Scrolling Content */}
+                            <div className="px-4 pb-3 bg-gradient-to-r from-purple-50 to-purple-100">
+                                <div className="rounded-md relative overflow-hidden">
+                                    <motion.div
+                                        className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
+                                        style={{ x: x2Hour }}
+                                        drag="x"
+                                        dragConstraints={{ left: -2000, right: 0 }}
+                                        dragElastic={0}
+                                        onDragStart={() => setIs2HourDragging(true)}
+                                        onDragEnd={() => setIs2HourDragging(false)}
+                                        onDrag={handle2HourDrag}
+                                        onMouseEnter={() => setIs2HourPaused(true)}
+                                        onMouseLeave={() => setIs2HourPaused(false)}
+                                    >
+                                        {(() => {
+                                            const twoHourMessage = trendingMessages.find(m => m.label === "2 Hours");
+                                            const twoHourContent = twoHourMessage ? twoHourMessage.content : "";
+
+                                            if (!twoHourContent) return null;
+
+                                            // Repeat 3 times for smooth scrolling
+                                            return (
+                                                <>
+                                                    <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
+                                                        {formatContentWithIcons(twoHourContent)}
                                                     </span>
-                                                    <span className="text-black-500 font-bold text-base px-2">,</span>
-                                                </span>
-                                            ))}
-                                        </div>
-                                        {/* Group 2 */}
-                                        <div className="flex">
-                                            {trendingMessages.map((message, index) => (
-                                                <span key={`g2-${index}`} className="inline-flex items-center">
-                                                    <span className="text-black-700 font-semibold text-base px-2">
-                                                        {message}
+                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                    <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
+                                                        {formatContentWithIcons(twoHourContent)}
                                                     </span>
-                                                    <span className="text-black-500 font-bold text-base px-2">,</span>
-                                                </span>
-                                            ))}
-                                        </div>
-                                        {/* Group 3 */}
-                                        <div className="flex">
-                                            {trendingMessages.map((message, index) => (
-                                                <span key={`g3-${index}`} className="inline-flex items-center">
-                                                    <span className="text-black-700 font-semibold text-base px-2">
-                                                        {message}
+                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                    <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
+                                                        {formatContentWithIcons(twoHourContent)}
                                                     </span>
-                                                    <span className="text-black-500 font-bold text-base px-2">,</span>
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="text-gray-500 italic px-4">Loading trending updates...</div>
-                                )}
-                            </motion.div>
+                                                </>
+                                            );
+                                        })()}
+                                    </motion.div>
+                                </div>
+                            </div>
                         </div>
+
+                        {/* 6 Hours Column - 50% Width */}
+                        <div className="w-1/2">
+                            {/* Fixed Label */}
+                            <div className="px-4 pt-3 pb-2 bg-gradient-to-r from-blue-100 to-cyan-200">
+                                <span className="text-white bg-gradient-to-r from-blue-600 to-cyan-600 font-bold text-sm px-4 py-1.5 rounded-full inline-block">
+                                    6 Hours
+                                </span>
+                            </div>
+                            {/* Scrolling Content */}
+                            <div className="px-4 pb-3 bg-gradient-to-r from-blue-50 to-cyan-100">
+                                <div className="rounded-md relative overflow-hidden">
+                                    <motion.div
+                                        className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
+                                        style={{ x: x6Hour }}
+                                        drag="x"
+                                        dragConstraints={{ left: -2000, right: 0 }}
+                                        dragElastic={0}
+                                        onDragStart={() => setIs6HourDragging(true)}
+                                        onDragEnd={() => setIs6HourDragging(false)}
+                                        onDrag={handle6HourDrag}
+                                        onMouseEnter={() => setIs6HourPaused(true)}
+                                        onMouseLeave={() => setIs6HourPaused(false)}
+                                    >
+                                        {(() => {
+                                            const sixHourMessage = trendingMessages.find(m => m.label === "6 Hours");
+                                            const sixHourContent = sixHourMessage ? sixHourMessage.content : "";
+
+                                            if (!sixHourContent) return null;
+
+                                            // Repeat 3 times for smooth scrolling
+                                            return (
+                                                <>
+                                                    <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
+                                                        {formatContentWithIcons(sixHourContent)}
+                                                    </span>
+                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                    <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
+                                                        {formatContentWithIcons(sixHourContent)}
+                                                    </span>
+                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                    <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
+                                                        {formatContentWithIcons(sixHourContent)}
+                                                    </span>
+                                                </>
+                                            );
+                                        })()}
+                                    </motion.div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Post Scroller - Full Width with Two Rows */}
+            <div className="w-full">
+                <div className="bg-white rounded-lg overflow-hidden shadow-lg relative border-2 border-purple-500">
+                    <div className="px-4 py-3 space-y-2">
+                        {/* Two Hour Alerts Row */}
+                        {trendingMessages.find(m => m.label === "2 Hours") && (
+                            <div className="flex items-center gap-3">
+                                {/* Fixed Label */}
+                                <div className="flex-shrink-0">
+                                    <span className="text-white bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-sm px-4 py-1.5 rounded-full">
+                                        2 Hours
+                                    </span>
+                                </div>
+                                {/* Scrolling Content */}
+                                <div className="flex-1 rounded-md relative overflow-hidden">
+                                    <motion.div
+                                        className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
+                                        style={{ x: xTrending }}
+                                        drag="x"
+                                        dragConsumption={false}
+                                        onDragStart={() => setIsTrendingDragging(true)}
+                                        onDragEnd={() => setIsTrendingDragging(false)}
+                                        onDrag={handleTrendingDrag}
+                                        onMouseEnter={() => setIsTrendingPaused(true)}
+                                        onMouseLeave={() => setIsTrendingPaused(false)}
+                                    >
+                                        {(() => {
+                                            const twoHourMessage = trendingMessages.find(m => m.label === "2 Hours");
+                                            const content = twoHourMessage ? twoHourMessage.content : "";
+                                            return (
+                                                <>
+                                                    <span className="text-black-700 font-semibold text-base px-4 inline-flex items-center gap-2">
+                                                        {formatContentWithIcons(content)}
+                                                    </span>
+                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                    <span className="text-black-700 font-semibold text-base px-4 inline-flex items-center gap-2">
+                                                        {formatContentWithIcons(content)}
+                                                    </span>
+                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                    <span className="text-black-700 font-semibold text-base px-4 inline-flex items-center gap-2">
+                                                        {formatContentWithIcons(content)}
+                                                    </span>
+                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                </>
+                                            );
+                                        })()}
+                                    </motion.div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Six Hour Alerts Row */}
+                        {trendingMessages.find(m => m.label === "6 Hours") && (
+                            <div className="flex items-center gap-3">
+                                {/* Fixed Label */}
+                                <div className="flex-shrink-0">
+                                    <span className="text-white bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-sm px-4 py-1.5 rounded-full">
+                                        6 Hours
+                                    </span>
+                                </div>
+                                {/* Scrolling Content */}
+                                <div className="flex-1 rounded-md relative overflow-hidden">
+                                    <motion.div
+                                        className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
+                                        style={{ x: xTrending }}
+                                        drag="x"
+                                        dragConsumption={false}
+                                        onDragStart={() => setIsTrendingDragging(true)}
+                                        onDragEnd={() => setIsTrendingDragging(false)}
+                                        onDrag={handleTrendingDrag}
+                                        onMouseEnter={() => setIsTrendingPaused(true)}
+                                        onMouseLeave={() => setIsTrendingPaused(false)}
+                                    >
+                                        {(() => {
+                                            const sixHourMessage = trendingMessages.find(m => m.label === "6 Hours");
+                                            const content = sixHourMessage ? sixHourMessage.content : "";
+                                            return (
+                                                <>
+                                                    <span className="text-black-700 font-semibold text-base px-4 inline-flex items-center gap-2">
+                                                        {formatContentWithIcons(content)}
+                                                    </span>
+                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                    <span className="text-black-700 font-semibold text-base px-4 inline-flex items-center gap-2">
+                                                        {formatContentWithIcons(content)}
+                                                    </span>
+                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                    <span className="text-black-700 font-semibold text-base px-4 inline-flex items-center gap-2">
+                                                        {formatContentWithIcons(content)}
+                                                    </span>
+                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                </>
+                                            );
+                                        })()}
+                                    </motion.div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Fallback if no labeled messages */}
+                        {!trendingMessages.find(m => m.label === "2 Hours") && !trendingMessages.find(m => m.label === "6 Hours") && (
+                            <div className="rounded-md p-4 relative overflow-hidden">
+                                <motion.div
+                                    ref={trendingContainerRef}
+                                    className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
+                                    style={{ x: xTrending }}
+                                    drag="x"
+                                    dragConsumption={false}
+                                    onDragStart={() => setIsTrendingDragging(true)}
+                                    onDragEnd={() => setIsTrendingDragging(false)}
+                                    onDrag={handleTrendingDrag}
+                                    onMouseEnter={() => setIsTrendingPaused(true)}
+                                    onMouseLeave={() => setIsTrendingPaused(false)}
+                                >
+                                    {trendingMessages.length > 0 ? (
+                                        <>
+                                            <div className="flex trending-content-group">
+                                                {trendingMessages.map((message, index) => (
+                                                    <span key={`g1-${index}`} className="inline-flex items-center">
+                                                        <span className="text-black-700 font-semibold text-base px-2">
+                                                            {message.content || message}
+                                                        </span>
+                                                        <span className="text-black-500 font-bold text-base px-2">|</span>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <div className="flex">
+                                                {trendingMessages.map((message, index) => (
+                                                    <span key={`g2-${index}`} className="inline-flex items-center">
+                                                        <span className="text-black-700 font-semibold text-base px-2">
+                                                            {message.content || message}
+                                                        </span>
+                                                        <span className="text-black-500 font-bold text-base px-2">|</span>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <div className="flex">
+                                                {trendingMessages.map((message, index) => (
+                                                    <span key={`g3-${index}`} className="inline-flex items-center">
+                                                        <span className="text-black-700 font-semibold text-base px-2">
+                                                            {message.content || message}
+                                                        </span>
+                                                        <span className="text-black-500 font-bold text-base px-2">|</span>
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="text-gray-500 italic px-4">Loading trending updates...</div>
+                                    )}
+                                </motion.div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
