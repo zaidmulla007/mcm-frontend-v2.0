@@ -175,12 +175,15 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     const handle2HourDrag = (event, info) => {
         const currentX = x2Hour.get();
 
-        // Seamless wrap during drag
+        // Seamless wrap during drag - bidirectional infinite scroll
         if (contentWidth2Hour > 0) {
-            if (currentX >= contentWidth2Hour / 2) {
-                x2Hour.set(currentX - contentWidth2Hour);
-            } else if (currentX <= -contentWidth2Hour / 2) {
+            // Dragging right (content moves left) - wrap when reaching end
+            if (currentX <= -contentWidth2Hour) {
                 x2Hour.set(currentX + contentWidth2Hour);
+            }
+            // Dragging left (content moves right) - wrap when reaching start
+            else if (currentX >= 0) {
+                x2Hour.set(currentX - contentWidth2Hour);
             }
         }
     };
@@ -188,12 +191,15 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     const handle6HourDrag = (event, info) => {
         const currentX = x6Hour.get();
 
-        // Seamless wrap during drag
+        // Seamless wrap during drag - bidirectional infinite scroll
         if (contentWidth6Hour > 0) {
-            if (currentX >= contentWidth6Hour / 2) {
-                x6Hour.set(currentX - contentWidth6Hour);
-            } else if (currentX <= -contentWidth6Hour / 2) {
+            // Dragging right (content moves left) - wrap when reaching end
+            if (currentX <= -contentWidth6Hour) {
                 x6Hour.set(currentX + contentWidth6Hour);
+            }
+            // Dragging left (content moves right) - wrap when reaching start
+            else if (currentX >= 0) {
+                x6Hour.set(currentX - contentWidth6Hour);
             }
         }
     };
@@ -278,65 +284,35 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         // and identifying markers we can split by
         let processedContent = content
             .replace(/🆕/g, '|<NEW>|')
-            .replace(/•|·/g, '|<DOT>|');
+            .replace(/•|·/g, '|<DOT>|')
+            .replace(/YT:\s*/g, '|<YT>|')
+            .replace(/TG:\s*/g, '|<TG>|');
 
         // Split by our custom markers and existing separators
-        const parts = processedContent.split(/(\|<NEW>\||\|<DOT>\|)/);
+        const parts = processedContent.split(/(\|<NEW>\||\|<DOT>\||\|<YT>\||\|<TG>\|)/);
 
         return parts.map((part, index) => {
             if (part === '|<NEW>|') {
                 return (
                     <div key={`new-${index}`} className="relative inline-flex items-center justify-center mr-1 align-middle h-8 w-8">
-                        <FaCertificate className="text-red-500 w-full h-full drop-shadow-sm" />
-                        <span className="absolute text-[8px] font-bold text-white uppercase tracking-tighter">New</span>
+                        <FaCertificate className="text-yellow-500 w-full h-full drop-shadow-sm" />
+                        <span className="absolute text-[12px] font-bold text-black uppercase tracking-tighter">M</span>
                     </div>
                 );
             } else if (part === '|<DOT>|') {
                 return (
                     <span key={`dot-${index}`} className="text-gray-400 font-bold text-2xl px-2 inline-block align-middle">•</span>
                 );
-            }
-
-            // Parse text content for YT/TG posts and arrows
-            // We'll use a regex to find patterns like "7 YT Posts", "1 YT Post", or simply "7 YT"
-            const ytRegex = /(\d+)\s*YT(?:\s*Posts?)?(\s|$)/i;
-            const tgRegex = /(\d+)\s*TG(?:\s*Posts?)?(\s|$)/i;
-
-            // Check if this part contains YT or TG counts
-            if (ytRegex.test(part) || tgRegex.test(part)) {
-                // We need to split this text part further to inject icons
-                const subParts = part.split(/((?:\d+)\s*(?:YT|TG)(?:\s*Posts?)?)/i);
-
+            } else if (part === '|<YT>|') {
                 return (
-                    <span key={index}>
-                        {subParts.map((subPart, subIndex) => {
-                            const ytMatch = subPart.match(ytRegex);
-                            const tgMatch = subPart.match(tgRegex);
-
-                            if (ytMatch) {
-                                return (
-                                    <span key={`yt-${subIndex}`} className="inline-flex items-center mx-1 gap-1">
-                                        <span className="font-bold">{ytMatch[1]}</span>
-                                        <FaYoutube className="text-red-600 text-2xl" />
-                                        <span className="text-black">{ytMatch[1] === '1' ? 'post' : 'posts'}</span>
-                                    </span>
-                                );
-                            } else if (tgMatch) {
-                                return (
-                                    <span key={`tg-${subIndex}`} className="inline-flex items-center mx-1 gap-1">
-                                        <span className="font-bold">{tgMatch[1]}</span>
-                                        <FaTelegramPlane className="text-blue-500 text-2xl" />
-                                        <span className="text-black">{tgMatch[1] === '1' ? 'post' : 'posts'}</span>
-                                    </span>
-                                );
-                            } else {
-                                // Handle arrows in the remaining text
-                                return <span key={`text-${subIndex}`}>{formatArrows(subPart)}</span>;
-                            }
-                        })}
-                    </span>
+                    <FaYoutube key={`yt-${index}`} className="text-red-600 text-xl inline-block align-middle mx-1" />
+                );
+            } else if (part === '|<TG>|') {
+                return (
+                    <FaTelegramPlane key={`tg-${index}`} className="text-blue-500 text-xl inline-block align-middle mx-1" />
                 );
             } else {
+                // Handle arrows in the remaining text
                 return <span key={index}>{formatArrows(part)}</span>;
             }
         });
@@ -344,8 +320,10 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
     const formatArrows = (text) => {
         if (!text) return null;
+        // Replace comma with full stop after arrows
+        const processedText = text.replace(/,/g, '.');
         // Split by arrow, capturing the arrow, consuming preceding whitespace
-        const parts = text.split(/\s*(↑|↓)/);
+        const parts = processedText.split(/\s*(↑|↓)/);
         return parts.map((part, i) => {
             if (part === '↑') {
                 return (
@@ -1114,12 +1092,15 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                     </div>
                                                     <div className="text-xs text-black font-bold mb-1 flex items-center justify-center gap-1">
                                                         <span>{coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}</span>
-                                                        {/* New coin dot notification - only for 6hrs timeframe */}
+                                                        {/* New coin notification - only for 6hrs timeframe */}
                                                         {timeframe === '6hrs' && isNewCoin(coin) && (
-                                                            <div className="relative group/newcoin">
-                                                                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                                                            <div className="relative group/newcoin inline-flex items-center justify-center">
+                                                                <div className="relative inline-flex items-center justify-center h-5 w-5">
+                                                                    <FaCertificate className="text-yellow-500 w-full h-full drop-shadow-sm" />
+                                                                    <span className="absolute text-[10px] font-bold text-black uppercase tracking-tighter">M</span>
+                                                                </div>
                                                                 <div className="invisible group-hover/newcoin:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[9999]">
-                                                                    New mention in last 6 hours
+                                                                    New Mention in last 6 hours
                                                                 </div>
                                                             </div>
                                                         )}
@@ -1735,10 +1716,19 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                 <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
                             </svg>
                             <div className="invisible group-hover:visible absolute top-full left-0 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                Last 6 Hours Posts Details
-                                <br />
                                 N/A: percent change is not available
                             </div>
+                        </div>
+
+                        {/* Legend for New Mention */}
+                        <div className="flex items-center gap-2 ml-auto">
+                            <div className="relative inline-flex items-center justify-center h-7 w-7">
+                                <FaCertificate className="text-yellow-500 w-full h-full drop-shadow-sm" />
+                                <span className="absolute text-[12px] font-bold text-black uppercase tracking-tighter">M</span>
+                            </div>
+                            <span className="text-gray-700 text-xs font-medium">
+                                New mention in last {selectedTimeframe === "2hrs" ? "2" : "6"} hours
+                            </span>
                         </div>
                     </div>
 
@@ -1767,25 +1757,27 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
                                     if (!content) return null;
 
-                                    // Create single content item for width measurement, then duplicate for infinite loop
-                                    const contentItem = (
-                                        <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
-                                            {formatContentWithIcons(content)}
-                                        </span>
+                                    // Create repeating content group (10 times to ensure it fills viewport)
+                                    const contentGroup = (
+                                        <>
+                                            {[...Array(10)].map((_, i) => (
+                                                <span key={i} className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
+                                                    {formatContentWithIcons(content)}
+                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                </span>
+                                            ))}
+                                        </>
                                     );
 
-                                    // Repeat content 20 times to fill screen completely - no empty space
+                                    // Render content group twice for seamless infinite loop
                                     return (
                                         <>
-                                            {[...Array(20)].map((_, index) => (
-                                                <div
-                                                    key={index}
-                                                    className={index === 0 ? "scroller-content-item inline-flex items-center" : "inline-flex items-center"}
-                                                >
-                                                    {contentItem}
-                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
-                                                </div>
-                                            ))}
+                                            <div className="scroller-content-item inline-flex items-center">
+                                                {contentGroup}
+                                            </div>
+                                            <div className="inline-flex items-center">
+                                                {contentGroup}
+                                            </div>
                                         </>
                                     );
                                 })()}

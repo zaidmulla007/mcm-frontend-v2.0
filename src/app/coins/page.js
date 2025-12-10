@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { FaBell, FaYoutube, FaTelegramPlane } from "react-icons/fa";
+import { FaBell, FaYoutube, FaTelegramPlane, FaCertificate } from "react-icons/fa";
 import { useCoinsLivePrice } from "@/hooks/useCoinsLivePrice";
 import { useTimezone } from "../contexts/TimezoneContext";
 import ReactMarkdown from "react-markdown";
@@ -771,12 +771,15 @@ export default function CoinsPage() {
                               <div className="text-center">
                                 <div className="flex items-center justify-center gap-1">
                                   <div className="text-xs font-bold text-balck-900"> {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}</div>
-                                  {/* New coin dot notification - only for 6hrs data */}
+                                  {/* New coin notification - only for 6hrs data */}
                                   {isNewCoin(coin) && (
-                                    <div className="relative group/newcoin">
-                                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                                    <div className="relative group/newcoin inline-flex items-center justify-center">
+                                      <div className="relative inline-flex items-center justify-center h-5 w-5">
+                                        <FaCertificate className="text-yellow-500 w-full h-full drop-shadow-sm" />
+                                        <span className="absolute text-[10px] font-bold text-black uppercase tracking-tighter">M</span>
+                                      </div>
                                       <div className="invisible group-hover/newcoin:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[9999]">
-                                        New in last 6 hours
+                                        New Mention in last 6 hours
                                       </div>
                                     </div>
                                   )}
@@ -944,7 +947,7 @@ export default function CoinsPage() {
                                               }
                                             }}
                                             arc={{
-                                              colorArray: ['#00FF15', '#CE1F1F'],
+                                              colorArray: ['#CE1F1F', '#00FF15'],
                                               nbSubArcs: 90,
                                               padding: 0.01,
                                               width: 0.4
