@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export async function GET(request, { params }) {
-  const { id } = params;
+  const { id } = await params;
 
   // Set fixed parameters
   const searchParams = new URLSearchParams({
@@ -11,7 +11,6 @@ export async function GET(request, { params }) {
 
   try {
     const apiUrl = `http://37.27.120.45:5901/api/admin/influenceryoutubedata/channel/${id}?${searchParams.toString()}`;
-    console.log('Fetching from:', apiUrl);
 
     const response = await fetch(apiUrl, {
       headers: {
@@ -34,7 +33,7 @@ export async function GET(request, { params }) {
     }
 
     const data = await response.json();
-    console.log('API response data:', JSON.stringify(data, null, 2));
+    // console.log('API response data:', JSON.stringify(data, null, 2)); // Reduced noise
 
     return NextResponse.json(data, {
       headers: {

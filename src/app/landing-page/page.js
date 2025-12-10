@@ -1358,7 +1358,7 @@ function LandingPageContent() {
             </div>
 
             {/* Center: MCM Talk Header */}
-            <div className="text-center flex-1 self-start mt-9">
+            <div className="text-center flex-1 self-start mt-16">
               <h3 className="text-xl font-bold text-black mr-16">MCM Latest Talk</h3>
             </div>
 

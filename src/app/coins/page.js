@@ -88,7 +88,9 @@ export default function CoinsPage() {
 
         // Handle both old and new response formats
         const resultsByTimeframe = data.resultsByTimeframe || data;
-        setCoinsData(resultsByTimeframe);
+
+        // Store the entire data object including notifications
+        setCoinsData(data);
 
         // Extract lastUpdated from the 6hrs timeframe (same as YouTubeTelegramDataTable)
         if (resultsByTimeframe && resultsByTimeframe["6hrs"] && resultsByTimeframe["6hrs"].dateRange) {
@@ -156,6 +158,19 @@ export default function CoinsPage() {
     const priceChange = livePriceChangesMap[upperSymbol];
     return priceChange || null;
   }, [livePriceChangesMap]);
+
+  // Check if coin is new in last 6 hours
+  const isNewCoin = useCallback((coin) => {
+    if (!coinsData || !coinsData.notifications || !coinsData.notifications.new_coins) {
+      return false;
+    }
+
+    const newCoins = coinsData.notifications.new_coins;
+    return newCoins.some(newCoin =>
+      newCoin.source_id === coin.source_id ||
+      newCoin.symbol?.toLowerCase() === coin.symbol?.toLowerCase()
+    );
+  }, [coinsData]);
 
   // Check if price change exceeds threshold based on 24hr Binance data
   const hasPriceAlert = useCallback((coin) => {
@@ -240,10 +255,14 @@ export default function CoinsPage() {
 
   // Helper function to get coin data from a specific timeframe
   const getCoinFromTimeframe = useCallback((symbol, timeframe) => {
-    if (!coinsData || !coinsData[timeframe]) return null;
+    if (!coinsData) return null;
 
-    const allCoins = coinsData[timeframe].all_coins || [];
-    const memCoins = coinsData[timeframe].mem_coins || [];
+    // Handle both old and new response formats
+    const resultsByTimeframe = coinsData.resultsByTimeframe || coinsData;
+    if (!resultsByTimeframe || !resultsByTimeframe[timeframe]) return null;
+
+    const allCoins = resultsByTimeframe[timeframe].all_coins || [];
+    const memCoins = resultsByTimeframe[timeframe].mem_coins || [];
     const combined = [...allCoins, ...memCoins];
 
     return combined.find(coin => coin.symbol === symbol);
@@ -372,10 +391,14 @@ export default function CoinsPage() {
   // Only depends on coinsData and selectedSummaryTimeframe (not prices) to avoid unnecessary recalculations
   // The live prices are fetched via getLivePrice callbacks during render
   const top10Coins = useMemo(() => {
-    if (!coinsData || !coinsData[selectedSummaryTimeframe]) return [];
+    if (!coinsData) return [];
 
-    const allCoins = coinsData[selectedSummaryTimeframe].all_coins || [];
-    const memCoins = coinsData[selectedSummaryTimeframe].mem_coins || [];
+    // Handle both old and new response formats
+    const resultsByTimeframe = coinsData.resultsByTimeframe || coinsData;
+    if (!resultsByTimeframe || !resultsByTimeframe[selectedSummaryTimeframe]) return [];
+
+    const allCoins = resultsByTimeframe[selectedSummaryTimeframe].all_coins || [];
+    const memCoins = resultsByTimeframe[selectedSummaryTimeframe].mem_coins || [];
     const combined = [...allCoins, ...memCoins];
 
     // Sort by total_mentions in descending order
@@ -718,7 +741,7 @@ export default function CoinsPage() {
                           <td className="px-2 py-3">
                             <div className="flex flex-col items-center gap-2">
                               {coin.image_small && (
-                                <div className="relative">
+                                <div className="relative group">
                                   <img
                                     src={coin.image_small}
                                     alt={coin.symbol}
@@ -727,14 +750,20 @@ export default function CoinsPage() {
                                   />
                                   {/* Bell icon for coins exceeding price change threshold */}
                                   {showPriceAlert && (
-                                    <div className="absolute -top-1 -right-1 group cursor-pointer z-[9999]">
+                                    <div className="absolute -top-1 -right-1 group/bell cursor-pointer z-[9999]">
                                       <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-lg ${priceChangePercent > 0 ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}>
                                         <FaBell className="text-white text-[12px]" />
                                       </div>
                                       {/* Tooltip on hover - positioned to the right of the bell */}
-                                      <div className="invisible group-hover:visible absolute top-0 left-full ml-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                      <div className="invisible group-hover/bell:visible absolute top-0 left-full ml-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
                                         {alertReason}
                                       </div>
+                                    </div>
+                                  )}
+                                  {/* Show live price tooltip when hovering on coin image (only if NO bell or when not hovering bell) */}
+                                  {currentPrice !== 'N/A' && (
+                                    <div className="invisible group-hover:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                      Live Price: ${typeof currentPrice === 'number' ? currentPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 }) : currentPrice}
                                     </div>
                                   )}
                                 </div>
@@ -742,6 +771,15 @@ export default function CoinsPage() {
                               <div className="text-center">
                                 <div className="flex items-center justify-center gap-1">
                                   <div className="text-xs font-bold text-balck-900"> {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}</div>
+                                  {/* New coin dot notification - only for 6hrs data */}
+                                  {isNewCoin(coin) && (
+                                    <div className="relative group/newcoin">
+                                      <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                                      <div className="invisible group-hover/newcoin:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[9999]">
+                                        New in last 6 hours
+                                      </div>
+                                    </div>
+                                  )}
                                   {coin.mem_coin === true && (
                                     <span className="relative group cursor-pointer z-[9999]">
                                       <span className="text-blue-600 text-xs">ⓘ</span>
@@ -783,7 +821,7 @@ export default function CoinsPage() {
                                   >
                                     <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
                                       <FaYoutube className="text-red-600 text-xs" />
-                                      <span className="text-black">{coin.yt_unique_influencers_count} YT</span>
+                                      <span className="text-black">{coin.yt_unique_influencers_count} {coin.yt_unique_influencers_count === 1 ? 'Channel' : 'Channels'}</span>
                                     </div>
                                   </div>
                                 )}
@@ -807,7 +845,7 @@ export default function CoinsPage() {
                                   >
                                     <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
                                       <FaTelegramPlane className="text-blue-600 text-xs" />
-                                      <span className="text-black">{coin.tg_unique_influencers_count} TG</span>
+                                      <span className="text-black">{coin.tg_unique_influencers_count} {coin.tg_unique_influencers_count === 1 ? 'Channel' : 'Channels'}</span>
                                     </div>
                                   </div>
                                 )}
@@ -817,14 +855,140 @@ export default function CoinsPage() {
 
                           {/* Sentiment - Bullish and Bearish Gauges */}
                           <td className="px-2 py-3 text-center">
-                            <div className="flex flex-col items-start justify-start gap-4">
+                            {(() => {
+                              const hasBullish = (coin.yt_tg_bullish_short_term > 0 || coin.yt_tg_bullish_long_term > 0);
+                              const hasBearish = (coin.yt_tg_bearish_short_term > 0 || coin.yt_tg_bearish_long_term > 0);
+                              const hasBothGauges = hasBullish && hasBearish;
 
-                              {/* Bullish Gauge */}
-                              {(coin.yt_tg_bullish_short_term > 0 || coin.yt_tg_bullish_long_term > 0) && coin.bullish_percent !== undefined && (
-                                <div className="relative group cursor-pointer">
-                                  <div className="flex justify-center">
+                              // If no data, show N/A
+                              if (!hasBullish && !hasBearish) {
+                                return <span className="text-xs text-gray-400">N/A</span>;
+                              }
+
+                              // If both gauges exist, use vertical layout with combined post counts
+                              if (hasBothGauges) {
+                                return (
+                                  <div className="flex flex-col gap-4">
+                                    {/* Bullish Row */}
+                                    {hasBullish && coin.bullish_percent !== undefined && (
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex flex-col items-center">
+                                          <GaugeComponent
+                                            id={`gauge-bullish-${coin.symbol}-${index}`}
+                                            type="radial"
+                                            style={{ width: 60, height: 60 }}
+                                            labels={{
+                                              valueLabel: { hide: true },
+                                              tickLabels: {
+                                                ticks: [
+                                                  { value: 20 },
+                                                  { value: 50 },
+                                                  { value: 80 },
+                                                  { value: 100 }
+                                                ]
+                                              }
+                                            }}
+                                            arc={{
+                                              colorArray: ['#CE1F1F', '#00FF15'],
+                                              nbSubArcs: 90,
+                                              padding: 0.01,
+                                              width: 0.4
+                                            }}
+                                            pointer={{
+                                              animationDelay: 0,
+                                              strokeWidth: 7
+                                            }}
+                                            value={coin.bullish_percent}
+                                          />
+                                          <div className="text-[10px] font-bold text-center mt-2">
+                                            <span className="text-black">
+                                              {Math.round(coin.bullish_percent)}% Bullish
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        {/* Bullish Counts */}
+                                        <div className="flex flex-col gap-1 text-left">
+                                          <div className="text-[10px] font-bold text-green-600">Bullish:</div>
+                                          {coin.yt_tg_bullish_short_term > 0 && (
+                                            <div className="text-[10px] text-black">
+                                              <span className="font-semibold">ST:</span> {coin.yt_tg_bullish_short_term} {coin.yt_tg_bullish_short_term === 1 ? 'post' : 'posts'}
+                                            </div>
+                                          )}
+                                          {coin.yt_tg_bullish_long_term > 0 && (
+                                            <div className="text-[10px] text-black">
+                                              <span className="font-semibold">LT:</span> {coin.yt_tg_bullish_long_term} {coin.yt_tg_bullish_long_term === 1 ? 'post' : 'posts'}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* Bearish Row */}
+                                    {hasBearish && coin.bullish_percent !== undefined && (
+                                      <div className="flex items-center gap-3">
+                                        <div className="flex flex-col items-center">
+                                          <GaugeComponent
+                                            id={`gauge-bearish-${coin.symbol}-${index}`}
+                                            type="radial"
+                                            style={{ width: 60, height: 60 }}
+                                            labels={{
+                                              valueLabel: { hide: true },
+                                              tickLabels: {
+                                                ticks: [
+                                                  { value: 20 },
+                                                  { value: 50 },
+                                                  { value: 80 },
+                                                  { value: 100 }
+                                                ]
+                                              }
+                                            }}
+                                            arc={{
+                                              colorArray: ['#00FF15', '#CE1F1F'],
+                                              nbSubArcs: 90,
+                                              padding: 0.01,
+                                              width: 0.4
+                                            }}
+                                            pointer={{
+                                              animationDelay: 0,
+                                              strokeWidth: 7
+                                            }}
+                                            value={100 - coin.bullish_percent}
+                                          />
+                                          <div className="text-[10px] font-bold text-center mt-2">
+                                            <span className="text-black">
+                                              {Math.round(100 - coin.bullish_percent)}% Bearish
+                                            </span>
+                                          </div>
+                                        </div>
+
+                                        {/* Bearish Counts */}
+                                        <div className="flex flex-col gap-1 text-left">
+                                          <div className="text-[10px] font-bold text-red-600">Bearish:</div>
+                                          {coin.yt_tg_bearish_short_term > 0 && (
+                                            <div className="text-[10px] text-black">
+                                              <span className="font-semibold">ST:</span> {coin.yt_tg_bearish_short_term} {coin.yt_tg_bearish_short_term === 1 ? 'post' : 'posts'}
+                                            </div>
+                                          )}
+                                          {coin.yt_tg_bearish_long_term > 0 && (
+                                            <div className="text-[10px] text-black">
+                                              <span className="font-semibold">LT:</span> {coin.yt_tg_bearish_long_term} {coin.yt_tg_bearish_long_term === 1 ? 'post' : 'posts'}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              }
+
+                              // If only one gauge exists, use horizontal layout
+                              return (
+                                <div className="flex items-center gap-3">
+                                  {/* Single Gauge */}
+                                  <div className="flex flex-col items-center">
                                     <GaugeComponent
-                                      id={`gauge-bullish-${coin.symbol}-${index}`}
+                                      id={`gauge-${hasBullish ? 'bullish' : 'bearish'}-${coin.symbol}-${index}`}
                                       type="radial"
                                       style={{ width: 60, height: 60 }}
                                       labels={{
@@ -839,7 +1003,7 @@ export default function CoinsPage() {
                                         }
                                       }}
                                       arc={{
-                                        colorArray: ['#CE1F1F', '#00FF15'], // Red to Green
+                                        colorArray: hasBullish ? ['#CE1F1F', '#00FF15'] : ['#00FF15', '#CE1F1F'],
                                         nbSubArcs: 90,
                                         padding: 0.01,
                                         width: 0.4
@@ -848,105 +1012,54 @@ export default function CoinsPage() {
                                         animationDelay: 0,
                                         strokeWidth: 7
                                       }}
-                                      value={coin.bullish_percent}
+                                      value={hasBullish ? coin.bullish_percent : (100 - coin.bullish_percent)}
                                     />
-                                  </div>
-                                  <div className="text-[10px] font-bold text-center mt-[-5px]">
-                                    <span className="text-black">
-                                      {Math.round(coin.bullish_percent)}% Bullish
-                                    </span>
-                                  </div>
-
-                                  {/* Tooltip for Bullish */}
-                                  <div className="invisible group-hover:visible absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs p-3 rounded-lg shadow-xl z-[9999] min-w-[160px] border border-gray-700">
-                                    <div className="text-green-400 font-bold border-b border-gray-700 pb-1 mb-1 text-[11px] uppercase tracking-wide">
-                                      Bullish Mentions
-                                    </div>
-                                    {coin.yt_tg_bullish_short_term > 0 && (
-                                      <div className="flex justify-between text-[10px] mb-0.5">
-                                        <span>Short Term:</span>
-                                        <span className="font-mono ml-2 text-green-200">{coin.yt_tg_bullish_short_term} posts</span>
-                                      </div>
-                                    )}
-                                    {coin.yt_tg_bullish_long_term > 0 && (
-                                      <div className="flex justify-between text-[10px]">
-                                        <span>Long Term:</span>
-                                        <span className="font-mono ml-2 text-green-200">{coin.yt_tg_bullish_long_term} posts</span>
-                                      </div>
-                                    )}
-                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-2 border-4 border-transparent border-t-gray-900"></div>
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Bearish Gauge */}
-                              {(coin.yt_tg_bearish_short_term > 0 || coin.yt_tg_bearish_long_term > 0) && coin.bullish_percent !== undefined && (
-                                <div className="relative group cursor-pointer">
-                                  <div className="flex justify-center">
-                                    <GaugeComponent
-                                      id={`gauge-bearish-${coin.symbol}-${index}`}
-                                      type="radial"
-                                      style={{ width: 60, height: 60 }}
-                                      labels={{
-                                        valueLabel: { hide: true },
-                                        tickLabels: {
-                                          ticks: [
-                                            { value: 20 },
-                                            { value: 50 },
-                                            { value: 80 },
-                                            { value: 100 }
-                                          ]
+                                    <div className="text-[10px] font-bold text-center mt-2">
+                                      <span className="text-black">
+                                        {hasBullish
+                                          ? `${Math.round(coin.bullish_percent)}% Bullish`
+                                          : `${Math.round(100 - coin.bullish_percent)}% Bearish`
                                         }
-                                      }}
-                                      arc={{
-                                        colorArray: ['#00FF15', '#CE1F1F'], // Green to Red (Inverted for Bearish)
-                                        nbSubArcs: 90,
-                                        padding: 0.01,
-                                        width: 0.4
-                                      }}
-                                      pointer={{
-                                        animationDelay: 0,
-                                        strokeWidth: 7
-                                      }}
-                                      value={100 - coin.bullish_percent}
-                                    />
-                                  </div>
-                                  <div className="text-[10px] font-bold text-center mt-[-5px]">
-                                    <span className="text-black">
-                                      {Math.round(100 - coin.bullish_percent)}% Bearish
-                                    </span>
+                                      </span>
+                                    </div>
                                   </div>
 
-                                  {/* Tooltip for Bearish */}
-                                  <div className="invisible group-hover:visible absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs p-3 rounded-lg shadow-xl z-[9999] min-w-[160px] border border-gray-700">
-                                    <div className="text-red-400 font-bold border-b border-gray-700 pb-1 mb-1 text-[11px] uppercase tracking-wide">
-                                      Bearish Mentions
+                                  {/* Post counts to the right */}
+                                  <div className="flex flex-col gap-1 text-left">
+                                    <div className={`text-[10px] font-bold ${hasBullish ? 'text-green-600' : 'text-red-600'}`}>
+                                      {hasBullish ? 'Bullish:' : 'Bearish:'}
                                     </div>
-                                    {coin.yt_tg_bearish_short_term > 0 && (
-                                      <div className="flex justify-between text-[10px] mb-0.5">
-                                        <span>Short Term:</span>
-                                        <span className="font-mono ml-2 text-red-200">{coin.yt_tg_bearish_short_term} posts</span>
-                                      </div>
+                                    {hasBullish ? (
+                                      <>
+                                        {coin.yt_tg_bullish_short_term > 0 && (
+                                          <div className="text-[10px] text-black">
+                                            <span className="font-semibold">ST:</span> {coin.yt_tg_bullish_short_term} {coin.yt_tg_bullish_short_term === 1 ? 'post' : 'posts'}
+                                          </div>
+                                        )}
+                                        {coin.yt_tg_bullish_long_term > 0 && (
+                                          <div className="text-[10px] text-black">
+                                            <span className="font-semibold">LT:</span> {coin.yt_tg_bullish_long_term} {coin.yt_tg_bullish_long_term === 1 ? 'post' : 'posts'}
+                                          </div>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <>
+                                        {coin.yt_tg_bearish_short_term > 0 && (
+                                          <div className="text-[10px] text-black">
+                                            <span className="font-semibold">ST:</span> {coin.yt_tg_bearish_short_term} {coin.yt_tg_bearish_short_term === 1 ? 'post' : 'posts'}
+                                          </div>
+                                        )}
+                                        {coin.yt_tg_bearish_long_term > 0 && (
+                                          <div className="text-[10px] text-black">
+                                            <span className="font-semibold">LT:</span> {coin.yt_tg_bearish_long_term} {coin.yt_tg_bearish_long_term === 1 ? 'post' : 'posts'}
+                                          </div>
+                                        )}
+                                      </>
                                     )}
-                                    {coin.yt_tg_bearish_long_term > 0 && (
-                                      <div className="flex justify-between text-[10px]">
-                                        <span>Long Term:</span>
-                                        <span className="font-mono ml-2 text-red-200">{coin.yt_tg_bearish_long_term} posts</span>
-                                      </div>
-                                    )}
-                                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-2 border-4 border-transparent border-t-gray-900"></div>
                                   </div>
                                 </div>
-                              )}
-
-                              {/* Display N/A if no bullish or bearish data */}
-                              {!(
-                                (coin.yt_tg_bullish_short_term > 0 || coin.yt_tg_bullish_long_term > 0) ||
-                                (coin.yt_tg_bearish_short_term > 0 || coin.yt_tg_bearish_long_term > 0)
-                              ) && (
-                                  <span className="text-xs text-gray-400">N/A</span>
-                                )}
-                            </div>
+                              );
+                            })()}
                           </td>
 
 

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import moment from "moment-timezone";
-import { FaBell, FaYoutube, FaTelegramPlane, FaInfoCircle } from "react-icons/fa";
+import { FaBell, FaYoutube, FaTelegramPlane, FaInfoCircle, FaCertificate } from "react-icons/fa";
 import { motion, useMotionValue, useAnimationControls, useAnimationFrame } from "framer-motion";
 import { useTop10LivePrice } from "../livePriceTop10";
 
@@ -12,6 +12,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     const scrollingData = [...top10Data, ...top10Data];
     const [selectedPlatform, setSelectedPlatform] = useState("Combined");
     const [selectedCoinType, setSelectedCoinType] = useState("top_coins");
+    const [selectedTimeframe, setSelectedTimeframe] = useState("2hrs");
     const [combinedData, setCombinedData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState(null);
@@ -54,11 +55,15 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     const [is2HourPaused, setIs2HourPaused] = useState(false);
     const [is2HourDragging, setIs2HourDragging] = useState(false);
     const x2Hour = useMotionValue(0);
+    const scrollContainer2Hour = useRef(null);
+    const [contentWidth2Hour, setContentWidth2Hour] = useState(0);
 
     // State for 6-hour scroller
     const [is6HourPaused, setIs6HourPaused] = useState(false);
     const [is6HourDragging, setIs6HourDragging] = useState(false);
     const x6Hour = useMotionValue(0);
+    const scrollContainer6Hour = useRef(null);
+    const [contentWidth6Hour, setContentWidth6Hour] = useState(0);
 
     // Measure content width
     useEffect(() => {
@@ -68,6 +73,31 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                 setTrendingContentWidth(firstItem.offsetWidth);
             }
         }
+    }, [trendingMessages]);
+
+    // Measure 2-hour and 6-hour scroller content width for infinite loop
+    useEffect(() => {
+        const measureWidth = () => {
+            if (scrollContainer2Hour.current) {
+                const contentItem = scrollContainer2Hour.current.querySelector('.scroller-content-item');
+                if (contentItem) {
+                    setContentWidth2Hour(contentItem.offsetWidth);
+                }
+            }
+            if (scrollContainer6Hour.current) {
+                const contentItem = scrollContainer6Hour.current.querySelector('.scroller-content-item');
+                if (contentItem) {
+                    setContentWidth6Hour(contentItem.offsetWidth);
+                }
+            }
+        };
+
+        // Measure on mount and when messages change
+        measureWidth();
+
+        // Re-measure after a delay to ensure content is rendered
+        const timer = setTimeout(measureWidth, 100);
+        return () => clearTimeout(timer);
     }, [trendingMessages]);
 
     // Continuous scroll animation
@@ -98,38 +128,74 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         }
     };
 
-    // Animation for 2-hour scroller
+    // Animation for 2-hour scroller with seamless infinite loop
     useAnimationFrame((t, delta) => {
         if (is2HourPaused || is2HourDragging) return;
+
         const moveBy = (baseTrendingVelocity * (delta / 1000));
         let newX = x2Hour.get() - moveBy;
-        // Simple wrap - assuming content is repeated 3 times
-        if (newX <= -2000) { // Arbitrary large number for wrapping
-            newX = 0;
+
+        // Seamless infinite loop using measured content width
+        if (contentWidth2Hour > 0) {
+            // When scrolled past one full cycle, reset to beginning
+            if (newX <= -contentWidth2Hour) {
+                newX = newX + contentWidth2Hour;
+            }
+            // When scrolling backward past start, loop to end
+            if (newX >= contentWidth2Hour) {
+                newX = newX - contentWidth2Hour;
+            }
         }
+
         x2Hour.set(newX);
     });
 
-    // Animation for 6-hour scroller
+    // Animation for 6-hour scroller with seamless infinite loop
     useAnimationFrame((t, delta) => {
         if (is6HourPaused || is6HourDragging) return;
+
         const moveBy = (baseTrendingVelocity * (delta / 1000));
         let newX = x6Hour.get() - moveBy;
-        // Simple wrap - assuming content is repeated 3 times
-        if (newX <= -2000) { // Arbitrary large number for wrapping
-            newX = 0;
+
+        // Seamless infinite loop using measured content width
+        if (contentWidth6Hour > 0) {
+            // When scrolled past one full cycle, reset to beginning
+            if (newX <= -contentWidth6Hour) {
+                newX = newX + contentWidth6Hour;
+            }
+            // When scrolling backward past start, loop to end
+            if (newX >= contentWidth6Hour) {
+                newX = newX - contentWidth6Hour;
+            }
         }
+
         x6Hour.set(newX);
     });
 
     const handle2HourDrag = (event, info) => {
         const currentX = x2Hour.get();
-        if (currentX > 0) x2Hour.set(0);
+
+        // Seamless wrap during drag
+        if (contentWidth2Hour > 0) {
+            if (currentX >= contentWidth2Hour / 2) {
+                x2Hour.set(currentX - contentWidth2Hour);
+            } else if (currentX <= -contentWidth2Hour / 2) {
+                x2Hour.set(currentX + contentWidth2Hour);
+            }
+        }
     };
 
     const handle6HourDrag = (event, info) => {
         const currentX = x6Hour.get();
-        if (currentX > 0) x6Hour.set(0);
+
+        // Seamless wrap during drag
+        if (contentWidth6Hour > 0) {
+            if (currentX >= contentWidth6Hour / 2) {
+                x6Hour.set(currentX - contentWidth6Hour);
+            } else if (currentX <= -contentWidth6Hour / 2) {
+                x6Hour.set(currentX + contentWidth6Hour);
+            }
+        }
     };
 
     // State for live prices scroller (from /home)
@@ -208,30 +274,93 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
     const formatContentWithIcons = (content) => {
         if (!content) return null;
 
-        // Split by common delimiters while preserving them
-        const parts = content.split(/(\s*,\s*|\s+)/);
+        // First, replace the "New" emoji with our custom image placeholder
+        // and identifying markers we can split by
+        let processedContent = content
+            .replace(/🆕/g, '|<NEW>|')
+            .replace(/•|·/g, '|<DOT>|');
+
+        // Split by our custom markers and existing separators
+        const parts = processedContent.split(/(\|<NEW>\||\|<DOT>\|)/);
 
         return parts.map((part, index) => {
-            // Check if this part contains YT or TG
-            if (part.includes('YT:')) {
-                const text = part.replace('YT:', '').trim();
+            if (part === '|<NEW>|') {
                 return (
-                    <span key={index} className="inline-flex items-center gap-1">
-                        <FaYoutube className="text-red-500 text-sm" />
-                        <span>{text}</span>
-                    </span>
+                    <div key={`new-${index}`} className="relative inline-flex items-center justify-center mr-1 align-middle h-8 w-8">
+                        <FaCertificate className="text-red-500 w-full h-full drop-shadow-sm" />
+                        <span className="absolute text-[8px] font-bold text-white uppercase tracking-tighter">New</span>
+                    </div>
                 );
-            } else if (part.includes('TG:')) {
-                const text = part.replace('TG:', '').trim();
+            } else if (part === '|<DOT>|') {
                 return (
-                    <span key={index} className="inline-flex items-center gap-1">
-                        <FaTelegramPlane className="text-blue-500 text-sm" />
-                        <span>{text}</span>
+                    <span key={`dot-${index}`} className="text-gray-400 font-bold text-2xl px-2 inline-block align-middle">•</span>
+                );
+            }
+
+            // Parse text content for YT/TG posts and arrows
+            // We'll use a regex to find patterns like "7 YT Posts", "1 YT Post", or simply "7 YT"
+            const ytRegex = /(\d+)\s*YT(?:\s*Posts?)?(\s|$)/i;
+            const tgRegex = /(\d+)\s*TG(?:\s*Posts?)?(\s|$)/i;
+
+            // Check if this part contains YT or TG counts
+            if (ytRegex.test(part) || tgRegex.test(part)) {
+                // We need to split this text part further to inject icons
+                const subParts = part.split(/((?:\d+)\s*(?:YT|TG)(?:\s*Posts?)?)/i);
+
+                return (
+                    <span key={index}>
+                        {subParts.map((subPart, subIndex) => {
+                            const ytMatch = subPart.match(ytRegex);
+                            const tgMatch = subPart.match(tgRegex);
+
+                            if (ytMatch) {
+                                return (
+                                    <span key={`yt-${subIndex}`} className="inline-flex items-center mx-1 gap-1">
+                                        <span className="font-bold">{ytMatch[1]}</span>
+                                        <FaYoutube className="text-red-600 text-2xl" />
+                                        <span className="text-black">{ytMatch[1] === '1' ? 'post' : 'posts'}</span>
+                                    </span>
+                                );
+                            } else if (tgMatch) {
+                                return (
+                                    <span key={`tg-${subIndex}`} className="inline-flex items-center mx-1 gap-1">
+                                        <span className="font-bold">{tgMatch[1]}</span>
+                                        <FaTelegramPlane className="text-blue-500 text-2xl" />
+                                        <span className="text-black">{tgMatch[1] === '1' ? 'post' : 'posts'}</span>
+                                    </span>
+                                );
+                            } else {
+                                // Handle arrows in the remaining text
+                                return <span key={`text-${subIndex}`}>{formatArrows(subPart)}</span>;
+                            }
+                        })}
                     </span>
                 );
             } else {
-                return <span key={index}>{part}</span>;
+                return <span key={index}>{formatArrows(part)}</span>;
             }
+        });
+    };
+
+    const formatArrows = (text) => {
+        if (!text) return null;
+        // Split by arrow, capturing the arrow, consuming preceding whitespace
+        const parts = text.split(/\s*(↑|↓)/);
+        return parts.map((part, i) => {
+            if (part === '↑') {
+                return (
+                    <svg key={`up-${i}`} className="w-5 h-5 text-green-600 inline-block align-middle" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
+                );
+            } else if (part === '↓') {
+                return (
+                    <svg key={`down-${i}`} className="w-5 h-5 text-red-600 inline-block align-middle" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                );
+            }
+            return part;
         });
     };
 
@@ -746,6 +875,19 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         { key: "meme_coins", label: "Meme Coins" }
     ];
 
+    // Helper function to check if coin is in new_coins list
+    const isNewCoin = (coin) => {
+        if (!combinedData || !combinedData.notifications || !combinedData.notifications.new_coins) {
+            return false;
+        }
+
+        const newCoins = combinedData.notifications.new_coins;
+        return newCoins.some(newCoin =>
+            newCoin.source_id === coin.source_id ||
+            newCoin.symbol?.toLowerCase() === coin.symbol?.toLowerCase()
+        );
+    };
+
     const getSentimentData = (coin) => {
         if (selectedPlatform === "YouTube") {
             return {
@@ -951,9 +1093,9 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                 e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
                                                             }}
                                                         />
-                                                        {/* Bell icon for coins exceeding price change threshold */}
+                                                        {/* Bell icon for coins exceeding price change threshold - positioned outside coin at top-right */}
                                                         {showPriceAlert && (
-                                                            <div className="absolute -top-1 -right-1 group/bell cursor-pointer z-[9999]">
+                                                            <div className="absolute -top-2 -right-8 group/bell cursor-pointer z-[9999]">
                                                                 <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-lg ${binance24hrChange > 0 ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}>
                                                                     <FaBell className="text-white text-[15px]" />
                                                                 </div>
@@ -970,8 +1112,17 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <div className="text-xs text-black font-bold mb-1">
-                                                        {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}
+                                                    <div className="text-xs text-black font-bold mb-1 flex items-center justify-center gap-1">
+                                                        <span>{coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}</span>
+                                                        {/* New coin dot notification - only for 6hrs timeframe */}
+                                                        {timeframe === '6hrs' && isNewCoin(coin) && (
+                                                            <div className="relative group/newcoin">
+                                                                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                                                                <div className="invisible group-hover/newcoin:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[9999]">
+                                                                    New in last 6 hours
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <div
                                                         className={`text-xs text-black ${timeframe === '6hrs' ? 'cursor-pointer hover:text-blue-600 transition-colors' : ''}`}
@@ -1049,7 +1200,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         >
                                                             <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
                                                                 <FaYoutube className="text-red-600 text-xs" />
-                                                                <span className="text-black">{coin.yt_unique_influencers_count} Channels</span>
+                                                                <span className="text-black">{coin.yt_unique_influencers_count} {coin.yt_unique_influencers_count === 1 ? 'Channel' : 'Channels'}</span>
                                                             </div>
 
                                                         </div>
@@ -1106,7 +1257,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         >
                                                             <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
                                                                 <FaTelegramPlane className="text-blue-600 text-xs" />
-                                                                <span className="text-black">{coin.tg_unique_influencers_count} Channels</span>
+                                                                <span className="text-black">{coin.tg_unique_influencers_count} {coin.tg_unique_influencers_count === 1 ? 'Channel' : 'Channels'}</span>
                                                             </div>
                                                         </div>
                                                     )}
@@ -1543,267 +1694,103 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
     return (
         <div className="space-y-2">
-            {/* Two Column Scroller - 2 Hours and 6 Hours Side by Side */}
+            {/* Single Scroller - Timeframe based */}
             <div className="w-full">
                 <div className="bg-white rounded-lg overflow-hidden shadow-lg relative border-2 border-purple-500">
-                    <div className="flex">
-                        {/* 2 Hours Column - 50% Width */}
-                        <div className="w-1/2 border-r border-gray-300">
-                            {/* Fixed Label */}
-                            <div className="px-4 pt-3 pb-2 bg-gradient-to-r from-purple-100 to-purple-200">
-                                <span className="text-white bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-sm px-4 py-1.5 rounded-full inline-block">
-                                    2 Hours
-                                </span>
-                            </div>
-                            {/* Scrolling Content */}
-                            <div className="px-4 pb-3 bg-gradient-to-r from-purple-50 to-purple-100">
-                                <div className="rounded-md relative overflow-hidden">
-                                    <motion.div
-                                        className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
-                                        style={{ x: x2Hour }}
-                                        drag="x"
-                                        dragConstraints={{ left: -2000, right: 0 }}
-                                        dragElastic={0}
-                                        onDragStart={() => setIs2HourDragging(true)}
-                                        onDragEnd={() => setIs2HourDragging(false)}
-                                        onDrag={handle2HourDrag}
-                                        onMouseEnter={() => setIs2HourPaused(true)}
-                                        onMouseLeave={() => setIs2HourPaused(false)}
-                                    >
-                                        {(() => {
-                                            const twoHourMessage = trendingMessages.find(m => m.label === "2 Hours");
-                                            const twoHourContent = twoHourMessage ? twoHourMessage.content : "";
-
-                                            if (!twoHourContent) return null;
-
-                                            // Repeat 3 times for smooth scrolling
-                                            return (
-                                                <>
-                                                    <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
-                                                        {formatContentWithIcons(twoHourContent)}
-                                                    </span>
-                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
-                                                    <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
-                                                        {formatContentWithIcons(twoHourContent)}
-                                                    </span>
-                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
-                                                    <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
-                                                        {formatContentWithIcons(twoHourContent)}
-                                                    </span>
-                                                </>
-                                            );
-                                        })()}
-                                    </motion.div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 6 Hours Column - 50% Width */}
-                        <div className="w-1/2">
-                            {/* Fixed Label */}
-                            <div className="px-4 pt-3 pb-2 bg-gradient-to-r from-blue-100 to-cyan-200">
-                                <span className="text-white bg-gradient-to-r from-blue-600 to-cyan-600 font-bold text-sm px-4 py-1.5 rounded-full inline-block">
+                    {/* Timeframe Filter and Eye Icon */}
+                    <div className="px-4 pt-3 pb-2 bg-gradient-to-r from-purple-100 to-blue-200 flex items-center gap-3">
+                        {/* Timeframe Toggle Switch */}
+                        <div className="flex items-center gap-2">
+                            {selectedTimeframe !== "2hrs" && (
+                                <span className="text-gray-700 font-bold text-sm">
                                     6 Hours
                                 </span>
-                            </div>
-                            {/* Scrolling Content */}
-                            <div className="px-4 pb-3 bg-gradient-to-r from-blue-50 to-cyan-100">
-                                <div className="rounded-md relative overflow-hidden">
-                                    <motion.div
-                                        className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
-                                        style={{ x: x6Hour }}
-                                        drag="x"
-                                        dragConstraints={{ left: -2000, right: 0 }}
-                                        dragElastic={0}
-                                        onDragStart={() => setIs6HourDragging(true)}
-                                        onDragEnd={() => setIs6HourDragging(false)}
-                                        onDrag={handle6HourDrag}
-                                        onMouseEnter={() => setIs6HourPaused(true)}
-                                        onMouseLeave={() => setIs6HourPaused(false)}
-                                    >
-                                        {(() => {
-                                            const sixHourMessage = trendingMessages.find(m => m.label === "6 Hours");
-                                            const sixHourContent = sixHourMessage ? sixHourMessage.content : "";
+                            )}
+                            <button
+                                onClick={() => setSelectedTimeframe(selectedTimeframe === "2hrs" ? "6hrs" : "2hrs")}
+                                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${selectedTimeframe === "2hrs" ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
+                                    }`}
+                            >
+                                <span
+                                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${selectedTimeframe === "2hrs" ? 'translate-x-4' : 'translate-x-0.5'
+                                        }`}
+                                />
+                            </button>
+                            {selectedTimeframe === "2hrs" && (
+                                <span className="text-gray-700 font-bold text-sm">
+                                    2 Hours
+                                </span>
+                            )}
+                        </div>
 
-                                            if (!sixHourContent) return null;
-
-                                            // Repeat 3 times for smooth scrolling
-                                            return (
-                                                <>
-                                                    <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
-                                                        {formatContentWithIcons(sixHourContent)}
-                                                    </span>
-                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
-                                                    <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
-                                                        {formatContentWithIcons(sixHourContent)}
-                                                    </span>
-                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
-                                                    <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
-                                                        {formatContentWithIcons(sixHourContent)}
-                                                    </span>
-                                                </>
-                                            );
-                                        })()}
-                                    </motion.div>
-                                </div>
+                        {/* Eye Icon with Tooltip */}
+                        <div className="relative group cursor-pointer">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 text-gray-600"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                            >
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                            </svg>
+                            <div className="invisible group-hover:visible absolute top-full left-0 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                Last 6 Hours Posts Details
+                                <br />
+                                N/A: percent change is not available
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Post Scroller - Full Width with Two Rows */}
-            <div className="w-full">
-                <div className="bg-white rounded-lg overflow-hidden shadow-lg relative border-2 border-purple-500">
-                    <div className="px-4 py-3 space-y-2">
-                        {/* Two Hour Alerts Row */}
-                        {trendingMessages.find(m => m.label === "2 Hours") && (
-                            <div className="flex items-center gap-3">
-                                {/* Fixed Label */}
-                                <div className="flex-shrink-0">
-                                    <span className="text-white bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-sm px-4 py-1.5 rounded-full">
-                                        2 Hours
-                                    </span>
-                                </div>
-                                {/* Scrolling Content */}
-                                <div className="flex-1 rounded-md relative overflow-hidden">
-                                    <motion.div
-                                        className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
-                                        style={{ x: xTrending }}
-                                        drag="x"
-                                        dragConsumption={false}
-                                        onDragStart={() => setIsTrendingDragging(true)}
-                                        onDragEnd={() => setIsTrendingDragging(false)}
-                                        onDrag={handleTrendingDrag}
-                                        onMouseEnter={() => setIsTrendingPaused(true)}
-                                        onMouseLeave={() => setIsTrendingPaused(false)}
-                                    >
-                                        {(() => {
-                                            const twoHourMessage = trendingMessages.find(m => m.label === "2 Hours");
-                                            const content = twoHourMessage ? twoHourMessage.content : "";
-                                            return (
-                                                <>
-                                                    <span className="text-black-700 font-semibold text-base px-4 inline-flex items-center gap-2">
-                                                        {formatContentWithIcons(content)}
-                                                    </span>
-                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
-                                                    <span className="text-black-700 font-semibold text-base px-4 inline-flex items-center gap-2">
-                                                        {formatContentWithIcons(content)}
-                                                    </span>
-                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
-                                                    <span className="text-black-700 font-semibold text-base px-4 inline-flex items-center gap-2">
-                                                        {formatContentWithIcons(content)}
-                                                    </span>
-                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
-                                                </>
-                                            );
-                                        })()}
-                                    </motion.div>
-                                </div>
-                            </div>
-                        )}
+                    {/* Scrolling Content */}
+                    <div className="px-4 pb-3 bg-gradient-to-r from-purple-50 to-blue-100">
+                        <div
+                            className="rounded-md relative overflow-hidden"
+                            ref={selectedTimeframe === "2hrs" ? scrollContainer2Hour : scrollContainer6Hour}
+                        >
+                            <motion.div
+                                className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
+                                style={{ x: selectedTimeframe === "2hrs" ? x2Hour : x6Hour }}
+                                drag="x"
+                                dragConstraints={false}
+                                dragElastic={0}
+                                dragMomentum={false}
+                                onDragStart={() => selectedTimeframe === "2hrs" ? setIs2HourDragging(true) : setIs6HourDragging(true)}
+                                onDragEnd={() => selectedTimeframe === "2hrs" ? setIs2HourDragging(false) : setIs6HourDragging(false)}
+                                onDrag={selectedTimeframe === "2hrs" ? handle2HourDrag : handle6HourDrag}
+                                onMouseEnter={() => selectedTimeframe === "2hrs" ? setIs2HourPaused(true) : setIs6HourPaused(true)}
+                                onMouseLeave={() => selectedTimeframe === "2hrs" ? setIs2HourPaused(false) : setIs6HourPaused(false)}
+                            >
+                                {(() => {
+                                    const message = trendingMessages.find(m => m.label === (selectedTimeframe === "2hrs" ? "2 Hours" : "6 Hours"));
+                                    const content = message ? message.content : "";
 
-                        {/* Six Hour Alerts Row */}
-                        {trendingMessages.find(m => m.label === "6 Hours") && (
-                            <div className="flex items-center gap-3">
-                                {/* Fixed Label */}
-                                <div className="flex-shrink-0">
-                                    <span className="text-white bg-gradient-to-r from-purple-600 to-blue-600 font-bold text-sm px-4 py-1.5 rounded-full">
-                                        6 Hours
-                                    </span>
-                                </div>
-                                {/* Scrolling Content */}
-                                <div className="flex-1 rounded-md relative overflow-hidden">
-                                    <motion.div
-                                        className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
-                                        style={{ x: xTrending }}
-                                        drag="x"
-                                        dragConsumption={false}
-                                        onDragStart={() => setIsTrendingDragging(true)}
-                                        onDragEnd={() => setIsTrendingDragging(false)}
-                                        onDrag={handleTrendingDrag}
-                                        onMouseEnter={() => setIsTrendingPaused(true)}
-                                        onMouseLeave={() => setIsTrendingPaused(false)}
-                                    >
-                                        {(() => {
-                                            const sixHourMessage = trendingMessages.find(m => m.label === "6 Hours");
-                                            const content = sixHourMessage ? sixHourMessage.content : "";
-                                            return (
-                                                <>
-                                                    <span className="text-black-700 font-semibold text-base px-4 inline-flex items-center gap-2">
-                                                        {formatContentWithIcons(content)}
-                                                    </span>
-                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
-                                                    <span className="text-black-700 font-semibold text-base px-4 inline-flex items-center gap-2">
-                                                        {formatContentWithIcons(content)}
-                                                    </span>
-                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
-                                                    <span className="text-black-700 font-semibold text-base px-4 inline-flex items-center gap-2">
-                                                        {formatContentWithIcons(content)}
-                                                    </span>
-                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
-                                                </>
-                                            );
-                                        })()}
-                                    </motion.div>
-                                </div>
-                            </div>
-                        )}
+                                    if (!content) return null;
 
-                        {/* Fallback if no labeled messages */}
-                        {!trendingMessages.find(m => m.label === "2 Hours") && !trendingMessages.find(m => m.label === "6 Hours") && (
-                            <div className="rounded-md p-4 relative overflow-hidden">
-                                <motion.div
-                                    ref={trendingContainerRef}
-                                    className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
-                                    style={{ x: xTrending }}
-                                    drag="x"
-                                    dragConsumption={false}
-                                    onDragStart={() => setIsTrendingDragging(true)}
-                                    onDragEnd={() => setIsTrendingDragging(false)}
-                                    onDrag={handleTrendingDrag}
-                                    onMouseEnter={() => setIsTrendingPaused(true)}
-                                    onMouseLeave={() => setIsTrendingPaused(false)}
-                                >
-                                    {trendingMessages.length > 0 ? (
+                                    // Create single content item for width measurement, then duplicate for infinite loop
+                                    const contentItem = (
+                                        <span className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
+                                            {formatContentWithIcons(content)}
+                                        </span>
+                                    );
+
+                                    // Repeat content 20 times to fill screen completely - no empty space
+                                    return (
                                         <>
-                                            <div className="flex trending-content-group">
-                                                {trendingMessages.map((message, index) => (
-                                                    <span key={`g1-${index}`} className="inline-flex items-center">
-                                                        <span className="text-black-700 font-semibold text-base px-2">
-                                                            {message.content || message}
-                                                        </span>
-                                                        <span className="text-black-500 font-bold text-base px-2">|</span>
-                                                    </span>
-                                                ))}
-                                            </div>
-                                            <div className="flex">
-                                                {trendingMessages.map((message, index) => (
-                                                    <span key={`g2-${index}`} className="inline-flex items-center">
-                                                        <span className="text-black-700 font-semibold text-base px-2">
-                                                            {message.content || message}
-                                                        </span>
-                                                        <span className="text-black-500 font-bold text-base px-2">|</span>
-                                                    </span>
-                                                ))}
-                                            </div>
-                                            <div className="flex">
-                                                {trendingMessages.map((message, index) => (
-                                                    <span key={`g3-${index}`} className="inline-flex items-center">
-                                                        <span className="text-black-700 font-semibold text-base px-2">
-                                                            {message.content || message}
-                                                        </span>
-                                                        <span className="text-black-500 font-bold text-base px-2">|</span>
-                                                    </span>
-                                                ))}
-                                            </div>
+                                            {[...Array(20)].map((_, index) => (
+                                                <div
+                                                    key={index}
+                                                    className={index === 0 ? "scroller-content-item inline-flex items-center" : "inline-flex items-center"}
+                                                >
+                                                    {contentItem}
+                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                </div>
+                                            ))}
                                         </>
-                                    ) : (
-                                        <div className="text-gray-500 italic px-4">Loading trending updates...</div>
-                                    )}
-                                </motion.div>
-                            </div>
-                        )}
+                                    );
+                                })()}
+                            </motion.div>
+                        </div>
                     </div>
                 </div>
             </div>
