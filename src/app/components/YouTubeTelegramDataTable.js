@@ -1119,7 +1119,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                             <div className="relative group/newcoin">
                                                                 <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
                                                                 <div className="invisible group-hover/newcoin:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[9999]">
-                                                                    New in last 6 hours
+                                                                    New mention in last 6 hours
                                                                 </div>
                                                             </div>
                                                         )}
