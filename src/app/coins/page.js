@@ -29,12 +29,8 @@ export default function CoinsPage() {
   // ========================================
   // DYNAMIC COLUMN WIDTH CONFIGURATION
   // ========================================
-  // To adjust column widths, simply change TRADING_INFO_WIDTH below
-  // Example: Change to 40 for 40% Trading Info width, other columns will auto-adjust to 15% each
-  // Example: Change to 25 for 25% Trading Info width, other columns will auto-adjust to 18.75% each
-  const TRADING_INFO_WIDTH = 55; // Trading Info column width percentage (%)
-  const NUM_OTHER_COLUMNS = 4; // Number of other columns (Coins, Social Media Sentiment, Fundamental Score, Technical Analysis)
-  const OTHER_COLUMN_WIDTH = (100 - TRADING_INFO_WIDTH) / NUM_OTHER_COLUMNS; // Automatically calculated for equal distribution
+  const NUM_COLUMNS = 7; // Coins, Social Media Sentiment, Fundamental Score, Technical Analysis, MCM Signal, Live Price, MCM Knowledge Center
+  const COLUMN_WIDTH = 100 / NUM_COLUMNS; // Equal distribution for all columns
   // ========================================
 
   // Threshold constants for bell alerts
@@ -414,9 +410,9 @@ export default function CoinsPage() {
   }, [top10Coins]);
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 font-sans mt-5">
-      <main className="mx-auto px-4 pb-8">
-        <div className="min-w-0">
+    <div className="min-h-screen bg-gray-100 text-gray-900 font-sans mt-5 overflow-x-hidden">
+      <main className="mx-auto px-4 pb-8 max-w-full overflow-x-hidden">
+        <div className="min-w-0 overflow-x-hidden">
           {/* Leaderboard Section */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200">
             {/* View Mode Toggle Buttons */}
@@ -441,52 +437,56 @@ export default function CoinsPage() {
                   Publish Posts
                 </button>
               </div> */}
-              {/* Header Title */}
-              <div className="flex justify-center mt-2">
-                <p className="text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-                  Trending Coins <br />
-                  {/* (Updated every 6 Hrs) */}
-                </p>
-              </div>
+              {/* Header with Title on Left and Timezone Switch on Right */}
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-2">
+                {/* Left: Header Title */}
+                <div>
+                  <h2 className="text-4xl md:text-5xl font-bold">
+                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      Trending Coin&apos;s
+                    </span>
+                  </h2>
+                  <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex-shrink-0 mt-5"></div>
+                </div>
 
-              {/* Timezone Switch */}
-              <div className="flex items-center gap-2 mt-2">
-                {!useLocalTime && (
-                  <span className="text-xs font-medium text-black-700">
-                    UTC
-                  </span>
-                )}
-                <button
-                  onClick={() => toggleTimezone()}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
-                    }`}
-                  role="switch"
-                  aria-checked={useLocalTime}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
-                      }`}
-                  />
-                </button>
-                {useLocalTime && (
-                  <span className="text-xs font-medium text-black-700">
-                    {userCity || 'Local'}
-                  </span>
-                )}
+                {/* Right: Timezone Switch */}
+                <div className="flex flex-col items-end gap-2 mt-2">
+                  <div className="flex items-center gap-2">
+                    {!useLocalTime && (
+                      <span className="text-xs font-medium text-black-700">
+                        UTC
+                      </span>
+                    )}
+                    <button
+                      onClick={() => toggleTimezone()}
+                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
+                        }`}
+                      role="switch"
+                      aria-checked={useLocalTime}
+                    >
+                      <span
+                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
+                          }`}
+                      />
+                    </button>
+                    {useLocalTime && (
+                      <span className="text-xs font-medium text-black-700">
+                        {userCity || 'Local'}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs font-medium text-black-900">
+                    Update: {lastUpdated ? formatDate(lastUpdated) : "N/A"}
+                  </p>
+                  <p className="text-xs font-medium text-black-900">
+                    Next Update: {lastUpdated ? formatDate(new Date(lastUpdated.getTime() + 6 * 60 * 60 * 1000)) : "N/A"}
+                  </p>
+                </div>
               </div>
 
               {/* Last Updated and Timeframe Buttons */}
               <div className="flex items-center gap-6 mt-2">
                 {/* Last Updated */}
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold text-black-600">
-                    Last Updated
-                  </span>
-                  <p className="text-xs text-black-600">
-                    {lastUpdated ? formatDate(lastUpdated) : "N/A"}
-                  </p>
-                </div>
-
                 {/* Timeframe Buttons */}
                 <div className="flex flex-col gap-1">
                   <span className="text-xs font-semibold text-black-600">
@@ -545,14 +545,14 @@ export default function CoinsPage() {
             </div> */}
 
             {/* Table */}
-            <div className="overflow-x-auto">
+            <div className="w-full overflow-hidden">
               <table className="w-full table-fixed">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider align-middle" style={{ width: `${OTHER_COLUMN_WIDTH}%` }}>
+                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[12%]">
                       Coins
                     </th>
-                    <th rowSpan="2" className="pl-2 pr-0.5 py-3 text-left text-xs font-bold text-black-900 tracking-wider align-middle" style={{ width: `${OTHER_COLUMN_WIDTH}%` }}>
+                    <th className="pl-1 pr-0.5 py-2 text-left text-xs font-bold text-black-900 tracking-wider align-middle w-[20%]">
                       <div className="flex flex-col items-start gap-0.5">
                         <span>Social Media</span>
                         <div className="flex items-center justify-start gap-1">
@@ -566,7 +566,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    {/* <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[5%] align-middle">
+                    {/* <th  className="pl-0.5 pr-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[5%] align-middle">
                       <div className="flex flex-col items-start">
                         <span>Base</span>
                         <div className="flex items-center gap-1">
@@ -580,7 +580,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th> */}
-                    {/* <th rowSpan="2" className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
+                    {/* <th  className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
                       <div className="flex flex-col items-center">
                         <span>Current</span>
                         <div className="flex items-center gap-1">
@@ -595,7 +595,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th> */}
-                    {/* <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
+                    {/* <th  className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
                       <div className="flex flex-col items-center">
                         <span>Price Change</span>
                         <div className="flex items-center gap-1">
@@ -610,7 +610,7 @@ export default function CoinsPage() {
                       </div>
                     </th> */}
                     {/* Fundamental Score Header */}
-                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider align-middle" style={{ width: `${OTHER_COLUMN_WIDTH}%` }}>
+                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[12%]">
                       <div className="flex flex-col items-center">
                         <span>Fundamental</span>
                         <div className="flex items-center gap-1">
@@ -624,7 +624,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    {/* <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
+                    {/* <th  className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
                       <div className="flex flex-col items-center">
                         <span>24 Hrs %</span>
                         <div className="flex items-center gap-1">
@@ -639,7 +639,7 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th> */}
-                    <th rowSpan="2" className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider align-middle" style={{ width: `${OTHER_COLUMN_WIDTH}%` }}>
+                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[28%]">
                       <div className="flex flex-col items-center">
                         <span>Technical Analysis</span>
                         <div className="flex items-center gap-1">
@@ -657,41 +657,47 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th
-                      colSpan="1"
-                      className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider"
-                      style={{ width: `${TRADING_INFO_WIDTH}%` }}
-                    >
-                      <div className="flex justify-center items-center gap-1">
-                        <span>Consolidated Analysis of All Posts</span>
-                        <span className="text-[10px] rounded-2xl font-bold tracking-wide bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-                          Ai
-                        </span>
+                    {/* MCM Signal Column */}
+                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[8%]">
+                      <div className="flex flex-col items-center">
+                        <span>MCM Signal</span>
+                        <div className="flex items-center gap-1">
+                          <span className="relative group cursor-pointer z-[9999]">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                              MCM proprietary signal indicator
+                            </span>
+                          </span>
+                        </div>
                       </div>
                     </th>
-
-                  </tr>
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    {/* <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[40%]">
-                      <div className="flex items-center justify-center gap-1">
-                        <span>Coin Info</span>
-                        <span className="relative group cursor-pointer z-[9999]">
-                          <span className="text-blue-600 text-sm">ⓘ</span>
-                          <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                            Past {selectedSummaryTimeframe === '6hrs' ? '6 hrs' : selectedSummaryTimeframe === '24hrs' ? '24 hrs' : '7 days'} all Posts
+                    {/* Live Price Column */}
+                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[8%]">
+                      <div className="flex flex-col items-center">
+                        <span>Live Price</span>
+                        <div className="flex items-center gap-1">
+                          <span className="relative group cursor-pointer z-[9999]">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                              Real-time price from Binance
+                            </span>
                           </span>
-                        </span>
+                        </div>
                       </div>
-                    </th> */}
-                    <th className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider" style={{ width: `${TRADING_INFO_WIDTH}%` }}>
-                      <div className="flex items-center justify-center gap-1">
-                        <span>Trading Info</span>
-                        <span className="relative group cursor-pointer z-[9999]">
-                          <span className="text-blue-600 text-sm">ⓘ</span>
-                          <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                            Past {selectedSummaryTimeframe === '6hrs' ? '6 hrs' : selectedSummaryTimeframe === '24hrs' ? '24 hrs' : '7 days'} All Posts
+                    </th>
+                    {/* MCM Knowledge Center Column */}
+                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[8%]">
+                      <div className="flex flex-col items-center">
+                        <span>MCM Knowledge</span>
+                        <div className="flex items-center gap-1">
+                          <span>Center</span>
+                          <span className="relative group cursor-pointer z-[9999]">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                              Click to view market overview
+                            </span>
                           </span>
-                        </span>
+                        </div>
                       </div>
                     </th>
                   </tr>
@@ -699,7 +705,7 @@ export default function CoinsPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan="11" className="px-6 py-12 text-center">
+                      <td colSpan="7" className="px-6 py-12 text-center">
                         <div className="flex justify-center items-center">
                           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                         </div>
@@ -707,13 +713,13 @@ export default function CoinsPage() {
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan="11" className="px-6 py-12 text-center text-red-600">
+                      <td colSpan="7" className="px-6 py-12 text-center text-red-600">
                         {error}
                       </td>
                     </tr>
                   ) : top10Coins.length === 0 ? (
                     <tr>
-                      <td colSpan="11" className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
                         No coins data available for this timeframe
                       </td>
                     </tr>
@@ -1171,8 +1177,22 @@ export default function CoinsPage() {
                           {/* Fundamental Score Column */}
                           <td className="px-2 py-3 text-center">
                             {(() => {
-                              // Pick up fundamental_score directly from coin object
-                              const fundamentalScore = coin.fundamental_score;
+                              // Pick up fundamental_score from ai_summary for the selected timeframe
+                              let fundamentalScore;
+
+                              if (coinDataForTimeframe?.ai_summary) {
+                                // Check if ai_summary is an object with fundamental_score
+                                if (typeof coinDataForTimeframe.ai_summary === 'object' && !Array.isArray(coinDataForTimeframe.ai_summary)) {
+                                  fundamentalScore = coinDataForTimeframe.ai_summary.fundamental_score;
+                                } else {
+                                  // Fallback to coin.fundamental_score if ai_summary doesn't have it
+                                  fundamentalScore = coin.fundamental_score;
+                                }
+                              } else {
+                                // Fallback to coin.fundamental_score if no ai_summary
+                                fundamentalScore = coin.fundamental_score;
+                              }
+
                               const numScore = parseFloat(fundamentalScore);
 
                               if (fundamentalScore === undefined || fundamentalScore === null || isNaN(numScore)) {
@@ -1240,73 +1260,65 @@ export default function CoinsPage() {
                             })()}
                           </td>
 
-                          {/* Coin Info Column */}
-                          {/* <td className="px-2 py-3 text-left align-top w-[40%]">
-                            <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
-                              {(() => {
-                                if (!coinDataForTimeframe?.ai_summary) {
-                                  return <span className="text-gray-500">Summary processing under progress....</span>;
-                                }
+                          {/* MCM Signal Column */}
+                          <td className="px-2 py-3 text-center">
+                            {(() => {
+                              // Generate consistent signal based on coin index for demo
+                              const signals = ['BUY', 'SELL', 'NEUTRAL'];
+                              const signal = signals[index % 3];
+                              const colorClass = signal === 'BUY' ? 'text-green-600' : signal === 'SELL' ? 'text-red-600' : 'text-gray-600';
 
-                                const parsed = parseAISummary(coinDataForTimeframe.ai_summary);
-                                const content = parsed?.coinInfo || coinDataForTimeframe.ai_summary;
+                              return (
+                                <div className="flex items-center justify-center">
+                                  <span className={`text-xs font-bold ${colorClass}`}>
+                                    {signal}
+                                  </span>
+                                </div>
+                              );
+                            })()}
+                          </td>
 
+                          {/* Live Price Column */}
+                          <td className="px-2 py-3 text-center">
+                            {currentPrice !== 'N/A' ? (
+                              (() => {
+                                const num = Number(currentPrice);
+                                const isNum = typeof num === "number" && !isNaN(num);
+                                const isThreeDigitsOrLess =
+                                  isNum && Math.floor(num).toString().length <= 3;
                                 return (
-                                  <>
-                                    <ReactMarkdown>
-                                      {isSummaryExpanded(coin.symbol, `${selectedSummaryTimeframe}-coin`)
-                                        ? content
-                                        : truncateText(content, 57)}
-                                    </ReactMarkdown>
-                                    {(typeof content === 'string' ? content.split(' ') : String(content).split(' ')).length > 57 && (
-                                      <>
-                                        {!isSummaryExpanded(coin.symbol, `${selectedSummaryTimeframe}-coin`) && '... '}
-                                        <button
-                                          onClick={() => toggleSummaryExpand(coin.symbol, `${selectedSummaryTimeframe}-coin`)}
-                                          className="text-blue-600 hover:text-blue-800 font-semibold text-[11px] mt-1 inline-block"
-                                        >
-                                          {isSummaryExpanded(coin.symbol, `${selectedSummaryTimeframe}-coin`) ? 'Read less' : 'Read more'}
-                                        </button>
-                                      </>
+                                  <div className="flex flex-col items-center gap-0.5">
+                                    <span className={`text-xs font-semibold ${priceChangePercent !== null ? (priceChangePercent > 0 ? 'text-green-600' : priceChangePercent < 0 ? 'text-red-600' : 'text-gray-900') : 'text-blue-500'}`}>
+                                      $
+                                      {isNum
+                                        ? num.toLocaleString("en-US", {
+                                          minimumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
+                                          maximumFractionDigits: isThreeDigitsOrLess ? 8 : 0,
+                                        })
+                                        : currentPrice}
+                                    </span>
+                                    {priceChangePercent !== null && (
+                                      <span className={`text-[10px] font-semibold ${priceChangePercent > 0 ? 'text-green-600' : priceChangePercent < 0 ? 'text-red-600' : 'text-gray-900'}`}>
+                                        {priceChangePercent > 0 ? '+' : ''}{priceChangePercent.toFixed(2)}%
+                                      </span>
                                     )}
-                                  </>
+                                  </div>
                                 );
-                              })()}
-                            </div>
-                          </td> */}
+                              })()
+                            ) : (
+                              <span className="text-xs text-gray-500">N/A</span>
+                            )}
+                          </td>
 
-                          {/* Trading Info Column */}
-                          <td className="px-2 py-3 text-left align-top" style={{ width: `${TRADING_INFO_WIDTH}%` }}>
-                            <div className="text-[11px] text-gray-700 break-words prose prose-sm max-w-none">
-                              {(() => {
-                                if (!coinDataForTimeframe?.ai_summary) {
-                                  return <span className="text-gray-500">Summary processing under progress....</span>;
-                                }
-
-                                const parsed = parseAISummary(coinDataForTimeframe.ai_summary);
-                                const content = parsed?.tradingInfo || coinDataForTimeframe.ai_summary;
-
-                                return (
-                                  <>
-                                    <ReactMarkdown>
-                                      {isSummaryExpanded(coin.symbol, `${selectedSummaryTimeframe}-trading`)
-                                        ? content
-                                        : truncateText(content, 57)}
-                                    </ReactMarkdown>
-                                    {(typeof content === 'string' ? content.split(' ') : String(content).split(' ')).length > 57 && (
-                                      <>
-                                        {!isSummaryExpanded(coin.symbol, `${selectedSummaryTimeframe}-trading`) && '... '}
-                                        <button
-                                          onClick={() => toggleSummaryExpand(coin.symbol, `${selectedSummaryTimeframe}-trading`)}
-                                          className="text-blue-600 hover:text-blue-800 font-semibold text-[11px] mt-1 inline-block"
-                                        >
-                                          {isSummaryExpanded(coin.symbol, `${selectedSummaryTimeframe}-trading`) ? 'Read less' : 'Read more'}
-                                        </button>
-                                      </>
-                                    )}
-                                  </>
-                                );
-                              })()}
+                          {/* MCM Knowledge Center Column */}
+                          <td className="px-2 py-3 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => router.push('/market-overview')}
+                                className="text-sm font-semibold text-purple-600 hover:text-purple-800 hover:underline cursor-pointer transition-colors"
+                              >
+                                {(index + 1) * 5}
+                              </button>
                             </div>
                           </td>
                         </tr>

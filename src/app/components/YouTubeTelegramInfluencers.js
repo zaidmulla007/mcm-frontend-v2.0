@@ -457,10 +457,10 @@ export default function YouTubeTelegramInfluencers() {
                             )}
                         </div> */}
                     </div>
-                    <div className="flex items-center gap-2 mb-3">
-                        <p className="text-sm text-gray-600">
+                    <div className="flex items-center gap-2 mb-2">
+                        {/* <p className="text-sm text-gray-600">
                             Update: {lastUpdated ? formatDate(lastUpdated, 'DD MMM hh:mm A') : "N/A"}
-                        </p>
+                        </p> */}
                     </div>
                 </div>
 

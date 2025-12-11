@@ -1350,9 +1350,9 @@ function LandingPageContent() {
                 <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex-shrink-0"></div>
                 <div className="flex items-center gap-3">
                   {/* <p className="text-xs text-gray-600 font-medium whitespace-nowrap">Update every 2 hrs</p> */}
-                  <p className="text-xs text-gray-700 font-medium whitespace-nowrap">
+                  {/* <p className="text-xs text-gray-700 font-medium whitespace-nowrap">
                     (Update every 2 hrs ,Last Update: {lastUpdated ? formatDisplayDate(lastUpdated) : "N/A"})
-                  </p>
+                  </p> */}
                 </div>
               </div>
             </div>
@@ -1363,29 +1363,37 @@ function LandingPageContent() {
             </div>
 
             {/* Right: Timezone Switch */}
-            <div className="flex items-center gap-2 mt-2">
-              {!useLocalTime && (
-                <span className="text-xs font-medium text-black-700">
-                  UTC
-                </span>
-              )}
-              <button
-                onClick={() => toggleTimezone()}
-                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
-                  }`}
-                role="switch"
-                aria-checked={useLocalTime}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
+            <div className="flex flex-col items-end gap-2 mt-2">
+              <div className="flex items-center gap-2">
+                {!useLocalTime && (
+                  <span className="text-xs font-medium text-black-700">
+                    UTC
+                  </span>
+                )}
+                <button
+                  onClick={() => toggleTimezone()}
+                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
                     }`}
-                />
-              </button>
-              {useLocalTime && (
-                <span className="text-xs font-medium text-black-700">
-                  {Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop().replace(/_/g, ' ') || 'Local'}
-                </span>
-              )}
+                  role="switch"
+                  aria-checked={useLocalTime}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
+                      }`}
+                  />
+                </button>
+                {useLocalTime && (
+                  <span className="text-xs font-medium text-black-700">
+                    {Intl.DateTimeFormat().resolvedOptions().timeZone.split('/').pop().replace(/_/g, ' ') || 'Local'}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs font-medium text-black-900">
+                Update: {lastUpdated ? formatDate(lastUpdated) : "N/A"}
+              </p>
+              <p className="text-xs font-medium text-black-900">
+                Next Update: {nextUpdate ? formatDate(nextUpdate) : "N/A"}
+              </p>
             </div>
           </div>
 

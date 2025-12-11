@@ -295,13 +295,13 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             if (part === '|<NEW>|') {
                 return (
                     <div key={`new-${index}`} className="relative inline-flex items-center justify-center mr-1 align-middle h-8 w-8">
-                        <FaCertificate className="text-yellow-500 w-full h-full drop-shadow-sm" />
-                        <span className="absolute text-[12px] font-bold text-black uppercase tracking-tighter">M</span>
+                        <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
+                        <span className="absolute text-[12px] font-bold text-white uppercase tracking-tighter">M</span>
                     </div>
                 );
             } else if (part === '|<DOT>|') {
                 return (
-                    <span key={`dot-${index}`} className="text-gray-400 font-bold text-2xl px-2 inline-block align-middle">•</span>
+                    <span key={`dot-${index}`} className="text-black font-bold text-3xl px-2 inline-flex items-center justify-center align-middle" style={{ lineHeight: '1', verticalAlign: 'middle' }}>•</span>
                 );
             } else if (part === '|<YT>|') {
                 return (
@@ -320,10 +320,8 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
     const formatArrows = (text) => {
         if (!text) return null;
-        // Replace comma with full stop after arrows
-        const processedText = text.replace(/,/g, '.');
         // Split by arrow, capturing the arrow, consuming preceding whitespace
-        const parts = processedText.split(/\s*(↑|↓)/);
+        const parts = text.split(/\s*(↑|↓)/);
         return parts.map((part, i) => {
             if (part === '↑') {
                 return (
@@ -338,8 +336,46 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     </svg>
                 );
             }
-            return part;
+            return <span key={i} className="text-black">{part}</span>;
         });
+    };
+
+    // Helper function to clean up message format
+    const cleanMessageFormat = (content) => {
+        if (!content) return content;
+
+        // Pattern to match: "COIN has moved down/up by X.XX%"
+        let cleaned = content.replace(/(\w+)\s+has moved (down|up) by\s+(\d+\.?\d*%)/gi, (match, coin, direction, percentage) => {
+            // Parse the percentage value
+            const percentValue = parseFloat(percentage);
+
+            // If percentage is 0.00, show "Minor movement" instead
+            if (percentValue === 0 || percentValue === 0.0 || percentValue === 0.00) {
+                return `${coin}: Minor movement`;
+            }
+
+            // Otherwise, show "COIN: X.XX%"
+            return `${coin}: ${percentage}`;
+        });
+
+        // Add colon after coin symbol if not already present
+        // Pattern: "COIN X.XX% ↑" → "COIN: X.XX% ↑" (at start or after separator)
+        cleaned = cleaned.replace(/(^|·\s*)([A-Z]{2,10})\s+(\d+\.?\d*%\s+[↑↓])/g, '$1$2: $3');
+
+        // Replace "in 2 hours" with "in last 2 Hrs"
+        cleaned = cleaned.replace(/\s+in\s+2\s+hours/gi, ' in last 2 Hrs');
+
+        // Replace "in last 6 hours" with "in last 6 Hrs"
+        cleaned = cleaned.replace(/\s+in\s+last\s+6\s+hours/gi, ' in last 6 Hrs');
+
+        // Remove comma after "in last 2 Hrs"
+        cleaned = cleaned.replace(/in\s+last\s+2\s+Hrs,/gi, 'in last 2 Hrs');
+
+        // Move "in last 6 Hrs" before TG: if it appears after TG posts
+        // Pattern: "TG: X New Posts in last 6 Hrs" → "in last 6 Hrs TG: X New Posts"
+        cleaned = cleaned.replace(/(TG:\s+\d+\s+New\s+Posts?)\s+(in\s+last\s+6\s+Hrs)/gi, '$2 $1');
+
+        return cleaned;
     };
 
     // Generate trending messages from data with labels for 2-hour and 6-hour summaries
@@ -348,11 +384,17 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             const messages = [];
             const notifications = combinedData.notifications;
 
-            // Add 2-hour hourly alerts summary
-            if (notifications.hourly_alerts_summary) {
+            // Add 2-hour hourly alerts summary (scroller data)
+            if (notifications.scroller) {
                 messages.push({
                     label: "2 Hours",
-                    content: notifications.hourly_alerts_summary
+                    content: cleanMessageFormat(notifications.scroller)
+                });
+            } else if (notifications.hourly_alerts_summary) {
+                // Fallback to old key for backward compatibility
+                messages.push({
+                    label: "2 Hours",
+                    content: cleanMessageFormat(notifications.hourly_alerts_summary)
                 });
             }
 
@@ -360,28 +402,28 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             if (notifications.new_coins_summary) {
                 messages.push({
                     label: "6 Hours",
-                    content: notifications.new_coins_summary
+                    content: cleanMessageFormat(notifications.new_coins_summary)
                 });
             }
 
             // Add new coins notifications (legacy support)
             if (notifications.new_coins && notifications.new_coins.length > 0) {
                 notifications.new_coins.forEach(coin => {
-                    if (coin.summary) messages.push({ label: null, content: coin.summary });
+                    if (coin.summary) messages.push({ label: null, content: cleanMessageFormat(coin.summary) });
                 });
             }
 
             // Add price alerts (legacy support)
             if (notifications.price_alerts && notifications.price_alerts.length > 0) {
                 notifications.price_alerts.forEach(alert => {
-                    if (alert.summary) messages.push({ label: null, content: alert.summary });
+                    if (alert.summary) messages.push({ label: null, content: cleanMessageFormat(alert.summary) });
                 });
             }
 
             // Add old coins notifications (legacy support)
             if (notifications.old_coins && notifications.old_coins.length > 0) {
                 notifications.old_coins.forEach(coin => {
-                    if (coin.summary) messages.push({ label: null, content: coin.summary });
+                    if (coin.summary) messages.push({ label: null, content: cleanMessageFormat(coin.summary) });
                 });
             }
 
@@ -1060,17 +1102,39 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                             {/* Coin Column */}
                                             <td className="py-4 px-4 w-1/2">
                                                 <div className="flex flex-col items-center text-center h-full min-h-[155px] justify-start">
-                                                    <div className="relative group">
-                                                        <img
-                                                            src={coin.image_small || coin.image_thumb || coin.image_large}
-                                                            alt={coin.symbol}
-                                                            className="w-14 h-14 rounded-full mb-2 cursor-pointer hover:opacity-80 transition-opacity"
-                                                            onClick={() => router.push(`/coins-list/${coin.source_id}`)}
-                                                            onError={(e) => {
-                                                                e.target.onerror = null;
-                                                                e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
-                                                            }}
-                                                        />
+                                                    <div className="relative">
+                                                        {/* M Certificate - top left of coin image - only for 6hrs timeframe */}
+                                                        {timeframe === '6hrs' && isNewCoin(coin) && (
+                                                            <div className="absolute -top-2 -left-8 group/newcoin z-[9999]">
+                                                                <div className="relative inline-flex items-center justify-center h-6 w-6">
+                                                                    <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
+                                                                    <span className="absolute text-[11px] font-bold text-white uppercase tracking-tighter">M</span>
+                                                                </div>
+                                                                <div className="invisible group-hover/newcoin:visible absolute top-full left-0 mt-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[9999]">
+                                                                    New Mention in last 6 hours
+                                                                </div>
+                                                            </div>
+                                                        )}
+
+                                                        <div className="relative group/coinimage">
+                                                            <img
+                                                                src={coin.image_small || coin.image_thumb || coin.image_large}
+                                                                alt={coin.symbol}
+                                                                className="w-14 h-14 rounded-full mb-2 cursor-pointer hover:opacity-80 transition-opacity"
+                                                                onClick={() => router.push(`/coins-list/${coin.source_id}`)}
+                                                                onError={(e) => {
+                                                                    e.target.onerror = null;
+                                                                    e.target.src = `https://ui-avatars.com/api/?name=${coin.symbol}&background=ED8936&color=fff&size=56`;
+                                                                }}
+                                                            />
+                                                            {/* Show live price tooltip when hovering on coin image (only if NO bell) */}
+                                                            {!showPriceAlert && getLivePrice(coin?.symbol) !== null && (
+                                                                <div className="invisible group-hover/coinimage:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                                                    Live Price: ${getLivePrice(coin?.symbol).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}
+                                                                </div>
+                                                            )}
+                                                        </div>
+
                                                         {/* Bell icon for coins exceeding price change threshold - positioned outside coin at top-right */}
                                                         {showPriceAlert && (
                                                             <div className="absolute -top-2 -right-8 group/bell cursor-pointer z-[9999]">
@@ -1083,27 +1147,9 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                                 </div>
                                                             </div>
                                                         )}
-                                                        {/* Show live price tooltip when hovering on coin image (only if NO bell) */}
-                                                        {!showPriceAlert && getLivePrice(coin?.symbol) !== null && (
-                                                            <div className="invisible group-hover:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                                                Live Price: ${getLivePrice(coin?.symbol).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}
-                                                            </div>
-                                                        )}
                                                     </div>
                                                     <div className="text-xs text-black font-bold mb-1 flex items-center justify-center gap-1">
                                                         <span>{coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}</span>
-                                                        {/* New coin notification - only for 6hrs timeframe */}
-                                                        {timeframe === '6hrs' && isNewCoin(coin) && (
-                                                            <div className="relative group/newcoin inline-flex items-center justify-center">
-                                                                <div className="relative inline-flex items-center justify-center h-5 w-5">
-                                                                    <FaCertificate className="text-yellow-500 w-full h-full drop-shadow-sm" />
-                                                                    <span className="absolute text-[10px] font-bold text-black uppercase tracking-tighter">M</span>
-                                                                </div>
-                                                                <div className="invisible group-hover/newcoin:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[9999]">
-                                                                    New Mention in last 6 hours
-                                                                </div>
-                                                            </div>
-                                                        )}
                                                     </div>
                                                     <div
                                                         className={`text-xs text-black ${timeframe === '6hrs' ? 'cursor-pointer hover:text-blue-600 transition-colors' : ''}`}
@@ -1681,7 +1727,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     {/* Timeframe Filter and Eye Icon */}
                     <div className="px-4 pt-3 pb-2 bg-gradient-to-r from-purple-100 to-blue-200 flex items-center gap-3">
                         {/* Timeframe Toggle Switch */}
-                        <div className="flex items-center gap-2">
+                        {/* <div className="flex items-center gap-2">
                             {selectedTimeframe !== "2hrs" && (
                                 <span className="text-gray-700 font-bold text-sm">
                                     6 Hours
@@ -1702,7 +1748,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                     2 Hours
                                 </span>
                             )}
-                        </div>
+                        </div> */}
 
                         {/* Eye Icon with Tooltip */}
                         <div className="relative group cursor-pointer">
@@ -1723,11 +1769,11 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                         {/* Legend for New Mention */}
                         <div className="flex items-center gap-2 ml-auto">
                             <div className="relative inline-flex items-center justify-center h-7 w-7">
-                                <FaCertificate className="text-yellow-500 w-full h-full drop-shadow-sm" />
-                                <span className="absolute text-[12px] font-bold text-black uppercase tracking-tighter">M</span>
+                                <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
+                                <span className="absolute text-[12px] font-bold text-white uppercase tracking-tighter">M</span>
                             </div>
                             <span className="text-gray-700 text-xs font-medium">
-                                New mention in last {selectedTimeframe === "2hrs" ? "2" : "6"} hours
+                                New mention in last {selectedTimeframe === "2hrs" ? "6" : "6"} hours
                             </span>
                         </div>
                     </div>
@@ -1752,18 +1798,116 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                 onMouseLeave={() => selectedTimeframe === "2hrs" ? setIs2HourPaused(false) : setIs6HourPaused(false)}
                             >
                                 {(() => {
-                                    const message = trendingMessages.find(m => m.label === (selectedTimeframe === "2hrs" ? "2 Hours" : "6 Hours"));
+                                    // Always show 2 Hours data (hourly_alerts_summary has "in 2 hours" for price and "in last 6 hours" for posts)
+                                    const message = trendingMessages.find(m => m.label === "2 Hours");
                                     const content = message ? message.content : "";
 
                                     if (!content) return null;
+
+                                    // Parse and format the content in the new format: ETH: In last 2 hrs: 0.06% ↑, In last 6 hrs: 0.51% ↓ with YTlogo 5 new Posts, TGlogo 2 new Posts
+                                    const formatNewStyle = (text) => {
+                                        // Split by bullet points (·) to get individual coin entries
+                                        const entries = text.split('·').filter(entry => entry.trim());
+
+                                        return entries.map((entry, idx) => {
+                                            let trimmedEntry = entry.trim();
+                                            if (!trimmedEntry) return null;
+
+                                            // Check if it's a new mention (has 🆕)
+                                            const isNewMention = trimmedEntry.includes('🆕');
+                                            trimmedEntry = trimmedEntry.replace('🆕', '').trim();
+
+                                            // Extract coin symbol - format: "ETH: In last 2 hrs: 0.08% ↓, In last 6 hrs: 0.57% ↓ with YT: 6 new Posts, TG: 20:"
+                                            const colonIndex = trimmedEntry.indexOf(':');
+                                            if (colonIndex === -1) return null;
+
+                                            const symbol = trimmedEntry.substring(0, colonIndex).trim();
+                                            let restOfText = trimmedEntry.substring(colonIndex + 1).trim();
+
+                                            // Extract 2 hour price change FIRST: "In last 2 hrs: 0.08% ↓"
+                                            let twoHrPercent = null;
+                                            let is2HrUp = false;
+                                            const twoHrMatch = restOfText.match(/In\s+last\s+2\s+hrs:\s*(\d+\.?\d*)%\s*([↑↓])/i);
+                                            if (twoHrMatch) {
+                                                twoHrPercent = twoHrMatch[1] + '%';
+                                                is2HrUp = twoHrMatch[2] === '↑';
+                                            }
+
+                                            // Extract 6 hour price change: "In last 6 hrs: 0.57% ↓"
+                                            let sixHrPercent = null;
+                                            let is6HrUp = false;
+                                            const sixHrMatch = restOfText.match(/In\s+last\s+6\s+hrs:\s*(\d+\.?\d*)%\s*([↑↓])/i);
+                                            if (sixHrMatch) {
+                                                sixHrPercent = sixHrMatch[1] + '%';
+                                                is6HrUp = sixHrMatch[2] === '↑';
+                                            }
+
+                                            // Extract posts info: "with YT: 6 new Posts, TG: 20:" or just "YT:" or "TG:"
+                                            const ytMatch = restOfText.match(/YT:\s*(\d+)/i);
+                                            const tgMatch = restOfText.match(/TG:\s*(\d+)/i);
+
+                                            // Check if YT or TG exists even without numbers (for display purposes)
+                                            const hasYT = restOfText.includes('YT:');
+                                            const hasTG = restOfText.includes('TG:');
+
+                                            return (
+                                                <span key={idx} className="inline-flex items-center whitespace-nowrap gap-1">
+                                                    {isNewMention && (
+                                                        <div className="relative inline-flex items-center justify-center h-6 w-6">
+                                                            <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
+                                                            <span className="absolute text-[10px] font-bold text-white uppercase tracking-tighter">M</span>
+                                                        </div>
+                                                    )}
+                                                    <span className="font-bold">{symbol}:</span>
+                                                    {twoHrPercent && (
+                                                        <>
+                                                            <span>In last 2 hrs:</span>
+                                                            <span className="font-semibold">{twoHrPercent}</span>
+                                                            <span className={is2HrUp ? 'text-green-600 font-bold text-lg' : 'text-red-600 font-bold text-lg'}>
+                                                                {is2HrUp ? '↑' : '↓'}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                    {sixHrPercent && (
+                                                        <>
+                                                            <span>,</span>
+                                                            <span>In last 6 hrs:</span>
+                                                            <span className="font-semibold">{sixHrPercent}</span>
+                                                            <span className={is6HrUp ? 'text-green-600 font-bold text-lg' : 'text-red-600 font-bold text-lg'}>
+                                                                {is6HrUp ? '↑' : '↓'}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                    {(hasYT || hasTG) && (
+                                                        <>
+                                                            <span>with</span>
+                                                            {hasYT && (
+                                                                <>
+                                                                    <FaYoutube className="text-red-600 text-xl" />
+                                                                    <span className="font-semibold">{ytMatch ? ytMatch[1] : '0'} new Posts</span>
+                                                                </>
+                                                            )}
+                                                            {hasYT && hasTG && <span>,</span>}
+                                                            {hasTG && (
+                                                                <>
+                                                                    <FaTelegramPlane className="text-blue-500 text-xl" />
+                                                                    <span className="font-semibold">{tgMatch ? tgMatch[1] : '0'} new Posts</span>
+                                                                </>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                    <span className="text-black font-bold text-3xl px-3">•</span>
+                                                </span>
+                                            );
+                                        }).filter(Boolean);
+                                    };
 
                                     // Create repeating content group (10 times to ensure it fills viewport)
                                     const contentGroup = (
                                         <>
                                             {[...Array(10)].map((_, i) => (
-                                                <span key={i} className="text-black-700 font-semibold text-base px-4 py-2 inline-flex items-center gap-2">
-                                                    {formatContentWithIcons(content)}
-                                                    <span className="text-gray-400 font-bold text-base px-2">•</span>
+                                                <span key={i} className="text-gray-700 font-medium text-base px-2 py-2 inline-flex items-center gap-1">
+                                                    {formatNewStyle(content)}
                                                 </span>
                                             ))}
                                         </>
@@ -1860,11 +2004,14 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
             </div> */}
 
             {/* Last Update - Above Filters */}
-            <div className="flex items-start gap-2 mt-4">
-                <p className="text-sm text-gray-600">
+            {/* <div className="flex flex-col items-start gap-1 mt-4">
+                <p className="text-md text-black-900">
                     Update: {lastUpdated ? formatDate(lastUpdated) : "N/A"}
                 </p>
-            </div>
+                <p className="text-md text-black-900">
+                    Next Update: {nextUpdate ? formatDate(nextUpdate) : "N/A"}
+                </p>
+            </div> */}
 
             {/* Filters Section - Compact Single Line */}
             <div className="w-full mt-2 flex justify-start">
