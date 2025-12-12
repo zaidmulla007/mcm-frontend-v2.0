@@ -399,7 +399,7 @@ export default function FavoritesPage() {
         favouriteType: 'COIN'
       };
 
-      const response = await fetch('http://37.27.120.45:5901/api/user/favourite/toggleFavourite', {
+      const response = await fetch('/api/proxy/favorites/toggleFavourite', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -841,9 +841,9 @@ export default function FavoritesPage() {
                               <div className="text-sm font-semibold text-gray-900">
                                 {coin.current_price > 0
                                   ? `$${coin.current_price.toLocaleString('en-US', {
-                                      minimumFractionDigits: 2,
-                                      maximumFractionDigits: coin.current_price < 1 ? 8 : 2
-                                    })}`
+                                    minimumFractionDigits: 2,
+                                    maximumFractionDigits: coin.current_price < 1 ? 8 : 2
+                                  })}`
                                   : "N/A"
                                 }
                               </div>

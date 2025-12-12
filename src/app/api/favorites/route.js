@@ -1,6 +1,6 @@
 import api from "../axios";
 
-const API_BASE_URL = 'http://37.27.120.45:5901/api/user/favourite';
+const API_BASE_URL = '/api/proxy/favorites';
 
 export const favoritesAPI = {
   toggleFavorite: async (data) => {

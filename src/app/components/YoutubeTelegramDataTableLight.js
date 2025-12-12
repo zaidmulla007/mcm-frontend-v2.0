@@ -12,7 +12,7 @@ export default function YoutubeTelegramDataTableLight() {
     // Fetch combined YouTube and Telegram data from API
     const fetchCombinedData = async () => {
         try {
-            const response = await fetch('http://37.27.120.45:5000/api/admin/strategyyoutubedata/ytandtg');
+            const response = await fetch('/api/admin/strategyyoutubedata/ytandtg');
             //https://mcmapi.showmyui.com:3035/api/admin/youtubedata/ytandtg
             const data = await response.json();
             setCombinedData(data);
