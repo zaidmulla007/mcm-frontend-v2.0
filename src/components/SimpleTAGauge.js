@@ -4,8 +4,17 @@ import GaugeComponent from 'react-gauge-component';
 /**
  * SimpleTAGauge - Updated to use GaugeComponent with Red-Green Gradient
  * Matches the visual style of Social Media Sentiment gauge.
+ * 
+ * Accepts taData prop from API: { total_counts: { buy, sell, neutral }, recommendation }
  */
-export default function SimpleTAGauge({ buy = 0, neutral = 0, sell = 0 }) {
+export default function SimpleTAGauge({ taData = null }) {
+  // Extract data from taData - handle both lowercase and uppercase keys
+  const counts = taData?.total_counts || {};
+  const buy = counts.buy ?? counts.BUY ?? 0;
+  const sell = counts.sell ?? counts.SELL ?? 0;
+  const neutral = counts.neutral ?? counts.NEUTRAL ?? 0;
+  const recommendation = taData?.recommendation || null;
+
   const total = buy + neutral + sell;
 
   // If no data, show N/A
@@ -23,17 +32,25 @@ export default function SimpleTAGauge({ buy = 0, neutral = 0, sell = 0 }) {
     score = (((buy - sell) / total) + 1) * 50;
   }
 
-  // Determine Label
-  let labelText = "Neutral";
-  let labelColor = "text-gray-500"; // Gray for Neutral
+  // Get recommendation color
+  const getRecommendationStyle = (rec) => {
+    if (!rec) return { color: 'text-gray-500' };
 
-  if (score >= 55) {
-    labelText = "Buy";
-    labelColor = "text-green-600";
-  } else if (score <= 45) {
-    labelText = "Sell";
-    labelColor = "text-red-600";
-  }
+    const recLower = rec.toLowerCase();
+    if (recLower.includes('strong buy')) {
+      return { color: 'text-green-700 font-bold' };
+    } else if (recLower.includes('buy')) {
+      return { color: 'text-green-600' };
+    } else if (recLower.includes('strong sell')) {
+      return { color: 'text-red-700 font-bold' };
+    } else if (recLower.includes('sell')) {
+      return { color: 'text-red-600' };
+    } else {
+      return { color: 'text-gray-500' };
+    }
+  };
+
+  const recStyle = getRecommendationStyle(recommendation);
 
   return (
     <div className="flex items-center gap-3">
@@ -65,16 +82,16 @@ export default function SimpleTAGauge({ buy = 0, neutral = 0, sell = 0 }) {
             strokeWidth: 7
           }}
         />
-        <div className="text-[10px] font-bold text-center mt-2">
-          <span className="text-black">
-            {Math.round(labelText === "Sell" ? 100 - score : score)}% {labelText}
-          </span>
-        </div>
+        {/* Recommendation display below gauge */}
+        {recommendation && (
+          <div className={`text-[10px] font-semibold text-center mt-1 ${recStyle.color}`}>
+            {recommendation}
+          </div>
+        )}
       </div>
 
       {/* Counts breakdown */}
       <div className="flex flex-col gap-1 text-left">
-        {/* <div className="text-[10px] font-bold text-gray-700">Analysis:</div> */}
         <div className="text-[10px] text-black">
           <span className="font-bold text-green-600">Buy:</span> {buy}
         </div>

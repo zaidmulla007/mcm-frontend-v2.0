@@ -9,6 +9,7 @@ import { useTimezone } from "../contexts/TimezoneContext";
 import DragDropCards from "../../components/DragDropCards";
 import MarketHeatmap from "../components/MarketHeatmap";
 import YouTubeTelegramDataTable from "../components/YouTubeTelegramDataTable";
+import TrendingCoinScroller from "../components/TrendingCoinScroller";
 import YoutubeTelegramDataTableLight from "../components/YoutubeTelegramDataTableLight";
 import YouTubeTelegramInfluencers from "../components/YouTubeTelegramInfluencers";
 import { useTop10LivePrice } from "../livePriceTop10";
@@ -1397,7 +1398,10 @@ function LandingPageContent() {
             </div>
           </div>
 
-          <YouTubeTelegramDataTable useLocalTime={useLocalTime} />
+          <TrendingCoinScroller />
+          <div className="mt-4">
+            <YouTubeTelegramDataTable useLocalTime={useLocalTime} />
+          </div>
 
           {/* <YoutubeTelegramDataTableLight /> */}
           {/* <h2 className="text-gray-900-300 text-2xl font-bold mb-3">Top 5 Mentioned Coins in 24H</h2> */}

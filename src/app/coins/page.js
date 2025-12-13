@@ -650,17 +650,17 @@ export default function CoinsPage() {
                     <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[20%]">
                       <div className="flex items-center justify-center gap-1">
                         <span>Technical Analysis</span>
-                          <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-3 rounded-lg shadow-xl z-[99999] text-left w-72 whitespace-normal">
-                              Technical Analysis:
-                              We calculate all MA indicators (SMA & EMA for 5,10,20,50,100,200)
-                              <br />
-                              and all oscillator indicators (RSI, Stochastic, CCI, ADX, MACD, AO, Momentum, Williams %R, BullBear).
-                              <br />
-                              Each indicator gives a BUY/SELL/NEUTRAL vote, and we simply total how many votes fall into each category.
-                            </span>
+                        <span className="relative group cursor-pointer z-[9999]">
+                          <span className="text-blue-600 text-sm">ⓘ</span>
+                          <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-3 rounded-lg shadow-xl z-[99999] text-left w-72 whitespace-normal">
+                            Technical Analysis:
+                            We calculate all MA indicators (SMA & EMA for 5,10,20,50,100,200)
+                            <br />
+                            and all oscillator indicators (RSI, Stochastic, CCI, ADX, MACD, AO, Momentum, Williams %R, BullBear).
+                            <br />
+                            Each indicator gives a BUY/SELL/NEUTRAL vote, and we simply total how many votes fall into each category.
                           </span>
+                        </span>
                       </div>
                     </th>
                     {/* MCM Signal Column */}
@@ -1171,22 +1171,17 @@ export default function CoinsPage() {
                           <td className="px-2 py-3 text-center">
                             {(() => {
                               // Get TA data from coin object
-                              const taData = coin?.TA_data?.total_counts;
+                              const taData = coin?.TA_data;
 
                               // Debug logging
                               if (index === 0) {
-                                console.log('Coin TA_data:', coin?.TA_data);
-                                console.log('Total counts:', taData);
+                                console.log('Coin TA_data:', taData);
                               }
 
-                              if (taData && (taData.BUY !== undefined || taData.NEUTRAL !== undefined || taData.SELL !== undefined)) {
+                              if (taData && taData.total_counts) {
                                 return (
                                   <div className="w-full flex items-center justify-center">
-                                    <SimpleTAGauge
-                                      buy={taData.BUY || 0}
-                                      neutral={taData.NEUTRAL || 0}
-                                      sell={taData.SELL || 0}
-                                    />
+                                    <SimpleTAGauge taData={taData} />
                                   </div>
                                 );
                               }
