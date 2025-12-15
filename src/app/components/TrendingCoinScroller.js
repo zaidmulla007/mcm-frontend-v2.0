@@ -262,10 +262,12 @@ export default function TrendingCoinScroller() {
 
                                         let sixHrPercent = null;
                                         let is6HrUp = false;
-                                        const sixHrMatch = restOfText.match(/In\s+last\s+6\s+hrs:\s*(\d+\.?\d*)%\s*([↑↓])/i);
+                                        let hasFireEmoji = false;
+                                        const sixHrMatch = restOfText.match(/In\s+last\s+6\s+hrs:\s*(🔥\s*)?(\d+\.?\d*)%\s*([↑↓])/i);
                                         if (sixHrMatch) {
-                                            sixHrPercent = sixHrMatch[1] + '%';
-                                            is6HrUp = sixHrMatch[2] === '↑';
+                                            hasFireEmoji = !!sixHrMatch[1];
+                                            sixHrPercent = sixHrMatch[2] + '%';
+                                            is6HrUp = sixHrMatch[3] === '↑';
                                         }
 
                                         const ytMatch = restOfText.match(/YT:\s*(\d+)/i);
@@ -296,6 +298,7 @@ export default function TrendingCoinScroller() {
                                                     <>
                                                         <span>,</span>
                                                         <span>In last 6 hrs:</span>
+                                                        {hasFireEmoji && <span>🔥</span>}
                                                         <span className="font-semibold">{sixHrPercent}</span>
                                                         <span className={is6HrUp ? 'text-green-600 font-bold text-lg' : 'text-red-600 font-bold text-lg'}>
                                                             {is6HrUp ? '↑' : '↓'}
@@ -308,6 +311,7 @@ export default function TrendingCoinScroller() {
                                                         {hasYT && (
                                                             <>
                                                                 <FaYoutube className="text-red-600 text-xl" />
+                                                                <span>:</span>
                                                                 <span className="font-semibold">{ytMatch ? ytMatch[1] : '0'} new Posts</span>
                                                             </>
                                                         )}
@@ -315,6 +319,7 @@ export default function TrendingCoinScroller() {
                                                         {hasTG && (
                                                             <>
                                                                 <FaTelegramPlane className="text-blue-500 text-xl" />
+                                                                <span>:</span>
                                                                 <span className="font-semibold">{tgMatch ? tgMatch[1] : '0'} new Posts</span>
                                                             </>
                                                         )}
