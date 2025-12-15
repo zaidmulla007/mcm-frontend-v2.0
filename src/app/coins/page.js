@@ -759,9 +759,21 @@ export default function CoinsPage() {
                                     className="w-8 h-8 rounded-full cursor-pointer hover:opacity-80 transition-opacity"
                                     onClick={() => router.push(`/coins-list/${coin.source_id}`)}
                                   />
-                                  {/* Bell icon for coins exceeding price change threshold */}
+                                  {/* MCM Badge - top left outside of coin image */}
+                                  {isNewCoin(coin) && (
+                                    <div className="absolute -top-2 -left-6 group/newcoin cursor-pointer z-[9999]">
+                                      <div className="relative inline-flex items-center justify-center h-5 w-5">
+                                        <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
+                                        <span className="absolute text-[11px] font-bold text-white uppercase tracking-tighter">M</span>
+                                      </div>
+                                      <div className="invisible group-hover/newcoin:visible absolute top-0 left-full ml-2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[9999]">
+                                        New Mention in last 6 hours
+                                      </div>
+                                    </div>
+                                  )}
+                                  {/* Bell icon for coins exceeding price change threshold - top right outside of coin */}
                                   {showPriceAlert && (
-                                    <div className="absolute -top-1 -right-1 group/bell cursor-pointer z-[9999]">
+                                    <div className="absolute -top-2 -right-6 group/bell cursor-pointer z-[9999]">
                                       <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-lg ${priceChangePercent > 0 ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}>
                                         <FaBell className="text-white text-[12px]" />
                                       </div>
@@ -782,18 +794,6 @@ export default function CoinsPage() {
                               <div className="text-center">
                                 <div className="flex items-center justify-center gap-1">
                                   <div className="text-xs font-bold text-balck-900"> {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}</div>
-                                  {/* New coin notification - only for 6hrs data */}
-                                  {isNewCoin(coin) && (
-                                    <div className="relative group/newcoin inline-flex items-center justify-center">
-                                      <div className="relative inline-flex items-center justify-center h-5 w-5">
-                                        <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
-                                        <span className="absolute text-[11px] font-bold text-white uppercase tracking-tighter">M</span>
-                                      </div>
-                                      <div className="invisible group-hover/newcoin:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[9999]">
-                                        New Mention in last 6 hours
-                                      </div>
-                                    </div>
-                                  )}
                                   {coin.mem_coin === true && (
                                     <span className="relative group cursor-pointer z-[9999]">
                                       <span className="text-blue-600 text-xs">ⓘ</span>
