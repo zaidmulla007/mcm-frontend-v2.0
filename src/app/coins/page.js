@@ -785,7 +785,7 @@ export default function CoinsPage() {
                                   )}
                                   {/* Show live price tooltip when hovering on coin image */}
                                   {currentPrice !== 'N/A' && (
-                                    <div className="invisible group-hover:visible absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                    <div className="invisible group-hover:visible absolute top-full left-0 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[99999]">
                                       Live Price: ${typeof currentPrice === 'number' ? currentPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 }) : currentPrice}
                                     </div>
                                   )}

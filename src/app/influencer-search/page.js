@@ -1304,12 +1304,61 @@ export default function InfluencerSearchPage() {
     return allPosts;
   }, []);
 
-  // Get flat list of all posts
+  // Get flat list of all posts with price availability hierarchy sorting
   const allPostsFlat = useMemo(() => {
     const lastPostsData = selectedPlatform === "youtube" ? youtubeLastPosts : telegramLastPosts;
     const influencersList = selectedPlatform === "youtube" ? youtubeInfluencers : telegramInfluencers;
-    return getAllPostsFlat(lastPostsData, influencersList);
-  }, [selectedPlatform, youtubeLastPosts, telegramLastPosts, youtubeInfluencers, telegramInfluencers, getAllPostsFlat]);
+    const posts = getAllPostsFlat(lastPostsData, influencersList);
+
+    // Helper function to get price availability priority for a post
+    // Returns: 1 = Live price, 2 = Last available price, 3 = N/A
+    const getPriceAvailabilityPriority = (post) => {
+      if (!post.coins || post.coins.length === 0) return 3;
+
+      // Check the first coin's price availability (or any coin with best price)
+      let bestPriority = 3; // Default to N/A
+
+      for (const coin of post.coins) {
+        const symbol = coin.symbol?.toUpperCase();
+        if (!symbol) continue;
+
+        // Check if live price is available from WebSocket
+        const livePrice = livePricesMap[symbol];
+        if (livePrice && livePrice !== "-" && livePrice !== "N/A") {
+          return 1; // Best priority - live price available
+        }
+
+        // Check if lastAvailablePrice exists from MCM DB
+        if (coin.binance?.last_available_price || coin.lastAvailablePrice) {
+          bestPriority = Math.min(bestPriority, 2); // Last available price
+        }
+      }
+
+      return bestPriority;
+    };
+
+    // Sort posts by price availability priority, then by publishedAt (most recent first)
+    return posts.sort((a, b) => {
+      const priorityA = getPriceAvailabilityPriority(a);
+      const priorityB = getPriceAvailabilityPriority(b);
+
+      // First, sort by price availability (1 = live, 2 = last available, 3 = N/A)
+      if (priorityA !== priorityB) {
+        return priorityA - priorityB;
+      }
+
+      // Then, sort by publishedAt descending (most recent first) within same priority
+      const getTimestamp = (post) => {
+        if (post.publishedAt) {
+          const timestamp = new Date(post.publishedAt).getTime();
+          if (!isNaN(timestamp)) return timestamp;
+        }
+        return 0;
+      };
+
+      return getTimestamp(b) - getTimestamp(a);
+    });
+  }, [selectedPlatform, youtubeLastPosts, telegramLastPosts, youtubeInfluencers, telegramInfluencers, getAllPostsFlat, livePricesMap]);
 
   // Apply global sorting to recommendations and reorder influencers if sorting is active
   const sortedData = useMemo(() => {
@@ -1933,12 +1982,36 @@ export default function InfluencerSearchPage() {
                                       // Get the post key for tracking expansion
                                       const postKey = `${postUniqueKey}-grouped-${idx}`;
                                       const visibleCoinsCount = expandedPosts[postKey] || 3;
-                                      const totalCoins = rec.coins.length;
+
+                                      // Sort coins by price availability: 1) Live price, 2) Last available, 3) N/A
+                                      const sortedCoins = [...rec.coins].sort((coinA, coinB) => {
+                                        const getCoinPricePriority = (coinData) => {
+                                          const symbol = coinData.coin?.toUpperCase() || coinData.symbol?.toUpperCase();
+                                          if (!symbol) return 3;
+
+                                          // Check live price from WebSocket
+                                          const livePrice = livePricesMap[symbol];
+                                          if (livePrice && livePrice !== "-" && livePrice !== "N/A") {
+                                            return 1; // Live price available
+                                          }
+
+                                          // Check lastAvailablePrice from MCM DB
+                                          if (coinData.lastAvailablePrice) {
+                                            return 2; // Last available price
+                                          }
+
+                                          return 3; // N/A
+                                        };
+
+                                        return getCoinPricePriority(coinA) - getCoinPricePriority(coinB);
+                                      });
+
+                                      const totalCoins = sortedCoins.length;
                                       const hasMoreCoins = totalCoins > visibleCoinsCount;
                                       const showingAllCoins = visibleCoinsCount >= totalCoins;
 
-                                      // Get visible coins
-                                      const visibleCoins = rec.coins.slice(0, visibleCoinsCount);
+                                      // Get visible coins from sorted list
+                                      const visibleCoins = sortedCoins.slice(0, visibleCoinsCount);
 
                                       // Single expansion key for the entire grouped post (not per coin)
                                       const groupedPostKey = `${postUniqueKey}-grouped-${idx}`;
