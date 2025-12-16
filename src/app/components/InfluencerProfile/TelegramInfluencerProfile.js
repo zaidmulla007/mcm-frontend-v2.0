@@ -70,10 +70,10 @@ export default function TelegramInfluencerProfile({ channelId }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#1a1625] text-white flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-500"></div>
-          <p className="text-gray-400">Loading Telegram data...</p>
+      <div className="min-h-screen bg-white text-gray-900 font-sans flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading Telegram data...</p>
         </div>
       </div>
     );
@@ -81,10 +81,10 @@ export default function TelegramInfluencerProfile({ channelId }) {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-[#1a1625] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 font-sans flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-red-400 mb-4">Error Loading Data</h2>
-          <p className="text-gray-400">{error}</p>
+          <div className="text-red-600 text-2xl mb-4">⚠️</div>
+          <p className="text-gray-600 mb-4">{error}</p>
         </div>
       </div>
     );
@@ -92,30 +92,31 @@ export default function TelegramInfluencerProfile({ channelId }) {
 
   if (!channelData || !channelData.success) {
     return (
-      <div className="min-h-screen bg-[#1a1625] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-white text-gray-900 font-sans flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-yellow-400 mb-4">No Data Found</h2>
-          <p className="text-gray-400">No data available for this Telegram channel.</p>
+          <div className="text-gray-600 text-2xl mb-4">📢</div>
+          <p className="text-gray-600">No data available for this Telegram channel.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#1a1625] text-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-70 via-blue-50 to-purple-50 text-black-900 font-sans pb-16">
       {/* Header */}
       <TelegramInfluencerProfileHeader channelData={channelData} />
 
       {/* Tabs Navigation */}
-      <div className="w-full border-b border-[#232042] px-4">
-        <div className="flex space-x-8 overflow-x-auto scrollbar-hide">
+      <div className="px-4">
+        <div className="flex gap-2 border-b border-gray-200 mb-8 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-6 py-3 text-sm font-semibold border-b-2 transition whitespace-nowrap ${activeTab === tab.id
-                ? "border-blue-400 text-blue-400"
-                : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300"
+              className={`px-6 py-3 text-sm font-semibold border-b-2 transition whitespace-nowrap
+                ${activeTab === tab.id
+                  ? "border-blue-600 text-blue-600"
+                  : "border-transparent text-black-600 hover:text-black-900"
                 }`}
             >
               {tab.label}
@@ -146,7 +147,8 @@ export default function TelegramInfluencerProfile({ channelId }) {
 // Overview Tab Component
 function OverviewTab({ channelData }) {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+  const [isSummaryOpen, setIsSummaryOpen] = useState(true);
+  const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
   const [summaryType, setSummaryType] = useState("yearly");
   const [selectedPeriod, setSelectedPeriod] = useState("");
   const [hoveredColumnROI, setHoveredColumnROI] = useState(null);
@@ -156,6 +158,22 @@ function OverviewTab({ channelData }) {
 
   const overall = channelData.results?.Overall;
   const currentYear = new Date().getFullYear();
+
+  // Set default year to current year when data loads
+  useEffect(() => {
+    if (channelData?.results?.Gemini?.Yearly && !selectedPeriod) {
+      const currentYear = new Date().getFullYear().toString();
+      if (channelData.results.Gemini.Yearly[currentYear]) {
+        setSelectedPeriod(currentYear);
+      } else {
+        // If current year doesn't exist, use the most recent year
+        const availableYears = Object.keys(channelData.results.Gemini.Yearly).sort((a, b) => parseInt(b) - parseInt(a));
+        if (availableYears.length > 0) {
+          setSelectedPeriod(availableYears[0]);
+        }
+      }
+    }
+  }, [channelData, selectedPeriod]);
 
   const quarterLabels = {
     q1: "Jan - Mar (Q1)",
@@ -313,59 +331,91 @@ function OverviewTab({ channelData }) {
                       </p>
                     );
 
+                  // Helper function to truncate text to 5-7 lines (approximately 350-500 characters)
+                  const truncateText = (text, maxLength = 450) => {
+                    if (!text) return "";
+                    if (text.length <= maxLength) return text;
+                    return text.substring(0, maxLength) + "...";
+                  };
+
                   return (
-                    <div className="space-y-6">
-                      {/* Summary Section */}
+                    <div className="space-y-4">
+                      <div className="flex flex-wrap gap-4 mb-4">
+                        {/* Top cards commented out as per request */}
+                      </div>
+
                       <div>
                         <h4 className="font-semibold text-[#0c0023] mb-2">Summary</h4>
                         <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                          {data.summary}
+                          {isSummaryExpanded ? data.summary : truncateText(data.summary)}
                         </p>
                       </div>
 
-                      {/* Posting Frequency Analysis */}
-                      <div>
-                        <h4 className="font-semibold text-[#0c0023] mb-2">Posting Frequency Analysis</h4>
-                        <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                          {data.posting_frequency_analysis}
-                        </p>
-                      </div>
+                      {isSummaryExpanded && (
+                        <>
+                          {data.posting_frequency_analysis && (
+                            <div>
+                              <h4 className="font-semibold text-[#0c0023] mb-2">
+                                Posting Frequency Analysis
+                              </h4>
+                              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                                {data.posting_frequency_analysis}
+                              </p>
+                            </div>
+                          )}
 
-                      {/* Credibility Score */}
-                      <div>
-                        <h4 className="font-semibold text-[#0c0023] mb-2">Credibility Score</h4>
-                        <div className="flex items-center">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold mr-3">
-                            {data.overall_credibility_score}
-                          </div>
-                          <p className="text-gray-700">
-                            {data.overall_credibility_score}/10
-                          </p>
-                        </div>
-                      </div>
+                          {/* Credibility Score */}
+                          {data.overall_credibility_score && (
+                            <div>
+                              <h4 className="font-semibold text-[#0c0023] mb-2">Credibility Score</h4>
+                              <div className="flex items-center">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold mr-3">
+                                  {data.overall_credibility_score}
+                                </div>
+                                <p className="text-gray-700">
+                                  {data.overall_credibility_score}/10
+                                </p>
+                              </div>
+                            </div>
+                          )}
 
-                      {/* Credibility Explanation */}
-                      <div>
-                        <h4 className="font-semibold text-[#0c0023] mb-2">Credibility Explanation</h4>
-                        <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                          {data.credibility_explanation}
-                        </p>
-                      </div>
+                          {data.credibility_explanation && (
+                            <div>
+                              <h4 className="font-semibold text-[#0c0023] mb-2">
+                                Credibility Analysis
+                              </h4>
+                              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                                {data.credibility_explanation}
+                              </p>
+                            </div>
+                          )}
 
-                      {/* Telegram Specific Insights (only for Quarterly/Yearly) */}
-                      {summaryType !== "overall" && (
-                        <div>
-                          <h4 className="font-semibold text-[#0c0023] mb-2">
-                            {summaryType === "quarterly"
-                              ? "Telegram Specific Insights"
-                              : "Telegram Yearly Insights"}
-                          </h4>
-                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                            {summaryType === "quarterly"
-                              ? data.telegram_specific_insights
-                              : data.telegram_yearly_insights}
-                          </p>
-                        </div>
+                          {/* Telegram Specific Insights (only for Quarterly/Yearly) */}
+                          {summaryType !== "overall" && (
+                            <div>
+                              <h4 className="font-semibold text-[#0c0023] mb-2">
+                                {summaryType === "quarterly"
+                                  ? "Telegram Specific Insights"
+                                  : "Telegram Yearly Insights"}
+                              </h4>
+                              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                                {summaryType === "quarterly"
+                                  ? data.telegram_specific_insights
+                                  : data.telegram_yearly_insights}
+                              </p>
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Read More / Read Less Button */}
+                      {data.summary && data.summary.length > 450 && (
+                        <button
+                          onClick={() => setIsSummaryExpanded(!isSummaryExpanded)}
+                          className="text-sm text-purple-600 hover:underline font-medium mt-2 focus:outline-none"
+                        >
+                          {isSummaryExpanded ? "Read Less" : "Read More"}
+                        </button>
                       )}
                     </div>
                   );

@@ -29,7 +29,7 @@ export default function CoinsPage() {
   // ========================================
   // DYNAMIC COLUMN WIDTH CONFIGURATION
   // ========================================
-  const NUM_COLUMNS = 8; // Coins, Social Media Sentiment, Posts, Fundamental Score, Technical Analysis, MCM Signal, Live Price, MCM Knowledge Center
+  const NUM_COLUMNS = 9; // Coins, Social Media Sentiment, Posts, Fundamental Score, Technical Analysis, MCM Signal, Live Price, MCM Knowledge Center, Top Social Media Influencers
   const COLUMN_WIDTH = 100 / NUM_COLUMNS; // Equal distribution for all columns
   // ========================================
 
@@ -559,8 +559,14 @@ export default function CoinsPage() {
                     </th>
                     <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[10%]">
                       <div className="flex flex-col items-center gap-0.5">
-                        <span>Social Media</span>
-                        <span>Posts</span>
+                        <span>All</span>
+                        <span>Influencers</span>
+                      </div>
+                    </th>
+                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[10%]">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span>3★ & Above</span>
+                        <span>Influencers</span>
                       </div>
                     </th>
                     <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[22%]">
@@ -571,7 +577,24 @@ export default function CoinsPage() {
                           <span className="relative group cursor-pointer">
                             <span className="text-blue-600 text-sm">ⓘ</span>
                             <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
-                              ST : Short Term<br />LT : Long Term
+                              ST : Short Term<br />
+                              LT : Long Term<br />
+                              NA : Not Available
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </th>
+                    {/* Top Social Media Influencers Column - MOVED HERE after Sentiment */}
+                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[20%]">
+                      <div className="flex flex-col items-center">
+                        <span>Top Social Media</span>
+                        <div className="flex items-center gap-1">
+                          <span>Influencers</span>
+                          <span className="relative group cursor-pointer z-[9999]">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                              Sentiment analysis from top influencers
                             </span>
                           </span>
                         </div>
@@ -661,21 +684,24 @@ export default function CoinsPage() {
                             <br />
                             and all oscillator indicators (RSI, Stochastic, CCI, ADX, MACD, AO, Momentum, Williams %R, BullBear).
                             <br />
-                            Each indicator gives a BUY/SELL/NEUTRAL vote, and we simply total how many votes fall into each category.
+                            Each indicator gives a BUY/SELL/NEUTRAL vote, and we simply total how many votes fall into each category.
                           </span>
                         </span>
                       </div>
                     </th>
                     {/* MCM Signal Column */}
                     <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[11%]">
-                      <div className="flex items-center justify-center gap-1">
-                        <span>MCM Signal</span>
-                        <span className="relative group cursor-pointer">
-                          <span className="text-blue-600 text-sm">ⓘ</span>
-                          <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
-                            MCM proprietary signal indicator
+                      <div className="flex flex-col items-center">
+                        <span>MCM</span>
+                        <div className="flex items-center gap-0.5">
+                          <span>Signal</span>
+                          <span className="relative group cursor-pointer">
+                            <span className="text-blue-600 text-sm">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                              MCM proprietary signal indicator
+                            </span>
                           </span>
-                        </span>
+                        </div>
                       </div>
                     </th>
                     {/* Live Price Column */}
@@ -691,7 +717,7 @@ export default function CoinsPage() {
                       </div>
                     </th>
                     {/* MCM Knowledge Center Column */}
-                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[11%]">
+                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[10%]">
                       <div className="flex flex-col items-center">
                         <span>MCM Knowledge</span>
                         <div className="flex items-center gap-1">
@@ -710,7 +736,7 @@ export default function CoinsPage() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan="7" className="px-6 py-12 text-center">
+                      <td colSpan="9" className="px-6 py-12 text-center">
                         <div className="flex justify-center items-center">
                           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
                         </div>
@@ -718,13 +744,13 @@ export default function CoinsPage() {
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan="7" className="px-6 py-12 text-center text-red-600">
+                      <td colSpan="9" className="px-6 py-12 text-center text-red-600">
                         {error}
                       </td>
                     </tr>
                   ) : top10Coins.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan="9" className="px-6 py-12 text-center text-gray-500">
                         No coins data available for this timeframe
                       </td>
                     </tr>
@@ -761,7 +787,7 @@ export default function CoinsPage() {
                                   />
                                   {/* MCM Badge - top left outside of coin image */}
                                   {isNewCoin(coin) && (
-                                    <div className="absolute -top-2 -left-6 group/newcoin cursor-pointer z-[9999]">
+                                    <div className="absolute -top-2 -left-4 group/newcoin cursor-pointer z-[9999]">
                                       <div className="relative inline-flex items-center justify-center h-5 w-5">
                                         <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
                                         <span className="absolute text-[11px] font-bold text-white uppercase tracking-tighter">M</span>
@@ -871,123 +897,270 @@ export default function CoinsPage() {
                             </div>
                           </td>
 
-                          {/* Sentiment - Gauges with ST/LT posts side by side */}
+                          {/* 3★ & Above Influencers Column */}
                           <td className="px-0.5 py-1 text-center">
                             {(() => {
-                              const hasBullish = (coin.yt_tg_bullish_short_term > 0 || coin.yt_tg_bullish_long_term > 0);
-                              const hasBearish = (coin.yt_tg_bearish_short_term > 0 || coin.yt_tg_bearish_long_term > 0);
+                              const stats = coin['3star_inf_stats'];
+                              const ytInf = coin['3star_yt_inf'] || [];
+                              const tgInf = coin['3star_tg_inf'] || [];
 
-                              // If no data, show N/A
-                              if (!hasBullish && !hasBearish) {
+                              // If no 3-star influencers, show N/A
+                              if (!stats || stats.total_3star_influencers === 0) {
                                 return <span className="text-xs text-gray-400">N/A</span>;
                               }
 
                               return (
-                                <div className="flex flex-col gap-1 items-center">
-                                  {/* Bullish Gauge + Posts Row */}
-                                  {hasBullish && coin.bullish_percent !== undefined && (
-                                    <div className="flex items-center gap-1">
-                                      {/* Gauge */}
-                                      <div className="flex flex-col items-center">
-                                        <GaugeComponent
-                                          id={`gauge-bullish-${coin.symbol}-${index}`}
-                                          type="radial"
-                                          style={{ width: 50, height: 50 }}
-                                          labels={{
-                                            valueLabel: { hide: true },
-                                            tickLabels: {
-                                              ticks: [
-                                                { value: 20 },
-                                                { value: 50 },
-                                                { value: 80 },
-                                                { value: 100 }
-                                              ]
-                                            }
-                                          }}
-                                          arc={{
-                                            colorArray: ['#CE1F1F', '#00FF15'],
-                                            nbSubArcs: 90,
-                                            padding: 0.01,
-                                            width: 0.4
-                                          }}
-                                          pointer={{
-                                            animationDelay: 0,
-                                            strokeWidth: 7
-                                          }}
-                                          value={coin.bullish_percent}
-                                        />
-                                        <div className="text-[10px] font-bold text-center mt-1">
-                                          <span className="text-black">
-                                            {Math.round(coin.bullish_percent)}% Bullish
-                                          </span>
-                                        </div>
-                                      </div>
-                                      {/* ST/LT Posts */}
-                                      <div className="flex flex-col gap-0.5 text-left">
-                                        {coin.yt_tg_bullish_short_term > 0 && (
-                                          <div className="text-[10px] text-black">
-                                            <span className="font-semibold">ST:</span> {coin.yt_tg_bullish_short_term} {coin.yt_tg_bullish_short_term === 1 ? 'post' : 'posts'}
-                                          </div>
-                                        )}
-                                        {coin.yt_tg_bullish_long_term > 0 && (
-                                          <div className="text-[10px] text-black">
-                                            <span className="font-semibold">LT:</span> {coin.yt_tg_bullish_long_term} {coin.yt_tg_bullish_long_term === 1 ? 'post' : 'posts'}
-                                          </div>
-                                        )}
+                                <div className="flex flex-col gap-0.5 items-center">
+                                  {/* Total Posts */}
+                                  <div className="text-[10px] font-semibold text-black">
+                                    {stats.total_posts_yt_tg} {stats.total_posts_yt_tg === 1 ? 'post' : 'posts'}
+                                  </div>
+
+                                  {/* YouTube Channels */}
+                                  {ytInf.length > 0 && (
+                                    <div
+                                      className="cursor-pointer"
+                                      onClick={(e) => {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        setInfluencerModal({
+                                          isOpen: true,
+                                          type: 'YouTube',
+                                          influencers: ytInf,
+                                          position: { x: rect.right + 10, y: rect.top }
+                                        });
+                                      }}
+                                    >
+                                      <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
+                                        <FaYoutube className="text-red-600 text-xs" />
+                                        <span className="text-black">{ytInf.length} {ytInf.length === 1 ? 'Channel' : 'Channels'}</span>
                                       </div>
                                     </div>
                                   )}
 
-                                  {/* Bearish Gauge + Posts Row */}
-                                  {hasBearish && coin.bullish_percent !== undefined && (
-                                    <div className="flex items-center gap-1">
-                                      {/* Gauge */}
-                                      <div className="flex flex-col items-center">
-                                        <GaugeComponent
-                                          id={`gauge-bearish-${coin.symbol}-${index}`}
-                                          type="radial"
-                                          style={{ width: 50, height: 50 }}
-                                          labels={{
-                                            valueLabel: { hide: true },
-                                            tickLabels: {
-                                              ticks: [
-                                                { value: 20 },
-                                                { value: 50 },
-                                                { value: 80 },
-                                                { value: 100 }
-                                              ]
-                                            }
-                                          }}
-                                          arc={{
-                                            colorArray: ['#CE1F1F', '#00FF15'],
-                                            nbSubArcs: 90,
-                                            padding: 0.01,
-                                            width: 0.4
-                                          }}
-                                          pointer={{
-                                            animationDelay: 0,
-                                            strokeWidth: 7
-                                          }}
-                                          value={100 - coin.bullish_percent}
-                                        />
-                                        <div className="text-[10px] font-bold text-center mt-1">
-                                          <span className="text-black">
-                                            {Math.round(100 - coin.bullish_percent)}% Bearish
-                                          </span>
-                                        </div>
+                                  {/* Telegram Channels */}
+                                  {tgInf.length > 0 && (
+                                    <div
+                                      className="cursor-pointer"
+                                      onClick={(e) => {
+                                        const rect = e.currentTarget.getBoundingClientRect();
+                                        setInfluencerModal({
+                                          isOpen: true,
+                                          type: 'Telegram',
+                                          influencers: tgInf,
+                                          position: { x: rect.right + 10, y: rect.top }
+                                        });
+                                      }}
+                                    >
+                                      <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
+                                        <FaTelegramPlane className="text-blue-600 text-xs" />
+                                        <span className="text-black">{tgInf.length} {tgInf.length === 1 ? 'Channel' : 'Channels'}</span>
                                       </div>
-                                      {/* ST/LT Posts */}
-                                      <div className="flex flex-col gap-0.5 text-left">
-                                        {coin.yt_tg_bearish_short_term > 0 && (
-                                          <div className="text-[10px] text-black">
-                                            <span className="font-semibold">ST:</span> {coin.yt_tg_bearish_short_term} {coin.yt_tg_bearish_short_term === 1 ? 'post' : 'posts'}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </td>
+
+                          {/* Sentiment - Segmented Bar Ladder Style */}
+                          <td className="px-0.5 py-1 text-center">
+                            {(() => {
+                              // Calculate sentiment data for Short Term and Long Term
+                              const shortTermBullish = coin.yt_tg_bullish_short_term_percent || 0;
+                              const shortTermBearish = coin.yt_tg_bearish_short_term_percent || 0;
+                              const shortTermPosts = (coin.yt_tg_bullish_short_term || 0) + (coin.yt_tg_bearish_short_term || 0);
+
+                              const longTermBullish = coin.yt_tg_bullish_long_term_percent || 0;
+                              const longTermBearish = coin.yt_tg_bearish_long_term_percent || 0;
+                              const longTermPosts = (coin.yt_tg_bullish_long_term || 0) + (coin.yt_tg_bearish_long_term || 0);
+
+                              // If no data, show N/A
+                              if (shortTermPosts === 0 && longTermPosts === 0) {
+                                return <span className="text-xs text-gray-400">N/A</span>;
+                              }
+
+                              // Calculate ball positions
+                              const shortTermBallPosition = shortTermBullish >= shortTermBearish ? shortTermBullish : (100 - shortTermBearish);
+                              const longTermBallPosition = longTermBullish >= longTermBearish ? longTermBullish : (100 - longTermBearish);
+
+                              return (
+                                <div className="space-y-4">
+                                  {/* Short Term */}
+                                  <div className="flex flex-col items-center">
+                                    <div className="mb-1 text-[10px] whitespace-nowrap">
+                                      <span className="text-black font-semibold">ST:</span> <span className="text-black">{shortTermPosts} posts</span>
+                                    </div>
+                                    {shortTermPosts === 0 ? (
+                                      <>
+                                        <div className="segmented-bar-container" style={{ width: '100px' }}>
+                                          <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
+                                            <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
+                                            <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
+                                            <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
                                           </div>
-                                        )}
-                                        {coin.yt_tg_bearish_long_term > 0 && (
-                                          <div className="text-[10px] text-black">
-                                            <span className="font-semibold">LT:</span> {coin.yt_tg_bearish_long_term} {coin.yt_tg_bearish_long_term === 1 ? 'post' : 'posts'}
+                                        </div>
+                                        <div className="text-[10px] text-center text-gray-500">N/A</div>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <div className="segmented-bar-container" style={{ width: '100px' }}>
+                                          <div className="segmented-bar-background">
+                                            <div className="segment segment-red" />
+                                            <div className="segment segment-yellow" />
+                                            <div className="segment segment-green" />
                                           </div>
-                                        )}
+                                          <div
+                                            className="percentage-ball"
+                                            style={{
+                                              left: `${Math.min(Math.max(shortTermBallPosition, 6), 94)}%`,
+                                              backgroundColor: shortTermBullish >= shortTermBearish ? '#00ff15' : '#ff2121',
+                                              borderColor: shortTermBullish >= shortTermBearish ? '#00cc11' : '#cc1a1a'
+                                            }}
+                                          />
+                                        </div>
+                                        <div className={`mt-1 text-[10px] text-center font-semibold ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                          {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+
+                                  {/* Long Term */}
+                                  <div className="flex flex-col items-center">
+                                    <div className="mb-1 text-[10px] whitespace-nowrap">
+                                      <span className="text-black font-semibold">LT:</span> <span className="text-black">{longTermPosts} posts</span>
+                                    </div>
+                                    {longTermPosts === 0 ? (
+                                      <>
+                                        <div className="segmented-bar-container" style={{ width: '100px' }}>
+                                          <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
+                                            <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
+                                            <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
+                                            <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
+                                          </div>
+                                        </div>
+                                        <div className="text-[10px] text-center text-gray-500">N/A</div>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <div className="segmented-bar-container" style={{ width: '100px' }}>
+                                          <div className="segmented-bar-background">
+                                            <div className="segment segment-red" />
+                                            <div className="segment segment-yellow" />
+                                            <div className="segment segment-green" />
+                                          </div>
+                                          <div
+                                            className="percentage-ball"
+                                            style={{
+                                              left: `${Math.min(Math.max(longTermBallPosition, 6), 94)}%`,
+                                              backgroundColor: longTermBullish >= longTermBearish ? '#00ff15' : '#ff2121',
+                                              borderColor: longTermBullish >= longTermBearish ? '#00cc11' : '#cc1a1a'
+                                            }}
+                                          />
+                                        </div>
+                                        <div className={`mt-1 text-[10px] text-center font-semibold ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                          {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </td>
+
+                          {/* Top Social Media Influencers Column - Using 3star_inf_stats data */}
+                          <td className="px-0.5 py-1 text-center">
+                            {(() => {
+                              // Get 3star_inf_stats data from coin
+                              const stats = coin['3star_inf_stats'];
+
+                              // If no stats data, show N/A
+                              if (!stats || stats.total_3star_influencers === 0) {
+                                return <span className="text-xs text-gray-400">N/A</span>;
+                              }
+
+                              const shortTermBullish = stats.short_term_bullish_percent || 0;
+                              const shortTermBearish = stats.short_term_bearish_percent || 0;
+                              const shortTermPosts = stats.short_term_bullish + stats.short_term_bearish || 0;
+
+                              const longTermBullish = stats.long_term_bullish_percent || 0;
+                              const longTermBearish = stats.long_term_bearish_percent || 0;
+                              const longTermPosts = stats.long_term_bullish + stats.long_term_bearish || 0;
+
+                              // Calculate ball positions
+                              const shortTermBallPosition = shortTermBullish >= shortTermBearish ? shortTermBullish : (100 - shortTermBearish);
+                              const longTermBallPosition = longTermBullish >= longTermBearish ? longTermBullish : (100 - longTermBearish);
+
+                              return (
+                                <div className="space-y-4">
+                                  {/* Influencer Stats Header */}
+                                  {/* <div className="flex flex-col items-center gap-0.5 mb-1">
+                                    <div className="flex items-center justify-center gap-2 text-[9px]">
+                                      <span className="flex items-center gap-0.5">
+                                        <FaYoutube className="text-red-600 text-[10px]" />
+                                        {stats.total_3star_yt_influencers} {stats.total_3star_yt_influencers === 1 ? 'channel' : 'channels'}
+                                      </span>
+                                      <span className="flex items-center gap-0.5">
+                                        <FaTelegramPlane className="text-blue-600 text-[10px]" />
+                                        {stats.total_3star_tg_influencers} {stats.total_3star_tg_influencers === 1 ? 'channel' : 'channels'}
+                                      </span>
+                                    </div>
+                                    <div className="text-[9px] text-black-600">
+                                      {stats.total_posts_yt_tg} {stats.total_posts_yt_tg === 1 ? 'post' : 'posts'}
+                                    </div>
+                                  </div> */}
+
+                                  {/* Short Term */}
+                                  {shortTermPosts > 0 && (
+                                    <div className="flex flex-col items-center">
+                                      <div className="mb-1 text-[10px] whitespace-nowrap">
+                                        <span className="text-black font-semibold">ST:</span> <span className="text-black">{shortTermPosts} {shortTermPosts === 1 ? 'post' : 'posts'}</span>
+                                      </div>
+                                      <div className="segmented-bar-container" style={{ width: '100px' }}>
+                                        <div className="segmented-bar-background">
+                                          <div className="segment segment-red" />
+                                          <div className="segment segment-yellow" />
+                                          <div className="segment segment-green" />
+                                        </div>
+                                        <div
+                                          className="percentage-ball"
+                                          style={{
+                                            left: `${Math.min(Math.max(shortTermBallPosition, 6), 94)}%`,
+                                            backgroundColor: shortTermBullish >= shortTermBearish ? '#00ff15' : '#ff2121',
+                                            borderColor: shortTermBullish >= shortTermBearish ? '#00cc11' : '#cc1a1a'
+                                          }}
+                                        />
+                                      </div>
+                                      <div className={`mt-1 text-[10px] text-center font-semibold ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                        {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
+                                      </div>
+                                    </div>
+                                  )}
+
+                                  {/* Long Term */}
+                                  {longTermPosts > 0 && (
+                                    <div className="flex flex-col items-center">
+                                      <div className="mb-1 text-[10px] whitespace-nowrap">
+                                        <span className="text-black font-semibold">LT:</span> <span className="text-black">{longTermPosts} {longTermPosts === 1 ? 'post' : 'posts'}</span>
+                                      </div>
+                                      <div className="segmented-bar-container" style={{ width: '100px' }}>
+                                        <div className="segmented-bar-background">
+                                          <div className="segment segment-red" />
+                                          <div className="segment segment-yellow" />
+                                          <div className="segment segment-green" />
+                                        </div>
+                                        <div
+                                          className="percentage-ball"
+                                          style={{
+                                            left: `${Math.min(Math.max(longTermBallPosition, 6), 94)}%`,
+                                            backgroundColor: longTermBullish >= longTermBearish ? '#00ff15' : '#ff2121',
+                                            borderColor: longTermBullish >= longTermBearish ? '#00cc11' : '#cc1a1a'
+                                          }}
+                                        />
+                                      </div>
+                                      <div className={`mt-1 text-[10px] text-center font-semibold ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                        {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
                                       </div>
                                     </div>
                                   )}

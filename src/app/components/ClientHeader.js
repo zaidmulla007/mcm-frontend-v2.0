@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef, Suspense } from "react";
-import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar, FaChartPie, FaNewspaper } from "react-icons/fa";
+import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar, FaChartPie, FaNewspaper, FaSitemap } from "react-icons/fa";
 import { useTimezone } from "../contexts/TimezoneContext";
 import { useSelectedCoin } from "../contexts/SelectedCoinContext";
 
@@ -18,6 +18,7 @@ const navLinks = [
   { name: "Favorites", href: "/favorites", icon: FaStar },
   { name: "Market Overview", href: "/market-overview", icon: FaChartPie },
   { name: "Top News", href: "/top-news", icon: FaNewspaper },
+  { name: "Post Spread", href: "/tree", icon: FaSitemap },
   // { name: "MCM Signal", href: "/mcm-final", icon: FaChartLine },
   // { name: "Backups", href: "/influencer-search/backup", icon: FaHistory },
   // { name: "Plans", href: "/plans", icon: FaTrophy },

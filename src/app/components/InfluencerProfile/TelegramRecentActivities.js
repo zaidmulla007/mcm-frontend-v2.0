@@ -269,7 +269,7 @@ export default function TelegramRecentActivityTab({ channelID, channelData, tele
           {visiblePosts.map((post, index) => (
             <div
               key={post.id}
-              className="w-80 flex-shrink-0 bg-white rounded-xl overflow-hidden border border-gray-800 shadow-lg"
+              className="w-80 flex-shrink-0 bg-white rounded-xl overflow-hidden border border-gray-200 shadow-lg"
             >
               {/* Post Header with Number */}
               <div
@@ -280,7 +280,7 @@ export default function TelegramRecentActivityTab({ channelID, channelData, tele
               </div>
 
               {/* Post Title */}
-              <div className="p-3 border-b border-gray-800">
+              <div className="p-3 border-b border-gray-200">
                 <div className="min-h-[40px] mb-2">
                   <div className={`text-sm font-medium text-gray-900 ${expandedTitles[post.id] ? '' : 'line-clamp-2'}`} title={post.messageText}>
                     {expandedTitles[post.id] ? post.messageText : post.title}
@@ -313,7 +313,7 @@ export default function TelegramRecentActivityTab({ channelID, channelData, tele
               </div>
 
               {/* MCM Scoring */}
-              <div className="p-3 border-b border-gray-800">
+              <div className="p-3 border-b border-gray-200">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="font-bold text-xs text-gray-700">MCM Scoring</span>
                 </div>
@@ -365,7 +365,7 @@ export default function TelegramRecentActivityTab({ channelID, channelData, tele
               </div>
 
               {/* Post Summary */}
-              <div className="p-3 border-b border-gray-800">
+              <div className="p-3 border-b border-gray-200">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-bold text-xs text-gray-700">Post Summary</span>
                   <button
@@ -412,7 +412,7 @@ export default function TelegramRecentActivityTab({ channelID, channelData, tele
                   <div className="overflow-x-auto w-full">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b border-gray-800">
+                        <tr className="border-b border-gray-200">
                           <th className="text-center text-gray-700 pb-1 pr-2">Name</th>
                           <th className="text-center text-gray-700 pb-1 pr-2">Sentiment</th>
                           <th className="text-center text-gray-700 pb-1">Holding Period</th>
@@ -428,7 +428,7 @@ export default function TelegramRecentActivityTab({ channelID, channelData, tele
                           for (let i = 0; i < 5; i++) {
                             const coin = coins[i];
                             rows.push(
-                              <tr key={i} className={coin ? "border-b border-gray-800/50" : ""}>
+                              <tr key={i} className={coin ? "border-b border-gray-200" : ""}>
                                 <td className="py-1 pr-2 text-center">
                                   {coin ? (
                                     <span className="text-gray-900" title={coin.symbol}>
