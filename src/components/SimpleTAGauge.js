@@ -7,13 +7,15 @@ import GaugeComponent from 'react-gauge-component';
  * 
  * Accepts taData prop from API: { total_counts: { buy, sell, neutral }, recommendation }
  */
-export default function SimpleTAGauge({ taData = null }) {
+export default function SimpleTAGauge({ taData = null, signal = null }) {
   // Extract data from taData - handle both lowercase and uppercase keys
   const counts = taData?.total_counts || {};
   const buy = counts.buy ?? counts.BUY ?? 0;
   const sell = counts.sell ?? counts.SELL ?? 0;
   const neutral = counts.neutral ?? counts.NEUTRAL ?? 0;
-  const recommendation = taData?.recommendation || null;
+
+  // Use signal if provided (explicitly requested to NOT use recommendation)
+  const displayText = signal || null;
 
   const total = buy + neutral + sell;
 
@@ -32,28 +34,28 @@ export default function SimpleTAGauge({ taData = null }) {
     score = (((buy - sell) / total) + 1) * 50;
   }
 
-  // Get recommendation color
-  const getRecommendationStyle = (rec) => {
-    if (!rec) return { color: 'text-gray-500' };
+  // Get text style based on content
+  const getTextStyle = (text) => {
+    if (!text) return { color: 'text-gray-500' };
 
-    const recLower = rec.toLowerCase();
-    if (recLower.includes('strong buy')) {
+    const textLower = text.toLowerCase();
+    if (textLower.includes('strong buy') || textLower.includes('bullish')) {
       return { color: 'text-green-700 font-bold' };
-    } else if (recLower.includes('buy')) {
+    } else if (textLower.includes('buy')) {
       return { color: 'text-green-600' };
-    } else if (recLower.includes('strong sell')) {
+    } else if (textLower.includes('strong sell') || textLower.includes('bearish')) {
       return { color: 'text-red-700 font-bold' };
-    } else if (recLower.includes('sell')) {
+    } else if (textLower.includes('sell')) {
       return { color: 'text-red-600' };
     } else {
       return { color: 'text-gray-500' };
     }
   };
 
-  const recStyle = getRecommendationStyle(recommendation);
+  const textStyle = getTextStyle(displayText);
 
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-center justify-center">
       {/* Gauge */}
       <div className="flex flex-col items-center">
         <GaugeComponent
@@ -82,25 +84,12 @@ export default function SimpleTAGauge({ taData = null }) {
             strokeWidth: 7
           }}
         />
-        {/* Recommendation display below gauge */}
-        {recommendation && (
-          <div className={`text-[10px] font-semibold text-center mt-1 ${recStyle.color}`}>
-            {recommendation}
+        {/* Signal display below gauge */}
+        {displayText && (
+          <div className={`text-[10px] font-semibold text-center mt-1 ${textStyle.color}`}>
+            {displayText}
           </div>
         )}
-      </div>
-
-      {/* Counts breakdown */}
-      <div className="flex flex-col gap-1 text-left">
-        <div className="text-[10px] text-black">
-          <span className="font-bold text-green-600">Buy:</span> {buy}
-        </div>
-        <div className="text-[10px] text-black">
-          <span className="font-bold text-red-600">Sell:</span> {sell}
-        </div>
-        <div className="text-[10px] text-black">
-          <span className="font-bold text-gray-500">Neutral:</span> {neutral}
-        </div>
       </div>
     </div>
   );

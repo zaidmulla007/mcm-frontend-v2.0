@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { FaBell, FaYoutube, FaTelegramPlane, FaCertificate } from "react-icons/fa";
+import { FaBell, FaYoutube, FaTelegramPlane, FaCertificate, FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { useCoinsLivePrice } from "@/hooks/useCoinsLivePrice";
 import { useTimezone } from "../contexts/TimezoneContext";
 import ReactMarkdown from "react-markdown";
@@ -554,97 +554,18 @@ export default function CoinsPage() {
               <table className="w-full table-fixed">
                 <thead>
                   <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[8%]">
+                    {/* Row 1, Col 1: Coins (Rowspan 2) */}
+                    <th rowSpan="2" className="px-1 py-1 text-center text-[10px] font-bold text-gray-800 tracking-wider align-middle w-[8%] border-r border-gray-200">
                       Coins
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[10%]">
-                      <div className="flex flex-col items-center gap-0.5">
-                        <span>All</span>
-                        <span>Influencers</span>
-                      </div>
+
+                    {/* Row 1, Col 2: Group Header for Influencers (Colspan 6) */}
+                    <th colSpan="6" className="px-1 py-1 text-center text-[11px] font-bold text-gray-900 tracking-wider align-middle border-b border-gray-200 border-r border-gray-200 bg-gray-100">
+                      Social Media Sentiment
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[10%]">
-                      <div className="flex flex-col items-center gap-0.5">
-                        <span>3★ & Above</span>
-                        <span>Influencers</span>
-                      </div>
-                    </th>
-                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[22%]">
-                      <div className="flex flex-col items-center gap-0.5">
-                        <span>Social Media</span>
-                        <div className="flex items-center gap-1">
-                          <span>Sentiment</span>
-                          <span className="relative group cursor-pointer">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
-                              ST : Short Term<br />
-                              LT : Long Term<br />
-                              NA : Not Available
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </th>
-                    {/* Top Social Media Influencers Column - MOVED HERE after Sentiment */}
-                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[20%]">
-                      <div className="flex flex-col items-center">
-                        <span>Top Social Media</span>
-                        <div className="flex items-center gap-1">
-                          <span>Influencers</span>
-                          <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
-                              Sentiment analysis from top influencers
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </th>
-                    {/* <th  className="pl-0.5 pr-2 py-3 text-left text-xs font-bold text-black-900 tracking-wider w-[5%] align-middle">
-                      <div className="flex flex-col items-start">
-                        <span>Base</span>
-                        <div className="flex items-center gap-1">
-                          <span>Price</span>
-                          <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                              Price at the time when post was published
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </th> */}
-                    {/* <th  className="pl-0.5 pr-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
-                      <div className="flex flex-col items-center">
-                        <span>Current</span>
-                        <div className="flex items-center gap-1">
-                          <span>Price</span>
-                          <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl z-[9999] text-left w-48">
-                              Source: Binance & CoinGeko <br />
-                              N/A : Not Available
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </th> */}
-                    {/* <th  className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[8%] align-middle">
-                      <div className="flex flex-col items-center">
-                        <span>Price Change</span>
-                        <div className="flex items-center gap-1">
-                          <span className="text-[10px] font-normal">(24hrs Binance)</span>
-                          <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                              N/A : Not Available
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </th> */}
-                    {/* Fundamental Score Header */}
-                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[13%]">
+
+                    {/* Row 1, Col 3: Fundamental Score (Rowspan 2) */}
+                    <th rowSpan="2" className="px-1 py-1 text-center text-[10px] font-bold text-gray-800 tracking-wider align-middle w-[8%] border-r border-gray-200">
                       <div className="flex flex-col items-center">
                         <span>Fundamental</span>
                         <div className="flex items-center gap-1">
@@ -658,39 +579,25 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    {/* <th  className="px-2 py-3 text-center text-xs font-bold text-black-900 tracking-wider w-[6%] align-middle">
-                      <div className="flex flex-col items-center">
-                        <span>24 Hrs %</span>
-                        <div className="flex items-center gap-1">
-                          <span>Price Change</span>
+
+                    {/* Row 1, Col 4: Technical Analysis (Rowspan 2) */}
+                    <th rowSpan="2" className="px-1 py-1 text-center text-[10px] font-bold text-gray-800 tracking-wider align-middle w-[10%] border-r border-gray-200">
+                      <div className="flex flex-col items-center justify-center">
+                        <span>Technical</span>
+                        <div className="flex items-center gap-0.5">
+                          <span>Analysis</span>
                           <span className="relative group cursor-pointer z-[9999]">
                             <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999] text-left">
-                              Source: Binance<br />
-                              N/A : Not Available
+                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-3 rounded-lg shadow-xl z-[99999] text-left w-72 whitespace-normal">
+                              We calculate Based on Moving Averages and oscillators indicators
                             </span>
                           </span>
                         </div>
                       </div>
-                    </th> */}
-                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[20%]">
-                      <div className="flex items-center justify-center gap-1">
-                        <span>Technical Analysis</span>
-                        <span className="relative group cursor-pointer z-[9999]">
-                          <span className="text-blue-600 text-sm">ⓘ</span>
-                          <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-3 rounded-lg shadow-xl z-[99999] text-left w-72 whitespace-normal">
-                            Technical Analysis:
-                            We calculate all MA indicators (SMA & EMA for 5,10,20,50,100,200)
-                            <br />
-                            and all oscillator indicators (RSI, Stochastic, CCI, ADX, MACD, AO, Momentum, Williams %R, BullBear).
-                            <br />
-                            Each indicator gives a BUY/SELL/NEUTRAL vote, and we simply total how many votes fall into each category.
-                          </span>
-                        </span>
-                      </div>
                     </th>
-                    {/* MCM Signal Column */}
-                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[11%]">
+
+                    {/* Row 1, Col 5: MCM Signal (Rowspan 2) */}
+                    <th rowSpan="2" className="px-1 py-1 text-center text-[10px] font-bold text-gray-800 tracking-wider align-middle w-[7%] border-r border-gray-200">
                       <div className="flex flex-col items-center">
                         <span>MCM</span>
                         <div className="flex items-center gap-0.5">
@@ -704,8 +611,9 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    {/* Live Price Column */}
-                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[11%]">
+
+                    {/* Row 1, Col 6: Live Price (Rowspan 2) */}
+                    <th rowSpan="2" className="px-1 py-1 text-center text-[10px] font-bold text-gray-800 tracking-wider align-middle w-[9%] border-r border-gray-200">
                       <div className="flex items-center justify-center gap-1">
                         <span>Live Price</span>
                         <span className="relative group cursor-pointer">
@@ -716,8 +624,9 @@ export default function CoinsPage() {
                         </span>
                       </div>
                     </th>
-                    {/* MCM Knowledge Center Column */}
-                    <th className="px-1 py-2 text-center text-xs font-bold text-black-900 tracking-wider align-middle w-[10%]">
+
+                    {/* Row 1, Col 7: MCM Knowledge Center (Rowspan 2) */}
+                    <th rowSpan="2" className="px-1 py-1 text-center text-[10px] font-bold text-gray-800 tracking-wider align-middle w-[7%]">
                       <div className="flex flex-col items-center">
                         <span>MCM Knowledge</span>
                         <div className="flex items-center gap-1">
@@ -729,6 +638,79 @@ export default function CoinsPage() {
                             </span>
                           </span>
                         </div>
+                      </div>
+                    </th>
+                  </tr>
+
+                  {/* Row 2: Sub-columns for Influencers Group */}
+                  <tr className="bg-gray-50 border-b border-gray-200">
+                    <th className="px-1 py-1 text-center text-[9px] font-semibold text-gray-700 tracking-tight align-middle w-[6%] border-r border-gray-200">
+                      <div className="flex flex-col items-center">
+                        <span>All</span>
+                        <span>Influencers</span>
+                      </div>
+                    </th>
+                    <th className="px-1 py-1 text-center text-[9px] font-semibold text-gray-700 tracking-tight align-middle w-[13%] border-r border-gray-200">
+                      <div>
+                        All Ratings{" "}
+                        <span className="whitespace-nowrap">
+                          Influencers
+                          <span className="relative group cursor-pointer z-[9999] inline-block ml-0.5">
+                            <span className="text-blue-600 text-[10px]">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                              ST : Short Term<br />
+                              LT : Long Term<br />
+                              NA : Not Available
+                            </span>
+                          </span>
+                        </span>
+                      </div>
+                    </th>
+                    <th className="px-1 py-1 text-center text-[9px] font-semibold text-gray-700 tracking-tight align-middle w-[5%] border-r border-gray-200">
+                      <div className="flex items-center justify-center gap-0.5">
+                        <span>Avg Rating</span>
+                        <span className="relative group cursor-pointer z-[9999]">
+                          <span className="text-blue-600 text-[10px]">ⓘ</span>
+                          <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                            Short Term : 30 Days Overall Rating<br />
+                            Long Term : 180 Days Overall Rating
+                          </span>
+                        </span>
+                      </div>
+                    </th>
+                    <th className="px-1 py-1 text-center text-[9px] font-semibold text-gray-700 tracking-tight align-middle w-[6%] border-r border-gray-200">
+                      <div className="flex flex-col items-center">
+                        <span>Only 3 Star &</span>
+                        <span>Above Influencers</span>
+                      </div>
+                    </th>
+                    <th className="px-1 py-1 text-center text-[9px] font-semibold text-gray-700 tracking-tight align-middle w-[10%] border-r border-gray-200">
+                      <div className="flex flex-col items-center">
+                        <span>Top Rated</span>
+                        <div className="flex items-center gap-0.5">
+                          <span>Influencers</span>
+                          <span className="relative group cursor-pointer z-[9999]">
+                            <span className="text-blue-600 text-[10px]">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                              Only 3 Star & Above Influencers<br />
+                              Short Term : 30 Days Overall Rating<br />
+                              Long Term : 180 Days Overall Rating
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+                    </th>
+                    <th className="px-1 py-1 text-center text-[9px] font-semibold text-gray-700 tracking-tight align-middle w-[5%] border-r border-gray-200">
+                      <div className="flex items-center justify-center gap-0.5">
+                        <span>Avg Rating</span>
+                        <span className="relative group cursor-pointer z-[9999]">
+                          <span className="text-blue-600 text-[10px]">ⓘ</span>
+                          <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                            Only 3 Star & Above Influencers<br />
+                            Short Term : 30 Days Overall Rating<br />
+                            Long Term : 180 Days Overall Rating
+                          </span>
+                        </span>
                       </div>
                     </th>
                   </tr>
@@ -865,7 +847,7 @@ export default function CoinsPage() {
                                     }
                                   }}
                                 >
-                                  <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
+                                  <div className="text-[10px] font-semibold flex items-center justify-center gap-1 whitespace-nowrap">
                                     <FaYoutube className="text-red-600 text-xs" />
                                     <span className="text-black">{coin.yt_unique_influencers_count} {coin.yt_unique_influencers_count === 1 ? 'Channel' : 'Channels'}</span>
                                   </div>
@@ -888,13 +870,158 @@ export default function CoinsPage() {
                                     }
                                   }}
                                 >
-                                  <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
+                                  <div className="text-[10px] font-semibold flex items-center justify-center gap-1 whitespace-nowrap">
                                     <FaTelegramPlane className="text-blue-600 text-xs" />
                                     <span className="text-black">{coin.tg_unique_influencers_count} {coin.tg_unique_influencers_count === 1 ? 'Channel' : 'Channels'}</span>
                                   </div>
                                 </div>
                               )}
                             </div>
+                          </td>
+
+                          {/* Sentiment - Segmented Bar Ladder Style */}
+                          <td className="px-0.5 py-1 text-center">
+                            {(() => {
+                              // Calculate sentiment data for Short Term and Long Term
+                              const shortTermBullish = coin.yt_tg_bullish_short_term_percent || 0;
+                              const shortTermBearish = coin.yt_tg_bearish_short_term_percent || 0;
+                              const shortTermPosts = (coin.yt_tg_bullish_short_term || 0) + (coin.yt_tg_bearish_short_term || 0);
+
+                              const longTermBullish = coin.yt_tg_bullish_long_term_percent || 0;
+                              const longTermBearish = coin.yt_tg_bearish_long_term_percent || 0;
+                              const longTermPosts = (coin.yt_tg_bullish_long_term || 0) + (coin.yt_tg_bearish_long_term || 0);
+
+                              // If no data, show N/A
+                              if (shortTermPosts === 0 && longTermPosts === 0) {
+                                return <span className="text-xs text-gray-400">N/A</span>;
+                              }
+
+                              // Calculate ball positions
+                              const shortTermBallPosition = shortTermBullish >= shortTermBearish ? shortTermBullish : (100 - shortTermBearish);
+                              const longTermBallPosition = longTermBullish >= longTermBearish ? longTermBullish : (100 - longTermBearish);
+
+                              return (
+                                <div className="space-y-4">
+                                  {/* Short Term */}
+                                  <div className="flex flex-col items-center">
+                                    <div className="mb-1 text-[10px] whitespace-nowrap">
+                                      <span className="text-black font-semibold">ST:</span> <span className="text-black">{shortTermPosts} posts</span>
+                                    </div>
+                                    {shortTermPosts === 0 ? (
+                                      <>
+                                        <div className="segmented-bar-container" style={{ width: '80px' }}>
+                                          <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
+                                            <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
+                                            <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
+                                            <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
+                                          </div>
+                                        </div>
+                                        <div className="text-[10px] text-center text-gray-500">N/A</div>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <div className="segmented-bar-container" style={{ width: '80px' }}>
+                                          <div className="segmented-bar-background">
+                                            <div className="segment segment-red" />
+                                            <div className="segment segment-yellow" />
+                                            <div className="segment segment-green" />
+                                          </div>
+                                          <div
+                                            className="percentage-ball"
+                                            style={{
+                                              left: `${Math.min(Math.max(shortTermBallPosition, 6), 94)}%`,
+                                              backgroundColor: shortTermBullish >= shortTermBearish ? '#00ff15' : '#ff2121',
+                                              borderColor: shortTermBullish >= shortTermBearish ? '#00cc11' : '#cc1a1a'
+                                            }}
+                                          />
+                                        </div>
+                                        <div className={`mt-1 text-[10px] text-center font-semibold ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                          {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+
+                                  {/* Long Term */}
+                                  <div className="flex flex-col items-center">
+                                    <div className="mb-1 text-[10px] whitespace-nowrap">
+                                      <span className="text-black font-semibold">LT:</span> <span className="text-black">{longTermPosts} posts</span>
+                                    </div>
+                                    {longTermPosts === 0 ? (
+                                      <>
+                                        <div className="segmented-bar-container" style={{ width: '80px' }}>
+                                          <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
+                                            <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
+                                            <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
+                                            <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
+                                          </div>
+                                        </div>
+                                        <div className="text-[10px] text-center text-gray-500">N/A</div>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <div className="segmented-bar-container" style={{ width: '80px' }}>
+                                          <div className="segmented-bar-background">
+                                            <div className="segment segment-red" />
+                                            <div className="segment segment-yellow" />
+                                            <div className="segment segment-green" />
+                                          </div>
+                                          <div
+                                            className="percentage-ball"
+                                            style={{
+                                              left: `${Math.min(Math.max(longTermBallPosition, 6), 94)}%`,
+                                              backgroundColor: longTermBullish >= longTermBearish ? '#00ff15' : '#ff2121',
+                                              borderColor: longTermBullish >= longTermBearish ? '#00cc11' : '#cc1a1a'
+                                            }}
+                                          />
+                                        </div>
+                                        <div className={`mt-1 text-[10px] text-center font-semibold ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
+                                          {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
+                                        </div>
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })()}
+                          </td>
+
+                          {/* Avg Rating Column (All Influencers) */}
+                          <td className="px-0.5 py-1 text-center">
+                            {(() => {
+                              const renderStars = (rating) => {
+                                const fullStars = Math.floor(rating);
+                                const hasHalfStar = rating % 1 >= 0.5;
+                                const emptyStars = Math.max(0, 5 - fullStars - (hasHalfStar ? 1 : 0));
+                                return (
+                                  <div className="flex gap-0.5">
+                                    {[...Array(fullStars)].map((_, i) => <FaStar key={`f${i}`} className="text-yellow-400 text-[8px]" />)}
+                                    {hasHalfStar && <FaStarHalfAlt className="text-yellow-400 text-[8px]" />}
+                                    {[...Array(emptyStars)].map((_, i) => <FaRegStar key={`e${i}`} className="text-gray-300 text-[8px]" />)}
+                                  </div>
+                                );
+                              };
+
+                              if (coin.avg_short_term_rating !== undefined || coin.avg_long_term_rating !== undefined) {
+                                return (
+                                  <div className="flex flex-col items-center justify-center gap-1">
+                                    {coin.avg_short_term_rating !== undefined && (
+                                      <div className="flex items-center gap-1 whitespace-nowrap">
+                                        <span className="text-[8px] font-semibold text-gray-600">ST:</span>
+                                        {renderStars(coin.avg_short_term_rating)}
+                                      </div>
+                                    )}
+                                    {coin.avg_long_term_rating !== undefined && (
+                                      <div className="flex items-center gap-1 whitespace-nowrap">
+                                        <span className="text-[8px] font-semibold text-gray-600">LT:</span>
+                                        {renderStars(coin.avg_long_term_rating)}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              }
+                              return <span className="text-xs text-gray-400">N/A</span>;
+                            })()}
                           </td>
 
                           {/* 3★ & Above Influencers Column */}
@@ -930,7 +1057,7 @@ export default function CoinsPage() {
                                         });
                                       }}
                                     >
-                                      <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
+                                      <div className="text-[10px] font-semibold flex items-center justify-center gap-1 whitespace-nowrap">
                                         <FaYoutube className="text-red-600 text-xs" />
                                         <span className="text-black">{ytInf.length} {ytInf.length === 1 ? 'Channel' : 'Channels'}</span>
                                       </div>
@@ -951,119 +1078,12 @@ export default function CoinsPage() {
                                         });
                                       }}
                                     >
-                                      <div className="text-[10px] font-semibold flex items-center justify-center gap-1">
+                                      <div className="text-[10px] font-semibold flex items-center justify-center gap-1 whitespace-nowrap">
                                         <FaTelegramPlane className="text-blue-600 text-xs" />
                                         <span className="text-black">{tgInf.length} {tgInf.length === 1 ? 'Channel' : 'Channels'}</span>
                                       </div>
                                     </div>
                                   )}
-                                </div>
-                              );
-                            })()}
-                          </td>
-
-                          {/* Sentiment - Segmented Bar Ladder Style */}
-                          <td className="px-0.5 py-1 text-center">
-                            {(() => {
-                              // Calculate sentiment data for Short Term and Long Term
-                              const shortTermBullish = coin.yt_tg_bullish_short_term_percent || 0;
-                              const shortTermBearish = coin.yt_tg_bearish_short_term_percent || 0;
-                              const shortTermPosts = (coin.yt_tg_bullish_short_term || 0) + (coin.yt_tg_bearish_short_term || 0);
-
-                              const longTermBullish = coin.yt_tg_bullish_long_term_percent || 0;
-                              const longTermBearish = coin.yt_tg_bearish_long_term_percent || 0;
-                              const longTermPosts = (coin.yt_tg_bullish_long_term || 0) + (coin.yt_tg_bearish_long_term || 0);
-
-                              // If no data, show N/A
-                              if (shortTermPosts === 0 && longTermPosts === 0) {
-                                return <span className="text-xs text-gray-400">N/A</span>;
-                              }
-
-                              // Calculate ball positions
-                              const shortTermBallPosition = shortTermBullish >= shortTermBearish ? shortTermBullish : (100 - shortTermBearish);
-                              const longTermBallPosition = longTermBullish >= longTermBearish ? longTermBullish : (100 - longTermBearish);
-
-                              return (
-                                <div className="space-y-4">
-                                  {/* Short Term */}
-                                  <div className="flex flex-col items-center">
-                                    <div className="mb-1 text-[10px] whitespace-nowrap">
-                                      <span className="text-black font-semibold">ST:</span> <span className="text-black">{shortTermPosts} posts</span>
-                                    </div>
-                                    {shortTermPosts === 0 ? (
-                                      <>
-                                        <div className="segmented-bar-container" style={{ width: '100px' }}>
-                                          <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
-                                            <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
-                                            <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
-                                            <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
-                                          </div>
-                                        </div>
-                                        <div className="text-[10px] text-center text-gray-500">N/A</div>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <div className="segmented-bar-container" style={{ width: '100px' }}>
-                                          <div className="segmented-bar-background">
-                                            <div className="segment segment-red" />
-                                            <div className="segment segment-yellow" />
-                                            <div className="segment segment-green" />
-                                          </div>
-                                          <div
-                                            className="percentage-ball"
-                                            style={{
-                                              left: `${Math.min(Math.max(shortTermBallPosition, 6), 94)}%`,
-                                              backgroundColor: shortTermBullish >= shortTermBearish ? '#00ff15' : '#ff2121',
-                                              borderColor: shortTermBullish >= shortTermBearish ? '#00cc11' : '#cc1a1a'
-                                            }}
-                                          />
-                                        </div>
-                                        <div className={`mt-1 text-[10px] text-center font-semibold ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
-                                          {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-
-                                  {/* Long Term */}
-                                  <div className="flex flex-col items-center">
-                                    <div className="mb-1 text-[10px] whitespace-nowrap">
-                                      <span className="text-black font-semibold">LT:</span> <span className="text-black">{longTermPosts} posts</span>
-                                    </div>
-                                    {longTermPosts === 0 ? (
-                                      <>
-                                        <div className="segmented-bar-container" style={{ width: '100px' }}>
-                                          <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
-                                            <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
-                                            <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
-                                            <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
-                                          </div>
-                                        </div>
-                                        <div className="text-[10px] text-center text-gray-500">N/A</div>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <div className="segmented-bar-container" style={{ width: '100px' }}>
-                                          <div className="segmented-bar-background">
-                                            <div className="segment segment-red" />
-                                            <div className="segment segment-yellow" />
-                                            <div className="segment segment-green" />
-                                          </div>
-                                          <div
-                                            className="percentage-ball"
-                                            style={{
-                                              left: `${Math.min(Math.max(longTermBallPosition, 6), 94)}%`,
-                                              backgroundColor: longTermBullish >= longTermBearish ? '#00ff15' : '#ff2121',
-                                              borderColor: longTermBullish >= longTermBearish ? '#00cc11' : '#cc1a1a'
-                                            }}
-                                          />
-                                        </div>
-                                        <div className={`mt-1 text-[10px] text-center font-semibold ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
-                                          {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
                                 </div>
                               );
                             })()}
@@ -1117,7 +1137,7 @@ export default function CoinsPage() {
                                       <div className="mb-1 text-[10px] whitespace-nowrap">
                                         <span className="text-black font-semibold">ST:</span> <span className="text-black">{shortTermPosts} {shortTermPosts === 1 ? 'post' : 'posts'}</span>
                                       </div>
-                                      <div className="segmented-bar-container" style={{ width: '100px' }}>
+                                      <div className="segmented-bar-container" style={{ width: '80px' }}>
                                         <div className="segmented-bar-background">
                                           <div className="segment segment-red" />
                                           <div className="segment segment-yellow" />
@@ -1144,7 +1164,7 @@ export default function CoinsPage() {
                                       <div className="mb-1 text-[10px] whitespace-nowrap">
                                         <span className="text-black font-semibold">LT:</span> <span className="text-black">{longTermPosts} {longTermPosts === 1 ? 'post' : 'posts'}</span>
                                       </div>
-                                      <div className="segmented-bar-container" style={{ width: '100px' }}>
+                                      <div className="segmented-bar-container" style={{ width: '80px' }}>
                                         <div className="segmented-bar-background">
                                           <div className="segment segment-red" />
                                           <div className="segment segment-yellow" />
@@ -1162,6 +1182,46 @@ export default function CoinsPage() {
                                       <div className={`mt-1 text-[10px] text-center font-semibold ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
                                         {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
                                       </div>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })()}
+                          </td>
+
+                          {/* Avg Rating Column (3★ & Above) */}
+                          <td className="px-0.5 py-1 text-center">
+                            {(() => {
+                              const stats = coin['3star_inf_stats'];
+                              if (!stats || (stats.avg_short_term_rating === undefined && stats.avg_long_term_rating === undefined)) {
+                                return <span className="text-xs text-gray-400">N/A</span>;
+                              }
+
+                              const renderStars = (rating) => {
+                                const fullStars = Math.floor(rating);
+                                const hasHalfStar = rating % 1 >= 0.5;
+                                const emptyStars = Math.max(0, 5 - fullStars - (hasHalfStar ? 1 : 0));
+                                return (
+                                  <div className="flex gap-0.5">
+                                    {[...Array(fullStars)].map((_, i) => <FaStar key={`f${i}`} className="text-yellow-400 text-[8px]" />)}
+                                    {hasHalfStar && <FaStarHalfAlt className="text-yellow-400 text-[8px]" />}
+                                    {[...Array(emptyStars)].map((_, i) => <FaRegStar key={`e${i}`} className="text-gray-300 text-[8px]" />)}
+                                  </div>
+                                );
+                              };
+
+                              return (
+                                <div className="flex flex-col items-center justify-center gap-1">
+                                  {stats.avg_short_term_rating !== undefined && (
+                                    <div className="flex items-center gap-1 whitespace-nowrap">
+                                      <span className="text-[8px] font-semibold text-gray-600">ST:</span>
+                                      {renderStars(stats.avg_short_term_rating)}
+                                    </div>
+                                  )}
+                                  {stats.avg_long_term_rating !== undefined && (
+                                    <div className="flex items-center gap-1 whitespace-nowrap">
+                                      <span className="text-[8px] font-semibold text-gray-600">LT:</span>
+                                      {renderStars(stats.avg_long_term_rating)}
                                     </div>
                                   )}
                                 </div>
@@ -1335,14 +1395,16 @@ export default function CoinsPage() {
                               const taData = coin?.TA_data;
 
                               // Debug logging
-                              if (index === 0) {
-                                console.log('Coin TA_data:', taData);
+                              {
+                                const mcm = taData?.mcm_signal || coin.mcm_signal;
+                                const rec = taData?.recommendation;
+                                console.log(`[${coin.symbol}] MCM Signal:`, mcm, '| Recommendation:', rec);
                               }
 
                               if (taData && taData.total_counts) {
                                 return (
                                   <div className="w-full flex items-center justify-center">
-                                    <SimpleTAGauge taData={taData} />
+                                    <SimpleTAGauge taData={taData} signal={taData.mcm_signal || coin.mcm_signal} />
                                   </div>
                                 );
                               }
@@ -1354,10 +1416,21 @@ export default function CoinsPage() {
                           {/* MCM Signal Column */}
                           <td className="px-2 py-3 text-center">
                             {(() => {
-                              // Generate consistent signal based on coin index for demo
-                              const signals = ['BUY', 'SELL', 'NEUTRAL'];
-                              const signal = signals[index % 3];
-                              const colorClass = signal === 'BUY' ? 'text-green-600' : signal === 'SELL' ? 'text-red-600' : 'text-gray-600';
+                              // Get signal from coin data
+                              const dummySignals = ["Strong Buy", "Buy", "Neutral", "Sell", "Strong Sell"];
+                              const signal = (coin.mcm_signal && coin.mcm_signal !== 'N/A')
+                                ? coin.mcm_signal
+                                : dummySignals[(coin.symbol.length + index) % dummySignals.length];
+
+                              let colorClass = 'text-gray-600';
+                              if (signal && signal !== 'N/A') {
+                                const sigLower = signal.toLowerCase();
+                                if (sigLower.includes('bullish') || sigLower.includes('buy')) {
+                                  colorClass = 'text-green-600';
+                                } else if (sigLower.includes('bearish') || sigLower.includes('sell')) {
+                                  colorClass = 'text-red-600';
+                                }
+                              }
 
                               return (
                                 <div className="flex items-center justify-center">
