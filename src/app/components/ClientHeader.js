@@ -3,27 +3,44 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef, Suspense } from "react";
-import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar, FaChartPie, FaNewspaper, FaSitemap } from "react-icons/fa";
+import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar, FaChartPie, FaNewspaper, FaSitemap, FaChevronDown } from "react-icons/fa";
 import { useTimezone } from "../contexts/TimezoneContext";
 import { useSelectedCoin } from "../contexts/SelectedCoinContext";
 
 const navLinks = [
-  { name: "Landing Page", href: "/home", icon: FaGlobe },
   { name: "Home", href: "/landing-page", icon: FaHome },
-  // { name: "Top 10", href: "/influencer-search", icon: FaDrum },
-  { name: "Latest Posts", href: "/influencer-search", icon: FaBullhorn },
-  { name: "Trending Coins", href: "/coins", icon: FaCoins },
-  { name: "All Coins", href: "/coins-list", icon: FaCoins },
-  { name: "Influencer's Stats", href: "/influencerssearch", icon: FaChartBar },
+  {
+    name: "Trending",
+    icon: FaChartLine,
+    subLinks: [
+      { name: "Trending Coins", href: "/coins", icon: FaCoins },
+      { name: "Latest Posts", href: "/influencer-search", icon: FaBullhorn },
+      { name: "Top News", href: "/top-news", icon: FaNewspaper },
+    ]
+  },
+  {
+    name: "Coins",
+    icon: FaCoins,
+    subLinks: [
+      { name: "All Coins", href: "/coins-list", icon: FaCoins },
+      { name: "Coin Info", href: "/market-overview", icon: FaChartPie },
+    ]
+  },
+  {
+    name: "Influencer",
+    icon: FaChartBar,
+    subLinks: [
+      { name: "Influencer Stats", href: "/influencerssearch", icon: FaChartBar },
+    ]
+  },
   { name: "Favorites", href: "/favorites", icon: FaStar },
-  { name: "Market Overview", href: "/market-overview", icon: FaChartPie },
-  { name: "Top News", href: "/top-news", icon: FaNewspaper },
-  { name: "Post Spread", href: "/tree", icon: FaSitemap },
-  // { name: "MCM Signal", href: "/mcm-final", icon: FaChartLine },
-  // { name: "Backups", href: "/influencer-search/backup", icon: FaHistory },
-  // { name: "Plans", href: "/plans", icon: FaTrophy },
-  // { name: "Blog", href: "/blog", icon: FaBlog },
-  // { name: "Site Map", href: "/about", icon: FaInfoCircle },
+  {
+    name: "Under Development",
+    icon: FaHistory,
+    subLinks: [
+      { name: "Post Spread", href: "/tree", icon: FaSitemap },
+    ]
+  },
 ];
 
 function AuthButtons() {
@@ -154,75 +171,79 @@ export default function ClientHeader() {
         </Link>
 
         {/* Navigation */}
-        <nav className="hidden md:flex flex-col gap-2 flex-1 justify-center">
-          {(() => {
-            const processedLinks = navLinks.map(link => {
-              if (link.name === "All Coins" && selectedSymbol) {
-                return { ...link, name: `All Coins (${selectedSymbol})` };
-              }
-              return link;
-            }).filter(link => {
-              // Hide "Landing Page" (/home) when user is logged in
-              if (link.href === "/home" && isLoggedIn) {
-                return false;
-              }
-              return true;
-            });
+        <nav className="hidden md:flex flex-1 justify-center gap-8">
+          {navLinks.map((link) => {
+            // Adjust Home href based on login status
+            const actualHref = link.name === "Home"
+              ? (isLoggedIn ? "/landing-page" : "/home")
+              : link.href;
 
-            // Split links into two rows: first 5 in top row, rest in bottom row
-            const topRowLinks = processedLinks.slice(0, 4);
-            const bottomRowLinks = processedLinks.slice(4);
-
-            const renderLink = (link) => {
-              // Special case for Leaderboard: make it active for influencer detail pages and /posts
-              const isLeaderboardActive = link.href === "/influencer-search" &&
-                (pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/") || pathname === "/posts");
-
-              // Special case for All Coins: make it active for /coins-list and coin detail pages
-              const isAllCoinsActive = link.href === "/coins-list" &&
-                pathname.startsWith("/coins-list");
-
-              // Special case for Trending Coins: only active for exact /coins path, not /coins-list
-              const isTrendingCoinsActive = link.href === "/coins" &&
-                pathname === "/coins";
-
-              const isActive = pathname === link.href ||
-                (link.href !== "/home" && link.href !== "/coins" && pathname.startsWith(link.href)) ||
-                isLeaderboardActive ||
-                isAllCoinsActive ||
-                isTrendingCoinsActive;
-              const IconComponent = link.icon;
+            if (link.subLinks) {
+              const isAnySubActive = link.subLinks.some(sub => {
+                if (sub.href === "/coins") return pathname === "/coins";
+                if (sub.href === "/coins-list") return pathname.startsWith("/coins-list");
+                if (sub.href === "/influencer-search") {
+                  return pathname === "/influencer-search" || pathname === "/posts" || pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/");
+                }
+                return pathname === sub.href || (sub.href !== "/" && pathname.startsWith(sub.href));
+              });
 
               return (
-                <Link
-                  key={link.name}
-                  href={link.href}
-                  className={`flex items-center gap-2 text-sm font-medium transition ${isActive
-                    ? 'text-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
-                    }`}
-                >
-                  <IconComponent className="text-base" />
-                  {link.name}
-                </Link>
-              );
-            };
+                <div key={link.name} className="relative group flex items-center">
+                  <button
+                    className={`flex items-center gap-2 text-sm font-medium transition py-2 ${isAnySubActive ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
+                      }`}
+                  >
+                    <link.icon className="text-base" />
+                    {link.name}
+                    <FaChevronDown className="text-[10px] ml-1 transition-transform group-hover:rotate-180" />
+                  </button>
 
-            return (
-              <>
-                {/* Top row - max 5 links */}
-                <div className="flex gap-8 justify-center">
-                  {topRowLinks.map(renderLink)}
-                </div>
-                {/* Bottom row - remaining links */}
-                {bottomRowLinks.length > 0 && (
-                  <div className="flex gap-8 justify-center">
-                    {bottomRowLinks.map(renderLink)}
+                  <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-50">
+                    <div className="w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden">
+                      {link.subLinks.map((sub) => {
+                        const isSubActive = sub.href === "/coins" ? pathname === "/coins" :
+                          sub.href === "/coins-list" ? pathname.startsWith("/coins-list") :
+                            sub.href === "/influencer-search" ? (pathname === "/influencer-search" || pathname === "/posts" || pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/")) :
+                              pathname === sub.href;
+
+                        return (
+                          <Link
+                            key={sub.name}
+                            href={sub.href}
+                            className={`flex items-center gap-3 px-4 py-2.5 text-sm transition ${isSubActive
+                              ? 'bg-blue-50 text-blue-600'
+                              : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
+                              }`}
+                          >
+                            <sub.icon className="text-base" />
+                            <span>
+                              {sub.name === "All Coins" && selectedSymbol
+                                ? `All Coins (${selectedSymbol})`
+                                : sub.name}
+                            </span>
+                          </Link>
+                        );
+                      })}
+                    </div>
                   </div>
-                )}
-              </>
+                </div>
+              );
+            }
+
+            const isActive = pathname === actualHref;
+            return (
+              <Link
+                key={link.name}
+                href={actualHref}
+                className={`flex items-center gap-2 text-sm font-medium transition py-2 ${isActive ? 'text-blue-600' : 'text-gray-700 hover:text-blue-600'
+                  }`}
+              >
+                <link.icon className="text-base" />
+                {link.name}
+              </Link>
             );
-          })()}
+          })}
         </nav>
 
         {/* Auth Buttons */}

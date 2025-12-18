@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET(request, { params }) {
   try {
-    const { page } = params;
+    const { page } = await params;
     const url = new URL(request.url);
     const channelID = url.searchParams.get('channelID');
     const limit = url.searchParams.get('limit') || '100';
