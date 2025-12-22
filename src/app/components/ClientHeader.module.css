@@ -1,0 +1,10 @@
+.gradientIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gradientIcon svg {
+  fill: url(#iconGradient);
+  color: url(#iconGradient);
+}

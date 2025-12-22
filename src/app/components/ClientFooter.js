@@ -413,27 +413,27 @@ export default function ClientFooter() {
 
   return (
     <>
-      <footer className="w-full bg-white border-t border-gray-200 mt-12 py-8 px-4">
+      <footer className="w-full bg-gradient-to-r from-white via-indigo-50/50 to-fuchsia-50/50 border-t border-indigo-200/30 mt-12 py-8 px-4 shadow-inner shadow-indigo-500/5">
         <div className="mx-auto flex flex-col md:flex-row items-center md:items-start justify-between gap-8">
           {/* Links - Only show when user is not logged in */}
           {!isLoggedIn && (
             <div className="flex flex-wrap gap-4 text-sm text-gray-700 mb-4 md:mb-0">
-              <a href="/about" className="hover:text-purple-400 transition">
+              <a href="/about" className="hover:text-indigo-600 transition font-medium">
                 About
               </a>
-              <a href="/terms" className="hover:text-purple-400 transition">
+              <a href="/terms" className="hover:text-indigo-600 transition font-medium">
                 Terms
               </a>
-              {/* <a href="/privacy" className="hover:text-purple-400 transition">
+              {/* <a href="/privacy" className="hover:text-indigo-600 transition font-medium">
                 Privacy
               </a>
-              <button onClick={handleContactClick} className="hover:text-purple-400 transition">
+              <button onClick={handleContactClick} className="hover:text-indigo-600 transition font-medium">
                 Contact
               </button> */}
-              {/* <a href="/blog" className="hover:text-purple-400 transition">
+              {/* <a href="/blog" className="hover:text-indigo-600 transition font-medium">
                 Blog
               </a> */}
-              <a href="/sitemap" className="hover:text-purple-400 transition">
+              <a href="/sitemap" className="hover:text-indigo-600 transition font-medium">
                 Sitemap
               </a>
             </div>
@@ -447,15 +447,15 @@ export default function ClientFooter() {
       {/* Contact Modal */}
       {showContactModal && (
         <div className="fixed inset-0 bg-transparent flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-purple-200 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10">
-              <h2 className="text-xl font-bold text-black">Contact Support</h2>
+          <div className="bg-white rounded-2xl shadow-2xl shadow-indigo-500/10 w-full max-w-md max-h-[90vh] overflow-y-auto border border-indigo-200/50">
+            <div className="sticky top-0 bg-gradient-to-r from-cyan-500 via-indigo-600 to-fuchsia-600 px-6 py-4 flex items-center justify-between rounded-t-2xl z-10 shadow-md">
+              <h2 className="text-xl font-bold text-white drop-shadow-md">Contact Support</h2>
               <button
                 onClick={() => {
                   setShowContactModal(false);
                   setContactForm({ userEmail: '', whatsappNumber: '', alternateEmail: '', message: '' });
                 }}
-                className="text-black hover:text-black transition text-xl"
+                className="text-white hover:text-white/80 transition text-xl font-bold"
               >
                 ✕
               </button>
@@ -585,7 +585,7 @@ export default function ClientFooter() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white hover:scale-105 transition shadow-lg text-sm"
+                  className="flex-1 px-4 py-2 rounded-lg font-semibold bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 hover:from-cyan-700 hover:via-indigo-700 hover:to-fuchsia-700 text-white hover:scale-105 transition shadow-lg shadow-indigo-500/30 text-sm"
                 >
                   Send
                 </button>

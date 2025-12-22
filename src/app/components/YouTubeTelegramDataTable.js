@@ -547,12 +547,12 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
         };
 
         return (
-            <div className="bg-white rounded-2xl overflow-hidden shadow-2xl">
-                <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4">
-                    <h3 className="text-xl font-bold text-white text-center mb-1 flex items-center justify-center gap-2">
+            <div className="bg-gradient-to-br from-white/80 via-indigo-50/80 to-fuchsia-50/80 backdrop-blur-md rounded-3xl overflow-hidden shadow-2xl shadow-indigo-500/10 border-2 border-white/40">
+                <div className="bg-gradient-to-r from-cyan-500 via-indigo-600 to-fuchsia-600 p-4">
+                    <h3 className="text-xl font-bold text-white text-center mb-1 flex items-center justify-center gap-2 drop-shadow-md">
                         {title}
                         {hasAnyPriceAlert && (
-                            <div className="w-6 h-6 rounded-full flex items-center justify-center shadow-lg bg-green-500 animate-pulse">
+                            <div className="w-6 h-6 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/50 bg-emerald-500 animate-pulse ring-2 ring-white/30">
                                 <FaBell className="text-white text-[15px]" />
                             </div>
                         )}
@@ -680,7 +680,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         {timeframe === '6hrs' && isNewCoin(coin) && (
                                                             <div className="absolute -top-2 -left-8 group/newcoin z-[9999]">
                                                                 <div className="relative inline-flex items-center justify-center h-6 w-6">
-                                                                    <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
+                                                                    <FaCertificate className="text-indigo-600 w-full h-full drop-shadow-md" />
                                                                     <span className="absolute text-[11px] font-bold text-white uppercase tracking-tighter">M</span>
                                                                 </div>
                                                                 <div className="invisible group-hover/newcoin:visible absolute top-full left-0 mt-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[9999]">
@@ -711,7 +711,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         {/* Bell icon for coins exceeding price change threshold - positioned outside coin at top-right */}
                                                         {showPriceAlert && (
                                                             <div className="absolute -top-2 -right-8 group/bell cursor-pointer z-[9999]">
-                                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-lg ${binance24hrChange > 0 ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}>
+                                                                <div className={`w-6 h-6 rounded-full flex items-center justify-center shadow-lg ring-2 ring-white/30 ${binance24hrChange > 0 ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-red-500 shadow-red-500/50'} animate-pulse`}>
                                                                     <FaBell className="text-white text-[15px]" />
                                                                 </div>
                                                                 {/* Tooltip on hover - positioned below the bell */}
@@ -1270,7 +1270,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                     <div className="flex justify-center items-center mb-2">
                         <button
                             onClick={() => toggleExpanded(timeframe)}
-                            className="bg-gradient-to-r from-blue-500 to-purple-500 p-4 text-white font-semibold text-sm cursor-pointer rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all"
+                            className="bg-gradient-to-r from-cyan-500 via-indigo-600 to-fuchsia-600 hover:from-cyan-600 hover:via-indigo-700 hover:to-fuchsia-700 p-4 text-white font-semibold text-sm cursor-pointer rounded-lg transition-all shadow-md shadow-indigo-500/30"
                         >
                             {isExpanded ? "Show Less" : "Read More"}
                         </button>
@@ -1282,11 +1282,11 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
     if (loading) {
         return (
-            <div className="bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen flex items-center justify-center">
+            <div className="bg-gradient-to-br from-cyan-50 via-indigo-50 to-fuchsia-50 min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent mx-auto mb-4"></div>
                     <div className="text-gray-900 text-lg font-semibold mb-2">Loading Data Table...</div>
-                    <div className="text-purple-600 text-sm">Fetching YouTube & Telegram analytics</div>
+                    <div className="bg-gradient-to-r from-cyan-600 to-fuchsia-600 bg-clip-text text-transparent text-sm font-medium">Fetching YouTube & Telegram analytics</div>
                 </div>
             </div>
         );
@@ -1378,14 +1378,14 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
 
             {/* Filters Section - Compact Single Line */}
             <div className="w-full mt-2 flex justify-start">
-                <div className="bg-white rounded-2xl overflow-hidden shadow-2xl px-6 py-4 inline-flex items-center gap-6">
+                <div className="bg-gradient-to-br from-white/80 via-indigo-50/60 to-fuchsia-50/60 backdrop-blur-sm rounded-2xl overflow-hidden shadow-lg shadow-indigo-500/10 border border-white/50 px-6 py-4 inline-flex items-center gap-6">
                     {/* Channel Dropdown */}
                     <div className="flex items-center gap-3">
                         <label className="text-lg text-black font-semibold">Channel:</label>
                         <select
                             value={selectedPlatform}
                             onChange={(e) => setSelectedPlatform(e.target.value)}
-                            className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
+                            className="bg-white border-2 border-indigo-300/50 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-w-[150px] shadow-sm"
                         >
                             {platformOptions.map((option) => (
                                 <option key={option.key} value={option.key} className="bg-white text-black">
@@ -1401,7 +1401,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                         <select
                             value={selectedCoinType}
                             onChange={(e) => setSelectedCoinType(e.target.value)}
-                            className="bg-white border border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
+                            className="bg-white border-2 border-indigo-300/50 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-w-[150px] shadow-sm"
                         >
                             {coinTypeOptions.map((option) => (
                                 <option key={option.key} value={option.key} className="bg-white text-black">

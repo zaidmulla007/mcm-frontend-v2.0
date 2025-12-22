@@ -891,12 +891,12 @@ const TestimonialsCarousel = ({ testimonials }) => {
   // Generate placeholder profile images with different colors
   const getProfileColor = (index) => {
     const colors = [
-      'from-purple-400 to-purple-600',
-      'from-blue-400 to-blue-600',
-      'from-green-400 to-green-600',
-      'from-pink-400 to-pink-600',
-      'from-indigo-400 to-indigo-600',
-      'from-orange-400 to-orange-600'
+      'from-cyan-400 to-indigo-600',
+      'from-fuchsia-400 to-pink-600',
+      'from-emerald-400 to-cyan-600',
+      'from-rose-400 to-fuchsia-600',
+      'from-amber-400 to-orange-600',
+      'from-violet-400 to-purple-600'
     ];
     return colors[index % colors.length];
   };
@@ -951,8 +951,8 @@ const TestimonialsCarousel = ({ testimonials }) => {
               >
                 {/* Dark Themed Card matching homepage colors */}
                 <div className={`rounded-3xl p-4 sm:p-6 shadow-xl border transition-all duration-500 h-full flex flex-col ${isFocused
-                  ? 'bg-gradient-to-br from-[#2d2555] to-[#1f1b35] shadow-[0_12px_40px_rgb(139,92,246,0.3)] border-purple-400/30'
-                  : 'bg-gradient-to-br from-[#1a1731] to-[#0f0c1d] shadow-[0_8px_30px_rgb(0,0,0,0.3)] border-purple-500/10'
+                  ? 'bg-gradient-to-br from-slate-800 via-indigo-900 to-fuchsia-900 backdrop-blur-xl shadow-2xl shadow-indigo-500/30 border-indigo-400/40'
+                  : 'bg-gradient-to-br from-slate-700/50 via-indigo-800/50 to-cyan-800/50 backdrop-blur-md shadow-lg shadow-slate-900/30 border-slate-600/20'
                   }`}>
                   {/* Profile Image - Circular with Gradient */}
                   <motion.div
@@ -966,8 +966,8 @@ const TestimonialsCarousel = ({ testimonials }) => {
                       ease: "easeInOut"
                     }}
                   >
-                    <div className={`w-full h-full rounded-full bg-gradient-to-br ${getProfileColor(card.index)} flex items-center justify-center shadow-lg`}>
-                      <span className={`font-bold text-gray-900 ${isFocused ? 'text-xl sm:text-2xl' : 'text-base sm:text-lg'}`}>
+                    <div className={`w-full h-full rounded-full bg-gradient-to-br ${getProfileColor(card.index)} flex items-center justify-center shadow-lg ring-4 ${isFocused ? 'ring-white/30' : 'ring-white/10'}`}>
+                      <span className={`font-bold text-white ${isFocused ? 'text-xl sm:text-2xl' : 'text-base sm:text-lg'}`}>
                         {testimonial.author.charAt(0)}
                       </span>
                     </div>
@@ -976,8 +976,8 @@ const TestimonialsCarousel = ({ testimonials }) => {
                   {/* Testimonial Quote */}
                   <div className="text-center mb-4 flex-grow">
                     <p className={`leading-relaxed font-medium italic ${isFocused
-                      ? 'text-gray-100 text-base sm:text-lg'
-                      : 'text-gray-700 text-sm sm:text-base'
+                      ? 'text-white text-base sm:text-lg drop-shadow-sm'
+                      : 'text-gray-300 text-sm sm:text-base'
                       }`}>
                       &ldquo;{testimonial.quote}&rdquo;
                     </p>
@@ -986,15 +986,15 @@ const TestimonialsCarousel = ({ testimonials }) => {
                   {/* Author Info */}
                   <div className="text-center mt-auto">
                     <div className={`font-bold mb-1 ${isFocused
-                      ? 'text-purple-600 text-base sm:text-lg'
-                      : 'text-purple-500/70 text-sm sm:text-base'
+                      ? 'bg-gradient-to-r from-cyan-400 to-fuchsia-400 bg-clip-text text-transparent text-base sm:text-lg'
+                      : 'text-cyan-300/70 text-sm sm:text-base'
                       }`}>
                       {testimonial.author}
                     </div>
                     {testimonial.title && (
                       <div className={`text-xs sm:text-sm font-medium ${isFocused
-                        ? 'text-gray-600'
-                        : 'text-gray-500'
+                        ? 'text-gray-300'
+                        : 'text-gray-400'
                         }`}>
                         {testimonial.title}
                       </div>
@@ -1018,16 +1018,16 @@ const ProfessionalTrendingTable = ({ title, data, isLocked = false }) => {
   const [isRegistered, setIsRegistered] = useState(false);
 
   return (
-    <div className="relative bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10 overflow-hidden">
-      <div className="px-6 py-4 border-b border-white/10">
-        <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+    <div className="relative bg-gradient-to-br from-white/60 via-indigo-50/60 to-fuchsia-50/60 backdrop-blur-md rounded-3xl border-2 border-white/40 overflow-hidden shadow-2xl shadow-indigo-500/10">
+      <div className="px-6 py-4 border-b border-indigo-200/30 bg-gradient-to-r from-cyan-50/50 to-fuchsia-50/50">
+        <h3 className="text-xl font-semibold bg-gradient-to-r from-indigo-700 to-fuchsia-700 bg-clip-text text-transparent">{title}</h3>
       </div>
 
       {isLocked && !isRegistered && (
-        <div className="absolute inset-0 bg-white/95 backdrop-blur-lg rounded-2xl flex flex-col items-center justify-center z-20 p-6">
+        <div className="absolute inset-0 bg-white/95 backdrop-blur-lg rounded-3xl flex flex-col items-center justify-center z-20 p-6">
           <div className="text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-full flex items-center justify-center mb-4 mx-auto">
-              <svg className="w-10 h-10 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
+            <div className="w-20 h-20 bg-gradient-to-br from-cyan-500/20 via-indigo-500/20 to-fuchsia-500/20 rounded-full flex items-center justify-center mb-4 mx-auto ring-4 ring-indigo-200/50">
+              <svg className="w-10 h-10 text-indigo-600" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z" />
               </svg>
             </div>
@@ -1035,23 +1035,23 @@ const ProfessionalTrendingTable = ({ title, data, isLocked = false }) => {
             <p className="text-gray-700 text-base mb-6 max-w-sm mx-auto">
               Get access to detailed influencer performance data, ROI tracking across multiple time periods, and actionable investment recommendations.
             </p>
-            <div className="bg-white/5 rounded-lg p-4 mb-6 border border-purple-200">
-              <div className="text-purple-600 text-sm font-semibold mb-2">What you&apos;ll unlock:</div>
+            <div className="bg-gradient-to-br from-indigo-50 to-fuchsia-50 rounded-lg p-4 mb-6 border border-indigo-200/50">
+              <div className="text-indigo-700 text-sm font-semibold mb-2">What you&apos;ll unlock:</div>
               <ul className="text-gray-700 text-sm space-y-1 text-left">
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                   Real-time ROI tracking (24h, 7d, 30d, 60d+)
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                   Credibility scores & win rates
                 </li>
                 <li className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-4 h-4 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                   Buy/sell/hold recommendations
@@ -1060,7 +1060,7 @@ const ProfessionalTrendingTable = ({ title, data, isLocked = false }) => {
             </div>
             <Link href="/login">
               <motion.button
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 px-8 py-3 rounded-xl font-bold text-gray-900 shadow-lg transition-all duration-200 w-full"
+                className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 hover:from-cyan-700 hover:via-indigo-700 hover:to-fuchsia-700 px-8 py-3 rounded-xl font-bold text-white shadow-lg shadow-indigo-500/30 transition-all duration-200 w-full"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
               >
@@ -1073,7 +1073,7 @@ const ProfessionalTrendingTable = ({ title, data, isLocked = false }) => {
 
       <div className="overflow-hidden">
         <table className="w-full">
-          <thead className="bg-white/5">
+          <thead className="bg-gradient-to-r from-white/50 to-indigo-50/50 backdrop-blur-sm">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Asset</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Analyst</th>
@@ -1082,15 +1082,15 @@ const ProfessionalTrendingTable = ({ title, data, isLocked = false }) => {
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-700 uppercase tracking-wider">Signal</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="divide-y divide-indigo-100/30">
             {data.map((item, index) => (
-              <tr key={index} className="hover:bg-white/5 transition-colors duration-200">
+              <tr key={index} className="hover:bg-white/40 transition-colors duration-200">
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-lg font-bold text-gray-900">{item.coin}</div>
+                  <div className="text-lg font-bold bg-gradient-to-r from-indigo-700 to-fuchsia-700 bg-clip-text text-transparent">{item.coin}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-full flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gradient-to-br from-cyan-500/20 to-fuchsia-500/20 rounded-full flex items-center justify-center ring-2 ring-indigo-200/50">
                       <Image src={item.influencer.avatar} alt={item.influencer.name} width={20} height={20} className="rounded-full" />
                     </div>
                     <div>
@@ -1100,7 +1100,7 @@ const ProfessionalTrendingTable = ({ title, data, isLocked = false }) => {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-purple-600/20 to-blue-600/20 text-purple-600 border border-blue-200">
+                  <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r from-indigo-600/20 to-fuchsia-600/20 text-indigo-700 border border-indigo-300/50">
                     {item.influencer.mcmScore || item.influencer.score}
                   </div>
                 </td>
@@ -1125,9 +1125,9 @@ const ProfessionalTrendingTable = ({ title, data, isLocked = false }) => {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${item.recommendation === 'STRONG BUY' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' :
-                    item.recommendation === 'BUY' ? 'bg-blue-500/20 text-blue-600 border border-blue-500/30' :
-                      'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${item.recommendation === 'STRONG BUY' ? 'bg-emerald-500/20 text-emerald-600 border border-emerald-500/30' :
+                    item.recommendation === 'BUY' ? 'bg-cyan-500/20 text-cyan-700 border border-cyan-500/30' :
+                      'bg-amber-500/20 text-amber-600 border border-amber-500/30'
                     }`}>
                     {item.recommendation}
                   </span>
@@ -1326,7 +1326,13 @@ function LandingPageContent() {
   }, [isPaused, isDragging, scrollingData]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 text-gray-900 font-sans pb-16 overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-indigo-50 to-fuchsia-50 text-gray-900 font-sans pb-16 overflow-x-hidden relative">
+      {/* Animated Background Orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-fuchsia-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-gradient-to-br from-cyan-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
 
       {/* What's Trending - YouTube and Telegram Tables */}
       <section id="trending" className="mx-auto px-4 pt-0 pb-6 relative z-10">
@@ -1342,13 +1348,13 @@ function LandingPageContent() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-2">
             {/* Left: What's Trending Title */}
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold">
-                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <h2 className="text-4xl md:text-5xl font-bold drop-shadow-sm">
+                <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
                   Trending Coin&apos;s
                 </span>
               </h2>
               <div className="flex items-center gap-4 mt-5 mb-3">
-                <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex-shrink-0"></div>
+                <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 rounded-full flex-shrink-0 shadow-lg shadow-indigo-500/50"></div>
                 <div className="flex items-center gap-3">
                   {/* <p className="text-xs text-gray-600 font-medium whitespace-nowrap">Update every 2 hrs</p> */}
                   {/* <p className="text-xs text-gray-700 font-medium whitespace-nowrap">
@@ -1373,13 +1379,13 @@ function LandingPageContent() {
                 )}
                 <button
                   onClick={() => toggleTimezone()}
-                  className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-lg ${useLocalTime ? 'bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 shadow-indigo-500/50' : 'bg-gray-300'
                     }`}
                   role="switch"
                   aria-checked={useLocalTime}
                 >
                   <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
+                    className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${useLocalTime ? 'translate-x-5 shadow-indigo-300' : 'translate-x-0.5'
                       }`}
                   />
                 </button>
@@ -1422,7 +1428,7 @@ function LandingPageContent() {
         {/* Influencer News Scroller Container */}
         <div
           ref={scrollContainerRef}
-          className="relative h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-2xl border border-blue-200 overflow-hidden shadow-2xl mb-4"
+          className="relative h-24 bg-gradient-to-r from-cyan-100/80 via-indigo-100/80 to-fuchsia-100/80 backdrop-blur-sm rounded-3xl border-2 border-white/40 overflow-hidden shadow-2xl shadow-indigo-500/20 mb-4"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
           onWheel={handleWheel}
@@ -1449,11 +1455,11 @@ function LandingPageContent() {
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-8 h-8 rounded-full flex-shrink-0"
+                      className="w-8 h-8 rounded-full flex-shrink-0 ring-2 ring-white/50 shadow-md"
                     />
                   )}
                   <div className="flex flex-col flex-1 min-w-0">
-                    <span className="text-purple-600 font-bold text-xs uppercase truncate">
+                    <span className="bg-gradient-to-r from-indigo-600 to-fuchsia-600 bg-clip-text text-transparent font-bold text-xs uppercase truncate">
                       {item.symbol}
                     </span>
                     <span className="text-gray-600 text-xs capitalize truncate">
@@ -1466,7 +1472,7 @@ function LandingPageContent() {
                     </span>
                     <span className={`text-xs font-semibold whitespace-nowrap ${typeof item.priceChange24h === 'number'
                       ? item.priceChange24h >= 0
-                        ? 'text-green-600'
+                        ? 'text-emerald-600'
                         : 'text-red-600'
                       : 'text-gray-500'
                       }`}>
@@ -1480,8 +1486,8 @@ function LandingPageContent() {
             </motion.div>
           </div>
 
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-blue-100 to-transparent pointer-events-none"></div>
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-purple-100 to-transparent pointer-events-none"></div>
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-cyan-100/80 to-transparent pointer-events-none"></div>
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-fuchsia-100/80 to-transparent pointer-events-none"></div>
         </div>
 
         {/* Display Purpose Text */}
@@ -1928,9 +1934,9 @@ function LandingPageContent() {
 // Wrapper component with Suspense boundary
 export default function Home() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 flex items-center justify-center">
+    <Suspense fallback={<div className="min-h-screen bg-gradient-to-br from-cyan-50 via-indigo-50 to-fuchsia-50 flex items-center justify-center">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
         <p className="mt-4 text-gray-600">Loading...</p>
       </div>
     </div>}>

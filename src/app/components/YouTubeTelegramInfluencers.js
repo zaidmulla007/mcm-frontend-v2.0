@@ -407,11 +407,11 @@ export default function YouTubeTelegramInfluencers() {
 
     if (loading) {
         return (
-            <div className="bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50 min-h-screen flex items-center justify-center">
+            <div className="bg-gradient-to-br from-cyan-50 via-indigo-50 to-fuchsia-50 min-h-screen flex items-center justify-center">
                 <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-purple-600 border-t-transparent mx-auto mb-4"></div>
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-indigo-600 border-t-transparent mx-auto mb-4"></div>
                     <div className="text-gray-900 text-lg font-semibold mb-2">Loading Latest Posts...</div>
-                    <div className="text-purple-600 text-sm">Fetching YouTube & Telegram data</div>
+                    <div className="bg-gradient-to-r from-cyan-600 to-fuchsia-600 bg-clip-text text-transparent text-sm font-medium">Fetching YouTube & Telegram data</div>
                 </div>
             </div>
         );
@@ -423,12 +423,12 @@ export default function YouTubeTelegramInfluencers() {
                 <div className="mt-2">
                     <div className="flex justify-between items-start">
                         <div>
-                            <h2 className="text-4xl md:text-5xl font-bold">
-                                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            <h2 className="text-4xl md:text-5xl font-bold drop-shadow-sm">
+                                <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
                                     Latest Post&apos;s
                                 </span>
                             </h2>
-                            <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full mt-5"></div>
+                            <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 rounded-full mt-5 shadow-lg shadow-indigo-500/50"></div>
                         </div>
 
                         {/* Right: Timezone Switch */}
@@ -466,14 +466,14 @@ export default function YouTubeTelegramInfluencers() {
 
                 {/* Platform Selection */}
                 <div className="flex justify-start mb-8">
-                    <div className="jsx-816192472cbeba0e bg-white rounded-xl p-3">
+                    <div className="jsx-816192472cbeba0e bg-gradient-to-br from-white/80 via-indigo-50/60 to-fuchsia-50/60 backdrop-blur-sm rounded-2xl p-3 shadow-lg shadow-indigo-500/10 border border-white/50">
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-3">
                                 <label className="text-lg text-black font-semibold">Platform:</label>
                                 <select
                                     value={selectedPlatform}
                                     onChange={(e) => setSelectedPlatform(e.target.value)}
-                                    className="jsx-816192472cbeba0e bg-white border-2 border-gray-300 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-gray-400 min-w-[150px]"
+                                    className="jsx-816192472cbeba0e bg-white border-2 border-indigo-300/50 rounded-lg px-4 py-2 text-black focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent min-w-[150px] shadow-sm"
                                 >
                                     <option value="Combined" className="bg-white text-black">Combined</option>
                                     <option value="YouTube" className="bg-white text-black">YouTube</option>
@@ -482,7 +482,7 @@ export default function YouTubeTelegramInfluencers() {
                             </div>
 
                             {selectedCoin && (
-                                <div className="flex items-center gap-2 bg-blue-100 border border-blue-300 rounded-lg px-3 py-1.5">
+                                <div className="flex items-center gap-2 bg-gradient-to-r from-cyan-100 to-indigo-100 border border-indigo-300/50 rounded-lg px-3 py-1.5 shadow-sm">
                                     <span className="text-sm text-black font-medium">
                                         {selectedCoin.symbol}
                                     </span>
@@ -527,12 +527,12 @@ export default function YouTubeTelegramInfluencers() {
                             {getDisplayData().map((post, index) => (
                                 <div
                                     key={post.id}
-                                    className="w-80 flex-shrink-0 bg-white rounded-xl overflow-hidden"
+                                    className="w-80 flex-shrink-0 bg-gradient-to-br from-white/90 via-indigo-50/50 to-fuchsia-50/50 backdrop-blur-sm rounded-2xl overflow-hidden shadow-xl shadow-indigo-500/5 border border-white/60"
                                 >
                                     {/* Post Header with Platform Icon in Top Right */}
-                                    <div className="border-b border-gray-700">
+                                    <div className="border-b border-indigo-200/30">
                                         <div
-                                            className="bg-gradient-to-r from-blue-500 to-purple-500 text-white p-3 text-center text-sm font-medium flex justify-between items-center"
+                                            className="bg-gradient-to-r from-cyan-500 via-indigo-600 to-fuchsia-600 text-white p-3 text-center text-sm font-medium flex justify-between items-center shadow-md"
                                         >
                                             <span>POST {index + 1}</span>
                                             <div className="flex items-center">
