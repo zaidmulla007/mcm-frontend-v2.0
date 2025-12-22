@@ -1416,17 +1416,25 @@ export default function InfluencerSearchPage() {
   const paginatedInfluencers = displayInfluencers.slice(startIndex, endIndex);
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 font-sans mt-5">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-indigo-50 to-fuchsia-50 text-gray-900 font-sans mt-5 overflow-x-hidden relative">
+      {/* Animated Background Orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-fuchsia-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-gradient-to-br from-cyan-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
+
       {/* Main Content */}
-      <main className="mx-auto px-4 pb-8 overflow-x-hidden">
+      <main className="mx-auto px-4 pb-8 overflow-x-hidden relative z-10">
         <div className="min-w-0">
           {/* Leaderboard Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            {/* Header with centered title */}
-            <div className="flex justify-center items-center px-2 py-1.5 border-b border-gray-200 bg-gray-50">
-              <h1 className="text-lg font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+          <div className="bg-gradient-to-br from-white/80 via-indigo-50/60 to-fuchsia-50/60 backdrop-blur-md rounded-3xl shadow-2xl shadow-indigo-500/10 border-2 border-white/40">
+            {/* Header with left-aligned title */}
+            <div className="flex flex-col items-start px-4 py-4 border-b border-indigo-200/30 bg-gradient-to-r from-cyan-50/50 to-fuchsia-50/50 backdrop-blur-sm">
+              <h1 className="text-3xl md:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 drop-shadow-sm">
                 Last 3 Days Posts
               </h1>
+              <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 rounded-full mt-3 shadow-lg shadow-indigo-500/50"></div>
             </div>
 
 
@@ -1434,15 +1442,15 @@ export default function InfluencerSearchPage() {
               <table className="w-full relative">
                 <thead>
                   {/* Main header row */}
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900  tracking-wider border-r border-gray-300 w-36">
+                  <tr className="bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 border-b border-white/20">
+                    <th className="px-1 py-1 text-center text-[10px] font-bold text-white tracking-wider border-r border-white/20 w-36">
                       Influencer
                     </th>
-                    <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 tracking-wider border-r border-gray-300 w-36">
+                    <th className="px-1 py-1 text-center text-[10px] font-bold text-white tracking-wider border-r border-white/20 w-36">
                       MCM Rating{" "}
                       <span className="relative group cursor-pointer z-[9999]">
-                        <span className="text-blue-600 text-sm">ⓘ</span>
-                        <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl text-left w-52 z-[9999]">
+                        <span className="text-cyan-200 text-sm">ⓘ</span>
+                        <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl text-left w-52 z-[9999] border border-cyan-400/30">
                           Timeframes represent how an influencer’s calls performed over different periods.<br />
                           We check the price when the call was made,<br />
                           compare it after each timeframe,<br />
@@ -1450,21 +1458,21 @@ export default function InfluencerSearchPage() {
                         </span>
                       </span>
                     </th>
-                    {/* <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-gray-300 w-36">
+                    {/* <th className="px-1 py-1 text-center text-[10px] font-medium text-black-900 uppercase tracking-wider border-r border-white/20 w-36">
                       Date
                     </th> */}
-                    <th className="px-1 py-1 text-[10px] font-medium text-black-900 tracking-wider relative">
+                    <th className="px-1 py-1 text-[10px] font-bold text-white tracking-wider relative">
                       <div className="flex items-center justify-between w-full">
                         {/* Timezone Switch on Left */}
                         <div className="flex items-center gap-2">
                           {!useLocalTime && (
-                            <span className="text-[9px] font-medium text-black-700">
+                            <span className="text-[9px] font-medium text-white">
                               UTC
                             </span>
                           )}
                           <button
                             onClick={() => toggleTimezone()}
-                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-300 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500' : 'bg-white/30'
                               }`}
                             role="switch"
                             aria-checked={useLocalTime}
@@ -1475,14 +1483,14 @@ export default function InfluencerSearchPage() {
                             />
                           </button>
                           {useLocalTime && (
-                            <span className="text-[9px] font-medium text-black-700">
+                            <span className="text-[9px] font-medium text-white">
                               {userCity || 'Local'}
                             </span>
                           )}
                         </div>
                         {/* Info centered */}
                         <div className="flex items-center justify-center gap-1 flex-1">
-                          <span className="font-bold">Info</span>
+                          <span className="font-bold text-white">Info</span>
                         </div>
                         {/* Empty space for balance */}
                         <div className="w-16"></div>
@@ -1490,15 +1498,15 @@ export default function InfluencerSearchPage() {
                     </th>
                   </tr>
                   {/* Sub-header row with Filters and Recommendations columns */}
-                  <tr className="bg-gray-100 border-b border-gray-300">
+                  <tr className="bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 border-b-2 border-white/20">
                     {/* Influencer Filter */}
-                    <th className="px-1 py-0.5 border-r border-gray-300">
+                    <th className="px-1 py-0.5 border-r border-white/20">
                       <div className="flex justify-center gap-2">
                         <button
                           onClick={() => setSelectedPlatform("youtube")}
-                          className={`flex items-center justify-center px-3 py-1 rounded-full transition-all ${selectedPlatform === "youtube"
-                            ? "bg-red-500 text-white shadow-md"
-                            : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                          className={`flex items-center justify-center px-3 py-1 rounded-full transition-all duration-200 ${selectedPlatform === "youtube"
+                            ? "bg-gradient-to-r from-red-500 to-red-600 text-white shadow-lg shadow-red-500/30"
+                            : "bg-white/80 text-gray-600 hover:bg-white border border-indigo-200/50"
                             }`}
                           title="YouTube"
                         >
@@ -1506,9 +1514,9 @@ export default function InfluencerSearchPage() {
                         </button>
                         <button
                           onClick={() => setSelectedPlatform("telegram")}
-                          className={`flex items-center justify-center px-3 py-1 rounded-full transition-all ${selectedPlatform === "telegram"
-                            ? "bg-blue-500 text-white shadow-md"
-                            : "bg-gray-200 text-gray-600 hover:bg-gray-300"
+                          className={`flex items-center justify-center px-3 py-1 rounded-full transition-all duration-200 ${selectedPlatform === "telegram"
+                            ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30"
+                            : "bg-white/80 text-gray-600 hover:bg-white border border-indigo-200/50"
                             }`}
                           title="Telegram"
                         >
@@ -1517,7 +1525,7 @@ export default function InfluencerSearchPage() {
                       </div>
                     </th>
                     {/* Timeframe Filter */}
-                    <th className="px-1 py-0.5 border-r border-gray-300">
+                    <th className="px-1 py-0.5 border-r border-white/20">
                       {/* <div className="flex justify-center">
                         <select
                           value={selectedTimeframe}
@@ -1533,7 +1541,7 @@ export default function InfluencerSearchPage() {
                       </div> */}
                     </th>
                     {/* Date and Time Column with Timezone Toggle */}
-                    {/* <th className="px-1 py-0.5 border-r border-gray-300">
+                    {/* <th className="px-1 py-0.5 border-r border-white/20">
                       <div className="flex justify-center">
                         <select
                           value={selectedDateFilter}
@@ -1562,34 +1570,34 @@ export default function InfluencerSearchPage() {
 
                     <th className="px-0.5 py-0.5">
                       <div className="flex items-center justify-start gap-1 px-0.5 w-full">
-                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-center flex flex-col  gap-1">
+                        <div className="w-[10%] text-[10px] font-bold text-white text-center flex flex-col  gap-1">
                           Date & Time
                         </div>
-                        <div className="w-[6%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[6%] text-[10px] font-bold text-white text-left">
                           Coin&apos;s
                         </div>
-                        <div className="w-[8%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[8%] text-[10px] font-bold text-white text-left">
                           <div className="flex flex-col items-start gap-0.5">
                             <span>Sentiment</span>
                             <div className="flex items-center justify-start gap-1">
                               <span>ST/LT</span>
                               <span className="relative group cursor-pointer z-[9999]">
-                                <span className="text-blue-600 text-sm">ⓘ</span>
-                                <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                <span className="text-cyan-200 text-sm">ⓘ</span>
+                                <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[9999] border border-cyan-400/30">
                                   ST : Short Term<br />LT : Long Term
                                 </span>
                               </span>
                             </div>
                           </div>
                         </div>
-                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[10%] text-[10px] font-bold text-white text-left">
                           <div className="flex flex-col items-start">
                             <span>Base</span>
                             <div className="flex items-center gap-1">
                               <span>Price</span>
                               <span className="relative group cursor-pointer z-[9999]">
-                                <span className="text-blue-600 text-sm">ⓘ</span>
-                                <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                <span className="text-cyan-200 text-sm">ⓘ</span>
+                                <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[9999] border border-cyan-400/30">
                                   Price at the time when post was published
                                 </span>
                               </span>
@@ -1608,7 +1616,7 @@ export default function InfluencerSearchPage() {
                             </span>
                           </span>
                         </div> */}
-                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[10%] text-[10px] font-bold text-white text-left">
                           <div className="flex flex-col items-start">
 
                             {/* Title */}
@@ -1618,15 +1626,15 @@ export default function InfluencerSearchPage() {
                             <div className="flex items-center gap-1">
 
                               {/* Price */}
-                              <span className="text-[10px] font-bold text-black-900">
+                              <span className="text-[10px] font-bold text-white">
                                 Price
                               </span>
 
                               {/* Info Icon */}
                               <span className="relative group cursor-pointer z-[9999]">
-                                <span className="text-blue-600 text-sm">ⓘ</span>
+                                <span className="text-cyan-200 text-sm">ⓘ</span>
 
-                                <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[9999] border border-cyan-400/30">
                                   Source: Binance & CoinGeko<br />
                                   N/A : Not Available
                                 </span>
@@ -1637,7 +1645,7 @@ export default function InfluencerSearchPage() {
                           </div>
                         </div>
 
-                        <div className="w-[10%] text-[10px] font-bold text-black-900 text-left">
+                        <div className="w-[10%] text-[10px] font-bold text-white text-left">
                           <div className="flex flex-col items-start">
 
                             {/* Title */}
@@ -1647,15 +1655,15 @@ export default function InfluencerSearchPage() {
                             <div className="flex items-center gap-1">
 
                               {/* Price (same size as 24 Hours) */}
-                              <span className="text-[10px] font-bold text-black-900">
+                              <span className="text-[10px] font-bold text-white">
                                 Change
                               </span>
 
                               {/* Info Icon + Tooltip */}
                               <span className="relative group cursor-pointer z-[9999]">
-                                <span className="text-blue-600 text-sm">ⓘ</span>
+                                <span className="text-cyan-200 text-sm">ⓘ</span>
 
-                                <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[9999] border border-cyan-400/30">
                                   % Price Change from Base Price <br />
                                   N/A : Not Available
                                 </span>
@@ -1667,19 +1675,19 @@ export default function InfluencerSearchPage() {
                         </div>
 
 
-                        <div className="flex flex-col items-center w-[50%] text-black-900 text-center leading-tight">
+                        <div className="flex flex-col items-center w-[50%] text-white text-center leading-tight">
                           {/* Row with text + AI badge */}
                           <div className="flex items-center">
                             <span className="text-[10px] font-bold mr-1">
                               Consolidated Analysis of All Posts
                             </span>
                             {/* AI Badge */}
-                            <div className="text-[10px] rounded-2xl font-bold tracking-wide bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+                            <div className="text-[10px] rounded-2xl font-bold tracking-wide bg-gradient-to-r from-cyan-400 to-fuchsia-400 bg-clip-text text-transparent">
                               Ai
                             </div>
                           </div>
                           {/* Subtitle */}
-                          <span className="text-[8px] font-normal text-left text-black-600 mt-[1px]">
+                          <span className="text-[8px] font-normal text-white/90 mt-[1px]">
                             Click to View Post
                           </span>
 
@@ -1689,12 +1697,12 @@ export default function InfluencerSearchPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200 relative" style={{ isolation: 'isolate' }}>
+                <tbody className="bg-gradient-to-br from-white/80 via-indigo-50/40 to-fuchsia-50/40 backdrop-blur-sm divide-y divide-indigo-200/30 relative" style={{ isolation: 'isolate' }}>
                   {initialLoad || (selectedPlatform === "youtube" && youtubeInfluencers.length === 0) || (selectedPlatform === "telegram" && telegramInfluencers.length === 0) ? (
                     Array.from({ length: 10 }).map((_, i) => (
                       <tr key={`skeleton-row-${i}`}>
                         {/* Influencer column skeleton */}
-                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-200">
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-indigo-200/30">
                           <div className="flex items-center mb-1">
                             <div className="w-8 h-8 bg-gray-200 rounded-full mr-2"></div>
                             <div className="h-4 bg-gray-200 rounded w-32"></div>
@@ -1702,11 +1710,11 @@ export default function InfluencerSearchPage() {
                           <div className="ml-10 h-12 bg-gray-200 rounded w-40"></div>
                         </td>
                         {/* MCM Ranking column skeleton */}
-                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-200">
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-indigo-200/30">
                           <div className="h-32 bg-gray-200 rounded w-full"></div>
                         </td>
                         {/* Date column skeleton */}
-                        <td className="px-1 py-2 whitespace-nowrap border-r border-gray-200">
+                        <td className="px-1 py-2 whitespace-nowrap border-r border-indigo-200/30">
                           <div className="h-12 bg-gray-200 rounded w-full"></div>
                         </td>
                         {/* Recommendations skeleton */}
@@ -1794,11 +1802,11 @@ export default function InfluencerSearchPage() {
                               opacity: { duration: 0.5 },
                               x: { duration: 0.5 }
                             }}
-                            className="group hover:bg-gray-50"
+                            className="group hover:bg-gradient-to-r hover:from-indigo-50/60 hover:via-purple-50/50 hover:to-fuchsia-50/60 transition-all duration-300 hover:shadow-lg hover:shadow-indigo-200/50 hover:scale-[1.01] hover:z-10"
                             style={{ position: 'relative', zIndex: 1 }}
                           >
                             {/* Influencer Column */}
-                            <td className="px-1 py-1 border-r border-gray-200">
+                            <td className="px-1 py-1 border-r border-indigo-200/30 group-hover:bg-white/50 transition-all duration-300">
                               <Link
                                 href={
                                   selectedPlatform === "youtube"
@@ -1860,7 +1868,7 @@ export default function InfluencerSearchPage() {
                             </td>
 
                             {/* MCM Ranking Column - Vertical Star Ratings for 2024 & 2025 */}
-                            <td className="px-2 py-1 border-r border-gray-200">
+                            <td className="px-2 py-1 border-r border-indigo-200/30">
                               <div className="flex justify-start items-start gap-4">
                                 {/* 2024 Column */}
                                 <div className="flex flex-col items-center">
@@ -1933,7 +1941,7 @@ export default function InfluencerSearchPage() {
                             </td>
 
                             {/* Date and Time Column */}
-                            {/* <td className="px-1 py-1 border-r border-gray-200">
+                            {/* <td className="px-1 py-1 border-r border-indigo-200/30 group-hover:bg-white/50 transition-all duration-300">
                               <div className="flex flex-col items-center gap-1">
                                 {recommendations.length > 0 ? (
                                   <>
@@ -2033,7 +2041,7 @@ export default function InfluencerSearchPage() {
                                             {/* Date and Time - only show for first coin with merged cell effect */}
                                             {isFirstCoin ? (
                                               <div
-                                                className="flex flex-col items-center justify-center gap-1 w-[10%] px-1 border-r border-gray-200 bg-white group-hover:bg-gray-50"
+                                                className="flex flex-col items-center justify-center gap-1 w-[10%] px-1 border-r border-indigo-200/30 bg-gradient-to-br from-white/80 via-indigo-50/60 to-fuchsia-50/60 group-hover:bg-indigo-50/40"
                                                 style={{
                                                   position: 'absolute',
                                                   left: 0,
@@ -2349,7 +2357,7 @@ export default function InfluencerSearchPage() {
                                             {/* Summary/Title Column - only show for first coin with merged cell effect */}
                                             {isFirstCoin ? (
                                               <div
-                                                className="w-[50%] flex items-start justify-center border-l border-gray-200 px-2 bg-white group-hover:bg-gray-50"
+                                                className="w-[50%] flex items-start justify-center border-l border-gray-200 px-2 bg-gradient-to-br from-white/80 via-indigo-50/60 to-fuchsia-50/60 group-hover:bg-indigo-50/40"
                                                 style={{
                                                   position: (visibleCoins.length === 1 && isSummaryExpanded) ? 'relative' : 'absolute',
                                                   right: (visibleCoins.length === 1 && isSummaryExpanded) ? 'auto' : 0,

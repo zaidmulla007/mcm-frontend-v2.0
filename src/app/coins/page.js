@@ -410,13 +410,20 @@ export default function CoinsPage() {
   }, [top10Coins]);
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 font-sans mt-5 overflow-x-hidden">
-      <main className="mx-auto px-4 pb-8 max-w-full overflow-x-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-indigo-50 to-fuchsia-50 text-gray-900 font-sans mt-5 overflow-x-hidden relative">
+      {/* Animated Background Orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-fuchsia-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-gradient-to-br from-cyan-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <main className="mx-auto px-4 pb-8 max-w-full overflow-x-hidden relative z-10">
         <div className="min-w-0 overflow-x-hidden">
           {/* Leaderboard Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+          <div className="bg-gradient-to-br from-white/80 via-indigo-50/60 to-fuchsia-50/60 backdrop-blur-md rounded-3xl shadow-2xl shadow-indigo-500/10 border-2 border-white/40">
             {/* View Mode Toggle Buttons */}
-            <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
+            <div className="px-4 py-3 border-b border-indigo-200/30 bg-gradient-to-r from-cyan-50/50 to-fuchsia-50/50 backdrop-blur-sm">
               {/* View Mode Buttons in Center */}
               {/* <div className="flex justify-center items-center gap-3">
                 <button
@@ -441,8 +448,8 @@ export default function CoinsPage() {
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-2">
                 {/* Left: Header Title */}
                 <div>
-                  <h2 className="text-4xl md:text-5xl font-bold flex items-center gap-3">
-                    <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <h2 className="text-4xl md:text-5xl font-bold flex items-center gap-3 drop-shadow-sm">
+                    <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
                       Trending Coin&apos;s
                     </span>
                     {top10Coins.some(coin => hasPriceAlert(coin)) && (
@@ -451,7 +458,7 @@ export default function CoinsPage() {
                       </div>
                     )}
                   </h2>
-                  <div className="w-24 h-1 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex-shrink-0 mt-5"></div>
+                  <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 rounded-full flex-shrink-0 mt-5 shadow-lg shadow-indigo-500/50"></div>
                 </div>
 
                 {/* Right: Timezone Switch */}
@@ -464,13 +471,13 @@ export default function CoinsPage() {
                     )}
                     <button
                       onClick={() => toggleTimezone()}
-                      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 ${useLocalTime ? 'bg-gradient-to-r from-purple-600 to-blue-600' : 'bg-gray-300'
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-lg ${useLocalTime ? 'bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 shadow-indigo-500/50' : 'bg-gray-300'
                         }`}
                       role="switch"
                       aria-checked={useLocalTime}
                     >
                       <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-lg transition-transform ${useLocalTime ? 'translate-x-4' : 'translate-x-0.5'
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${useLocalTime ? 'translate-x-5 shadow-indigo-300' : 'translate-x-0.5'
                           }`}
                       />
                     </button>
@@ -500,27 +507,27 @@ export default function CoinsPage() {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setSelectedSummaryTimeframe("6hrs")}
-                      className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${selectedSummaryTimeframe === "6hrs"
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all duration-200 ${selectedSummaryTimeframe === "6hrs"
+                        ? 'bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-500/30'
+                        : 'bg-white/80 text-gray-700 hover:bg-white border border-indigo-200/50'
                         }`}
                     >
                       6 Hours
                     </button>
                     <button
                       onClick={() => setSelectedSummaryTimeframe("24hrs")}
-                      className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${selectedSummaryTimeframe === "24hrs"
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all duration-200 ${selectedSummaryTimeframe === "24hrs"
+                        ? 'bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-500/30'
+                        : 'bg-white/80 text-gray-700 hover:bg-white border border-indigo-200/50'
                         }`}
                     >
                       24 Hours
                     </button>
                     <button
                       onClick={() => setSelectedSummaryTimeframe("7days")}
-                      className={`px-3 py-1 text-xs font-semibold rounded-lg transition-all ${selectedSummaryTimeframe === "7days"
-                        ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all duration-200 ${selectedSummaryTimeframe === "7days"
+                        ? 'bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-500/30'
+                        : 'bg-white/80 text-gray-700 hover:bg-white border border-indigo-200/50'
                         }`}
                     >
                       7 Days
@@ -550,29 +557,29 @@ export default function CoinsPage() {
             </div> */}
 
             {/* Table */}
-            <div className="w-full overflow-hidden">
-              <table className="w-full table-fixed">
+            <div className="w-full overflow-hidden rounded-b-3xl">
+              <table className="w-full table-fixed border-separate border-spacing-0">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-200">
+                  <tr className="bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500">
                     {/* Row 1, Col 1: Coins (Rowspan 2) */}
-                    <th rowSpan="2" className="px-1 py-1 text-center text-[10px] font-bold text-gray-800 tracking-wider align-middle w-[8%] border-r border-gray-200">
+                    <th rowSpan="2" className="px-3 py-3 text-center text-[11px] font-bold text-white tracking-wide align-middle w-[8%] border-r border-white/20">
                       Coins
                     </th>
 
                     {/* Row 1, Col 2: Group Header for Influencers (Colspan 6) */}
-                    <th colSpan="6" className="px-1 py-1 text-center text-[11px] font-bold text-gray-900 tracking-wider align-middle border-b border-gray-200 border-r border-gray-200 bg-gray-100">
+                    <th colSpan="6" className="px-3 py-3 text-center text-[13px] font-extrabold text-white tracking-wide align-middle border-b border-white/30 border-r border-white/20">
                       Social Media Sentiment
                     </th>
 
                     {/* Row 1, Col 3: Fundamental Score (Rowspan 2) */}
-                    <th rowSpan="2" className="px-1 py-1 text-center text-[10px] font-bold text-gray-800 tracking-wider align-middle w-[8%] border-r border-gray-200">
-                      <div className="flex flex-col items-center">
-                        <span>Fundamental</span>
-                        <div className="flex items-center gap-1">
-                          <span>Score</span>
+                    <th rowSpan="2" className="px-2 py-3 text-center text-[10px] font-bold text-white tracking-wide align-middle w-[8%] border-r border-white/20">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="leading-tight">Fundamental</span>
+                        <div className="flex items-center gap-0.5">
+                          <span className="leading-tight">Score</span>
                           <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                            <span className="text-cyan-200 text-[11px]">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-3 rounded-xl shadow-2xl whitespace-nowrap z-[9999] border border-cyan-400/30">
                               Score (1-10) based <br /> on deep fundamental analysis
                             </span>
                           </span>
@@ -581,15 +588,15 @@ export default function CoinsPage() {
                     </th>
 
                     {/* Row 1, Col 4: Technical Analysis (Rowspan 2) */}
-                    <th rowSpan="2" className="px-1 py-1 text-center text-[10px] font-bold text-gray-800 tracking-wider align-middle w-[10%] border-r border-gray-200">
-                      <div className="flex flex-col items-center justify-center">
-                        <span>Technical</span>
+                    <th rowSpan="2" className="px-2 py-3 text-center text-[10px] font-bold text-white tracking-wide align-middle w-[10%] border-r border-white/20">
+                      <div className="flex flex-col items-center justify-center gap-0.5">
+                        <span className="leading-tight">Technical</span>
                         <div className="flex items-center gap-0.5">
-                          <span>Analysis</span>
+                          <span className="leading-tight">Analysis</span>
                           <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-3 rounded-lg shadow-xl z-[99999] text-left w-72 whitespace-normal">
-                              We calculate Based on Moving Averages and oscillators indicators
+                            <span className="text-cyan-200 text-[11px]">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl z-[99999] text-left w-64 whitespace-normal border border-indigo-400/20">
+                              Based on Moving Averages and oscillators indicators
                             </span>
                           </span>
                         </div>
@@ -597,14 +604,14 @@ export default function CoinsPage() {
                     </th>
 
                     {/* Row 1, Col 5: MCM Signal (Rowspan 2) */}
-                    <th rowSpan="2" className="px-1 py-1 text-center text-[10px] font-bold text-gray-800 tracking-wider align-middle w-[7%] border-r border-gray-200">
-                      <div className="flex flex-col items-center">
-                        <span>MCM</span>
+                    <th rowSpan="2" className="px-2 py-3 text-center text-[10px] font-bold text-white tracking-wide align-middle w-[7%] border-r border-white/20">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="leading-tight">MCM</span>
                         <div className="flex items-center gap-0.5">
-                          <span>Signal</span>
+                          <span className="leading-tight">Signal</span>
                           <span className="relative group cursor-pointer">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                            <span className="text-cyan-200 text-[11px]">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
                               MCM proprietary signal indicator
                             </span>
                           </span>
@@ -613,12 +620,12 @@ export default function CoinsPage() {
                     </th>
 
                     {/* Row 1, Col 6: Live Price (Rowspan 2) */}
-                    <th rowSpan="2" className="px-1 py-1 text-center text-[10px] font-bold text-gray-800 tracking-wider align-middle w-[9%] border-r border-gray-200">
-                      <div className="flex items-center justify-center gap-1">
-                        <span>Live Price</span>
+                    <th rowSpan="2" className="px-2 py-3 text-center text-[10px] font-bold text-white tracking-wide align-middle w-[9%] border-r border-white/20">
+                      <div className="flex items-center justify-center gap-0.5">
+                        <span className="leading-tight">Live Price</span>
                         <span className="relative group cursor-pointer">
-                          <span className="text-blue-600 text-sm">ⓘ</span>
-                          <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                          <span className="text-cyan-200 text-[11px]">ⓘ</span>
+                          <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
                             Real-time price from Binance
                           </span>
                         </span>
@@ -626,14 +633,15 @@ export default function CoinsPage() {
                     </th>
 
                     {/* Row 1, Col 7: MCM Knowledge Center (Rowspan 2) */}
-                    <th rowSpan="2" className="px-1 py-1 text-center text-[10px] font-bold text-gray-800 tracking-wider align-middle w-[7%]">
-                      <div className="flex flex-col items-center">
-                        <span>MCM Knowledge</span>
-                        <div className="flex items-center gap-1">
-                          <span>Center</span>
+                    <th rowSpan="2" className="px-2 py-3 text-center text-[10px] font-bold text-white tracking-wide align-middle w-[7%]">
+                      <div className="flex flex-col items-center gap-0.5">
+                        <span className="leading-tight">MCM</span>
+                        <span className="leading-tight">Knowledge</span>
+                        <div className="flex items-center gap-0.5">
+                          <span className="leading-tight">Center</span>
                           <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-blue-600 text-sm">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                            <span className="text-cyan-200 text-[11px]">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
                               Click to view market overview
                             </span>
                           </span>
@@ -643,55 +651,55 @@ export default function CoinsPage() {
                   </tr>
 
                   {/* Row 2: Sub-columns for Influencers Group */}
-                  <tr className="bg-gray-50 border-b border-gray-200">
-                    <th className="px-1 py-1 text-center text-[9px] font-semibold text-gray-700 tracking-tight align-middle w-[6%] border-r border-gray-200">
-                      <div className="flex flex-col items-center">
+                  <tr className="bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 border-b-2 border-white/20">
+                    <th className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300 text-[10px] font-semibold text-white tracking-tight align-middle w-[6%] border-r border-white/20">
+                      <div className="flex flex-col items-center leading-tight">
                         <span>All</span>
                         <span>Influencers</span>
                       </div>
                     </th>
-                    <th className="px-1 py-1 text-center text-[9px] font-semibold text-gray-700 tracking-tight align-middle w-[13%] border-r border-gray-200">
-                      <div>
-                        All Ratings{" "}
-                        <span className="whitespace-nowrap">
-                          Influencers
-                          <span className="relative group cursor-pointer z-[9999] inline-block ml-0.5">
-                            <span className="text-blue-600 text-[10px]">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                    <th className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300 text-[10px] font-semibold text-white tracking-tight align-middle w-[13%] border-r border-white/20">
+                      <div className="leading-tight">
+                        <div>All Ratings</div>
+                        <div className="flex items-center justify-center gap-0.5">
+                          <span>Influencers</span>
+                          <span className="relative group cursor-pointer z-[9999]">
+                            <span className="text-cyan-200 text-[11px]">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
                               ST : Short Term<br />
                               LT : Long Term<br />
                               NA : Not Available
                             </span>
                           </span>
-                        </span>
+                        </div>
                       </div>
                     </th>
-                    <th className="px-1 py-1 text-center text-[9px] font-semibold text-gray-700 tracking-tight align-middle w-[5%] border-r border-gray-200">
-                      <div className="flex items-center justify-center gap-0.5">
+                    <th className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300 text-[10px] font-semibold text-white tracking-tight align-middle w-[5%] border-r border-white/20">
+                      <div className="flex items-center justify-center gap-0.5 leading-tight">
                         <span>Avg Rating</span>
                         <span className="relative group cursor-pointer z-[9999]">
-                          <span className="text-blue-600 text-[10px]">ⓘ</span>
-                          <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                          <span className="text-cyan-200 text-[11px]">ⓘ</span>
+                          <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
                             Short Term : 30 Days Overall Rating<br />
                             Long Term : 180 Days Overall Rating
                           </span>
                         </span>
                       </div>
                     </th>
-                    <th className="px-1 py-1 text-center text-[9px] font-semibold text-gray-700 tracking-tight align-middle w-[6%] border-r border-gray-200">
-                      <div className="flex flex-col items-center">
+                    <th className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300 text-[10px] font-semibold text-white tracking-tight align-middle w-[6%] border-r border-white/20">
+                      <div className="flex flex-col items-center leading-tight">
                         <span>Only 3 Star &</span>
                         <span>Above Influencers</span>
                       </div>
                     </th>
-                    <th className="px-1 py-1 text-center text-[9px] font-semibold text-gray-700 tracking-tight align-middle w-[10%] border-r border-gray-200">
-                      <div className="flex flex-col items-center">
+                    <th className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300 text-[10px] font-semibold text-white tracking-tight align-middle w-[10%] border-r border-white/20">
+                      <div className="flex flex-col items-center leading-tight">
                         <span>Top Rated</span>
                         <div className="flex items-center gap-0.5">
                           <span>Influencers</span>
                           <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-blue-600 text-[10px]">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                            <span className="text-cyan-200 text-[11px]">ⓘ</span>
+                            <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
                               Only 3 Star & Above Influencers<br />
                               Short Term : 30 Days Overall Rating<br />
                               Long Term : 180 Days Overall Rating
@@ -700,12 +708,12 @@ export default function CoinsPage() {
                         </div>
                       </div>
                     </th>
-                    <th className="px-1 py-1 text-center text-[9px] font-semibold text-gray-700 tracking-tight align-middle w-[5%] border-r border-gray-200">
-                      <div className="flex items-center justify-center gap-0.5">
+                    <th className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300 text-[10px] font-semibold text-white tracking-tight align-middle w-[5%] border-r border-white/20">
+                      <div className="flex items-center justify-center gap-0.5 leading-tight">
                         <span>Avg Rating</span>
                         <span className="relative group cursor-pointer z-[9999]">
-                          <span className="text-blue-600 text-[10px]">ⓘ</span>
-                          <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[99999]">
+                          <span className="text-cyan-200 text-[11px]">ⓘ</span>
+                          <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
                             Only 3 Star & Above Influencers<br />
                             Short Term : 30 Days Overall Rating<br />
                             Long Term : 180 Days Overall Rating
@@ -715,24 +723,24 @@ export default function CoinsPage() {
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-gradient-to-br from-white/80 via-indigo-50/40 to-fuchsia-50/40 backdrop-blur-sm divide-y divide-indigo-200/30">
                   {loading ? (
                     <tr>
                       <td colSpan="9" className="px-6 py-12 text-center">
                         <div className="flex justify-center items-center">
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-600 border-t-4 border-t-cyan-500"></div>
                         </div>
                       </td>
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan="9" className="px-6 py-12 text-center text-red-600">
+                      <td colSpan="9" className="px-6 py-12 text-center text-red-600 font-semibold">
                         {error}
                       </td>
                     </tr>
                   ) : top10Coins.length === 0 ? (
                     <tr>
-                      <td colSpan="9" className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan="9" className="px-6 py-12 text-center text-gray-500 font-medium">
                         No coins data available for this timeframe
                       </td>
                     </tr>
@@ -755,16 +763,16 @@ export default function CoinsPage() {
                       const alertReason = getAlertReason(coin);
 
                       return (
-                        <tr key={`${coin.symbol}-${index}`} className="hover:bg-gray-50">
+                        <tr key={`${coin.symbol}-${index}`} className="group hover:bg-gradient-to-r hover:from-indigo-50/60 hover:via-purple-50/50 hover:to-fuchsia-50/60 transition-all duration-300 hover:shadow-lg hover:shadow-indigo-200/50 hover:scale-[1.01] hover:z-10 border-b border-indigo-100/30 relative">
                           {/* Coin - Image and Name only */}
-                          <td className="px-0.5 py-1">
+                          <td className="px-2 py-3 group-hover:bg-white/50 transition-all duration-300">
                             <div className="flex flex-col items-center gap-1">
                               {coin.image_small && (
                                 <div className="relative group">
                                   <img
                                     src={coin.image_small}
                                     alt={coin.symbol}
-                                    className="w-8 h-8 rounded-full cursor-pointer hover:opacity-80 transition-opacity"
+                                    className="w-8 h-8 rounded-full cursor-pointer hover:opacity-80 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-indigo-300/50 hover:rotate-6"
                                     onClick={() => router.push(`/coins-list/${coin.source_id}`)}
                                   />
                                   {/* MCM Badge - top left outside of coin image */}
@@ -819,7 +827,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* Posts Column - Total posts + YouTube/Telegram channels */}
-                          <td className="px-0.5 py-1 text-center">
+                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
                             <div className="flex flex-col gap-0.5 items-center">
                               {/* Total Posts */}
                               <div
@@ -880,7 +888,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* Sentiment - Segmented Bar Ladder Style */}
-                          <td className="px-0.5 py-1 text-center">
+                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
                             {(() => {
                               // Calculate sentiment data for Short Term and Long Term
                               const shortTermBullish = coin.yt_tg_bullish_short_term_percent || 0;
@@ -987,7 +995,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* Avg Rating Column (All Influencers) */}
-                          <td className="px-0.5 py-1 text-center">
+                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
                             {(() => {
                               const renderStars = (rating) => {
                                 const fullStars = Math.floor(rating);
@@ -1025,7 +1033,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* 3★ & Above Influencers Column */}
-                          <td className="px-0.5 py-1 text-center">
+                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
                             {(() => {
                               const stats = coin['3star_inf_stats'];
                               const ytInf = coin['3star_yt_inf'] || [];
@@ -1090,7 +1098,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* Top Social Media Influencers Column - Using 3star_inf_stats data */}
-                          <td className="px-0.5 py-1 text-center">
+                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
                             {(() => {
                               // Get 3star_inf_stats data from coin
                               const stats = coin['3star_inf_stats'];
@@ -1190,7 +1198,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* Avg Rating Column (3★ & Above) */}
-                          <td className="px-0.5 py-1 text-center">
+                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
                             {(() => {
                               const stats = coin['3star_inf_stats'];
                               if (!stats || (stats.avg_short_term_rating === undefined && stats.avg_long_term_rating === undefined)) {
@@ -1333,7 +1341,7 @@ export default function CoinsPage() {
                           </td> */}
 
                           {/* Fundamental Score Column */}
-                          <td className="px-2 py-3 text-center">
+                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
                             {(() => {
                               // Pick up fundamental_score from ai_summary for the selected timeframe
                               let fundamentalScore;
@@ -1389,7 +1397,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* TA (Technical Analysis) Column */}
-                          <td className="px-2 py-3 text-center">
+                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
                             {(() => {
                               // Get TA data from coin object
                               const taData = coin?.TA_data;
@@ -1414,7 +1422,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* MCM Signal Column */}
-                          <td className="px-2 py-3 text-center">
+                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
                             {(() => {
                               // Get signal from coin data
                               const dummySignals = ["Strong Buy", "Buy", "Neutral", "Sell", "Strong Sell"];
@@ -1443,7 +1451,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* Live Price Column */}
-                          <td className="px-2 py-3 text-center">
+                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
                             {currentPrice !== 'N/A' ? (
                               (() => {
                                 const num = Number(currentPrice);
@@ -1475,7 +1483,7 @@ export default function CoinsPage() {
                           </td>
 
                           {/* MCM Knowledge Center Column */}
-                          <td className="px-2 py-3 text-center">
+                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 onClick={() => router.push('/market-overview')}
