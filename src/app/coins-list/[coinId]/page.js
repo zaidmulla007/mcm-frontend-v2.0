@@ -157,10 +157,12 @@ function AISummaryCard({ title, data }) {
   if (!data || typeof data !== 'object') {
     return (
       <div style={{
-        background: "#fff",
-        borderRadius: 12,
+        background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))",
+        backdropFilter: "blur(12px)",
+        borderRadius: 16,
         padding: 20,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+        boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)",
+        border: "1px solid rgba(255, 255, 255, 0.6)"
       }}>
         <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15 }}>{title}</div>
         <div style={{ fontSize: 13, color: "#6b7280" }}>No summary available</div>
@@ -207,10 +209,12 @@ function AISummaryCard({ title, data }) {
 
   return (
     <div style={{
-      background: "#fff",
-      borderRadius: 12,
+      background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))",
+      backdropFilter: "blur(12px)",
+      borderRadius: 16,
       padding: 20,
-      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+      boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)",
+      border: "1px solid rgba(255, 255, 255, 0.6)",
       height: "100%"
     }}>
       <div style={{
@@ -239,10 +243,12 @@ function FundamentalAnalysisCard({ data }) {
   if (!data) {
     return (
       <div style={{
-        background: "#fff",
-        borderRadius: 12,
+        background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))",
+        backdropFilter: "blur(12px)",
+        borderRadius: 16,
         padding: 24,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+        boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)",
+        border: "1px solid rgba(255, 255, 255, 0.6)",
         marginTop: 16
       }}>
         <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 16 }}>🔍 Deep Fundamental Analysis</div>
@@ -290,10 +296,12 @@ function FundamentalAnalysisCard({ data }) {
 
   return (
     <div style={{
-      background: "#fff",
-      borderRadius: 12,
+      background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))",
+      backdropFilter: "blur(12px)",
+      borderRadius: 16,
       padding: 24,
-      boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+      boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)",
+      border: "1px solid rgba(255, 255, 255, 0.6)",
       marginTop: 16
     }}>
       <div style={{
@@ -699,209 +707,251 @@ export default function CoinDetail() {
   const priceChangeColor = binanceLive?.priceChangePercent >= 0 ? "#16a34a" : "#ef4444";
 
   return (
-    <div style={{
-      padding: "20px",
-      maxWidth: "1400px",
-      margin: "0 auto"
-    }}>
-      {/* Back Button */}
-      {/* <button
-        onClick={() => router.push('/coins-list')}
-        style={{
-          padding: "8px 16px",
-          borderRadius: 8,
-          border: "1px solid #e5e7eb",
-          background: "#fff",
-          fontWeight: 600,
-          cursor: "pointer",
-          fontSize: 14,
-          marginBottom: 20,
-          display: "flex",
-          alignItems: "center",
-          gap: 8
-        }}
-      >
-        ← Back to Coins List
-      </button> */}
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-indigo-50 to-fuchsia-50 overflow-x-hidden relative">
+      {/* Animated Background Orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-fuchsia-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-gradient-to-br from-cyan-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
 
-      {/* TOP SECTION: Left Column (Coin + Sentiment) + Right Card (Live Binance Table) */}
       <div style={{
-        display: hasUsdtPair ? "grid" : "block",
-        gridTemplateColumns: hasUsdtPair ? "400px 1fr" : undefined,
-        gap: hasUsdtPair ? 16 : 0,
-        marginBottom: 16
+        padding: "20px",
+        maxWidth: "1400px",
+        margin: "0 auto",
+        position: "relative",
+        zIndex: 10
       }}>
+        {/* Header Section */}
+        <div className="mb-8">
+          <h2 className="text-4xl md:text-5xl font-bold drop-shadow-sm mb-4">
+            <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
+              {coin.name}
+            </span>
+          </h2>
+          <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 rounded-full shadow-lg shadow-indigo-500/50"></div>
+        </div>
 
-        {/* LEFT COLUMN */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-          {/* Coin Identity Card with Price in One Row */}
-          <div style={{
-            background: "#fff",
-            borderRadius: 12,
-            padding: 20,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
-          }}>
-            <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-              {/* Logo */}
-              {coin.image_large || coin.image_small || coin.image_thumb ? (
-                <img
-                  src={coin.image_large || coin.image_small || coin.image_thumb}
-                  alt={coin.name}
-                  loading="eager"
-                  decoding="async"
+        {/* TOP SECTION: Left Column (Coin + Sentiment) + Right Card (Live Binance Table) */}
+        <div style={{
+          display: hasUsdtPair ? "grid" : "block",
+          gridTemplateColumns: hasUsdtPair ? "400px 1fr" : undefined,
+          gap: hasUsdtPair ? 16 : 0,
+          marginBottom: 16
+        }}>
+
+          {/* LEFT COLUMN */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* Coin Identity Card with Price in One Row */}
+            <div style={{
+              background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))",
+              backdropFilter: "blur(12px)",
+              borderRadius: 16,
+              padding: 20,
+              boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)",
+              border: "1px solid rgba(255, 255, 255, 0.6)"
+            }}>
+              <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+                {/* Logo */}
+                {coin.image_large || coin.image_small || coin.image_thumb ? (
+                  <img
+                    src={coin.image_large || coin.image_small || coin.image_thumb}
+                    alt={coin.name}
+                    loading="eager"
+                    decoding="async"
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      flexShrink: 0,
+                      display: "block",
+                      backgroundColor: "#f3f4f6"
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextSibling && (e.target.nextSibling.style.display = 'flex');
+                    }}
+                  />
+                ) : null}
+                <div
                   style={{
                     width: 48,
                     height: 48,
                     borderRadius: "50%",
-                    objectFit: "cover",
-                    flexShrink: 0,
-                    display: "block",
-                    backgroundColor: "#f3f4f6"
-                  }}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling && (e.target.nextSibling.style.display = 'flex');
-                  }}
-                />
-              ) : null}
-              <div
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: "50%",
-                  display: (coin.image_large || coin.image_small || coin.image_thumb) ? "none" : "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  background: "#f3f4f6",
-                  fontWeight: 700,
-                  color: "#6b7280",
-                  fontSize: 18,
-                  flexShrink: 0
-                }}
-              >
-                {(coin.symbol || "?")[0]}
-              </div>
-
-              {/* Name and Symbol */}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontSize: 16,
-                  fontWeight: 900,
-                  lineHeight: 1.2,
-                  color: "#111",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8
-                }}>
-                  {coin.name}
-                  {/* Favorite Button */}
-                  <button
-                    onClick={toggleFavorite}
-                    disabled={favoriteLoading}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      cursor: favoriteLoading ? "not-allowed" : "pointer",
-                      padding: 4,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      opacity: favoriteLoading ? 0.5 : 1,
-                      transition: "transform 0.2s ease"
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!favoriteLoading) e.currentTarget.style.transform = "scale(1.2)";
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = "scale(1)";
-                    }}
-                    title={isFavorite ? "Remove from favorites" : "Add to favorites"}
-                  >
-                    <svg
-                      width="20"
-                      height="20"
-                      viewBox="0 0 24 24"
-                      fill={isFavorite ? "#ef4444" : "none"}
-                      stroke={isFavorite ? "#ef4444" : "#6b7280"}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                  </button>
-                </div>
-                <div style={{
-                  color: "#6b7280",
-                  fontSize: 12,
-                  fontWeight: 500,
-                  marginTop: 2
-                }}>
-                  ({coin.symbol?.toUpperCase()}) #{coin.market_cap_rank ?? "—"}
-                </div>
-              </div>
-
-              {/* Price and Change in Same Row */}
-              {binanceLive && hasUsdtPair && (
-                <div style={{ textAlign: "right", flexShrink: 0 }}>
-                  <div style={{
-                    fontSize: 18,
-                    fontWeight: 900,
-                    color: "#111",
-                    lineHeight: 1.2,
-                    letterSpacing: "-0.3px"
-                  }}>
-                    {binanceLive.lastPrice
-                      ? `$${binanceLive.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                      : "—"
-                    }
-                  </div>
-                  <div style={{
-                    marginTop: 2,
-                    fontSize: 11,
+                    display: (coin.image_large || coin.image_small || coin.image_thumb) ? "none" : "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "#f3f4f6",
                     fontWeight: 700,
-                    color: priceChangeColor,
+                    color: "#6b7280",
+                    fontSize: 18,
+                    flexShrink: 0
+                  }}
+                >
+                  {(coin.symbol || "?")[0]}
+                </div>
+
+                {/* Name and Symbol */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{
+                    fontSize: 16,
+                    fontWeight: 900,
+                    lineHeight: 1.2,
+                    color: "#111",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "flex-end",
-                    gap: 3
+                    gap: 8
                   }}>
-                    <span>
-                      {binanceLive.priceChangePercent !== null && binanceLive.priceChangePercent > 0 ? "▲" : "▼"}
-                    </span>
-                    <span>
-                      {binanceLive.priceChangePercent !== null
-                        ? `${Math.abs(binanceLive.priceChangePercent).toFixed(2)}%`
-                        : "—"
-                      }
-                    </span>
+                    {coin.name}
+                    {/* Favorite Button */}
+                    <button
+                      onClick={toggleFavorite}
+                      disabled={favoriteLoading}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: favoriteLoading ? "not-allowed" : "pointer",
+                        padding: 4,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        opacity: favoriteLoading ? 0.5 : 1,
+                        transition: "transform 0.2s ease"
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!favoriteLoading) e.currentTarget.style.transform = "scale(1.2)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "scale(1)";
+                      }}
+                      title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill={isFavorite ? "#ef4444" : "none"}
+                        stroke={isFavorite ? "#ef4444" : "#6b7280"}
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                      </svg>
+                    </button>
+                  </div>
+                  <div style={{
+                    color: "#6b7280",
+                    fontSize: 12,
+                    fontWeight: 500,
+                    marginTop: 2
+                  }}>
+                    ({coin.symbol?.toUpperCase()}) #{coin.market_cap_rank ?? "—"}
                   </div>
                 </div>
-              )}
+
+                {/* Price and Change in Same Row */}
+                {binanceLive && hasUsdtPair && (
+                  <div style={{ textAlign: "right", flexShrink: 0 }}>
+                    <div style={{
+                      fontSize: 18,
+                      fontWeight: 900,
+                      color: "#111",
+                      lineHeight: 1.2,
+                      letterSpacing: "-0.3px"
+                    }}>
+                      {binanceLive.lastPrice
+                        ? `$${binanceLive.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                        : "—"
+                      }
+                    </div>
+                    <div style={{
+                      marginTop: 2,
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: priceChangeColor,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "flex-end",
+                      gap: 3
+                    }}>
+                      <span>
+                        {binanceLive.priceChangePercent !== null && binanceLive.priceChangePercent > 0 ? "▲" : "▼"}
+                      </span>
+                      <span>
+                        {binanceLive.priceChangePercent !== null
+                          ? `${Math.abs(binanceLive.priceChangePercent).toFixed(2)}%`
+                          : "—"
+                        }
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Live Price Ticker */}
+            {hasUsdtPair && (
+              <div style={{
+                background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))",
+                backdropFilter: "blur(12px)",
+                borderRadius: 16,
+                padding: 20,
+                boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)",
+                border: "1px solid rgba(255, 255, 255, 0.6)"
+              }}>
+                <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15 }}>
+                  {coin.name} Live Price Ticker
+                </div>
+                <div style={{ height: 180, overflow: "hidden" }}>
+                  <TradingViewWidget
+                    widgetType="single-quote"
+                    symbol={coin.symbol}
+                    config={{
+                      width: "100%",
+                      height: "180",
+                      colorTheme: "light",
+                      isTransparent: false,
+                      locale: "en"
+                    }}
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Live Price Ticker */}
+          {/* RIGHT CARD: Advanced Chart */}
           {hasUsdtPair && (
             <div style={{
-              background: "#fff",
-              borderRadius: 12,
+              background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))",
+              backdropFilter: "blur(12px)",
+              borderRadius: 16,
               padding: 20,
-              boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+              boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)",
+              border: "1px solid rgba(255, 255, 255, 0.6)"
             }}>
-              <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15 }}>
-                {coin.name} Live Price Ticker
+              <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15 }}>
+                {coin.name} Advanced Chart
               </div>
-              <div style={{ height: 180, overflow: "hidden" }}>
+              <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
+                Professional trading chart with technical indicators, drawing tools, and multiple timeframes for detailed price analysis
+              </p>
+              <div style={{ height: 400, overflow: "hidden" }}>
                 <TradingViewWidget
-                  widgetType="single-quote"
+                  widgetType="advanced-chart"
                   symbol={coin.symbol}
                   config={{
-                    width: "100%",
-                    height: "180",
-                    colorTheme: "light",
-                    isTransparent: false,
-                    locale: "en"
+                    autosize: true,
+                    interval: "60",
+                    timezone: "Etc/UTC",
+                    theme: "light",
+                    style: "1",
+                    locale: "en",
+                    enable_publishing: false,
+                    hide_top_toolbar: false,
+                    allow_symbol_change: true,
+                    support_host: "https://www.tradingview.com"
                   }}
                 />
               </div>
@@ -909,541 +959,516 @@ export default function CoinDetail() {
           )}
         </div>
 
-        {/* RIGHT CARD: Advanced Chart */}
-        {hasUsdtPair && (
-          <div style={{
-            background: "#fff",
-            borderRadius: 12,
-            padding: 20,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-          }}>
-            <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15 }}>
-              {coin.name} Advanced Chart
+        {/* TradingView Widgets Section - Coin Specific Only (Only if USDT pair exists) */}
+        {coin?.symbol && hasUsdtPair && (
+          <>
+            {/* 1. Technical Analysis - MOVED TO TOP */}
+            <div style={{
+              background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))",
+              backdropFilter: "blur(12px)",
+              borderRadius: 16,
+              padding: 20,
+              boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)",
+              border: "1px solid rgba(255, 255, 255, 0.6)",
+              marginBottom: 16,
+              overflow: "hidden"
+            }}>
+              <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15 }}>
+                {coin.name} Technical Analysis
+              </div>
+              <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
+                Real-time buy/sell signals based on moving averages, oscillators, and technical indicators across multiple timeframes
+              </p>
+              <div style={{ height: 400, overflow: "hidden" }}>
+                <TradingViewWidget
+                  widgetType="technical-analysis"
+                  symbol={coin.symbol}
+                  config={{
+                    interval: "1h",
+                    width: "100%",
+                    height: "100%",
+                    isTransparent: false,
+                    showIntervalTabs: true,
+                    displayMode: "single",
+                    locale: "en",
+                    colorTheme: "light"
+                  }}
+                />
+              </div>
             </div>
-            <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
-              Professional trading chart with technical indicators, drawing tools, and multiple timeframes for detailed price analysis
-            </p>
-            <div style={{ height: 400, overflow: "hidden" }}>
-              <TradingViewWidget
-                widgetType="advanced-chart"
-                symbol={coin.symbol}
-                config={{
-                  autosize: true,
-                  interval: "60",
-                  timezone: "Etc/UTC",
-                  theme: "light",
-                  style: "1",
-                  locale: "en",
-                  enable_publishing: false,
-                  hide_top_toolbar: false,
-                  allow_symbol_change: true,
-                  support_host: "https://www.tradingview.com"
-                }}
-              />
-            </div>
-          </div>
+          </>
         )}
-      </div>
 
-      {/* TradingView Widgets Section - Coin Specific Only (Only if USDT pair exists) */}
-      {coin?.symbol && hasUsdtPair && (
-        <>
-          {/* 1. Technical Analysis - MOVED TO TOP */}
-          <div style={{
-            background: "#fff",
-            borderRadius: 12,
-            padding: 20,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-            marginBottom: 16,
-            overflow: "hidden"
-          }}>
-            <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15 }}>
-              {coin.name} Technical Analysis
-            </div>
-            <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
-              Real-time buy/sell signals based on moving averages, oscillators, and technical indicators across multiple timeframes
-            </p>
-            <div style={{ height: 400, overflow: "hidden" }}>
-              <TradingViewWidget
-                widgetType="technical-analysis"
-                symbol={coin.symbol}
-                config={{
-                  interval: "1h",
-                  width: "100%",
-                  height: "100%",
-                  isTransparent: false,
-                  showIntervalTabs: true,
-                  displayMode: "single",
-                  locale: "en",
-                  colorTheme: "light"
-                }}
-              />
-            </div>
-          </div>
-        </>
-      )}
+        {/* Fundamental Analysis - Right after Technical Analysis */}
+        <FundamentalAnalysisCard data={fundamentalAnalysis} />
 
-      {/* Fundamental Analysis - Right after Technical Analysis */}
-      <FundamentalAnalysisCard data={fundamentalAnalysis} />
+        {/* Live Market Data Section */}
+        {coin?.symbol && hasUsdtPair && (
+          <>
+            {/* Live Binance Data Table */}
+            <div style={{
+              background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))",
+              backdropFilter: "blur(12px)",
+              borderRadius: 16,
+              padding: 20,
+              boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)",
+              border: "1px solid rgba(255, 255, 255, 0.6)",
+              marginBottom: 16,
+              overflow: "hidden"
+            }}>
+              <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
+                Live Market Data (Binance)
+                {binanceLive && (
+                  <span style={{
+                    fontSize: 11,
+                    color: "#16a34a",
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.5px"
+                  }}>
+                    • LIVE
+                  </span>
+                )}
+              </div>
 
-      {/* Live Market Data Section */}
-      {coin?.symbol && hasUsdtPair && (
-        <>
-          {/* Live Binance Data Table */}
-          <div style={{
-            background: "#fff",
-            borderRadius: 12,
-            padding: 20,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-            marginBottom: 16,
-            overflow: "hidden"
-          }}>
-            <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
-              Live Market Data (Binance)
-              {binanceLive && (
-                <span style={{
-                  fontSize: 11,
-                  color: "#16a34a",
-                  fontWeight: 700,
-                  textTransform: "uppercase",
-                  letterSpacing: "0.5px"
-                }}>
-                  • LIVE
-                </span>
+              {binanceLive ? (
+                <div style={{ overflow: "hidden" }}>
+                  <table style={{
+                    width: "100%",
+                    borderCollapse: "collapse",
+                    fontSize: "13px"
+                  }}>
+                    <thead>
+                      <tr style={{ borderBottom: "2px solid #e5e7eb" }}>
+                        <th style={{ padding: "10px 12px", textAlign: "left", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Metric</th>
+                        <th style={{ padding: "10px 12px", textAlign: "right", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Value</th>
+                        <th style={{ padding: "10px 12px", textAlign: "left", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Metric</th>
+                        <th style={{ padding: "10px 12px", textAlign: "right", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Value</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
+                        <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>24h High</td>
+                        <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
+                          {binanceLive.highPrice ? `$${binanceLive.highPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
+                        </td>
+                        <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>24h Low</td>
+                        <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
+                          {binanceLive.lowPrice ? `$${binanceLive.lowPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
+                        </td>
+                      </tr>
+                      <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
+                        <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Open Price</td>
+                        <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
+                          {binanceLive.openPrice ? `$${binanceLive.openPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
+                        </td>
+                        <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Prev Close</td>
+                        <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
+                          {binanceLive.prevClosePrice ? `$${binanceLive.prevClosePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
+                        </td>
+                      </tr>
+                      <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
+                        <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Price Change</td>
+                        <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: priceChangeColor, fontSize: "13px" }}>
+                          {binanceLive.priceChange ? `$${binanceLive.priceChange.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
+                        </td>
+                        <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Volume (24h)</td>
+                        <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
+                          {binanceLive.volume ? binanceLive.volume.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—"}
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}></td>
+                        <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}></td>
+                        <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Quote Volume</td>
+                        <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
+                          {binanceLive.quoteVolume ? `$${binanceLive.quoteVolume.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "—"}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div style={{ color: "#6b7280", fontSize: 13 }}>
+                  Connecting to Binance WebSocket...
+                </div>
               )}
             </div>
 
-            {binanceLive ? (
-              <div style={{ overflow: "hidden" }}>
-                <table style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  fontSize: "13px"
-                }}>
-                  <thead>
-                    <tr style={{ borderBottom: "2px solid #e5e7eb" }}>
-                      <th style={{ padding: "10px 12px", textAlign: "left", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Metric</th>
-                      <th style={{ padding: "10px 12px", textAlign: "right", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Value</th>
-                      <th style={{ padding: "10px 12px", textAlign: "left", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Metric</th>
-                      <th style={{ padding: "10px 12px", textAlign: "right", color: "#6b7280", fontWeight: 600, fontSize: "13px" }}>Value</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
-                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>24h High</td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                        {binanceLive.highPrice ? `$${binanceLive.highPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
-                      </td>
-                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>24h Low</td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                        {binanceLive.lowPrice ? `$${binanceLive.lowPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
-                      </td>
-                    </tr>
-                    <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
-                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Open Price</td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                        {binanceLive.openPrice ? `$${binanceLive.openPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
-                      </td>
-                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Prev Close</td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                        {binanceLive.prevClosePrice ? `$${binanceLive.prevClosePrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
-                      </td>
-                    </tr>
-                    <tr style={{ borderBottom: "1px solid #f3f4f6" }}>
-                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Price Change</td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, color: priceChangeColor, fontSize: "13px" }}>
-                        {binanceLive.priceChange ? `$${binanceLive.priceChange.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "—"}
-                      </td>
-                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Volume (24h)</td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                        {binanceLive.volume ? binanceLive.volume.toLocaleString(undefined, { maximumFractionDigits: 2 }) : "—"}
-                      </td>
-                    </tr>
-                    <tr>
-                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}></td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}></td>
-                      <td style={{ padding: "10px 12px", color: "#6b7280", fontSize: "13px" }}>Quote Volume</td>
-                      <td style={{ padding: "10px 12px", textAlign: "right", fontWeight: 600, fontSize: "13px" }}>
-                        {binanceLive.quoteVolume ? `$${binanceLive.quoteVolume.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : "—"}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div style={{ color: "#6b7280", fontSize: 13 }}>
-                Connecting to Binance WebSocket...
-              </div>
-            )}
-          </div>
-
-          {/* Symbol Overview - Coin vs Selected Comparison Coins */}
-          <div style={{
-            background: "#fff",
-            borderRadius: 12,
-            padding: 20,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-            marginBottom: 16,
-            overflow: "hidden"
-          }}>
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <div style={{ fontWeight: 800, fontSize: 15 }}>
-                  {coin.name} & Comparison Coins
-                </div>
-                <button
-                  onClick={() => setShowCoinSelector(!showCoinSelector)}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 8,
-                    border: "1px solid #d1d5db",
-                    fontSize: 12,
-                    color: "#374151",
-                    backgroundColor: "#fff",
-                    cursor: "pointer",
-                    fontWeight: 500
-                  }}
-                >
-                  {showCoinSelector ? "Hide Selector" : "Select Coins"}
-                </button>
-              </div>
-
-              {/* Selected Coins Display */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
-                {selectedComparisonCoins.map((c) => (
-                  <div
-                    key={c.source_id}
+            {/* Symbol Overview - Coin vs Selected Comparison Coins */}
+            <div style={{
+              background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))",
+              backdropFilter: "blur(12px)",
+              borderRadius: 16,
+              padding: 20,
+              boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)",
+              border: "1px solid rgba(255, 255, 255, 0.6)",
+              marginBottom: 16,
+              overflow: "hidden"
+            }}>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <div style={{ fontWeight: 800, fontSize: 15 }}>
+                    {coin.name} & Comparison Coins
+                  </div>
+                  <button
+                    onClick={() => setShowCoinSelector(!showCoinSelector)}
                     style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      padding: "4px 8px",
-                      background: "#f3f4f6",
-                      borderRadius: 6,
-                      fontSize: 11,
-                      fontWeight: 500
+                      padding: "6px 12px",
+                      borderRadius: 8,
+                      border: "1px solid rgba(209, 213, 219, 0.5)",
+                      fontSize: 12,
+                      color: "#374151",
+                      backgroundColor: "rgba(255, 255, 255, 0.7)",
+                      cursor: "pointer",
+                      fontWeight: 500,
+                      backdropFilter: "blur(8px)"
                     }}
                   >
-                    {c.image_thumb && (
-                      <img src={c.image_thumb} alt={c.symbol} style={{ width: 16, height: 16, borderRadius: "50%" }} />
-                    )}
-                    <span>{c.name} ({c.symbol})</span>
-                    <button
-                      onClick={() => {
-                        setSelectedComparisonCoins(selectedComparisonCoins.filter(sc => sc.source_id !== c.source_id));
-                      }}
+                    {showCoinSelector ? "Hide Selector" : "Select Coins"}
+                  </button>
+                </div>
+
+                {/* Selected Coins Display */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+                  {selectedComparisonCoins.map((c) => (
+                    <div
+                      key={c.source_id}
                       style={{
-                        background: "none",
-                        border: "none",
-                        cursor: "pointer",
-                        color: "#ef4444",
-                        fontWeight: 700,
-                        fontSize: 12,
-                        padding: 0,
-                        marginLeft: 2
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 6,
+                        padding: "4px 8px",
+                        background: "#f3f4f6",
+                        borderRadius: 6,
+                        fontSize: 11,
+                        fontWeight: 500
                       }}
                     >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                {selectedComparisonCoins.length === 0 && (
-                  <div style={{ fontSize: 11, color: "#6b7280", fontStyle: "italic" }}>
-                    No comparison coins selected
+                      {c.image_thumb && (
+                        <img src={c.image_thumb} alt={c.symbol} style={{ width: 16, height: 16, borderRadius: "50%" }} />
+                      )}
+                      <span>{c.name} ({c.symbol})</span>
+                      <button
+                        onClick={() => {
+                          setSelectedComparisonCoins(selectedComparisonCoins.filter(sc => sc.source_id !== c.source_id));
+                        }}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          color: "#ef4444",
+                          fontWeight: 700,
+                          fontSize: 12,
+                          padding: 0,
+                          marginLeft: 2
+                        }}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  {selectedComparisonCoins.length === 0 && (
+                    <div style={{ fontSize: 11, color: "#6b7280", fontStyle: "italic" }}>
+                      No comparison coins selected
+                    </div>
+                  )}
+                </div>
+
+                {/* Coin Selector Dropdown */}
+                {showCoinSelector && (
+                  <div style={{
+                    border: "1px solid rgba(229, 231, 235, 0.5)",
+                    borderRadius: 8,
+                    padding: 12,
+                    background: "rgba(249, 250, 251, 0.7)",
+                    backdropFilter: "blur(8px)",
+                    marginTop: 8
+                  }}>
+                    <div style={{ marginBottom: 8 }}>
+                      <input
+                        type="text"
+                        placeholder="Search coins..."
+                        value={coinSearch}
+                        onChange={(e) => setCoinSearch(e.target.value)}
+                        style={{
+                          width: "100%",
+                          padding: "8px 12px",
+                          borderRadius: 6,
+                          border: "1px solid #d1d5db",
+                          fontSize: 12,
+                          outline: "none"
+                        }}
+                      />
+                      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 4 }}>
+                        {allCoins.filter((c) => {
+                          const searchLower = coinSearch.toLowerCase();
+                          return (
+                            c.name.toLowerCase().includes(searchLower) ||
+                            c.symbol.toLowerCase().includes(searchLower)
+                          );
+                        }).length} USDT pairs available
+                      </div>
+                    </div>
+                    <div style={{
+                      maxHeight: 300,
+                      overflowY: "auto",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 4
+                    }}>
+                      {allCoins
+                        .filter((c) => {
+                          const searchLower = coinSearch.toLowerCase();
+                          return (
+                            c.name.toLowerCase().includes(searchLower) ||
+                            c.symbol.toLowerCase().includes(searchLower)
+                          );
+                        })
+                        .map((c) => {
+                          const isSelected = selectedComparisonCoins.some(sc => sc.source_id === c.source_id);
+                          const isCurrent = c.source_id === coin.source_id;
+                          return (
+                            <button
+                              key={c.source_id}
+                              onClick={() => {
+                                if (isCurrent) return;
+                                if (isSelected) {
+                                  setSelectedComparisonCoins(selectedComparisonCoins.filter(sc => sc.source_id !== c.source_id));
+                                } else {
+                                  if (selectedComparisonCoins.length >= 5) {
+                                    alert("Maximum 5 comparison coins allowed");
+                                    return;
+                                  }
+                                  setSelectedComparisonCoins([...selectedComparisonCoins, c]);
+                                }
+                              }}
+                              disabled={isCurrent}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                padding: "6px 8px",
+                                background: isSelected ? "#dbeafe" : "#fff",
+                                border: isSelected ? "1px solid #3b82f6" : "1px solid #e5e7eb",
+                                borderRadius: 6,
+                                cursor: isCurrent ? "not-allowed" : "pointer",
+                                fontSize: 11,
+                                textAlign: "left",
+                                opacity: isCurrent ? 0.5 : 1
+                              }}
+                            >
+                              {c.image_thumb && (
+                                <img src={c.image_thumb} alt={c.symbol} style={{ width: 20, height: 20, borderRadius: "50%" }} />
+                              )}
+                              <span style={{ fontWeight: 500 }}>{c.name}</span>
+                              <span style={{ color: "#6b7280" }}>({c.symbol})</span>
+                              {isSelected && <span style={{ marginLeft: "auto", color: "#3b82f6", fontWeight: 700 }}>✓</span>}
+                              {isCurrent && <span style={{ marginLeft: "auto", color: "#6b7280", fontSize: 10 }}>(Current)</span>}
+                            </button>
+                          );
+                        })}
+                    </div>
+                    <div style={{ fontSize: 10, color: "#6b7280", marginTop: 8 }}>
+                      Select up to 5 coins to compare with {coin.name}
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Coin Selector Dropdown */}
-              {showCoinSelector && (
-                <div style={{
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 8,
-                  padding: 12,
-                  background: "#f9fafb",
-                  marginTop: 8
-                }}>
-                  <div style={{ marginBottom: 8 }}>
-                    <input
-                      type="text"
-                      placeholder="Search coins..."
-                      value={coinSearch}
-                      onChange={(e) => setCoinSearch(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "8px 12px",
-                        borderRadius: 6,
-                        border: "1px solid #d1d5db",
-                        fontSize: 12,
-                        outline: "none"
-                      }}
-                    />
-                    <div style={{ fontSize: 10, color: "#6b7280", marginTop: 4 }}>
-                      {allCoins.filter((c) => {
-                        const searchLower = coinSearch.toLowerCase();
-                        return (
-                          c.name.toLowerCase().includes(searchLower) ||
-                          c.symbol.toLowerCase().includes(searchLower)
-                        );
-                      }).length} USDT pairs available
-                    </div>
-                  </div>
-                  <div style={{
-                    maxHeight: 300,
-                    overflowY: "auto",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 4
-                  }}>
-                    {allCoins
-                      .filter((c) => {
-                        const searchLower = coinSearch.toLowerCase();
-                        return (
-                          c.name.toLowerCase().includes(searchLower) ||
-                          c.symbol.toLowerCase().includes(searchLower)
-                        );
-                      })
-                      .map((c) => {
-                        const isSelected = selectedComparisonCoins.some(sc => sc.source_id === c.source_id);
-                        const isCurrent = c.source_id === coin.source_id;
-                        return (
-                          <button
-                            key={c.source_id}
-                            onClick={() => {
-                              if (isCurrent) return;
-                              if (isSelected) {
-                                setSelectedComparisonCoins(selectedComparisonCoins.filter(sc => sc.source_id !== c.source_id));
-                              } else {
-                                if (selectedComparisonCoins.length >= 5) {
-                                  alert("Maximum 5 comparison coins allowed");
-                                  return;
-                                }
-                                setSelectedComparisonCoins([...selectedComparisonCoins, c]);
-                              }
-                            }}
-                            disabled={isCurrent}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 8,
-                              padding: "6px 8px",
-                              background: isSelected ? "#dbeafe" : "#fff",
-                              border: isSelected ? "1px solid #3b82f6" : "1px solid #e5e7eb",
-                              borderRadius: 6,
-                              cursor: isCurrent ? "not-allowed" : "pointer",
-                              fontSize: 11,
-                              textAlign: "left",
-                              opacity: isCurrent ? 0.5 : 1
-                            }}
-                          >
-                            {c.image_thumb && (
-                              <img src={c.image_thumb} alt={c.symbol} style={{ width: 20, height: 20, borderRadius: "50%" }} />
-                            )}
-                            <span style={{ fontWeight: 500 }}>{c.name}</span>
-                            <span style={{ color: "#6b7280" }}>({c.symbol})</span>
-                            {isSelected && <span style={{ marginLeft: "auto", color: "#3b82f6", fontWeight: 700 }}>✓</span>}
-                            {isCurrent && <span style={{ marginLeft: "auto", color: "#6b7280", fontSize: 10 }}>(Current)</span>}
-                          </button>
-                        );
-                      })}
-                  </div>
-                  <div style={{ fontSize: 10, color: "#6b7280", marginTop: 8 }}>
-                    Select up to 5 coins to compare with {coin.name}
-                  </div>
+              <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
+                Side-by-side comparison of {coin.name} with selected coins showing relative performance and price movements
+              </p>
+              <div style={{ height: 400, overflow: "hidden" }}>
+                <TradingViewWidget
+                  widgetType="symbol-overview"
+                  symbol={coin.symbol}
+                  config={{
+                    symbols: [
+                      [`${coin.name}`, `BINANCE:${coin.symbol.toUpperCase()}USDT|1D`],
+                      ...selectedComparisonCoins.map(c => [c.name, `BINANCE:${c.symbol.toUpperCase()}USDT|1D`])
+                    ],
+                    chartOnly: false,
+                    width: "100%",
+                    height: "100%",
+                    colorTheme: "light",
+                    showVolume: false,
+                    showMA: false,
+                    hideDateRanges: false,
+                    hideMarketStatus: false,
+                    hideSymbolLogo: false,
+                    scalePosition: "right",
+                    scaleMode: "Normal",
+                    fontFamily: "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
+                    fontSize: "10",
+                    noTimeScale: false,
+                    valuesTracking: "1",
+                    changeMode: "price-and-percent",
+                    locale: "en"
+                  }}
+                />
+              </div>
+            </div>
+
+          </>
+        )}
+
+        {/* CoinGecko Data Section */}
+        <div style={{
+          background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))",
+          backdropFilter: "blur(12px)",
+          borderRadius: 16,
+          padding: 24,
+          boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)",
+          border: "1px solid rgba(255, 255, 255, 0.6)",
+          marginTop: 16
+        }}>
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 20,
+            paddingBottom: 16,
+            borderBottom: "2px solid #e5e7eb"
+          }}>
+            <div>
+              <div style={{ fontWeight: 900, fontSize: 18, color: "#111" }}>CoinGecko Data</div>
+              {coin?.last_updated && (
+                <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
+                  Last Updated: {new Date(coin.last_updated).toLocaleString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })} UTC
                 </div>
               )}
             </div>
+          </div>
 
-            <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
-              Side-by-side comparison of {coin.name} with selected coins showing relative performance and price movements
-            </p>
-            <div style={{ height: 400, overflow: "hidden" }}>
-              <TradingViewWidget
-                widgetType="symbol-overview"
-                symbol={coin.symbol}
-                config={{
-                  symbols: [
-                    [`${coin.name}`, `BINANCE:${coin.symbol.toUpperCase()}USDT|1D`],
-                    ...selectedComparisonCoins.map(c => [c.name, `BINANCE:${c.symbol.toUpperCase()}USDT|1D`])
-                  ],
-                  chartOnly: false,
-                  width: "100%",
-                  height: "100%",
-                  colorTheme: "light",
-                  showVolume: false,
-                  showMA: false,
-                  hideDateRanges: false,
-                  hideMarketStatus: false,
-                  hideSymbolLogo: false,
-                  scalePosition: "right",
-                  scaleMode: "Normal",
-                  fontFamily: "-apple-system, BlinkMacSystemFont, Trebuchet MS, Roboto, Ubuntu, sans-serif",
-                  fontSize: "10",
-                  noTimeScale: false,
-                  valuesTracking: "1",
-                  changeMode: "price-and-percent",
-                  locale: "en"
-                }}
+          {/* Sentiment Section */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15, color: "#111" }}>Sentiment</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <InfoRow
+                label="Votes Up %"
+                value={coin.sentiment_votes_up_percentage ?? "—"}
+              />
+              <InfoRow
+                label="Votes Down %"
+                value={coin.sentiment_votes_down_percentage ?? "—"}
               />
             </div>
           </div>
 
-        </>
-      )}
+          {/* Data Grid - 2 columns */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
 
-      {/* CoinGecko Data Section */}
-      <div style={{
-        background: "#fff",
-        borderRadius: 12,
-        padding: 24,
-        boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-        marginTop: 16
-      }}>
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 20,
-          paddingBottom: 16,
-          borderBottom: "2px solid #e5e7eb"
-        }}>
-          <div>
-            <div style={{ fontWeight: 900, fontSize: 18, color: "#111" }}>CoinGecko Data</div>
-            {coin?.last_updated && (
-              <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4 }}>
-                Last Updated: {new Date(coin.last_updated).toLocaleString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', hour12: true })} UTC
+            {/* Basic Info */}
+            <div>
+              <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15, color: "#111", paddingBottom: 8, borderBottom: "1px solid #e5e7eb" }}>
+                Basic Info
               </div>
-            )}
-          </div>
-        </div>
+              <div style={{ marginTop: 12 }}>
+                <InfoRow label="source_id" value={coin.source_id} />
+                <InfoRow label="symbol" value={coin.symbol} />
+                <InfoRow label="name" value={coin.name} />
+                <InfoRow label="source" value={coin.source ?? "—"} />
+                <InfoRow label="market_cap_rank" value={coin.market_cap_rank ?? "—"} />
+                <InfoRow label="asset_platform_id" value={coin.asset_platform_id ?? "—"} />
+                <InfoRow
+                  label="Circulating Supply"
+                  value={coingeckoData?.market_data?.circulating_supply
+                    ? Number(coingeckoData.market_data.circulating_supply).toLocaleString()
+                    : "—"
+                  }
+                />
+                <InfoRow
+                  label="Total Supply"
+                  value={coingeckoData?.market_data?.total_supply
+                    ? Number(coingeckoData.market_data.total_supply).toLocaleString()
+                    : "—"
+                  }
+                />
+                <InfoRow label="Genesis Date" value={coingeckoData?.genesis_date ?? coin.genesis_date ?? "—"} />
+              </div>
+            </div>
 
-        {/* Sentiment Section */}
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15, color: "#111" }}>Sentiment</div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-            <InfoRow
-              label="Votes Up %"
-              value={coin.sentiment_votes_up_percentage ?? "—"}
-            />
-            <InfoRow
-              label="Votes Down %"
-              value={coin.sentiment_votes_down_percentage ?? "—"}
-            />
-          </div>
-        </div>
+            {/* GitHub Metrics */}
+            <div>
+              <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15, color: "#111", paddingBottom: 8, borderBottom: "1px solid #e5e7eb" }}>
+                GitHub Metrics
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <InfoRow
+                  label="github_stars"
+                  value={coin.github_stars ?? coingeckoData?.developer_data?.stars ?? "—"}
+                />
+                <InfoRow
+                  label="github_forks"
+                  value={coin.github_forks ?? coingeckoData?.developer_data?.forks ?? "—"}
+                />
+                <InfoRow
+                  label="github_subscribers"
+                  value={coin.github_subscribers ?? coingeckoData?.community_data?.twitter_followers ?? "—"}
+                />
+                <InfoRow
+                  label="github_commit_count_4_weeks"
+                  value={coin.github_commit_count_4_weeks ?? coingeckoData?.developer_data?.commit_count_4_weeks ?? "—"}
+                />
+                <InfoRow label="github_closed_issues" value={coin.github_closed_issues ?? "—"} />
+                <InfoRow label="github_total_issues" value={coin.github_total_issues ?? "—"} />
+                <InfoRow label="github_pull_requests_merged" value={coin.github_pull_requests_merged ?? "—"} />
+              </div>
+            </div>
 
-        {/* Data Grid - 2 columns */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }}>
+            {/* Market Overview */}
+            <div>
+              <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15, color: "#111", paddingBottom: 8, borderBottom: "1px solid #e5e7eb" }}>
+                Market Overview
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <InfoRow
+                  label="Market Cap (USD)"
+                  value={coin.market_cap_usd
+                    ? `$${Number(coin.market_cap_usd).toLocaleString()}`
+                    : "—"
+                  }
+                />
+                <InfoRow label="Market Cap / FDV" value={coin.market_cap_fdv_ratio ?? "—"} />
+                <InfoRow
+                  label="Volume (24h USD)"
+                  value={coin.volume_24h_usd
+                    ? Number(coin.volume_24h_usd).toLocaleString()
+                    : "—"
+                  }
+                />
+                <InfoRow
+                  label="Market Cap Change 24h"
+                  value={coin.market_cap_change_percentage_24h ?? "—"}
+                />
+              </div>
+            </div>
 
-          {/* Basic Info */}
-          <div>
-            <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15, color: "#111", paddingBottom: 8, borderBottom: "1px solid #e5e7eb" }}>
-              Basic Info
-            </div>
-            <div style={{ marginTop: 12 }}>
-              <InfoRow label="source_id" value={coin.source_id} />
-              <InfoRow label="symbol" value={coin.symbol} />
-              <InfoRow label="name" value={coin.name} />
-              <InfoRow label="source" value={coin.source ?? "—"} />
-              <InfoRow label="market_cap_rank" value={coin.market_cap_rank ?? "—"} />
-              <InfoRow label="asset_platform_id" value={coin.asset_platform_id ?? "—"} />
-              <InfoRow
-                label="Circulating Supply"
-                value={coingeckoData?.market_data?.circulating_supply
-                  ? Number(coingeckoData.market_data.circulating_supply).toLocaleString()
-                  : "—"
-                }
-              />
-              <InfoRow
-                label="Total Supply"
-                value={coingeckoData?.market_data?.total_supply
-                  ? Number(coingeckoData.market_data.total_supply).toLocaleString()
-                  : "—"
-                }
-              />
-              <InfoRow label="Genesis Date" value={coingeckoData?.genesis_date ?? coin.genesis_date ?? "—"} />
-            </div>
-          </div>
-
-          {/* GitHub Metrics */}
-          <div>
-            <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15, color: "#111", paddingBottom: 8, borderBottom: "1px solid #e5e7eb" }}>
-              GitHub Metrics
-            </div>
-            <div style={{ marginTop: 12 }}>
-              <InfoRow
-                label="github_stars"
-                value={coin.github_stars ?? coingeckoData?.developer_data?.stars ?? "—"}
-              />
-              <InfoRow
-                label="github_forks"
-                value={coin.github_forks ?? coingeckoData?.developer_data?.forks ?? "—"}
-              />
-              <InfoRow
-                label="github_subscribers"
-                value={coin.github_subscribers ?? coingeckoData?.community_data?.twitter_followers ?? "—"}
-              />
-              <InfoRow
-                label="github_commit_count_4_weeks"
-                value={coin.github_commit_count_4_weeks ?? coingeckoData?.developer_data?.commit_count_4_weeks ?? "—"}
-              />
-              <InfoRow label="github_closed_issues" value={coin.github_closed_issues ?? "—"} />
-              <InfoRow label="github_total_issues" value={coin.github_total_issues ?? "—"} />
-              <InfoRow label="github_pull_requests_merged" value={coin.github_pull_requests_merged ?? "—"} />
-            </div>
-          </div>
-
-          {/* Market Overview */}
-          <div>
-            <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15, color: "#111", paddingBottom: 8, borderBottom: "1px solid #e5e7eb" }}>
-              Market Overview
-            </div>
-            <div style={{ marginTop: 12 }}>
-              <InfoRow
-                label="Market Cap (USD)"
-                value={coin.market_cap_usd
-                  ? `$${Number(coin.market_cap_usd).toLocaleString()}`
-                  : "—"
-                }
-              />
-              <InfoRow label="Market Cap / FDV" value={coin.market_cap_fdv_ratio ?? "—"} />
-              <InfoRow
-                label="Volume (24h USD)"
-                value={coin.volume_24h_usd
-                  ? Number(coin.volume_24h_usd).toLocaleString()
-                  : "—"
-                }
-              />
-              <InfoRow
-                label="Market Cap Change 24h"
-                value={coin.market_cap_change_percentage_24h ?? "—"}
-              />
-            </div>
-          </div>
-
-          {/* Links & Social */}
-          <div>
-            <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15, color: "#111", paddingBottom: 8, borderBottom: "1px solid #e5e7eb" }}>
-              Links & Social
-            </div>
-            <div style={{ marginTop: 12 }}>
-              <InfoRow
-                label="homepage_url"
-                value={coin.homepage_url ?? (coingeckoData?.links?.homepage?.[0] ?? "—")}
-              />
-              <InfoRow
-                label="facebook_username"
-                value={coin.facebook_username ?? coingeckoData?.links?.facebook_username ?? "—"}
-              />
-              <InfoRow
-                label="twitter_screen_name"
-                value={coin.twitter_screen_name ?? coingeckoData?.links?.twitter_screen_name ?? "—"}
-              />
-              <InfoRow
-                label="reddit_subscribers"
-                value={coin.reddit_subscribers ?? coingeckoData?.community_data?.reddit_subscribers ?? "—"}
-              />
-              <InfoRow label="genesis_date" value={coin.genesis_date ?? coingeckoData?.genesis_date ?? "—"} />
+            {/* Links & Social */}
+            <div>
+              <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15, color: "#111", paddingBottom: 8, borderBottom: "1px solid #e5e7eb" }}>
+                Links & Social
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <InfoRow
+                  label="homepage_url"
+                  value={coin.homepage_url ?? (coingeckoData?.links?.homepage?.[0] ?? "—")}
+                />
+                <InfoRow
+                  label="facebook_username"
+                  value={coin.facebook_username ?? coingeckoData?.links?.facebook_username ?? "—"}
+                />
+                <InfoRow
+                  label="twitter_screen_name"
+                  value={coin.twitter_screen_name ?? coingeckoData?.links?.twitter_screen_name ?? "—"}
+                />
+                <InfoRow
+                  label="reddit_subscribers"
+                  value={coin.reddit_subscribers ?? coingeckoData?.community_data?.reddit_subscribers ?? "—"}
+                />
+                <InfoRow label="genesis_date" value={coin.genesis_date ?? coingeckoData?.genesis_date ?? "—"} />
+              </div>
             </div>
           </div>
         </div>

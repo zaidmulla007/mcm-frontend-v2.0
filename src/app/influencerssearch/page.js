@@ -382,40 +382,39 @@ export default function InfluencerSearchPage() {
   const paginatedInfluencers = filteredInfluencers.slice(startIndex, endIndex);
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 font-sans mt-5">
-      {/* Backup Link Banner */}
-      {/* <div className="bg-blue-50 border-b border-blue-200 px-4 py-2">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-blue-800">
-              Need to access previous versions?
-            </span>
-          </div>
-          <Link
-            href="/influencerssearch/backup"
-            className="flex items-center gap-2 px-4 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors"
-          >
-            <FaInfoCircle />
-            View Backups
-          </Link>
-        </div>
-      </div> */}
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-indigo-50 to-fuchsia-50 text-gray-900 font-sans overflow-x-hidden relative">
+      {/* Animated Background Orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-fuchsia-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-gradient-to-br from-cyan-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
 
       {/* Main Content */}
-      <main className="mx-auto px-4 pb-8 overflow-x-hidden">
+      <main className="mx-auto px-4 pb-8 overflow-x-hidden relative z-10">
         <div className="min-w-0">
           {/* Leaderboard Section */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="px-6 py-4 border-b border-gray-200">
+          <div className="bg-gradient-to-br from-white/80 via-indigo-50/60 to-fuchsia-50/60 backdrop-blur-md rounded-3xl shadow-2xl shadow-indigo-500/10 border-2 border-white/40">
+            <div className="px-6 py-4 border-b border-indigo-200/30 bg-gradient-to-r from-cyan-50/50 to-fuchsia-50/50 backdrop-blur-sm">
+              {/* Header */}
+              <div className="mb-6">
+                <h2 className="text-4xl md:text-5xl font-bold flex items-center gap-3 drop-shadow-sm">
+                  <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
+                    Influencer Rankings
+                  </span>
+                </h2>
+                <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 rounded-full mt-3 shadow-lg shadow-indigo-500/50"></div>
+              </div>
+
               {/* Filter Section inside Influencers */}
               <div className="max-w-2xl mx-auto">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Source</label>
+                    <label className="block text-xs font-semibold bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent uppercase mb-2 text-center">Source</label>
                     <select
                       value={selectedPlatform}
                       onChange={(e) => setSelectedPlatform(e.target.value)}
-                      className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                      className="w-full bg-gradient-to-r from-cyan-500/10 via-indigo-500/10 to-fuchsia-500/10 backdrop-blur-sm border-2 border-indigo-300/50 hover:border-indigo-400 rounded-xl px-4 py-2.5 text-sm font-semibold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer shadow-md hover:shadow-lg"
                     >
                       <option value="youtube">YouTube</option>
                       <option value="telegram">Telegram</option>
@@ -423,11 +422,11 @@ export default function InfluencerSearchPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Rating</label>
+                    <label className="block text-xs font-semibold bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent uppercase mb-2 text-center">Rating</label>
                     <select
                       value={selectedRating}
                       onChange={(e) => setSelectedRating(e.target.value)}
-                      className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                      className="w-full bg-gradient-to-r from-cyan-500/10 via-indigo-500/10 to-fuchsia-500/10 backdrop-blur-sm border-2 border-indigo-300/50 hover:border-indigo-400 rounded-xl px-4 py-2.5 text-sm font-semibold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer shadow-md hover:shadow-lg"
                     >
                       {ratingOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -438,11 +437,11 @@ export default function InfluencerSearchPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Holding Period</label>
+                    <label className="block text-xs font-semibold bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent uppercase mb-2 text-center">Holding Period</label>
                     <select
                       value={selectedTimeframe}
                       onChange={(e) => setSelectedTimeframe(e.target.value)}
-                      className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                      className="w-full bg-gradient-to-r from-cyan-500/10 via-indigo-500/10 to-fuchsia-500/10 backdrop-blur-sm border-2 border-indigo-300/50 hover:border-indigo-400 rounded-xl px-4 py-2.5 text-sm font-semibold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer shadow-md hover:shadow-lg"
                     >
                       {timeframeOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -453,11 +452,11 @@ export default function InfluencerSearchPage() {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-600 uppercase mb-2 text-center">Year</label>
+                    <label className="block text-xs font-semibold bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent uppercase mb-2 text-center">Year</label>
                     <select
                       value={selectedYear}
                       onChange={(e) => handleYearChange(e.target.value)}
-                      className="w-full border-2 border-indigo-200 bg-indigo-50 rounded-full px-4 py-2.5 text-sm font-medium text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer"
+                      className="w-full bg-gradient-to-r from-cyan-500/10 via-indigo-500/10 to-fuchsia-500/10 backdrop-blur-sm border-2 border-indigo-300/50 hover:border-indigo-400 rounded-xl px-4 py-2.5 text-sm font-semibold text-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all cursor-pointer shadow-md hover:shadow-lg"
                     >
                       {yearOptions.map((option) => (
                         <option key={option.value} value={option.value}>
@@ -473,17 +472,17 @@ export default function InfluencerSearchPage() {
               <table className="w-full relative">
                 <thead>
                   {/* Main header row */}
-                  <tr className="bg-gray-50 border-b-2 border-gray-200">
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300 w-[10%]">
+                  <tr className="bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 border-b border-white/20">
+                    <th className="px-1 py-2 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-white/20 w-[10%]">
                       Influencer
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300 w-[15%]">
+                    <th className="px-1 py-2 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-white/20 w-[15%]">
                       MCM Ranking
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider border-r border-gray-300 w-[15%]">
+                    <th className="px-1 py-2 text-center text-xs font-bold text-white uppercase tracking-wider border-r border-white/20 w-[15%]">
                       Details
                     </th>
-                    <th className="px-1 py-2 text-center text-xs font-medium text-gray-700 uppercase tracking-wider w-[55%]">
+                    <th className="px-1 py-2 text-center text-xs font-bold text-white uppercase tracking-wider w-[55%]">
                       Summary
                     </th>
                   </tr>
@@ -572,7 +571,10 @@ export default function InfluencerSearchPage() {
                               opacity: { duration: 0.5 },
                               x: { duration: 0.5 }
                             }}
-                            className="hover:bg-gray-50 cursor-pointer"
+                            className={`cursor-pointer transition-all duration-300 border-b border-indigo-100/50 ${index % 2 === 0
+                                ? 'bg-white/50 hover:bg-gradient-to-r hover:from-cyan-50/40 hover:via-indigo-50/40 hover:to-fuchsia-50/40'
+                                : 'bg-gradient-to-r from-indigo-50/20 to-fuchsia-50/20 hover:from-cyan-50/40 hover:via-indigo-50/40 hover:to-fuchsia-50/40'
+                              } hover:shadow-lg hover:scale-[1.01] hover:z-10`}
                             style={{ position: 'relative', zIndex: 1 }}
                             onClick={() => {
                               router.push(
@@ -583,7 +585,7 @@ export default function InfluencerSearchPage() {
                             }}
                           >
                             {/* Influencer Column */}
-                            <td className="px-1 py-1 border-r border-gray-200 w-[10%]">
+                            <td className="px-1 py-2 border-r border-indigo-100/50 w-[10%]">
                               <Link
                                 href={
                                   selectedPlatform === "youtube"
@@ -600,9 +602,9 @@ export default function InfluencerSearchPage() {
                                       <Image
                                         src={influencer.channel_thumbnails.high.url}
                                         alt={influencer.name || "Influencer"}
-                                        width={32}
-                                        height={32}
-                                        className="w-8 h-8 rounded-full object-cover"
+                                        width={40}
+                                        height={40}
+                                        className="w-10 h-10 rounded-full object-cover ring-2 ring-indigo-200/50 ring-offset-2 shadow-md"
                                         onError={(e) => {
                                           e.target.style.display = 'none';
                                           e.target.nextSibling.style.display = 'flex';
@@ -612,7 +614,7 @@ export default function InfluencerSearchPage() {
 
                                     {/* Name Initial Fallback */}
                                     <div
-                                      className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 items-center justify-center flex"
+                                      className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 via-indigo-500 to-fuchsia-500 items-center justify-center flex ring-2 ring-indigo-200/50 ring-offset-2 shadow-md"
                                       style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
                                     >
                                       <span className="text-white text-sm font-bold">
@@ -623,7 +625,7 @@ export default function InfluencerSearchPage() {
 
                                   {/* Name Only */}
                                   <div className="text-center">
-                                    <span className="text-[10px] font-semibold text-gray-900 line-clamp-2">
+                                    <span className="text-[11px] font-bold text-gray-900 line-clamp-2">
                                       {influencer.name?.replace(/_/g, " ") || "Unknown"}
                                     </span>
                                   </div>
@@ -632,7 +634,7 @@ export default function InfluencerSearchPage() {
                             </td>
 
                             {/* MCM Ranking Column - Yearly Rating Graph with Stars */}
-                            <td className="px-3 py-1 border-r border-gray-200 w-[15%]">
+                            <td className="px-3 py-2 border-r border-indigo-100/50 w-[15%]">
                               <div className="flex justify-center items-center py-1">
                                 {scatterData.length > 0 ? (
                                   <div className="relative">
@@ -684,13 +686,13 @@ export default function InfluencerSearchPage() {
                             </td>
 
                             {/* Metrics Column */}
-                            <td className="px-2 py-1 border-r border-gray-300 w-[15%]">
+                            <td className="px-2 py-2 border-r border-indigo-100/50 w-[15%]">
                               <div className="flex items-center justify-center h-full">
-                                {/* 2x3 Metrics Grid */}
-                                <div className="grid grid-cols-2 gap-1">
+                                {/* 2x2 Metrics Grid with enhanced styling */}
+                                <div className="grid grid-cols-2 gap-2.5">
                                   {/* ROI */}
-                                  <div className="bg-blue-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
-                                    <div className="text-[9px] text-gray-600 font-medium">ROI</div>
+                                  <div className="bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-100 rounded-xl p-2.5 text-center flex flex-col items-center justify-center aspect-square border border-blue-200/60 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200">
+                                    <div className="text-[9px] text-blue-900 font-bold uppercase tracking-wide">ROI</div>
                                     <div className="text-xs font-bold text-blue-700">
                                       {influencer.prob_weighted_returns
                                         ? influencer.prob_weighted_returns.toFixed(1)
@@ -699,8 +701,8 @@ export default function InfluencerSearchPage() {
                                   </div>
 
                                   {/* Win Rate */}
-                                  <div className="bg-green-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
-                                    <div className="text-[9px] text-gray-600 font-medium">Win Rate</div>
+                                  <div className="bg-gradient-to-br from-green-50 via-emerald-50 to-green-100 rounded-xl p-2.5 text-center flex flex-col items-center justify-center aspect-square border border-green-200/60 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200">
+                                    <div className="text-[9px] text-green-900 font-bold uppercase tracking-wide">Win Rate</div>
                                     <div className="text-xs font-bold text-green-700">
                                       {influencer.win_percentage
                                         ? `${Math.round(influencer.win_percentage)}%`
@@ -709,8 +711,8 @@ export default function InfluencerSearchPage() {
                                   </div>
 
                                   {/* Recommendations */}
-                                  <div className="bg-purple-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
-                                    <div className="text-[9px] text-gray-600 font-medium">No.of Posts</div>
+                                  <div className="bg-gradient-to-br from-purple-50 via-fuchsia-50 to-purple-100 rounded-xl p-2.5 text-center flex flex-col items-center justify-center aspect-square border border-purple-200/60 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200">
+                                    <div className="text-[9px] text-purple-900 font-bold uppercase tracking-wide">Posts</div>
                                     <div className="text-xs font-bold text-purple-700">
                                       {influencer.price_counts
                                         ? influencer.price_counts.toLocaleString()
@@ -719,8 +721,8 @@ export default function InfluencerSearchPage() {
                                   </div>
 
                                   {/* Subscribers */}
-                                  <div className="bg-orange-50 rounded p-1.5 text-center flex flex-col items-center justify-center aspect-square">
-                                    <div className="text-[9px] text-gray-600 font-medium">Subscribers</div>
+                                  <div className="bg-gradient-to-br from-orange-50 via-amber-50 to-orange-100 rounded-xl p-2.5 text-center flex flex-col items-center justify-center aspect-square border border-orange-200/60 shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200">
+                                    <div className="text-[9px] text-orange-900 font-bold uppercase tracking-wide">Subs</div>
                                     <div className="text-xs font-bold text-orange-700">
                                       {influencer.subs
                                         ? formatNumber(influencer.subs)
@@ -732,9 +734,9 @@ export default function InfluencerSearchPage() {
                             </td>
 
                             {/* Summary Column */}
-                            <td className="px-3 py-1 align-top w-[75%]">
+                            <td className="px-3 py-2 align-top w-[75%]">
                               {influencer.gemini_summary && influencer.gemini_summary !== '' ? (
-                                <div className="bg-gray-50 rounded p-2">
+                                <div className="bg-gradient-to-br from-indigo-50/80 via-purple-50/60 to-fuchsia-50/80 rounded-xl p-4 border border-indigo-200/40 shadow-md hover:shadow-lg transition-shadow duration-300">
                                   {(() => {
                                     const summaryText = Array.isArray(influencer.gemini_summary)
                                       ? influencer.gemini_summary.join(', ')

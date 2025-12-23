@@ -241,14 +241,14 @@ function TradingViewMarketOverview({ selectedCoins }) {
 
   if (selectedCoins.length === 0) {
     return (
-      <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16, minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))", backdropFilter: "blur(12px)", borderRadius: 16, padding: 20, boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)", border: "1px solid rgba(255, 255, 255, 0.6)", marginBottom: 16, minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ fontSize: 14, color: "#6b7280" }}>Please select at least one coin to view the market overview</p>
       </div>
     );
   }
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16, minHeight: 550, overflow: "hidden" }}>
+    <div style={{ background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))", backdropFilter: "blur(12px)", borderRadius: 16, padding: 20, boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)", border: "1px solid rgba(255, 255, 255, 0.6)", marginBottom: 16, minHeight: 550, overflow: "hidden" }}>
       <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15 }}>Crypto Market Overview</div>
       <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>Quick overview of selected coins with mini charts, showing price movements and percentage changes at a glance</p>
       <div ref={ref} style={{ height: 490, overflow: "hidden" }} />
@@ -287,7 +287,7 @@ function TradingViewHeatmap() {
   }, []);
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16, minHeight: 550, overflow: "hidden" }}>
+    <div style={{ background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))", backdropFilter: "blur(12px)", borderRadius: 16, padding: 20, boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)", border: "1px solid rgba(255, 255, 255, 0.6)", marginBottom: 16, minHeight: 550, overflow: "hidden" }}>
       <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 15 }}>Crypto Coins Heatmap</div>
       <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>Visual representation of crypto market performance</p>
       <div ref={ref} style={{ height: 470, overflow: "hidden" }} />
@@ -338,14 +338,14 @@ function TradingViewScreener({ selectedCoins }) {
 
   if (selectedCoins.length === 0) {
     return (
-      <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16, minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))", backdropFilter: "blur(12px)", borderRadius: 16, padding: 20, boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)", border: "1px solid rgba(255, 255, 255, 0.6)", marginBottom: 16, minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ fontSize: 14, color: "#6b7280" }}>Please select at least one coin to view the screener</p>
       </div>
     );
   }
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16, minHeight: 600, overflow: "hidden" }}>
+    <div style={{ background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))", backdropFilter: "blur(12px)", borderRadius: 16, padding: 20, boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)", border: "1px solid rgba(255, 255, 255, 0.6)", marginBottom: 16, minHeight: 600, overflow: "hidden" }}>
       <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15 }}>Crypto Market Screener (USDT Pairs)</div>
       <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>Advanced screener showing selected USDT pairs with metrics like volume, market cap, and performance</p>
       <div ref={ref} style={{ height: 540, width: "100%", overflow: "hidden" }} />
@@ -379,7 +379,7 @@ function TradingViewFullMarket() {
   }, []);
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16, minHeight: 600, overflow: "hidden" }}>
+    <div style={{ background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))", backdropFilter: "blur(12px)", borderRadius: 16, padding: 20, boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)", border: "1px solid rgba(255, 255, 255, 0.6)", marginBottom: 16, minHeight: 600, overflow: "hidden" }}>
       <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15 }}>Full Crypto Market Data</div>
       <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>Comprehensive list of all cryptocurrencies with detailed market data, perfect for in-depth market analysis</p>
       <div ref={ref} style={{ height: 540, overflow: "hidden" }} />
@@ -415,14 +415,14 @@ function TradingViewCrossRates({ selectedCoins }) {
 
   if (selectedCoins.length === 0) {
     return (
-      <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16, minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))", backdropFilter: "blur(12px)", borderRadius: 16, padding: 20, boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)", border: "1px solid rgba(255, 255, 255, 0.6)", marginBottom: 16, minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ fontSize: 14, color: "#6b7280" }}>Please select at least one coin to view cross rates</p>
       </div>
     );
   }
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16, minHeight: 500, overflow: "hidden" }}>
+    <div style={{ background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))", backdropFilter: "blur(12px)", borderRadius: 16, padding: 20, boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)", border: "1px solid rgba(255, 255, 255, 0.6)", marginBottom: 16, minHeight: 500, overflow: "hidden" }}>
       <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15 }}>Crypto Cross Rates</div>
       <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>Currency pair rates showing how selected cryptocurrencies perform against each other in a convenient matrix view</p>
       <div ref={ref} style={{ height: 440, overflow: "hidden" }} />
@@ -474,14 +474,14 @@ function TradingViewTopCryptos({ selectedCoins }) {
 
   if (selectedCoins.length === 0) {
     return (
-      <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16, minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div style={{ background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))", backdropFilter: "blur(12px)", borderRadius: 16, padding: 20, boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)", border: "1px solid rgba(255, 255, 255, 0.6)", marginBottom: 16, minHeight: 200, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <p style={{ fontSize: 14, color: "#6b7280" }}>Please select at least one coin to view detailed charts</p>
       </div>
     );
   }
 
   return (
-    <div style={{ background: "#fff", borderRadius: 12, padding: 20, boxShadow: "0 1px 3px rgba(0,0,0,0.1)", marginBottom: 16, minHeight: 500, overflow: "hidden" }}>
+    <div style={{ background: "linear-gradient(to bottom right, rgba(255, 255, 255, 0.9), rgba(238, 242, 255, 0.7), rgba(250, 245, 255, 0.7))", backdropFilter: "blur(12px)", borderRadius: 16, padding: 20, boxShadow: "0 4px 12px rgba(99, 102, 241, 0.1)", border: "1px solid rgba(255, 255, 255, 0.6)", marginBottom: 16, minHeight: 500, overflow: "hidden" }}>
       <div style={{ fontWeight: 800, marginBottom: 16, fontSize: 15 }}>Selected Cryptos Overview</div>
       <p style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>Detailed charts for selected cryptocurrencies showing 1-day price movements and trading patterns</p>
       <div ref={ref} style={{ height: 440, overflow: "hidden" }} />
@@ -578,44 +578,55 @@ export default function MarketOverview() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900 font-sans">
-      <main className="mx-auto px-4 pb-8 pt-5">
-        <div className="max-w-7xl mx-auto">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
-              Market Overview & Analysis
-            </h1>
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-indigo-50 to-fuchsia-50 text-gray-900 font-sans overflow-x-hidden relative">
+      {/* Animated Background Orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-fuchsia-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-gradient-to-br from-cyan-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
 
-            {/* Toggle Button */}
-            <div className="flex items-center gap-2 bg-gray-50 p-2 rounded-lg border border-gray-200">
-              <button
-                onClick={() => setActiveView('overview')}
-                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${activeView === 'overview'
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                    : 'bg-transparent text-gray-700 hover:bg-gray-200'
-                  }`}
-              >
-                Overview
-              </button>
-              <button
-                onClick={() => setActiveView('screener')}
-                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${activeView === 'screener'
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                    : 'bg-transparent text-gray-700 hover:bg-gray-200'
-                  }`}
-              >
-                Screener
-              </button>
-              <button
-                onClick={() => setActiveView('heatmap')}
-                className={`px-4 py-2 text-sm font-semibold rounded-lg transition-all ${activeView === 'heatmap'
-                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md'
-                    : 'bg-transparent text-gray-700 hover:bg-gray-200'
-                  }`}
-              >
-                Heatmap
-              </button>
-            </div>
+      <main className="mx-auto px-4 pb-8 pt-5 relative z-10">
+        <div className="max-w-7xl mx-auto">
+          {/* Header Section */}
+          <div className="mb-8">
+            <h2 className="text-4xl md:text-5xl font-bold drop-shadow-sm mb-4">
+              <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
+                Market Overview & Analysis
+              </span>
+            </h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 rounded-full shadow-lg shadow-indigo-500/50"></div>
+          </div>
+
+          {/* Toggle Buttons */}
+          <div className="bg-gradient-to-br from-white/80 via-indigo-50/60 to-fuchsia-50/60 backdrop-blur-md rounded-2xl p-2 shadow-xl shadow-indigo-500/10 border border-white/50 mb-8 inline-flex gap-2">
+            <button
+              onClick={() => setActiveView('overview')}
+              className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-300 ${activeView === 'overview'
+                ? 'bg-gradient-to-r from-cyan-500 via-indigo-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-500/30'
+                : 'bg-transparent text-gray-700 hover:bg-white/60'
+                }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveView('screener')}
+              className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-300 ${activeView === 'screener'
+                ? 'bg-gradient-to-r from-cyan-500 via-indigo-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-500/30'
+                : 'bg-transparent text-gray-700 hover:bg-white/60'
+                }`}
+            >
+              Screener
+            </button>
+            <button
+              onClick={() => setActiveView('heatmap')}
+              className={`px-6 py-3 text-sm font-semibold rounded-xl transition-all duration-300 ${activeView === 'heatmap'
+                ? 'bg-gradient-to-r from-cyan-500 via-indigo-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-500/30'
+                : 'bg-transparent text-gray-700 hover:bg-white/60'
+                }`}
+            >
+              Heatmap
+            </button>
           </div>
 
           {/* Coin Filter - Show in Overview and Screener views */}

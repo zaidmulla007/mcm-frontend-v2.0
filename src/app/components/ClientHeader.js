@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef, Suspense } from "react";
-import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar, FaChartPie, FaNewspaper, FaSitemap, FaChevronDown } from "react-icons/fa";
+import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar, FaChartPie, FaNewspaper, FaSitemap, FaChevronDown, FaRocket } from "react-icons/fa";
 import { useTimezone } from "../contexts/TimezoneContext";
 import { useSelectedCoin } from "../contexts/SelectedCoinContext";
 import styles from "./ClientHeader.module.css";
@@ -177,16 +177,27 @@ export default function ClientHeader() {
       <div className="mx-auto flex items-center justify-between px-6 py-4">
         {/* Logo */}
         <Link href={isLoggedIn ? "/landing-page" : "/home"} className="flex items-center gap-2">
-          <Image src="/images/mycryptomonitor.jpg" alt="Logo" width={80} height={90} className="logo-img" />
+          <Image src="/images/mycryptomonitor-bg.png" alt="Logo" width={80} height={90} className="logo-img" />
         </Link>
 
         {/* Navigation */}
         <nav className="hidden md:flex flex-1 justify-center gap-8">
           {navLinks.map((link) => {
-            // Adjust Home href based on login status
-            const actualHref = link.name === "Home"
-              ? (isLoggedIn ? "/landing-page" : "/home")
-              : link.href;
+            // Dynamic Home link logic based on current pathname
+            let actualHref = link.href;
+            let displayName = link.name;
+
+            if (link.name === "Home") {
+              if (pathname === "/home") {
+                // User is on /home, show "Landing Page" link
+                actualHref = "/landing-page";
+                displayName = "Landing Page";
+              } else {
+                // User is on /landing-page or elsewhere, show "Home" link
+                actualHref = "/home";
+                displayName = "Home";
+              }
+            }
 
             if (link.subLinks) {
               const isAnySubActive = link.subLinks.some(sub => {
@@ -258,7 +269,16 @@ export default function ClientHeader() {
               );
             }
 
-            const isActive = pathname === actualHref;
+            // Check if this link is active - special handling for Home/Landing Page
+            const isActive = link.name === "Home"
+              ? (pathname === "/home" || pathname === "/landing-page")
+              : pathname === actualHref;
+
+            // Dynamic icon for Home/Landing Page
+            const DynamicIcon = link.name === "Home"
+              ? (displayName === "Landing Page" ? FaRocket : FaHome)
+              : link.icon;
+
             return (
               <Link
                 key={link.name}
@@ -270,12 +290,12 @@ export default function ClientHeader() {
               >
                 {isActive ? (
                   <span className={styles.gradientIcon}>
-                    <link.icon className="text-base" />
+                    <DynamicIcon className="text-base" />
                   </span>
                 ) : (
-                  <link.icon className="text-base" />
+                  <DynamicIcon className="text-base" />
                 )}
-                {link.name}
+                {displayName}
                 {isActive && (
                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500"></span>
                 )}

@@ -448,32 +448,34 @@ export default function FavoritesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white text-gray-900 font-sans pb-16">
-      <div className="max-w-5xl mx-auto px-4">
-        {/* <Link
-          href="/profile"
-          className="inline-flex items-center gap-2 text-purple-600 hover:text-purple-700 mb-6 transition pt-8"
-        >
-          <FaArrowLeft />
-          <span>Back to Profile</span>
-        </Link> */}
+    <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-indigo-50 to-fuchsia-50 text-gray-900 font-sans pb-16 overflow-x-hidden relative">
+      {/* Animated Background Orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-blue-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-fuchsia-400/20 to-pink-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-gradient-to-br from-cyan-400/20 to-indigo-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
 
+      <div className="max-w-5xl mx-auto px-4 relative z-10">
         <section className="pt-8 pb-6 flex flex-col items-center gap-6">
-          <h1 className="text-lg md:text-2xl font-bold leading-tight bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent text-center">
-            My Favorites
+          <h1 className="text-5xl md:text-6xl font-bold leading-tight drop-shadow-lg">
+            <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
+              My Favorites
+            </span>
           </h1>
+          <div className="w-32 h-1.5 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 rounded-full shadow-lg shadow-indigo-500/50"></div>
         </section>
 
         {/* Tabs Toggle */}
         <section className="max-w-5xl mx-auto px-4 pb-6">
-          <div className="flex justify-center gap-3">
+          <div className="flex justify-center gap-4">
             {tabs.map((tab) => (
               <button
                 key={tab.value}
                 onClick={() => setActiveTab(tab.value)}
-                className={`px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center gap-2 shadow-md ${activeTab === tab.value
-                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg scale-105'
-                  : 'bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200 hover:border-purple-400'
+                className={`px-8 py-3.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-3 shadow-lg ${activeTab === tab.value
+                  ? 'bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 text-white shadow-indigo-500/30 scale-105'
+                  : 'bg-white/70 backdrop-blur-sm text-gray-700 hover:bg-white hover:shadow-xl border-2 border-indigo-200/50 hover:border-indigo-400'
                   }`}
               >
                 {tab.icon}
@@ -495,10 +497,10 @@ export default function FavoritesPage() {
             ) : filteredData.length > 0 ? (
               <>
                 {/* Influencers Table View */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                <div className="bg-gradient-to-br from-white/80 via-indigo-50/60 to-fuchsia-50/60 backdrop-blur-md rounded-3xl shadow-2xl shadow-indigo-500/10 border-2 border-white/40 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                      <thead className="bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 text-white">
                         <tr>
                           <th className="px-6 py-4 text-left text-sm font-semibold">Influencer Icon</th>
                           <th className="px-6 py-4 text-left text-sm font-semibold">Influencer Name</th>
@@ -507,27 +509,26 @@ export default function FavoritesPage() {
                           <th className="px-6 py-4 text-center text-sm font-semibold">Details</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className="divide-y divide-indigo-100/50">
                         {visibleInfluencers.map((inf, index) => (
                           <tr
                             key={inf.id}
-                            className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                              }`}
+                            className="transition-all duration-300 border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50/20 to-fuchsia-50/20 hover:from-cyan-50/40 hover:via-indigo-50/40 hover:to-fuchsia-50/40 hover:shadow-lg cursor-pointer"
                           >
                             {/* Profile Image */}
                             <td className="px-6 py-4">
                               {inf.channel_thumbnails?.high?.url ? (
-                                <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
+                                <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg ring-2 ring-indigo-200/50 ring-offset-2">
                                   <Image
                                     src={inf.channel_thumbnails.high.url}
                                     alt={inf.name || "Channel"}
-                                    width={48}
-                                    height={48}
+                                    width={56}
+                                    height={56}
                                     className="w-full h-full object-cover"
                                   />
                                 </div>
                               ) : (
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold shadow-md">
+                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 via-indigo-500 to-fuchsia-500 flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-indigo-200/50 ring-offset-2">
                                   {inf.channel_id?.match(/\b\w/g)?.join("") || "?"}
                                 </div>
                               )}
@@ -535,21 +536,21 @@ export default function FavoritesPage() {
 
                             {/* Name */}
                             <td className="px-6 py-4">
-                              <div className="text-sm font-semibold text-gray-900">
+                              <div className="text-sm font-bold text-gray-900">
                                 {inf.name?.replace(/_/g, " ") || "Unknown"}
                               </div>
                             </td>
 
                             {/* Platform */}
                             <td className="px-6 py-4">
-                              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${inf.platform === "YouTube"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-blue-100 text-blue-700"
+                              <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold shadow-md ${inf.platform === "YouTube"
+                                ? "bg-gradient-to-r from-red-100 to-red-50 text-red-700 border border-red-200"
+                                : "bg-gradient-to-r from-blue-100 to-cyan-50 text-blue-700 border border-blue-200"
                                 }`}>
                                 {inf.platform === "YouTube" ? (
-                                  <FaYoutube className="mr-1" />
+                                  <FaYoutube className="mr-1.5" />
                                 ) : (
-                                  <FaTelegram className="mr-1" />
+                                  <FaTelegram className="mr-1.5" />
                                 )}
                                 {inf.platform}
                               </span>
@@ -565,10 +566,10 @@ export default function FavoritesPage() {
                                 }
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-sm text-purple-600 hover:text-purple-800 hover:underline flex items-center gap-1"
+                                className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-2 transition-all duration-200"
                                 onClick={(e) => e.stopPropagation()}
                               >
-                                <FaGlobe className="text-xs" />
+                                <FaGlobe className="text-sm" />
                                 View Channel
                               </a>
                             </td>
@@ -582,16 +583,16 @@ export default function FavoritesPage() {
                                       ? `/influencers/${inf.channel_id}`
                                       : `/telegram-influencer/${inf.channel_id}`
                                   }
-                                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm font-semibold rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 shadow-md hover:shadow-lg"
+                                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 text-white text-sm font-bold rounded-lg hover:from-cyan-700 hover:via-indigo-700 hover:to-fuchsia-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
                                 >
                                   View Details
                                 </Link>
                                 <button
                                   onClick={() => handleRemoveFavorite(inf.channel_id, inf.platform === "YouTube" ? "YOUTUBE" : "TELEGRAM")}
-                                  className="p-2 rounded-lg hover:bg-red-50 transition-all duration-200 group"
+                                  className="p-2.5 rounded-lg hover:bg-red-50 transition-all duration-200 group"
                                   aria-label="Remove from favorites"
                                 >
-                                  <FaHeart className="text-red-500 text-xl group-hover:scale-110 transition-transform" />
+                                  <FaHeart className="text-red-500 text-xl group-hover:scale-125 transition-transform" />
                                 </button>
                               </div>
                             </td>
@@ -783,10 +784,10 @@ export default function FavoritesPage() {
             ) : filteredCoins.length > 0 ? (
               <>
                 {/* Coins Table View */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-200">
+                <div className="bg-gradient-to-br from-white/80 via-indigo-50/60 to-fuchsia-50/60 backdrop-blur-md rounded-3xl shadow-2xl shadow-indigo-500/10 border-2 border-white/40 overflow-hidden">
                   <div className="overflow-x-auto">
                     <table className="w-full">
-                      <thead className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                      <thead className="bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 text-white">
                         <tr>
                           <th className="px-6 py-4 text-left text-sm font-semibold">Coin Icon</th>
                           <th className="px-6 py-4 text-left text-sm font-semibold">Coin Name</th>
@@ -796,27 +797,26 @@ export default function FavoritesPage() {
                           <th className="px-6 py-4 text-center text-sm font-semibold">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className="divide-y divide-indigo-100/50">
                         {visibleInfluencers.map((coin, index) => (
                           <tr
                             key={coin.id}
-                            className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'
-                              }`}
+                            className="transition-all duration-300 border-b border-indigo-100/50 bg-gradient-to-r from-indigo-50/20 to-fuchsia-50/20 hover:from-cyan-50/40 hover:via-indigo-50/40 hover:to-fuchsia-50/40 hover:shadow-lg cursor-pointer"
                           >
                             {/* Coin Image */}
                             <td className="px-6 py-4">
                               {coin.image ? (
-                                <div className="w-12 h-12 rounded-full overflow-hidden shadow-md">
+                                <div className="w-14 h-14 rounded-full overflow-hidden shadow-lg ring-2 ring-indigo-200/50 ring-offset-2">
                                   <Image
                                     src={coin.image}
                                     alt={coin.name}
-                                    width={48}
-                                    height={48}
+                                    width={56}
+                                    height={56}
                                     className="w-full h-full object-cover"
                                   />
                                 </div>
                               ) : (
-                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-white font-bold shadow-md">
+                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-500 via-indigo-500 to-fuchsia-500 flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-indigo-200/50 ring-offset-2">
                                   {coin.symbol?.[0] || "?"}
                                 </div>
                               )}
@@ -824,14 +824,14 @@ export default function FavoritesPage() {
 
                             {/* Coin Name */}
                             <td className="px-6 py-4">
-                              <div className="text-sm font-semibold text-gray-900">
+                              <div className="text-sm font-bold text-gray-900">
                                 {coin.name}
                               </div>
                             </td>
 
                             {/* Symbol */}
                             <td className="px-6 py-4">
-                              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-700">
+                              <span className="inline-flex items-center px-4 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-purple-100 to-fuchsia-50 text-purple-700 border border-purple-200 shadow-md">
                                 {coin.symbol}
                               </span>
                             </td>
