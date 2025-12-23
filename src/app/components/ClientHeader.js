@@ -3,13 +3,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef, Suspense } from "react";
-import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar, FaChartPie, FaNewspaper, FaSitemap, FaChevronDown, FaRocket } from "react-icons/fa";
+import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar, FaChartPie, FaNewspaper, FaSitemap, FaChevronDown } from "react-icons/fa";
 import { useTimezone } from "../contexts/TimezoneContext";
 import { useSelectedCoin } from "../contexts/SelectedCoinContext";
 import styles from "./ClientHeader.module.css";
 
 const navLinks = [
-  { name: "Home", href: "/landing-page", icon: FaHome },
+  { name: "Home", href: "/home", icon: FaHome },
   {
     name: "Trending",
     icon: FaChartLine,
@@ -183,21 +183,8 @@ export default function ClientHeader() {
         {/* Navigation */}
         <nav className="hidden md:flex flex-1 justify-center gap-8">
           {navLinks.map((link) => {
-            // Dynamic Home link logic based on current pathname
-            let actualHref = link.href;
-            let displayName = link.name;
-
-            if (link.name === "Home") {
-              if (pathname === "/home") {
-                // User is on /home, show "Landing Page" link
-                actualHref = "/landing-page";
-                displayName = "Landing Page";
-              } else {
-                // User is on /landing-page or elsewhere, show "Home" link
-                actualHref = "/home";
-                displayName = "Home";
-              }
-            }
+            const actualHref = link.href;
+            const displayName = link.name;
 
             if (link.subLinks) {
               const isAnySubActive = link.subLinks.some(sub => {
@@ -269,15 +256,8 @@ export default function ClientHeader() {
               );
             }
 
-            // Check if this link is active - special handling for Home/Landing Page
-            const isActive = link.name === "Home"
-              ? (pathname === "/home" || pathname === "/landing-page")
-              : pathname === actualHref;
-
-            // Dynamic icon for Home/Landing Page
-            const DynamicIcon = link.name === "Home"
-              ? (displayName === "Landing Page" ? FaRocket : FaHome)
-              : link.icon;
+            // Check if this link is active
+            const isActive = pathname === actualHref;
 
             return (
               <Link
@@ -290,10 +270,10 @@ export default function ClientHeader() {
               >
                 {isActive ? (
                   <span className={styles.gradientIcon}>
-                    <DynamicIcon className="text-base" />
+                    <link.icon className="text-base" />
                   </span>
                 ) : (
-                  <DynamicIcon className="text-base" />
+                  <link.icon className="text-base" />
                 )}
                 {displayName}
                 {isActive && (
