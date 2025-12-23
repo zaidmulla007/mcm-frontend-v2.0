@@ -183,8 +183,21 @@ export default function ClientHeader() {
         {/* Navigation */}
         <nav className="hidden md:flex flex-1 justify-center gap-8">
           {navLinks.map((link) => {
-            const actualHref = link.href;
-            const displayName = link.name;
+            // Dynamic logic for Home/Landing Page based on login status
+            let actualHref = link.href;
+            let displayName = link.name;
+
+            if (link.name === "Home") {
+              if (isLoggedIn) {
+                // Logged in users see "Home" and navigate to /landing-page
+                actualHref = "/landing-page";
+                displayName = "Home";
+              } else {
+                // Non-logged in users see "Landing Page" and navigate to /home
+                actualHref = "/home";
+                displayName = "Landing Page";
+              }
+            }
 
             if (link.subLinks) {
               const isAnySubActive = link.subLinks.some(sub => {
