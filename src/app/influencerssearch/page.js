@@ -468,7 +468,7 @@ export default function InfluencerSearchPage() {
                 </div>
               </div>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-hidden">
               <table className="w-full relative">
                 <thead>
                   {/* Main header row */}
@@ -572,8 +572,8 @@ export default function InfluencerSearchPage() {
                               x: { duration: 0.5 }
                             }}
                             className={`cursor-pointer transition-all duration-300 border-b border-indigo-100/50 ${index % 2 === 0
-                                ? 'bg-white/50 hover:bg-gradient-to-r hover:from-cyan-50/40 hover:via-indigo-50/40 hover:to-fuchsia-50/40'
-                                : 'bg-gradient-to-r from-indigo-50/20 to-fuchsia-50/20 hover:from-cyan-50/40 hover:via-indigo-50/40 hover:to-fuchsia-50/40'
+                              ? 'bg-white/50 hover:bg-gradient-to-r hover:from-cyan-50/40 hover:via-indigo-50/40 hover:to-fuchsia-50/40'
+                              : 'bg-gradient-to-r from-indigo-50/20 to-fuchsia-50/20 hover:from-cyan-50/40 hover:via-indigo-50/40 hover:to-fuchsia-50/40'
                               } hover:shadow-lg hover:scale-[1.01] hover:z-10`}
                             style={{ position: 'relative', zIndex: 1 }}
                             onClick={() => {
