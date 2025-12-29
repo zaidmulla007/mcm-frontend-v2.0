@@ -180,179 +180,182 @@ export default function TrendingCoinScroller() {
 
     return (
         <div className="w-full">
-            <div className="bg-white rounded-lg overflow-hidden shadow-lg relative border-2 border-purple-500">
-                {/* Timeframe Filter and Eye Icon */}
-                <div className="px-4 pt-3 pb-2 bg-gradient-to-r from-purple-100 to-blue-200 flex items-center gap-3">
-                    {/* Eye Icon with Tooltip */}
-                    <div className="relative group cursor-pointer">
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-5 w-5 text-gray-600"
-                            viewBox="0 0 20 20"
-                            fill="currentColor"
-                        >
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                        </svg>
-                        <div className="invisible group-hover:visible absolute top-full left-0 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                            N/A: percent change is not available
+            {/* Gradient border wrapper */}
+            <div className="relative rounded-lg p-[2px] bg-gradient-to-r from-blue-500 to-purple-500 shadow-lg">
+                <div className="bg-white rounded-lg overflow-hidden relative">
+                    {/* Timeframe Filter and Eye Icon */}
+                    <div className="px-4 pt-3 pb-2 bg-gradient-to-r from-purple-100 to-blue-200 flex items-center gap-3">
+                        {/* Eye Icon with Tooltip */}
+                        <div className="relative group cursor-pointer">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 text-gray-600"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                            >
+                                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                                <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
+                            </svg>
+                            <div className="invisible group-hover:visible absolute top-full left-0 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
+                                N/A: percent change is not available
+                            </div>
+                        </div>
+
+                        {/* Legend for New Mention */}
+                        <div className="flex items-center gap-2 ml-auto">
+                            <div className="relative inline-flex items-center justify-center h-7 w-7">
+                                <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
+                                <span className="absolute text-[12px] font-bold text-white uppercase tracking-tighter">M</span>
+                            </div>
+                            <span className="text-gray-700 text-xs font-medium">
+                                New mention in last {selectedTimeframe === "2hrs" ? "6" : "6"} hours
+                            </span>
                         </div>
                     </div>
 
-                    {/* Legend for New Mention */}
-                    <div className="flex items-center gap-2 ml-auto">
-                        <div className="relative inline-flex items-center justify-center h-7 w-7">
-                            <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
-                            <span className="absolute text-[12px] font-bold text-white uppercase tracking-tighter">M</span>
-                        </div>
-                        <span className="text-gray-700 text-xs font-medium">
-                            New mention in last {selectedTimeframe === "2hrs" ? "6" : "6"} hours
-                        </span>
-                    </div>
-                </div>
-
-                {/* Scrolling Content */}
-                <div className="px-4 pb-3 bg-gradient-to-r from-purple-50 to-blue-100">
-                    <div
-                        className="rounded-md relative overflow-hidden"
-                        ref={selectedTimeframe === "2hrs" ? scrollContainer2Hour : scrollContainer6Hour}
-                    >
-                        <motion.div
-                            className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
-                            style={{ x: selectedTimeframe === "2hrs" ? x2Hour : x6Hour }}
-                            drag="x"
-                            dragConstraints={false}
-                            dragElastic={0}
-                            dragMomentum={false}
-                            onDragStart={() => selectedTimeframe === "2hrs" ? setIs2HourDragging(true) : setIs6HourDragging(true)}
-                            onDragEnd={() => selectedTimeframe === "2hrs" ? setIs2HourDragging(false) : setIs6HourDragging(false)}
-                            onDrag={selectedTimeframe === "2hrs" ? handle2HourDrag : handle6HourDrag}
-                            onMouseEnter={() => selectedTimeframe === "2hrs" ? setIs2HourPaused(true) : setIs6HourPaused(true)}
-                            onMouseLeave={() => selectedTimeframe === "2hrs" ? setIs2HourPaused(false) : setIs6HourPaused(false)}
+                    {/* Scrolling Content */}
+                    <div className="px-4 pb-3 bg-gradient-to-r from-purple-50 to-blue-100">
+                        <div
+                            className="rounded-md relative overflow-hidden"
+                            ref={selectedTimeframe === "2hrs" ? scrollContainer2Hour : scrollContainer6Hour}
                         >
-                            {(() => {
-                                const message = trendingMessages.find(m => m.label === "2 Hours");
-                                const content = message ? message.content : "";
+                            <motion.div
+                                className="flex whitespace-nowrap cursor-grab active:cursor-grabbing"
+                                style={{ x: selectedTimeframe === "2hrs" ? x2Hour : x6Hour }}
+                                drag="x"
+                                dragConstraints={false}
+                                dragElastic={0}
+                                dragMomentum={false}
+                                onDragStart={() => selectedTimeframe === "2hrs" ? setIs2HourDragging(true) : setIs6HourDragging(true)}
+                                onDragEnd={() => selectedTimeframe === "2hrs" ? setIs2HourDragging(false) : setIs6HourDragging(false)}
+                                onDrag={selectedTimeframe === "2hrs" ? handle2HourDrag : handle6HourDrag}
+                                onMouseEnter={() => selectedTimeframe === "2hrs" ? setIs2HourPaused(true) : setIs6HourPaused(true)}
+                                onMouseLeave={() => selectedTimeframe === "2hrs" ? setIs2HourPaused(false) : setIs6HourPaused(false)}
+                            >
+                                {(() => {
+                                    const message = trendingMessages.find(m => m.label === "2 Hours");
+                                    const content = message ? message.content : "";
 
-                                if (!content) return null;
+                                    if (!content) return null;
 
-                                const formatNewStyle = (text) => {
-                                    const entries = text.split('·').filter(entry => entry.trim());
+                                    const formatNewStyle = (text) => {
+                                        const entries = text.split('·').filter(entry => entry.trim());
 
-                                    return entries.map((entry, idx) => {
-                                        let trimmedEntry = entry.trim();
-                                        if (!trimmedEntry) return null;
+                                        return entries.map((entry, idx) => {
+                                            let trimmedEntry = entry.trim();
+                                            if (!trimmedEntry) return null;
 
-                                        const isNewMention = trimmedEntry.includes('🆕');
-                                        trimmedEntry = trimmedEntry.replace('🆕', '').trim();
+                                            const isNewMention = trimmedEntry.includes('🆕');
+                                            trimmedEntry = trimmedEntry.replace('🆕', '').trim();
 
-                                        const colonIndex = trimmedEntry.indexOf(':');
-                                        if (colonIndex === -1) return null;
+                                            const colonIndex = trimmedEntry.indexOf(':');
+                                            if (colonIndex === -1) return null;
 
-                                        const symbol = trimmedEntry.substring(0, colonIndex).trim();
-                                        let restOfText = trimmedEntry.substring(colonIndex + 1).trim();
+                                            const symbol = trimmedEntry.substring(0, colonIndex).trim();
+                                            let restOfText = trimmedEntry.substring(colonIndex + 1).trim();
 
-                                        let twoHrPercent = null;
-                                        let is2HrUp = false;
-                                        const twoHrMatch = restOfText.match(/In\s+last\s+2\s+hrs:\s*(\d+\.?\d*)%\s*([↑↓])/i);
-                                        if (twoHrMatch) {
-                                            twoHrPercent = twoHrMatch[1] + '%';
-                                            is2HrUp = twoHrMatch[2] === '↑';
-                                        }
+                                            let twoHrPercent = null;
+                                            let is2HrUp = false;
+                                            const twoHrMatch = restOfText.match(/In\s+last\s+2\s+hrs:\s*(\d+\.?\d*)%\s*([↑↓])/i);
+                                            if (twoHrMatch) {
+                                                twoHrPercent = twoHrMatch[1] + '%';
+                                                is2HrUp = twoHrMatch[2] === '↑';
+                                            }
 
-                                        let sixHrPercent = null;
-                                        let is6HrUp = false;
-                                        let hasFireEmoji = false;
-                                        const sixHrMatch = restOfText.match(/In\s+last\s+6\s+hrs:\s*(🔥\s*)?(\d+\.?\d*)%\s*([↑↓])/i);
-                                        if (sixHrMatch) {
-                                            hasFireEmoji = !!sixHrMatch[1];
-                                            sixHrPercent = sixHrMatch[2] + '%';
-                                            is6HrUp = sixHrMatch[3] === '↑';
-                                        }
+                                            let sixHrPercent = null;
+                                            let is6HrUp = false;
+                                            let hasFireEmoji = false;
+                                            const sixHrMatch = restOfText.match(/In\s+last\s+6\s+hrs:\s*(🔥\s*)?(\d+\.?\d*)%\s*([↑↓])/i);
+                                            if (sixHrMatch) {
+                                                hasFireEmoji = !!sixHrMatch[1];
+                                                sixHrPercent = sixHrMatch[2] + '%';
+                                                is6HrUp = sixHrMatch[3] === '↑';
+                                            }
 
-                                        const ytMatch = restOfText.match(/YT:\s*(\d+)/i);
-                                        const tgMatch = restOfText.match(/TG:\s*(\d+)/i);
+                                            const ytMatch = restOfText.match(/YT:\s*(\d+)/i);
+                                            const tgMatch = restOfText.match(/TG:\s*(\d+)/i);
 
-                                        const hasYT = restOfText.includes('YT:');
-                                        const hasTG = restOfText.includes('TG:');
+                                            const hasYT = restOfText.includes('YT:');
+                                            const hasTG = restOfText.includes('TG:');
 
-                                        return (
-                                            <span key={idx} className="inline-flex items-center whitespace-nowrap gap-1">
-                                                {isNewMention && (
-                                                    <div className="relative inline-flex items-center justify-center h-6 w-6">
-                                                        <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
-                                                        <span className="absolute text-[10px] font-bold text-white uppercase tracking-tighter">M</span>
-                                                    </div>
-                                                )}
-                                                <span className="font-bold">{symbol}:</span>
-                                                {twoHrPercent && (
-                                                    <>
-                                                        <span>In last 2 hrs:</span>
-                                                        <span className="font-semibold">{twoHrPercent}</span>
-                                                        <span className={is2HrUp ? 'text-green-600 font-bold text-lg' : 'text-red-600 font-bold text-lg'}>
-                                                            {is2HrUp ? '↑' : '↓'}
-                                                        </span>
-                                                    </>
-                                                )}
-                                                {sixHrPercent && (
-                                                    <>
-                                                        <span>,</span>
-                                                        <span>In last 6 hrs:</span>
-                                                        {hasFireEmoji && <span>🔥</span>}
-                                                        <span className="font-semibold">{sixHrPercent}</span>
-                                                        <span className={is6HrUp ? 'text-green-600 font-bold text-lg' : 'text-red-600 font-bold text-lg'}>
-                                                            {is6HrUp ? '↑' : '↓'}
-                                                        </span>
-                                                    </>
-                                                )}
-                                                {(hasYT || hasTG) && (
-                                                    <>
-                                                        <span>with</span>
-                                                        {hasYT && (
-                                                            <>
-                                                                <FaYoutube className="text-red-600 text-xl" />
-                                                                <span>:</span>
-                                                                <span className="font-semibold">{ytMatch ? ytMatch[1] : '0'} new Posts</span>
-                                                            </>
-                                                        )}
-                                                        {hasYT && hasTG && <span>,</span>}
-                                                        {hasTG && (
-                                                            <>
-                                                                <FaTelegramPlane className="text-blue-500 text-xl" />
-                                                                <span>:</span>
-                                                                <span className="font-semibold">{tgMatch ? tgMatch[1] : '0'} new Posts</span>
-                                                            </>
-                                                        )}
-                                                    </>
-                                                )}
-                                                <span className="text-black font-bold text-3xl px-3">•</span>
-                                            </span>
-                                        );
-                                    }).filter(Boolean);
-                                };
+                                            return (
+                                                <span key={idx} className="inline-flex items-center whitespace-nowrap gap-1">
+                                                    {isNewMention && (
+                                                        <div className="relative inline-flex items-center justify-center h-6 w-6">
+                                                            <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
+                                                            <span className="absolute text-[10px] font-bold text-white uppercase tracking-tighter">M</span>
+                                                        </div>
+                                                    )}
+                                                    <span className="font-bold">{symbol}:</span>
+                                                    {twoHrPercent && (
+                                                        <>
+                                                            <span>In last 2 hrs:</span>
+                                                            <span className="font-semibold">{twoHrPercent}</span>
+                                                            <span className={is2HrUp ? 'text-green-600 font-bold text-lg' : 'text-red-600 font-bold text-lg'}>
+                                                                {is2HrUp ? '↑' : '↓'}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                    {sixHrPercent && (
+                                                        <>
+                                                            <span>,</span>
+                                                            <span>In last 6 hrs:</span>
+                                                            {hasFireEmoji && <span>🔥</span>}
+                                                            <span className="font-semibold">{sixHrPercent}</span>
+                                                            <span className={is6HrUp ? 'text-green-600 font-bold text-lg' : 'text-red-600 font-bold text-lg'}>
+                                                                {is6HrUp ? '↑' : '↓'}
+                                                            </span>
+                                                        </>
+                                                    )}
+                                                    {(hasYT || hasTG) && (
+                                                        <>
+                                                            <span>with</span>
+                                                            {hasYT && (
+                                                                <>
+                                                                    <FaYoutube className="text-red-600 text-xl" />
+                                                                    <span>:</span>
+                                                                    <span className="font-semibold">{ytMatch ? ytMatch[1] : '0'} new Posts</span>
+                                                                </>
+                                                            )}
+                                                            {hasYT && hasTG && <span>,</span>}
+                                                            {hasTG && (
+                                                                <>
+                                                                    <FaTelegramPlane className="text-blue-500 text-xl" />
+                                                                    <span>:</span>
+                                                                    <span className="font-semibold">{tgMatch ? tgMatch[1] : '0'} new Posts</span>
+                                                                </>
+                                                            )}
+                                                        </>
+                                                    )}
+                                                    <span className="text-black font-bold text-3xl px-3">•</span>
+                                                </span>
+                                            );
+                                        }).filter(Boolean);
+                                    };
 
-                                const contentGroup = (
-                                    <>
-                                        {[...Array(10)].map((_, i) => (
-                                            <span key={i} className="text-gray-700 font-medium text-base px-2 py-2 inline-flex items-center gap-1">
-                                                {formatNewStyle(content)}
-                                            </span>
-                                        ))}
-                                    </>
-                                );
+                                    const contentGroup = (
+                                        <>
+                                            {[...Array(10)].map((_, i) => (
+                                                <span key={i} className="text-gray-700 font-medium text-base px-2 py-2 inline-flex items-center gap-1">
+                                                    {formatNewStyle(content)}
+                                                </span>
+                                            ))}
+                                        </>
+                                    );
 
-                                return (
-                                    <>
-                                        <div className="scroller-content-item inline-flex items-center">
-                                            {contentGroup}
-                                        </div>
-                                        <div className="inline-flex items-center">
-                                            {contentGroup}
-                                        </div>
-                                    </>
-                                );
-                            })()}
-                        </motion.div>
+                                    return (
+                                        <>
+                                            <div className="scroller-content-item inline-flex items-center">
+                                                {contentGroup}
+                                            </div>
+                                            <div className="inline-flex items-center">
+                                                {contentGroup}
+                                            </div>
+                                        </>
+                                    );
+                                })()}
+                            </motion.div>
+                        </div>
                     </div>
                 </div>
             </div>

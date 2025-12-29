@@ -249,13 +249,13 @@ const BubbleClusterChart = memo(({ data }) => {
 
     // Add hover effects
     bubbleGroups
-      .on("mouseenter", function() {
+      .on("mouseenter", function () {
         d3.select(this).select(".bubble-main")
           .transition()
           .duration(200)
           .attr("filter", "url(#glow) drop-shadow(0 0 10px rgba(59, 130, 246, 0.8))");
       })
-      .on("mouseleave", function() {
+      .on("mouseleave", function () {
         d3.select(this).select(".bubble-main")
           .transition()
           .duration(200)
@@ -568,408 +568,415 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn }) => {
   }, [data?.Yearly, currentYear]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-4">
-        <div className="flex items-center gap-3">
-          {/* Profile Image - Centered */}
-          <div className="relative flex-shrink-0">
-            {profileImage ? (
-              <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-white">
-                <Image
-                  src={profileImage}
-                  alt={influencerName}
-                  width={64}
-                  height={64}
-                  className="rounded-full w-full h-full object-cover"
-                />
-              </div>
-            ) : channelType === "Telegram" ? (
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center shadow-lg border-2 border-white">
-                <span className="text-xl font-bold text-white">
-                  {influencerName ? influencerName.match(/\b\w/g)?.join("") || "?" : "?"}
-                </span>
-              </div>
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-gray-300 border-2 border-white"></div>
-            )}
-          </div>
+    <div className="relative rounded-2xl p-[2px] bg-gradient-to-br from-cyan-400 via-indigo-500 to-fuchsia-600 shadow-2xl shadow-indigo-500/30 hover:shadow-indigo-500/50 transition-all duration-300">
+      <div className="bg-white rounded-2xl overflow-hidden h-full">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 p-4 relative overflow-hidden">
+          {/* Decorative background effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
 
-          {/* Content Section */}
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-3">
-              <div className="text-white">
-                {/* Rank Badge - Above Name */}
-                <h3 className="text-sm font-bold">{influencerName}</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs">
-                    {channelType === "Telegram" ? channelType : `${channelType} • ${subscribers}`}
+          <div className="flex items-center gap-3 relative z-10">
+            {/* Profile Image - Centered */}
+            <div className="relative flex-shrink-0">
+              {profileImage ? (
+                <div className="w-16 h-16 rounded-full overflow-hidden border-3 border-white shadow-lg ring-2 ring-white/50">
+                  <Image
+                    src={profileImage}
+                    alt={influencerName}
+                    width={64}
+                    height={64}
+                    className="rounded-full w-full h-full object-cover"
+                  />
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-cyan-400 to-fuchsia-500 flex items-center justify-center shadow-xl border-3 border-white ring-2 ring-white/50">
+                  <span className="text-xl font-bold text-white uppercase">
+                    {(() => {
+                      // Try to get channel name from various sources and convert to string
+                      const name = String(data?.channel_name || data?.name || data?.title || data?.channel_id || influencerName || "?");
+
+                      // Extract initials using word boundary pattern
+                      const initials = name.match(/\b\w/g)?.join("").toUpperCase().slice(0, 4) || "?";
+
+                      return initials;
+                    })()}
                   </span>
                 </div>
+              )}
+            </div>
+
+            {/* Content Section */}
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-white">
+                  {/* Rank Badge - Above Name */}
+                  <h3 className="text-base font-extrabold drop-shadow-md">{influencerName}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="text-xs font-medium bg-white/20 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                      {channelType === "Telegram" ? channelType : `${channelType} • ${subscribers}`}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const userData = localStorage.getItem('userData');
+                    if (userData) {
+                      window.location.href = platformType === "youtube"
+                        ? `/influencers/${channelId}`
+                        : `/telegram-influencer/${channelId}`;
+                    } else {
+                      window.location.href = '/login?signup=true';
+                    }
+                  }}
+                  className="text-white text-xs hover:text-gray-100 font-bold whitespace-nowrap bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full transition-all duration-200 hover:bg-white/30"
+                >
+                  View Full →
+                </button>
               </div>
+
+              {/* MCM Trust Score / Star Rating */}
+              <div className="flex items-center justify-between">
+                <div className="text-white text-xs font-semibold">MCM Rating</div>
+                <div className="flex">
+                  {renderStars(starRating)}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Body */}
+        <div className="p-5 space-y-5 bg-gradient-to-br from-gray-50 via-white to-indigo-50/30">
+          {/* Total Calls */}
+          <div className="bg-gradient-to-br from-white/80 via-indigo-50/50 to-fuchsia-50/50 backdrop-blur-sm rounded-xl p-4 shadow-md border border-indigo-100/50 hover:shadow-lg transition-shadow duration-300">
+            <div className="flex items-center gap-2 mb-3">
+              <h4 className="text-sm font-extrabold bg-gradient-to-r from-indigo-700 to-fuchsia-700 bg-clip-text text-transparent">Total No.of Calls</h4>
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const userData = localStorage.getItem('userData');
-                  if (userData) {
-                    window.location.href = platformType === "youtube"
-                      ? `/influencers/${channelId}`
-                      : `/telegram-influencer/${channelId}`;
-                  } else {
-                    window.location.href = '/login?signup=true';
-                  }
-                }}
-                className="text-white text-xs hover:text-gray-200 font-semibold whitespace-nowrap"
+                className="relative group"
+                onMouseEnter={() => setShowTooltip('totalRecommendations')}
+                onMouseLeave={() => setShowTooltip(null)}
               >
-                View Full →
+                <FaInfoCircle className="text-indigo-400 text-xs hover:text-indigo-600 transition-colors" />
+                {showTooltip === 'totalRecommendations' && (
+                  <div className="absolute z-[9999] w-64 p-3 bg-gradient-to-br from-gray-900 to-gray-800 text-white text-xs rounded-lg shadow-2xl top-full left-1/2 -translate-x-1/2 mt-2 border border-gray-700 pointer-events-none">
+                    <p className="text-left leading-relaxed">Total bullish and bearish recommendations given by the influencer each year.</p>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 -mb-1">
+                      <div className="border-4 border-transparent border-b-gray-900"></div>
+                    </div>
+                  </div>
+                )}
               </button>
             </div>
 
-            {/* MCM Trust Score / Star Rating */}
-            <div className="flex items-center justify-between">
-              <div className="text-white text-xs">MCM Rating</div>
-              <div className="flex">
-                {renderStars(starRating)}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="p-4 space-y-4">
-        {/* Total Calls */}
-        <div className="bg-gray-50 rounded-lg p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <h4 className="text-sm font-bold text-gray-900">Total No.of Calls</h4>
-            <button
-              className="relative"
-              onMouseEnter={() => setShowTooltip('totalRecommendations')}
-              onMouseLeave={() => setShowTooltip(null)}
-            >
-              <FaInfoCircle className="text-gray-400 text-xs" />
-              {showTooltip === 'totalRecommendations' && (
-                <div className="absolute z-50 w-64 p-3 bg-gray-900 text-white text-xs rounded shadow-lg bottom-full left-1/2 -translate-x-1/2 mb-2">
-                  <p className="text-left leading-relaxed">Total bullish and bearish recommendations given by the influencer each year.</p>
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1">
-                    <div className="border-4 border-transparent border-t-gray-900"></div>
-                  </div>
-                </div>
+            {/* Chart Container */}
+            <div className="mt-3 bg-white rounded-xl p-3 border border-indigo-200/50 shadow-inner">
+              {totalCallsChartData && totalCallsChartData.length > 0 ? (
+                <BubbleClusterChart data={totalCallsChartData.map(item => ({
+                  year: item.year,
+                  calls: item.total
+                }))} />
+              ) : (
+                <div className="h-24 flex items-center justify-center text-gray-400 text-xs">No data available</div>
               )}
+            </div>
+
+            {/* View Dashboard Button */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const userData = localStorage.getItem('userData');
+                if (userData) {
+                  window.location.href =
+                    platformType === 'youtube'
+                      ? `/influencers/${channelId}`
+                      : `/telegram-influencer/${channelId}`;
+                } else {
+                  window.location.href = '/login?signup=true';
+                }
+              }}
+              className="text-indigo-600 text-xs font-bold mt-3 hover:text-indigo-700 transition-colors underline decoration-2 underline-offset-2"
+            >
+              View Total Calls Dashboard →
             </button>
           </div>
 
-          {/* Chart Container */}
-          <div className="mt-3 bg-white rounded-lg p-3 border border-gray-200">
-            {totalCallsChartData && totalCallsChartData.length > 0 ? (
-              <BubbleClusterChart data={totalCallsChartData.map(item => ({
-                year: item.year,
-                calls: item.total
-              }))} />
-            ) : (
-              <div className="h-24 flex items-center justify-center text-gray-400 text-xs">
-                No data available
-              </div>
-            )}
-          </div>
+          {/* ROI % - Win Rate Percentage */}
+          <div className="bg-gradient-to-br from-white/80 via-cyan-50/50 to-indigo-50/50 backdrop-blur-sm rounded-xl p-4 shadow-md border border-cyan-100/50 hover:shadow-lg transition-shadow duration-300">
+            <div className="flex items-center gap-2 mb-3">
+              <h4 className="text-sm font-extrabold bg-gradient-to-r from-cyan-700 to-indigo-700 bg-clip-text text-transparent">ROI %</h4>
+              <button
+                className="relative group"
+                onMouseEnter={() => setShowTooltip('roi')}
+                onMouseLeave={() => setShowTooltip(null)}
+              >
+                <FaInfoCircle className="text-cyan-400 text-xs hover:text-cyan-600 transition-colors" />
+                {showTooltip === 'roi' && (
+                  <div className="absolute z-[9999] w-72 p-3 bg-gradient-to-br from-gray-900 to-gray-800 text-white text-xs rounded-lg shadow-2xl -top-2 left-6 border border-gray-700 pointer-events-none">
+                    <p className="text-left leading-relaxed mb-2">% of calls that generated positive returns (that is, where the price of the coin moved in the direction of the influencer&apos;s sentiment), for a 180 day holding period</p>
+                    <p className="text-left leading-relaxed"><strong>H1:</strong> January to June</p>
+                    <p className="text-left leading-relaxed"><strong>H2:</strong> June to December</p>
+                  </div>
+                )}
+              </button>
+            </div>
+            {/* Line Graph */}
+            <div className="mt-3 bg-white rounded-xl p-4 border border-cyan-200/50 shadow-inner">
+              {roiGraphData && roiGraphData.length > 0 ? (
+                (() => {
+                  const dataPoints = roiGraphData;
 
-          {/* View Dashboard Button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              const userData = localStorage.getItem('userData');
-              if (userData) {
-                window.location.href =
-                  platformType === 'youtube'
+                  // Fixed width to fit container without scrolling
+                  const graphWidth = 280;
+                  const graphHeight = 100;
+                  const padding = { left: 35, right: 20, top: 20, bottom: 30 };
+
+                  // Custom Y-axis labels: 100+, 100, 50, 0, -50, -100
+                  // The 100+ label is at the top and represents any value > 100
+                  const yLabels = [
+                    { value: 100, display: '100+', position: 0 },  // Top position for 100+
+                    { value: 100, display: '100', position: 1 },   // Second position for exactly 100
+                    { value: 50, display: '50', position: 2 },
+                    { value: 0, display: '0', position: 3 },
+                    { value: -50, display: '-50', position: 4 },
+                    { value: -100, display: '-100', position: 5 }
+                  ];
+
+                  return (
+                    <div className="relative overflow-hidden" style={{ height: `${graphHeight + padding.top + padding.bottom}px`, width: '100%' }}>
+                      <svg width="100%" height={graphHeight + padding.top + padding.bottom} viewBox={`0 0 ${graphWidth + padding.left + padding.right} ${graphHeight + padding.top + padding.bottom}`} preserveAspectRatio="xMidYMid meet">
+                        {/* Y-axis */}
+                        <line
+                          x1={padding.left}
+                          y1={padding.top}
+                          x2={padding.left}
+                          y2={graphHeight + padding.top}
+                          stroke="#374151"
+                          strokeWidth="2"
+                        />
+
+                        {/* X-axis */}
+                        <line
+                          x1={padding.left}
+                          y1={graphHeight + padding.top}
+                          x2={graphWidth + padding.left}
+                          y2={graphHeight + padding.top}
+                          stroke="#374151"
+                          strokeWidth="2"
+                        />
+
+                        {/* Y-axis labels and grid lines */}
+                        {yLabels.map((label, i) => {
+                          const y = padding.top + (label.position * graphHeight / (yLabels.length - 1));
+                          return (
+                            <g key={i}>
+                              <text
+                                x={padding.left - 8}
+                                y={y + 4}
+                                fontSize="10"
+                                textAnchor="end"
+                                fill="#374151"
+                                fontWeight="bold"
+                              >
+                                {label.display}
+                              </text>
+                              {/* Only draw grid line for positions 1-5, not for 100+ at position 0 */}
+                              {label.position > 0 && label.position < yLabels.length - 1 && (
+                                <line
+                                  x1={padding.left}
+                                  y1={y}
+                                  x2={graphWidth + padding.left}
+                                  y2={y}
+                                  stroke="#e5e7eb"
+                                  strokeWidth="1"
+                                />
+                              )}
+                            </g>
+                          );
+                        })}
+
+                        {/* Data line segments with color based on value */}
+                        {dataPoints.map((point, index) => {
+                          if (index === 0) return null;
+
+                          const prevPoint = dataPoints[index - 1];
+
+                          // Calculate Y positions for both points using same logic as data points
+                          let y1, y2;
+
+                          // Previous point Y position (use actualValue)
+                          if (prevPoint.actualValue > 100) {
+                            y1 = padding.top + (0 * graphHeight / (yLabels.length - 1));
+                          } else if (prevPoint.actualValue < -100) {
+                            y1 = padding.top + (5 * graphHeight / (yLabels.length - 1));
+                          } else {
+                            const clampedPrevValue = Math.max(-100, Math.min(100, prevPoint.actualValue));
+                            const position1 = 3 - (clampedPrevValue / 50);
+                            y1 = padding.top + (position1 * graphHeight / (yLabels.length - 1));
+                          }
+
+                          // Current point Y position (use actualValue)
+                          if (point.actualValue > 100) {
+                            y2 = padding.top + (0 * graphHeight / (yLabels.length - 1));
+                          } else if (point.actualValue < -100) {
+                            y2 = padding.top + (5 * graphHeight / (yLabels.length - 1));
+                          } else {
+                            const clampedValue = Math.max(-100, Math.min(100, point.actualValue));
+                            const position2 = 3 - (clampedValue / 50);
+                            y2 = padding.top + (position2 * graphHeight / (yLabels.length - 1));
+                          }
+
+                          const x1 = padding.left + ((index - 1) / (dataPoints.length - 1)) * graphWidth;
+                          const x2 = padding.left + (index / (dataPoints.length - 1)) * graphWidth;
+
+                          // Use #1e3a8a (dark blue) for positive values (>= 0), #dbeafe (light blue) for negative values (< 0)
+                          const strokeColor = point.actualValue >= 0 ? "#1e3a8a" : "#dbeafe";
+
+                          return (
+                            <line
+                              key={`line-${index}`}
+                              x1={x1}
+                              y1={y1}
+                              x2={x2}
+                              y2={y2}
+                              stroke={strokeColor}
+                              strokeWidth="3"
+                              strokeLinecap="round"
+                            />
+                          );
+                        })}
+
+                        {/* Data points */}
+                        {dataPoints.map((point, index) => {
+                          const x = padding.left + (index / (dataPoints.length - 1)) * graphWidth;
+
+                          // Calculate Y position based on actualValue (not clamped value)
+                          // Labels are at positions 0-5, where:
+                          // Position 0 = 100+ (top)
+                          // Position 1 = 100
+                          // Position 2 = 50
+                          // Position 3 = 0
+                          // Position 4 = -50
+                          // Position 5 = -100 (bottom)
+                          let y;
+                          if (point.actualValue > 100) {
+                            // Values > 100 should be at position 0 (100+)
+                            y = padding.top + (0 * graphHeight / (yLabels.length - 1));
+                          } else if (point.actualValue < -100) {
+                            // Values < -100 should be at position 5 (-100)
+                            y = padding.top + (5 * graphHeight / (yLabels.length - 1));
+                          } else {
+                            // Map value to position 1-5 range
+                            // 100 -> position 1, -100 -> position 5
+                            const clampedValue = Math.max(-100, Math.min(100, point.actualValue));
+                            // Convert value (-100 to 100) to position (5 to 1)
+                            const position = 3 - (clampedValue / 50); // 100->1, 50->2, 0->3, -50->4, -100->5
+                            y = padding.top + (position * graphHeight / (yLabels.length - 1));
+                          }
+
+                          // Use #1e3a8a (dark blue) for positive values (>= 0), #dbeafe (light blue) for negative values (< 0)
+                          const fillColor = point.actualValue >= 0 ? "#1e3a8a" : "#dbeafe";
+
+                          return (
+                            <g key={point.label}>
+                              <circle
+                                cx={x}
+                                cy={y}
+                                r="5"
+                                fill={fillColor}
+                                className="cursor-pointer"
+                              >
+                                <title>{point.label}: {point.actualValue >= 0 ? '+' : ''}{point.actualValue.toFixed(1)}%</title>
+                              </circle>
+                              {/* X-axis label */}
+                              <text
+                                x={x}
+                                y={graphHeight + padding.top + 18}
+                                fontSize="9"
+                                textAnchor="middle"
+                                fill="#374151"
+                                fontWeight="bold"
+                              >
+                                {point.label}
+                              </text>
+                            </g>
+                          );
+                        })}
+                      </svg>
+                    </div>
+                  );
+                })()
+              ) : (
+                <div className="h-24 flex items-center justify-center text-gray-400 text-xs">No data available</div>
+              )}
+            </div>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                const userData = localStorage.getItem('userData');
+                if (userData) {
+                  window.location.href = platformType === "youtube"
                     ? `/influencers/${channelId}`
                     : `/telegram-influencer/${channelId}`;
-              } else {
-                window.location.href = '/login?signup=true';
-              }
-            }}
-            className="text-blue-600 text-xs font-semibold mt-2 hover:text-blue-700"
-          >
-            View Total Calls Dashboard →
-          </button>
-        </div>
-
-
-        {/* ROI % - Win Rate Percentage */}
-        <div className="bg-gray-50 rounded-lg p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <h4 className="text-sm font-bold text-gray-900">ROI %</h4>
-            <button
-              className="relative"
-              onMouseEnter={() => setShowTooltip('roi')}
-              onMouseLeave={() => setShowTooltip(null)}
+                } else {
+                  window.location.href = '/login?signup=true';
+                }
+              }}
+              className="text-cyan-600 text-xs font-bold mt-3 hover:text-cyan-700 transition-colors underline decoration-2 underline-offset-2"
             >
-              <FaInfoCircle className="text-gray-400 text-xs" />
-              {showTooltip === 'roi' && (
-                <div className="absolute z-10 w-72 p-3 bg-gray-900 text-white text-xs rounded shadow-lg -top-2 left-6">
-                  <p className="text-left leading-relaxed mb-2">% of calls that generated positive returns (that is, where the price of the coin moved in the direction of the influencer&apos;s sentiment), for a 180 day holding period</p>
-                  <p className="text-left leading-relaxed"><strong>H1:</strong> January to June</p>
-                  <p className="text-left leading-relaxed"><strong>H2:</strong> June to December</p>
-                </div>
-              )}
+              View ROI Dashboard →
             </button>
           </div>
-          {/* Line Graph */}
-          <div className="mt-3 bg-white rounded-lg p-4 border border-gray-200">
-            {roiGraphData && roiGraphData.length > 0 ? (
-              (() => {
-                const dataPoints = roiGraphData;
 
-                // Fixed width to fit container without scrolling
-                const graphWidth = 280;
-                const graphHeight = 100;
-                const padding = { left: 35, right: 20, top: 20, bottom: 30 };
-
-                // Custom Y-axis labels: 100+, 100, 50, 0, -50, -100
-                // The 100+ label is at the top and represents any value > 100
-                const yLabels = [
-                  { value: 100, display: '100+', position: 0 },  // Top position for 100+
-                  { value: 100, display: '100', position: 1 },   // Second position for exactly 100
-                  { value: 50, display: '50', position: 2 },
-                  { value: 0, display: '0', position: 3 },
-                  { value: -50, display: '-50', position: 4 },
-                  { value: -100, display: '-100', position: 5 }
-                ];
-
-                return (
-                  <div className="relative overflow-hidden" style={{ height: `${graphHeight + padding.top + padding.bottom}px`, width: '100%' }}>
-                    <svg width="100%" height={graphHeight + padding.top + padding.bottom} viewBox={`0 0 ${graphWidth + padding.left + padding.right} ${graphHeight + padding.top + padding.bottom}`} preserveAspectRatio="xMidYMid meet">
-                      {/* Y-axis */}
-                      <line
-                        x1={padding.left}
-                        y1={padding.top}
-                        x2={padding.left}
-                        y2={graphHeight + padding.top}
-                        stroke="#374151"
-                        strokeWidth="2"
-                      />
-
-                      {/* X-axis */}
-                      <line
-                        x1={padding.left}
-                        y1={graphHeight + padding.top}
-                        x2={graphWidth + padding.left}
-                        y2={graphHeight + padding.top}
-                        stroke="#374151"
-                        strokeWidth="2"
-                      />
-
-                      {/* Y-axis labels and grid lines */}
-                      {yLabels.map((label, i) => {
-                        const y = padding.top + (label.position * graphHeight / (yLabels.length - 1));
-                        return (
-                          <g key={i}>
-                            <text
-                              x={padding.left - 8}
-                              y={y + 4}
-                              fontSize="10"
-                              textAnchor="end"
-                              fill="#374151"
-                              fontWeight="bold"
-                            >
-                              {label.display}
-                            </text>
-                            {/* Only draw grid line for positions 1-5, not for 100+ at position 0 */}
-                            {label.position > 0 && label.position < yLabels.length - 1 && (
-                              <line
-                                x1={padding.left}
-                                y1={y}
-                                x2={graphWidth + padding.left}
-                                y2={y}
-                                stroke="#e5e7eb"
-                                strokeWidth="1"
-                              />
-                            )}
-                          </g>
-                        );
-                      })}
-
-                      {/* Data line segments with color based on value */}
-                      {dataPoints.map((point, index) => {
-                        if (index === 0) return null;
-
-                        const prevPoint = dataPoints[index - 1];
-
-                        // Calculate Y positions for both points using same logic as data points
-                        let y1, y2;
-
-                        // Previous point Y position (use actualValue)
-                        if (prevPoint.actualValue > 100) {
-                          y1 = padding.top + (0 * graphHeight / (yLabels.length - 1));
-                        } else if (prevPoint.actualValue < -100) {
-                          y1 = padding.top + (5 * graphHeight / (yLabels.length - 1));
-                        } else {
-                          const clampedPrevValue = Math.max(-100, Math.min(100, prevPoint.actualValue));
-                          const position1 = 3 - (clampedPrevValue / 50);
-                          y1 = padding.top + (position1 * graphHeight / (yLabels.length - 1));
-                        }
-
-                        // Current point Y position (use actualValue)
-                        if (point.actualValue > 100) {
-                          y2 = padding.top + (0 * graphHeight / (yLabels.length - 1));
-                        } else if (point.actualValue < -100) {
-                          y2 = padding.top + (5 * graphHeight / (yLabels.length - 1));
-                        } else {
-                          const clampedValue = Math.max(-100, Math.min(100, point.actualValue));
-                          const position2 = 3 - (clampedValue / 50);
-                          y2 = padding.top + (position2 * graphHeight / (yLabels.length - 1));
-                        }
-
-                        const x1 = padding.left + ((index - 1) / (dataPoints.length - 1)) * graphWidth;
-                        const x2 = padding.left + (index / (dataPoints.length - 1)) * graphWidth;
-
-                        // Use #1e3a8a (dark blue) for positive values (>= 0), #dbeafe (light blue) for negative values (< 0)
-                        const strokeColor = point.actualValue >= 0 ? "#1e3a8a" : "#dbeafe";
-
-                        return (
-                          <line
-                            key={`line-${index}`}
-                            x1={x1}
-                            y1={y1}
-                            x2={x2}
-                            y2={y2}
-                            stroke={strokeColor}
-                            strokeWidth="3"
-                            strokeLinecap="round"
-                          />
-                        );
-                      })}
-
-                      {/* Data points */}
-                      {dataPoints.map((point, index) => {
-                        const x = padding.left + (index / (dataPoints.length - 1)) * graphWidth;
-
-                        // Calculate Y position based on actualValue (not clamped value)
-                        // Labels are at positions 0-5, where:
-                        // Position 0 = 100+ (top)
-                        // Position 1 = 100
-                        // Position 2 = 50
-                        // Position 3 = 0
-                        // Position 4 = -50
-                        // Position 5 = -100 (bottom)
-                        let y;
-                        if (point.actualValue > 100) {
-                          // Values > 100 should be at position 0 (100+)
-                          y = padding.top + (0 * graphHeight / (yLabels.length - 1));
-                        } else if (point.actualValue < -100) {
-                          // Values < -100 should be at position 5 (-100)
-                          y = padding.top + (5 * graphHeight / (yLabels.length - 1));
-                        } else {
-                          // Map value to position 1-5 range
-                          // 100 -> position 1, -100 -> position 5
-                          const clampedValue = Math.max(-100, Math.min(100, point.actualValue));
-                          // Convert value (-100 to 100) to position (5 to 1)
-                          const position = 3 - (clampedValue / 50); // 100->1, 50->2, 0->3, -50->4, -100->5
-                          y = padding.top + (position * graphHeight / (yLabels.length - 1));
-                        }
-
-                        // Use #1e3a8a (dark blue) for positive values (>= 0), #dbeafe (light blue) for negative values (< 0)
-                        const fillColor = point.actualValue >= 0 ? "#1e3a8a" : "#dbeafe";
-
-                        return (
-                          <g key={point.label}>
-                            <circle
-                              cx={x}
-                              cy={y}
-                              r="5"
-                              fill={fillColor}
-                              className="cursor-pointer"
-                            >
-                              <title>{point.label}: {point.actualValue >= 0 ? '+' : ''}{point.actualValue.toFixed(1)}%</title>
-                            </circle>
-                            {/* X-axis label */}
-                            <text
-                              x={x}
-                              y={graphHeight + padding.top + 18}
-                              fontSize="9"
-                              textAnchor="middle"
-                              fill="#374151"
-                              fontWeight="bold"
-                            >
-                              {point.label}
-                            </text>
-                          </g>
-                        );
-                      })}
-                    </svg>
+          {/* Moonshot Probability */}
+          <div className="bg-gradient-to-br from-white/80 via-fuchsia-50/50 to-purple-50/50 backdrop-blur-sm rounded-xl p-4 shadow-md border border-fuchsia-100/50 hover:shadow-lg transition-shadow duration-300">
+            <div className="flex items-center gap-2 mb-3">
+              <h4 className="text-sm font-extrabold bg-gradient-to-r from-fuchsia-700 to-purple-700 bg-clip-text text-transparent">Moonshots</h4>
+              <button
+                className="relative group"
+                onMouseEnter={() => setShowTooltip('moonshot')}
+                onMouseLeave={() => setShowTooltip(null)}
+              >
+                <FaInfoCircle className="text-fuchsia-400 text-xs hover:text-fuchsia-600 transition-colors" />
+                {showTooltip === 'moonshot' && (
+                  <div className="absolute z-[9999] w-64 p-3 bg-gradient-to-br from-gray-900 to-gray-800 text-white text-xs rounded-lg shadow-2xl -top-32 left-0 right-0 mx-auto border border-gray-700 pointer-events-none">
+                    <p className="text-left leading-relaxed">Moonshot is defined by hyperactivity in a coin recommended by the influencer within a short period of time. A recommendation was considered as a moonshot if the price of the coin moved by 50% within 1 hour, or by 100% within 7 days, or by 200% within 30 days, or by 300% within 180 days or by 400% within 1 year. The display on the screen is filtered for those recommendations where the coin moved by +300% within 180 days.</p>
                   </div>
-                );
-              })()
-            ) : (
-              <div className="h-24 flex items-center justify-center text-gray-400 text-xs">No data available</div>
-            )}
-          </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              const userData = localStorage.getItem('userData');
-              if (userData) {
-                window.location.href = platformType === "youtube"
-                  ? `/influencers/${channelId}`
-                  : `/telegram-influencer/${channelId}`;
-              } else {
-                window.location.href = '/login?signup=true';
-              }
-            }}
-            className="text-blue-600 text-xs font-semibold mt-2 hover:text-blue-700"
-          >
-            View ROI Dashboard →
-          </button>
-        </div>
+                )}
+              </button>
+            </div>
+            <div className={`grid gap-2 ${Object.keys(moonshotProb).length === 5 ? 'grid-cols-5' : Object.keys(moonshotProb).length === 4 ? 'grid-cols-4' : Object.keys(moonshotProb).length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              {Object.keys(moonshotProb).length > 0 ? (
+                (() => {
+                  const currentYear = new Date().getFullYear().toString();
+                  return Object.entries(moonshotProb)
+                    .sort(([a], [b]) => a.localeCompare(b)) // Sort years chronologically (2021, 2022, 2023, 2024, 2025)
+                    .map(([year, count]) => {
+                      // Treat count as percentage (0-100)
+                      // Cap at 100 if count exceeds 100
+                      const percentage = Math.min(count, 100);
 
-        {/* Moonshot Probability */}
-        <div className="bg-gray-50 rounded-lg p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <h4 className="text-sm font-bold text-gray-900">Moonshots</h4>
-            <button
-              className="relative"
-              onMouseEnter={() => setShowTooltip('moonshot')}
-              onMouseLeave={() => setShowTooltip(null)}
-            >
-              <FaInfoCircle className="text-gray-400 text-xs" />
-              {showTooltip === 'moonshot' && (
-                <div className="absolute z-50 w-64 p-3 bg-gray-900 text-white text-xs rounded shadow-xl -top-32 left-0 right-0 mx-auto">
-                  <p className="text-left leading-relaxed">Moonshot is defined by hyperactivity in a coin recommended by the influencer within a short period of time. A recommendation was considered as a moonshot if the price of the coin moved by 50% within 1 hour, or by 100% within 7 days, or by 200% within 30 days, or by 300% within 180 days or by 400% within 1 year. The display on the screen is filtered for those recommendations where the coin moved by +300% within 180 days.</p>
-                </div>
-              )}
-            </button>
-          </div>
-          <div className={`grid gap-2 ${Object.keys(moonshotProb).length === 5 ? 'grid-cols-5' : Object.keys(moonshotProb).length === 4 ? 'grid-cols-4' : Object.keys(moonshotProb).length === 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
-            {Object.keys(moonshotProb).length > 0 ? (
-              (() => {
-                const currentYear = new Date().getFullYear().toString();
-                return Object.entries(moonshotProb)
-                  .sort(([a], [b]) => a.localeCompare(b)) // Sort years chronologically (2021, 2022, 2023, 2024, 2025)
-                  .map(([year, count]) => {
-                    // Treat count as percentage (0-100)
-                    // Cap at 100 if count exceeds 100
-                    const percentage = Math.min(count, 100);
+                      // Mark current year with asterisk
+                      const displayYear = year === currentYear ? year + '*' : year;
 
-                    // Mark current year with asterisk
-                    const displayYear = year === currentYear ? year + '*' : year;
-
-                    return (
-                      <div key={year} className="flex flex-col items-center">
-                        <div className="text-xs text-gray-600 mb-1">{displayYear}</div>
-                        <div className="relative w-16 h-16">
-                          <MoonPhase percentage={percentage} year={year} />
-                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <span className="text-xs font-bold text-white" style={{ textShadow: '0 0 3px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.6)' }}>{count}</span>
+                      return (
+                        <div key={year} className="flex flex-col items-center">
+                          <div className="text-xs text-gray-600 mb-1">{displayYear}</div>
+                          <div className="relative w-16 h-16">
+                            <MoonPhase percentage={percentage} year={year} />
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                              <span className="text-xs font-bold text-white" style={{ textShadow: '0 0 3px rgba(0,0,0,0.8), 0 0 5px rgba(0,0,0,0.6)' }}>{count}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  });
-              })()
-            ) : (
-              <div className="col-span-full text-center text-gray-400 text-xs py-4">No moonshot data available</div>
-            )}
-          </div>
-          {/* <button
+                      );
+                    });
+                })()
+              ) : (
+                <div className="col-span-full text-center text-gray-400 text-xs py-4">No moonshot data available</div>
+              )}
+            </div>
+            {/* <button
             onClick={(e) => {
               e.stopPropagation();
               const userData = localStorage.getItem('userData');
@@ -985,6 +992,7 @@ const InfluencerFlashCard = memo(({ data, rank, rankLabel, isLoggedIn }) => {
           >
             View Moonshot Dashboard →
           </button> */}
+          </div>
         </div>
       </div>
     </div>

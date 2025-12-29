@@ -585,7 +585,7 @@ export default function FavoritesPage() {
                                   }
                                   className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 text-white text-sm font-bold rounded-lg hover:from-cyan-700 hover:via-indigo-700 hover:to-fuchsia-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
                                 >
-                                  View Details
+                                  View Dashboard
                                 </Link>
                                 <button
                                   onClick={() => handleRemoveFavorite(inf.channel_id, inf.platform === "YouTube" ? "YOUTUBE" : "TELEGRAM")}
