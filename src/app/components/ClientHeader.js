@@ -15,6 +15,7 @@ const navLinks = [
     icon: FaChartLine,
     subLinks: [
       { name: "Trending Coins", href: "/coins", icon: FaCoins },
+      { name: "Trending Coins 2", href: "/coins-new", icon: FaCoins },
       { name: "Latest Posts", href: "/influencer-search", icon: FaBullhorn },
       { name: "Top News", href: "/top-news", icon: FaNewspaper },
     ]
@@ -202,6 +203,7 @@ export default function ClientHeader() {
             if (link.subLinks) {
               const isAnySubActive = link.subLinks.some(sub => {
                 if (sub.href === "/coins") return pathname === "/coins";
+                if (sub.href === "/coins-new") return pathname === "/coins-new";
                 if (sub.href === "/coins-list") return pathname.startsWith("/coins-list");
                 if (sub.href === "/influencer-search") {
                   return pathname === "/influencer-search" || pathname === "/posts" || pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/");
@@ -241,6 +243,7 @@ export default function ClientHeader() {
                     <div className="w-56 bg-white/95 backdrop-blur-sm rounded-xl shadow-xl shadow-indigo-500/10 border border-indigo-200/50 py-2 overflow-hidden">
                       {link.subLinks.map((sub) => {
                         const isSubActive = sub.href === "/coins" ? pathname === "/coins" :
+                          sub.href === "/coins-new" ? pathname === "/coins-new" :
                           sub.href === "/coins-list" ? pathname.startsWith("/coins-list") :
                             sub.href === "/influencer-search" ? (pathname === "/influencer-search" || pathname === "/posts" || pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/")) :
                               pathname === sub.href;

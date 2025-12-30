@@ -29,6 +29,7 @@ export default function InfluencerSearchPage() {
   const [youtubeInfluencers, setYoutubeInfluencers] = useState([]);
   const [telegramInfluencers, setTelegramInfluencers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [filterLoading, setFilterLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Pagination state
@@ -50,7 +51,7 @@ export default function InfluencerSearchPage() {
 
   // Filter states
   const [selectedRating, setSelectedRating] = useState("3");
-  const [selectedTimeframe, setSelectedTimeframe] = useState("1_hour");
+  const [selectedTimeframe, setSelectedTimeframe] = useState("180_days");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
 
   // Client-side filters
@@ -70,9 +71,11 @@ export default function InfluencerSearchPage() {
 
   // Memoized API call functions
   const fetchYouTubeData = useCallback(async () => {
-    // Only show loading on first load
+    // Show loading on first load, filter loading otherwise
     if (isFirstRenderRef.current) {
       setLoading(true);
+    } else {
+      setFilterLoading(true);
     }
     setError(null);
     try {
@@ -101,14 +104,18 @@ export default function InfluencerSearchPage() {
         setLoading(false);
         setInitialLoad(false);
         isFirstRenderRef.current = false;
+      } else {
+        setFilterLoading(false);
       }
     }
   }, [apiParams]);
 
   const fetchTelegramData = useCallback(async () => {
-    // Only show loading on first load
+    // Show loading on first load, filter loading otherwise
     if (isFirstRenderRef.current) {
       setLoading(true);
+    } else {
+      setFilterLoading(true);
     }
     setError(null);
     try {
@@ -137,6 +144,8 @@ export default function InfluencerSearchPage() {
         setLoading(false);
         setInitialLoad(false);
         isFirstRenderRef.current = false;
+      } else {
+        setFilterLoading(false);
       }
     }
   }, [apiParams]);
@@ -488,7 +497,15 @@ export default function InfluencerSearchPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200 relative" style={{ isolation: 'isolate' }}>
-                  {initialLoad ? (
+                  {filterLoading ? (
+                    <tr>
+                      <td colSpan="4" className="px-6 py-12 text-center">
+                        <div className="flex justify-center items-center">
+                          <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-600 border-t-4 border-t-cyan-500"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : initialLoad ? (
                     Array.from({ length: 10 }).map((_, i) => (
                       <tr key={`skeleton-row-${i}`}>
                         {/* Influencer column skeleton */}

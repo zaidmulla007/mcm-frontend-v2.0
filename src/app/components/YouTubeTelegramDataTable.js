@@ -680,7 +680,7 @@ export default function YouTubeTelegramDataTable({ useLocalTime: propUseLocalTim
                                                         {timeframe === '6hrs' && isNewCoin(coin) && (
                                                             <div className="absolute -top-2 -left-8 group/newcoin z-[9999]">
                                                                 <div className="relative inline-flex items-center justify-center h-6 w-6">
-                                                                    <FaCertificate className="text-indigo-600 w-full h-full drop-shadow-md" />
+                                                                    <FaCertificate className="text-blue-500 w-full h-full drop-shadow-md" />
                                                                     <span className="absolute text-[11px] font-bold text-white uppercase tracking-tighter">M</span>
                                                                 </div>
                                                                 <div className="invisible group-hover/newcoin:visible absolute top-full left-0 mt-1 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[9999]">
