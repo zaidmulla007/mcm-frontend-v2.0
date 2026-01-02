@@ -4,24 +4,15 @@ import { useEffect, useState } from "react";
 export default function MCMSignalTestPage() {
   const [coins, setCoins] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedTimeframe, setSelectedTimeframe] = useState("6hrs");
+  const [allData, setAllData] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await fetch('/api/admin/strategyyoutubedata/ytandtg');
         const data = await response.json();
-
-        // Handle response format
-        const timeFrameData = data.resultsByTimeframe?.["6hrs"];
-        if (timeFrameData) {
-          const allCoins = timeFrameData.all_coins || [];
-          const memCoins = timeFrameData.mem_coins || [];
-          const combined = [...allCoins, ...memCoins];
-
-          // Sort by total_mentions descending and take top 10
-          combined.sort((a, b) => (b.total_mentions || 0) - (a.total_mentions || 0));
-          setCoins(combined.slice(0, 10));
-        }
+        setAllData(data);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       } finally {
@@ -31,6 +22,23 @@ export default function MCMSignalTestPage() {
 
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!allData) return;
+
+    const timeFrameData = allData.resultsByTimeframe?.[selectedTimeframe];
+    if (timeFrameData) {
+      const allCoins = timeFrameData.all_coins || [];
+      const memCoins = timeFrameData.mem_coins || [];
+      const combined = [...allCoins, ...memCoins];
+
+      // Sort by total_mentions descending and take top 10
+      combined.sort((a, b) => (b.total_mentions || 0) - (a.total_mentions || 0));
+      setCoins(combined.slice(0, 10));
+    } else {
+      setCoins([]);
+    }
+  }, [allData, selectedTimeframe]);
 
   const truncateSummary = (summary) => {
     if (!summary) return "N/A";
@@ -49,12 +57,31 @@ export default function MCMSignalTestPage() {
       </div>
 
       <div className="max-w-[90rem] mx-auto relative z-10">
-        <h2 className="text-4xl md:text-5xl font-bold flex items-center gap-3 drop-shadow-sm mb-2 mt-4 leading-normal">
-          <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent inline-block pb-1">
-            MCM Signal Test
-          </span>
-        </h2>
-        <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 rounded-full flex-shrink-0 mt-2 mb-6 shadow-lg shadow-indigo-500/50"></div>
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 mt-4">
+          <div>
+            <h2 className="text-4xl md:text-5xl font-bold flex items-center gap-3 drop-shadow-sm leading-normal">
+              <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent inline-block pb-1">
+                MCM Signal Test
+              </span>
+            </h2>
+            <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 rounded-full mt-2 shadow-lg shadow-indigo-500/50"></div>
+          </div>
+
+          <div className="flex items-center gap-2 mt-4 md:mt-0 bg-white/40 p-1.5 rounded-2xl backdrop-blur-md border border-white/50 shadow-sm">
+            {["6hrs", "24hrs", "7days"].map((tf) => (
+              <button
+                key={tf}
+                onClick={() => setSelectedTimeframe(tf)}
+                className={`px-4 py-2 text-xs font-bold rounded-xl transition-all duration-300 transform ${selectedTimeframe === tf
+                    ? 'bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-500/30 scale-105'
+                    : 'text-gray-600 hover:bg-white/60 hover:text-indigo-600'
+                  }`}
+              >
+                {tf.replace("hrs", " Hours").replace("days", " Days")}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Signal Table */}
         <div className="overflow-x-auto rounded-xl shadow-2xl bg-white/50 backdrop-blur-sm">
@@ -83,7 +110,13 @@ export default function MCMSignalTestPage() {
 
             <tbody className="divide-y divide-indigo-100">
               {loading ? (
-                <tr><td colSpan="10" className="text-center py-10 text-lg text-gray-600">Loading...</td></tr>
+                <tr>
+                  <td colSpan="10" className="px-6 py-20 text-center">
+                    <div className="flex justify-center items-center">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-600 border-t-4 border-t-cyan-500"></div>
+                    </div>
+                  </td>
+                </tr>
               ) : (
                 coins.map((coin, index) => {
                   const summaryText = coin.ai_summary?.summary || "No summary available";
