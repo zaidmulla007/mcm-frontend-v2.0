@@ -3,7 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useRef, Suspense } from "react";
-import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar, FaChartPie, FaNewspaper, FaSitemap, FaChevronDown } from "react-icons/fa";
+import { FaUserCircle, FaUser, FaCreditCard, FaSignOutAlt, FaHome, FaDrum, FaChartLine, FaBullhorn, FaTrophy, FaBlog, FaInfoCircle, FaGlobe, FaChartBar, FaHistory, FaCoins, FaStar, FaChartPie, FaNewspaper, FaSitemap, FaChevronDown, FaSignal } from "react-icons/fa";
 import { useTimezone } from "../contexts/TimezoneContext";
 import { useSelectedCoin } from "../contexts/SelectedCoinContext";
 import styles from "./ClientHeader.module.css";
@@ -41,6 +41,8 @@ const navLinks = [
     icon: FaHistory,
     subLinks: [
       { name: "Post Spread", href: "/tree", icon: FaSitemap },
+      { name: "MCM Signal", href: "/mcm-final", icon: FaSignal },
+      { name: "MCM Signal Test", href: "/mcm-signal-test", icon: FaSignal },
     ]
   },
 ];
@@ -244,9 +246,9 @@ export default function ClientHeader() {
                       {link.subLinks.map((sub) => {
                         const isSubActive = sub.href === "/coins" ? pathname === "/coins" :
                           sub.href === "/coins-new" ? pathname === "/coins-new" :
-                          sub.href === "/coins-list" ? pathname.startsWith("/coins-list") :
-                            sub.href === "/influencer-search" ? (pathname === "/influencer-search" || pathname === "/posts" || pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/")) :
-                              pathname === sub.href;
+                            sub.href === "/coins-list" ? pathname.startsWith("/coins-list") :
+                              sub.href === "/influencer-search" ? (pathname === "/influencer-search" || pathname === "/posts" || pathname.startsWith("/influencers/") || pathname.startsWith("/telegram-influencer/")) :
+                                pathname === sub.href;
 
                         return (
                           <Link

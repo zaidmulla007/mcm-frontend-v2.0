@@ -46,6 +46,68 @@ const formatRecommendations = (lastPostsData, livePrices = {}, volumeData = {}) 
   const formattedPosts = lastPostsData.map(post => {
     // Handle grouped posts (multiple coins per post)
     if (post.isGrouped && post.coins) {
+      // Filter coins with valid sentiment
+      const validCoins = post.coins.filter(coinData => {
+        const sentiment = coinData.sentiment || "";
+        const validSentiments = ["strong_bullish", "strong_bearish", "mild_bullish", "mild_bearish"];
+        return sentiment && validSentiments.includes(sentiment.toLowerCase());
+      }).map(coinData => {
+        // Format each coin in the group
+        const sentiment = coinData.sentiment || "";
+        const outlook = coinData.outlook || coinData.cryptoRecommendationType || "";
+
+        let type = "bullish";
+        let term = "N/A";
+
+        // Determine type based on sentiment
+        if (sentiment.toLowerCase().includes("bearish")) {
+          type = "bearish";
+        }
+
+        // Determine term based on outlook - only if valid
+        if (outlook && (outlook.toLowerCase() === "short_term" || outlook.toLowerCase() === "short-term")) {
+          term = "short";
+        } else if (outlook && (outlook.toLowerCase() === "long_term" || outlook.toLowerCase() === "long-term")) {
+          term = "long";
+        }
+
+        const basePrice = coinData.binance?.base_price || coinData.price || null;
+        const lastAvailablePrice = coinData.binance?.last_available_price || null;
+        const lastAvailableTimestamp = coinData.binance?.last_available_timestamp || null;
+        const symbol = coinData.symbol?.toUpperCase();
+        const livePrice = livePrices[symbol];
+        const currentPrice = livePrice && livePrice !== "-"
+          ? `$${typeof livePrice === 'number' ? livePrice.toFixed(2) : livePrice}`
+          : "N/A";
+        const volume = volumeData[symbol] || "N/A";
+
+        const coinIcon = coinData.image_small ? (
+          <img src={coinData.image_small} alt={coinData.symbol} className="w-3 h-3" />
+        ) : (
+          <span className="text-gray-500 text-xs">{coinData.symbol?.[0] || "?"}</span>
+        );
+
+        return {
+          coin: coinData.symbol || "N/A",
+          icon: coinIcon,
+          type: type,
+          term: term,
+          basePrice: basePrice ? (typeof basePrice === 'number' ? `$${basePrice.toFixed(2)}` : basePrice) : null,
+          lastAvailablePrice: lastAvailablePrice,
+          lastAvailableTimestamp: lastAvailableTimestamp,
+          currentPrice: currentPrice,
+          volume: volume,
+          sentiment: sentiment,
+          outlook: outlook,
+          mcm_source_id: coinData.mcm_source_id || null,
+        };
+      });
+
+      // Skip this post if no valid coins
+      if (validCoins.length === 0) {
+        return null;
+      }
+
       return {
         date: post.date,
         time: post.time,
@@ -58,72 +120,37 @@ const formatRecommendations = (lastPostsData, livePrices = {}, volumeData = {}) 
         type: post.type || "youtube",
         channel_name: post.channel_name,
         isGrouped: true,
-        coins: post.coins.map(coinData => {
-          // Format each coin in the group
-          const sentiment = coinData.sentiment || "";
-          const outlook = coinData.outlook || coinData.cryptoRecommendationType || "";
-
-          let type = "bullish";
-          let term = "long";
-
-          if (sentiment.toLowerCase().includes("bearish")) {
-            type = "bearish";
-          }
-
-          if (outlook.toLowerCase().includes("short") || outlook === "short-term") {
-            term = "short";
-          }
-
-          const basePrice = coinData.binance?.base_price || coinData.price || null;
-          const lastAvailablePrice = coinData.binance?.last_available_price || null;
-          const lastAvailableTimestamp = coinData.binance?.last_available_timestamp || null;
-          const symbol = coinData.symbol?.toUpperCase();
-          const livePrice = livePrices[symbol];
-          const currentPrice = livePrice && livePrice !== "-"
-            ? `$${typeof livePrice === 'number' ? livePrice.toFixed(2) : livePrice}`
-            : "N/A";
-          const volume = volumeData[symbol] || "N/A";
-
-          const coinIcon = coinData.image_small ? (
-            <img src={coinData.image_small} alt={coinData.symbol} className="w-3 h-3" />
-          ) : (
-            <span className="text-gray-500 text-xs">{coinData.symbol?.[0] || "?"}</span>
-          );
-
-          return {
-            coin: coinData.symbol || "N/A",
-            icon: coinIcon,
-            type: type,
-            term: term,
-            basePrice: basePrice ? (typeof basePrice === 'number' ? `$${basePrice.toFixed(2)}` : basePrice) : null,
-            lastAvailablePrice: lastAvailablePrice,
-            lastAvailableTimestamp: lastAvailableTimestamp,
-            currentPrice: currentPrice,
-            volume: volume,
-            sentiment: sentiment,
-            outlook: outlook,
-            mcm_source_id: coinData.mcm_source_id || null,
-          };
-        })
+        coins: validCoins
       };
     }
 
     // Handle individual coin posts (non-grouped)
     const coinData = post.coin;
 
-    // Determine sentiment type and term
+    // Validate sentiment
     const sentiment = coinData.sentiment || "";
+    const validSentiments = ["strong_bullish", "strong_bearish", "mild_bullish", "mild_bearish"];
+
+    // Skip this post if sentiment is not valid
+    if (!sentiment || !validSentiments.includes(sentiment.toLowerCase())) {
+      return null;
+    }
+
     const outlook = coinData.outlook || coinData.cryptoRecommendationType || "";
 
     let type = "bullish";
-    let term = "long";
+    let term = "N/A";
 
+    // Determine type based on sentiment
     if (sentiment.toLowerCase().includes("bearish")) {
       type = "bearish";
     }
 
-    if (outlook.toLowerCase().includes("short") || outlook === "short-term") {
+    // Determine term based on outlook - only if valid
+    if (outlook && (outlook.toLowerCase() === "short_term" || outlook.toLowerCase() === "short-term")) {
       term = "short";
+    } else if (outlook && (outlook.toLowerCase() === "long_term" || outlook.toLowerCase() === "long-term")) {
+      term = "long";
     }
 
     // Format prices
@@ -190,7 +217,7 @@ const formatRecommendations = (lastPostsData, livePrices = {}, volumeData = {}) 
       channel_name: post.channel_name,
       mcm_source_id: coinData.mcm_source_id || null
     };
-  });
+  }).filter(post => post !== null); // Remove null posts (invalid sentiment)
 
   // Sort by publishedAt - skip sorting for grouped posts (already sorted in getInfluencerPosts)
   if (!hasGroupedPosts) {
@@ -2097,7 +2124,7 @@ export default function InfluencerSearchPage() {
                                                 {/* Bullish/Bearish ST/LT in single line */}
                                                 <span className="whitespace-nowrap">
                                                   {coinData.type === "bullish" ? "Bullish" : "Bearish"}{" "}
-                                                  {coinData.term === "short" ? "ST" : "LT"}
+                                                  {coinData.term === "short" ? "ST" : coinData.term === "long" ? "LT" : "N/A"}
                                                 </span>
                                               </div>
                                             </div>
@@ -2584,7 +2611,7 @@ export default function InfluencerSearchPage() {
                                                 {rec.type === "bullish" ? "Bullish" : "Bearish"}
                                               </span>
                                               <span className="text-[7px] font-semibold whitespace-nowrap">
-                                                {rec.term === "short" ? "ST" : "LT"}
+                                                {rec.term === "short" ? "ST" : rec.term === "long" ? "LT" : "N/A"}
                                               </span>
                                             </div>
                                           </div>
