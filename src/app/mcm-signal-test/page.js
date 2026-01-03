@@ -73,8 +73,8 @@ export default function MCMSignalTestPage() {
                 key={tf}
                 onClick={() => setSelectedTimeframe(tf)}
                 className={`px-4 py-2 text-xs font-bold rounded-xl transition-all duration-300 transform ${selectedTimeframe === tf
-                    ? 'bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-500/30 scale-105'
-                    : 'text-gray-600 hover:bg-white/60 hover:text-indigo-600'
+                  ? 'bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 text-white shadow-lg shadow-indigo-500/30 scale-105'
+                  : 'text-gray-600 hover:bg-white/60 hover:text-indigo-600'
                   }`}
               >
                 {tf.replace("hrs", " Hours").replace("days", " Days")}
@@ -142,12 +142,12 @@ export default function MCMSignalTestPage() {
                             <span className="text-sm font-black text-indigo-900 tracking-tight">{coin.symbol}</span>
                           </div>
                         </td>
-                        <td rowSpan="3" className="px-4 py-4 text-gray-900 border-r-2 border-indigo-100 relative cursor-pointer text-center align-middle bg-gradient-to-br from-white/80 to-indigo-50/50 backdrop-blur-sm shadow-[inset_-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
-                          <div className="group/summary">
+                        <td rowSpan="3" className="px-4 py-4 text-gray-900 border-r-2 border-indigo-100 relative cursor-pointer text-center align-middle bg-gradient-to-br from-white/80 to-indigo-50/50 backdrop-blur-sm shadow-[inset_-4px_0_8px_-4px_rgba(0,0,0,0.05)] group-hover:z-50">
+                          <div className="group/summary relative inline-block">
                             <span className="border-b-2 border-dotted border-indigo-300 font-medium text-gray-700 hover:text-indigo-700 hover:border-indigo-600 transition-colors">{truncateSummary(summaryText)}</span>
-                            <div className={`absolute z-50 invisible group-hover/summary:visible bg-gray-900 text-white text-xs rounded-xl p-4 left-0 w-72 shadow-2xl text-left leading-relaxed ${index === 0 ? 'top-full mt-2' : 'bottom-full mb-2'}`}>
+                            <div className={`absolute z-50 invisible group-hover/summary:visible bg-gray-900 text-white text-xs rounded-xl p-4 w-72 shadow-2xl text-left leading-relaxed left-1/2 -translate-x-1/2 ${index < 5 ? 'top-full mt-2' : 'bottom-full mb-2'}`}>
                               {summaryText}
-                              <div className={`absolute left-8 transform -translate-x-1/2 border-8 border-transparent ${index === 0 ? 'bottom-full border-b-gray-900' : 'top-full border-t-gray-900'}`}></div>
+                              <div className={`absolute left-1/2 transform -translate-x-1/2 border-8 border-transparent ${index < 5 ? 'bottom-full border-b-gray-900' : 'top-full border-t-gray-900'}`}></div>
                             </div>
                           </div>
                         </td>
