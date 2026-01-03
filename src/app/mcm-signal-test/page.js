@@ -6,6 +6,7 @@ export default function MCMSignalTestPage() {
   const [loading, setLoading] = useState(true);
   const [selectedTimeframe, setSelectedTimeframe] = useState("6hrs");
   const [allData, setAllData] = useState(null);
+  const [selectedSummary, setSelectedSummary] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,8 +44,8 @@ export default function MCMSignalTestPage() {
   const truncateSummary = (summary) => {
     if (!summary) return "N/A";
     const words = summary.split(" ");
-    if (words.length <= 3) return summary;
-    return words.slice(0, 3).join(" ") + "...";
+    if (words.length <= 6) return summary;
+    return words.slice(0, 6).join(" ") + "...";
   };
 
   return (
@@ -90,7 +91,7 @@ export default function MCMSignalTestPage() {
               {/* Header Level 1 */}
               <tr className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
                 <th rowSpan="2" className="px-4 py-3 font-extrabold border border-indigo-400/30 text-center w-28 uppercase tracking-wider text-xs shadow-sm">Coin</th>
-                <th rowSpan="2" className="px-4 py-3 font-extrabold border border-indigo-400/30 text-center w-48 uppercase tracking-wider text-xs shadow-sm">AI Summary</th>
+                <th rowSpan="2" className="px-4 py-3 font-extrabold border border-indigo-400/30 text-center w-64 uppercase tracking-wider text-xs shadow-sm">AI Summary</th>
                 <th rowSpan="2" className="px-4 py-3 font-extrabold border border-indigo-400/30 text-center w-28 uppercase tracking-wider text-xs shadow-sm">Fund Score</th>
                 <th colSpan="7" className="px-4 py-3 font-bold text-center border-x border-b border-indigo-400/30 shadow-sm tracking-wide text-lg">
                   MCM Signal(Dummy Data)
@@ -142,13 +143,15 @@ export default function MCMSignalTestPage() {
                             <span className="text-sm font-black text-indigo-900 tracking-tight">{coin.symbol}</span>
                           </div>
                         </td>
-                        <td rowSpan="3" className="px-4 py-4 text-gray-900 border-r-2 border-indigo-100 relative cursor-pointer text-center align-middle bg-gradient-to-br from-white/80 to-indigo-50/50 backdrop-blur-sm shadow-[inset_-4px_0_8px_-4px_rgba(0,0,0,0.05)] group-hover:z-50">
-                          <div className="group/summary relative inline-block">
-                            <span className="border-b-2 border-dotted border-indigo-300 font-medium text-gray-700 hover:text-indigo-700 hover:border-indigo-600 transition-colors">{truncateSummary(summaryText)}</span>
-                            <div className={`absolute z-50 invisible group-hover/summary:visible bg-gray-900 text-white text-xs rounded-xl p-4 w-72 shadow-2xl text-left leading-relaxed left-1/2 -translate-x-1/2 ${index < 5 ? 'top-full mt-2' : 'bottom-full mb-2'}`}>
-                              {summaryText}
-                              <div className={`absolute left-1/2 transform -translate-x-1/2 border-8 border-transparent ${index < 5 ? 'bottom-full border-b-gray-900' : 'top-full border-t-gray-900'}`}></div>
-                            </div>
+                        <td rowSpan="3" className="px-4 py-4 text-gray-900 border-r-2 border-indigo-100 relative text-center align-middle bg-gradient-to-br from-white/80 to-indigo-50/50 backdrop-blur-sm shadow-[inset_-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
+                          <div className="flex flex-col gap-2 items-center">
+                            <span className="text-sm text-gray-700 leading-snug">{truncateSummary(summaryText)}</span>
+                            <button
+                              onClick={() => setSelectedSummary({ title: ` ${coin.symbol}`, content: summaryText })}
+                              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline transition-colors mt-1"
+                            >
+                              Read Full Analysis
+                            </button>
                           </div>
                         </td>
                         <td rowSpan="3" className="px-4 py-4 text-gray-900 border-r-2 border-indigo-100 text-center font-medium align-middle bg-gradient-to-br from-white/80 to-indigo-50/50 backdrop-blur-sm shadow-[inset_-4px_0_8px_-4px_rgba(0,0,0,0.05)]">
@@ -197,6 +200,43 @@ export default function MCMSignalTestPage() {
           </table>
         </div>
       </div>
+
+      {/* Full Study Modal */}
+      {selectedSummary && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setSelectedSummary(null)}>
+          <div
+            className="bg-white rounded-3xl w-full max-w-2xl max-h-[80vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-cyan-50 to-indigo-50">
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
+                {selectedSummary.title}
+              </h3>
+              <button
+                onClick={() => setSelectedSummary(null)}
+                className="w-8 h-8 flex items-center justify-center rounded-full bg-white hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors shadow-sm"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-8 overflow-y-auto custom-scrollbar">
+              <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap">
+                {selectedSummary.content}
+              </p>
+            </div>
+            <div className="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
+              <button
+                onClick={() => setSelectedSummary(null)}
+                className="px-6 py-2 bg-gradient-to-r from-cyan-600 to-indigo-600 text-white font-bold rounded-xl shadow-lg hover:shadow-indigo-500/30 transform hover:scale-[1.02] transition-all"
+              >
+                Close Analysis
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
