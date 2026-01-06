@@ -33,6 +33,7 @@ const navLinks = [
     icon: FaChartBar,
     subLinks: [
       { name: "Influencer Stats", href: "/influencerssearch", icon: FaChartBar },
+      { name: "Influencers Flipbook", href: "/influencerssearch-flip", icon: FaChartBar },
     ]
   },
   { name: "Favorites", href: "/favorites", icon: FaStar },

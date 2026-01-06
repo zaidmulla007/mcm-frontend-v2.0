@@ -1423,9 +1423,22 @@ export default function InfluencerSearchPage() {
 
                         // Extract all available yearly ratings dynamically, starting from 2022
                         const scatterData = [];
+                        const currentDate = new Date();
+                        const currentRealYear = currentDate.getFullYear();
+                        const currentRealMonth = currentDate.getMonth();
+
                         const years = Object.keys(starRatingYearly)
                           .map(year => parseInt(year))
-                          .filter(year => year >= 2022) // Filter to start from 2022
+                          .filter(year => {
+                            if (year < 2022) return false;
+
+                            // Rule: Current year is only visible if Q1 is completed (April onwards)
+                            // Future years are hidden
+                            if (year > currentRealYear) return false;
+                            if (year === currentRealYear && currentRealMonth < 3) return false;
+
+                            return true;
+                          }) // Filter to start from 2022 and apply visibility rules
                           .sort((a, b) => a - b); // Sort in ascending order
 
                         // Build scatter data for each year

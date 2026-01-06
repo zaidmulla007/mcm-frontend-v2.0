@@ -52,7 +52,15 @@ export default function InfluencerSearchPage() {
   // Filter states
   const [selectedRating, setSelectedRating] = useState("3");
   const [selectedTimeframe, setSelectedTimeframe] = useState("180_days");
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [selectedYear, setSelectedYear] = useState(() => {
+    const d = new Date();
+    // If we are in Q1 (Jan=0, Feb=1, Mar=2), default to previous year
+    // Else (Apr onwards), default to current year
+    if (d.getMonth() < 3) {
+      return (d.getFullYear() - 1).toString();
+    }
+    return d.getFullYear().toString();
+  });
 
   // Client-side filters
   const [roiFilter, setRoiFilter] = useState("all");
@@ -552,9 +560,22 @@ export default function InfluencerSearchPage() {
 
                         // Extract all available yearly ratings dynamically, starting from 2022
                         const scatterData = [];
+                        const currentDate = new Date();
+                        const currentRealYear = currentDate.getFullYear();
+                        const currentRealMonth = currentDate.getMonth();
+
                         const years = Object.keys(starRatingYearly)
                           .map(year => parseInt(year))
-                          .filter(year => year >= 2022) // Filter to start from 2022
+                          .filter(year => {
+                            if (year < 2022) return false;
+
+                            // Rule: Current year is only visible if Q1 is completed (April onwards)
+                            // Future years are hidden
+                            if (year > currentRealYear) return false;
+                            if (year === currentRealYear && currentRealMonth < 3) return false;
+
+                            return true;
+                          }) // Filter to start from 2022 and apply visibility rules
                           .sort((a, b) => a - b); // Sort in ascending order
 
                         // Build scatter data for each year
