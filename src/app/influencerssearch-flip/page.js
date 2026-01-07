@@ -223,56 +223,6 @@ const PageRight = forwardRef(({ influencer }, ref) => {
           )}
         </div>
 
-        {/* Key Metrics Section */}
-        <div className="bg-gradient-to-br from-purple-50 to-blue-50/50 rounded-xl p-5 border border-purple-200/50 shadow-sm">
-          <h4 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600"></span>
-            Key Metrics
-          </h4>
-
-          <div className="grid grid-cols-2 gap-3">
-            {/* ROI */}
-            <div className="bg-white rounded-lg p-3 shadow-sm border-l-4 border-blue-500">
-              <div className="text-xs text-gray-600 font-semibold uppercase tracking-wide mb-1">ROI</div>
-              <div className="text-xl font-bold text-blue-600">
-                {influencer.prob_weighted_returns
-                  ? influencer.prob_weighted_returns.toFixed(1)
-                  : '0.0'}
-              </div>
-            </div>
-
-            {/* Win Rate */}
-            <div className="bg-white rounded-lg p-3 shadow-sm border-l-4 border-green-500">
-              <div className="text-xs text-gray-600 font-semibold uppercase tracking-wide mb-1">Win Rate</div>
-              <div className="text-xl font-bold text-green-600">
-                {influencer.win_percentage
-                  ? `${Math.round(influencer.win_percentage)}%`
-                  : '0%'}
-              </div>
-            </div>
-
-            {/* Total Posts */}
-            <div className="bg-white rounded-lg p-3 shadow-sm border-l-4 border-purple-500">
-              <div className="text-xs text-gray-600 font-semibold uppercase tracking-wide mb-1">Total Posts</div>
-              <div className="text-xl font-bold text-purple-600">
-                {influencer.price_counts
-                  ? influencer.price_counts.toLocaleString()
-                  : '0'}
-              </div>
-            </div>
-
-            {/* AI Score */}
-            <div className="bg-white rounded-lg p-3 shadow-sm border-l-4 border-orange-500">
-              <div className="text-xs text-gray-600 font-semibold uppercase tracking-wide mb-1">AI Score</div>
-              <div className="text-xl font-bold text-orange-600">
-                {influencer.ai_overall_score
-                  ? influencer.ai_overall_score.toFixed(1)
-                  : '0.0'}
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Summary Section */}
         <div className="bg-gradient-to-br from-blue-50/50 to-purple-50 rounded-xl p-5 border border-blue-200/50 shadow-sm">
           <h4 className="text-base font-bold text-gray-800 mb-3 flex items-center gap-2">
@@ -327,35 +277,74 @@ const PageRight = forwardRef(({ influencer }, ref) => {
 });
 PageRight.displayName = 'PageRight';
 
-// Cover Page
-const CoverPage = forwardRef((_props, ref) => {
+// Cover Page - Now shows Key Metrics from first influencer
+const CoverPage = forwardRef(({ influencer }, ref) => {
   return (
     <div
       ref={ref}
       className="page-cover relative h-full w-full bg-white overflow-hidden"
       data-density="hard"
     >
-      {/* Animated Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-white">
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-blue-200/30 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-purple-200/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-      </div>
+      {/* Page Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-white"></div>
 
-      {/* Content - Centered */}
+      {/* Content */}
       <div className="relative h-full flex items-center justify-center p-8">
-        <div className="text-center max-w-sm">
-          <h1 className="text-6xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent mb-3 drop-shadow-sm">
-            Influencer
-          </h1>
-          <h2 className="text-5xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent mb-8 drop-shadow-sm">
-            Rankings
-          </h2>
-          <div className="w-32 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mb-10 mx-auto"></div>
-          <p className="text-gray-700 text-lg leading-relaxed">
-            Discover the top-rated influencers with detailed performance metrics and insights
-          </p>
-          <div className="mt-12 text-gray-500 text-sm animate-bounce">
-            Flip to explore →
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="mb-8 text-center">
+            <h3 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              Key Metrics
+            </h3>
+            <div className="w-20 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mx-auto"></div>
+            {influencer && (
+              <p className="text-sm text-gray-600 mt-3">
+                Top Ranked: <span className="font-bold">{influencer.name?.replace(/_/g, " ")}</span>
+              </p>
+            )}
+          </div>
+
+          {/* Key Metrics Grid */}
+          <div className="grid grid-cols-2 gap-6">
+            {/* ROI */}
+            <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-6 shadow-lg border-l-4 border-blue-500 hover:shadow-xl transition-shadow">
+              <div className="text-sm text-gray-600 font-semibold uppercase tracking-wide mb-3">ROI</div>
+              <div className="text-4xl font-bold text-blue-600">
+                {influencer?.prob_weighted_returns
+                  ? influencer.prob_weighted_returns.toFixed(1)
+                  : '--'}
+              </div>
+            </div>
+
+            {/* Win Rate */}
+            <div className="bg-gradient-to-br from-green-50 to-white rounded-2xl p-6 shadow-lg border-l-4 border-green-500 hover:shadow-xl transition-shadow">
+              <div className="text-sm text-gray-600 font-semibold uppercase tracking-wide mb-3">Win Rate</div>
+              <div className="text-4xl font-bold text-green-600">
+                {influencer?.win_percentage
+                  ? `${Math.round(influencer.win_percentage)}%`
+                  : '--'}
+              </div>
+            </div>
+
+            {/* Total Posts */}
+            <div className="bg-gradient-to-br from-purple-50 to-white rounded-2xl p-6 shadow-lg border-l-4 border-purple-500 hover:shadow-xl transition-shadow">
+              <div className="text-sm text-gray-600 font-semibold uppercase tracking-wide mb-3">Total Posts</div>
+              <div className="text-4xl font-bold text-purple-600">
+                {influencer?.price_counts
+                  ? influencer.price_counts.toLocaleString()
+                  : '--'}
+              </div>
+            </div>
+
+            {/* AI Score */}
+            <div className="bg-gradient-to-br from-orange-50 to-white rounded-2xl p-6 shadow-lg border-l-4 border-orange-500 hover:shadow-xl transition-shadow">
+              <div className="text-sm text-gray-600 font-semibold uppercase tracking-wide mb-3">AI Score</div>
+              <div className="text-4xl font-bold text-orange-600">
+                {influencer?.ai_overall_score
+                  ? influencer.ai_overall_score.toFixed(1)
+                  : '--'}
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -858,13 +847,13 @@ export default function InfluencerSearchFlipPage() {
                 showPageCorners={true}
                 disableFlipByClick={false}
               >
-                {/* Cover on left, Table of Contents on right */}
-                <CoverPage key="cover" />
+                {/* Table of Contents on left, Key Metrics on right */}
                 <TableOfContentsPage
                   key="toc"
                   influencers={filteredInfluencers}
                   onInfluencerClick={jumpToInfluencer}
                 />
+                <CoverPage key="cover" influencer={filteredInfluencers[0]} />
 
                 {/* Influencer Pages - One influencer per spread */}
                 {filteredInfluencers.map((influencer) => [
