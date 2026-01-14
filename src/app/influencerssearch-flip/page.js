@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { FaStar, FaStarHalfAlt, FaChevronLeft, FaChevronRight, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaStar, FaStarHalfAlt, FaChevronLeft, FaChevronRight, FaEye } from "react-icons/fa";
 import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
 // Helper function to format numbers
@@ -65,10 +65,6 @@ const LeftPanel = ({ influencer }) => {
             </div>
           </div>
 
-          {/* Rank Badge - Floating */}
-          <div className="absolute -top-2 -right-2 bg-gradient-to-br from-blue-600 to-purple-600 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-xl border-3 border-white z-10">
-            <div className="text-lg font-bold">#{influencer.rank}</div>
-          </div>
         </div>
 
         {/* Influencer Name */}
@@ -79,6 +75,21 @@ const LeftPanel = ({ influencer }) => {
         {/* Platform Badge */}
         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-1.5 rounded-full shadow-lg mb-4">
           <span className="font-semibold text-sm">{influencer.platform}</span>
+        </div>
+
+        {/* Last Post Date and Time Card */}
+        <div className="w-full max-w-[200px] bg-white rounded-xl p-3 shadow-md border border-blue-100 mb-3">
+          <div className="flex flex-col gap-1">
+            <span className="text-xs text-gray-600 font-medium">Last Post</span>
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-bold text-gray-800">
+                {influencer.last_post_date_string || '--'}
+              </span>
+              <span className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                {influencer.last_post_time || '--'}
+              </span>
+            </div>
+          </div>
         </div>
 
         {/* Subscribers Card */}
@@ -132,109 +143,177 @@ const MiddlePanel = ({ influencer }) => {
     }
   });
 
+  // Get AI scoring data for all years
+  const getAllYearsAIScoring = () => {
+    if (!influencer?.ai_scoring_yearly) return [];
+
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth();
+
+    // Only show current year data if at least Q1 is complete (i.e., we're in Q2 or later)
+    const shouldShowCurrentYear = currentMonth >= 3; // April or later
+
+    const years = Object.keys(influencer.ai_scoring_yearly)
+      .map(y => parseInt(y))
+      .filter(y => {
+        if (y < 2022) return false;
+        if (y > currentYear) return false;
+        if (y === currentYear && !shouldShowCurrentYear) return false;
+        return true;
+      })
+      .sort((a, b) => b - a); // Sort descending (newest first)
+
+    return years.map(year => ({
+      year,
+      data: influencer.ai_scoring_yearly[year]
+    }));
+  };
+
+  const yearsAIData = getAllYearsAIScoring();
+
+  // Metrics to display with definitions
+  const metrics = [
+    {
+      key: 'overall_score',
+      label: 'Overall Score',
+      field: 'avg_overall_score',
+      color: '#1e3a8a',
+      definition: 'Combined score reflecting overall quality across all metrics.'
+    },
+    {
+      key: 'credibility_score',
+      label: 'Credibility Score',
+      field: 'avg_credibility_score',
+      color: '#1d4ed8',
+      definition: 'Trustworthiness and accuracy of the content.'
+    },
+    {
+      key: 'risk_management',
+      label: 'Risk Management',
+      field: 'avg_risk_management',
+      color: '#3b82f6',
+      definition: 'How well risk strategies are addressed (e.g. sizing, risk-reward ratios, portfolio allocation).'
+    },
+    {
+      key: 'actionable_insights',
+      label: 'Actionable Insights',
+      field: 'avg_actionable_insights',
+      color: '#93c5fd',
+      definition: 'Presence and quality of actionable insights. Higher score when the reader can take specific actions.'
+    }
+  ];
+
   return (
-    <div className="h-full w-full bg-white flex flex-col p-6 relative overflow-hidden">
+    <div className="h-full w-full bg-white flex flex-col p-3 relative overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0 bg-gradient-to-br from-blue-50/30 via-purple-50/20 to-white"></div>
 
-      {/* Content */}
-      <div className="relative flex-1 flex flex-col justify-between">
+      {/* Content - Scrollable */}
+      <div className="relative flex-1 flex flex-col overflow-hidden min-h-0">
         {/* Header */}
-        <div>
+        <div className="flex-shrink-0 mb-3">
           <h3 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
             Performance Overview
           </h3>
           <div className="w-12 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
         </div>
 
-        {/* MCM Ranking Section */}
-        <div className="bg-gradient-to-br from-blue-50 to-purple-50/50 rounded-xl p-4 shadow-sm h-48 flex flex-col justify-center relative">
-          <h4 className="absolute top-4 left-4 text-sm font-bold text-gray-800 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-gradient-to-r from-blue-600 to-purple-600"></span>
-            MCM Ranking
-          </h4>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar min-h-0">
+          {/* MCM Ranking Section */}
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50/50 rounded-xl p-3 shadow-sm border border-blue-100/50">
+            <h4 className="text-xs font-bold text-gray-800 mb-2 flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600"></span>
+              MCM Ranking
+            </h4>
+            {scatterData.length > 0 ? (
+              <div className="flex justify-center items-end gap-4 h-32">
+                {scatterData.map((point, idx) => {
+                  const fullStars = Math.floor(point.rating);
+                  const hasHalfStar = point.rating % 1 >= 0.5;
+                  const totalStars = 5;
+                  const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
 
-          {scatterData.length > 0 ? (
-            <div className="flex justify-center items-end gap-6 h-32 mt-6">
-              {scatterData.map((point, idx) => {
-                const fullStars = Math.floor(point.rating);
-                const hasHalfStar = point.rating % 1 >= 0.5;
-                const totalStars = 5;
-                const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
-
-                return (
-                  <div
-                    key={idx}
-                    className="flex flex-col items-center gap-2 group"
-                    title={`Year: ${point.yearLabel}, Rating: ${point.rating.toFixed(1)}`}
-                  >
-                    {/* Stars */}
-                    <div className="flex flex-col-reverse gap-1.5 transition-transform group-hover:-translate-y-1 duration-300">
-                      {[...Array(fullStars)].map((_, i) => (
-                        <FaStar key={`full-${i}`} className="text-yellow-500 w-3.5 h-3.5 drop-shadow-sm" />
-                      ))}
-                      {hasHalfStar && (
-                        <FaStarHalfAlt key="half" className="text-yellow-500 w-3.5 h-3.5 drop-shadow-sm" />
-                      )}
-                      {[...Array(emptyStars)].map((_, i) => (
-                        <FaStar key={`empty-${i}`} className="text-gray-200 w-3.5 h-3.5" />
-                      ))}
+                  return (
+                    <div
+                      key={idx}
+                      className="flex flex-col items-center gap-1.5 group"
+                      title={`Year: ${point.yearLabel}, Rating: ${point.rating.toFixed(1)}`}
+                    >
+                      {/* Stars */}
+                      <div className="flex flex-col-reverse gap-1 transition-transform group-hover:-translate-y-1 duration-300">
+                        {[...Array(fullStars)].map((_, i) => (
+                          <FaStar key={`full-${i}`} className="text-yellow-500 w-3 h-3 drop-shadow-sm" />
+                        ))}
+                        {hasHalfStar && (
+                          <FaStarHalfAlt key="half" className="text-yellow-500 w-3 h-3 drop-shadow-sm" />
+                        )}
+                        {[...Array(emptyStars)].map((_, i) => (
+                          <FaStar key={`empty-${i}`} className="text-gray-200 w-3 h-3" />
+                        ))}
+                      </div>
+                      {/* Year */}
+                      <span className="text-[10px] font-bold text-gray-600 group-hover:text-blue-600 transition-colors">{point.yearLabel}</span>
                     </div>
-                    {/* Year */}
-                    <span className="text-xs font-bold text-gray-600 group-hover:text-blue-600 transition-colors">{point.yearLabel}</span>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-400 text-xs">No rating data available</div>
-          )}
-        </div>
-
-        {/* Key Metrics Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* ROI */}
-          <div className="bg-white rounded-xl p-3 shadow-sm border border-blue-100 relative overflow-hidden group hover:shadow-md transition-all">
-            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500"></div>
-            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1 px-1">ROI</div>
-            <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent px-1">
-              {influencer?.prob_weighted_returns
-                ? influencer.prob_weighted_returns.toFixed(1)
-                : '--'}
-            </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-32 text-gray-400 text-xs">No rating data</div>
+            )}
           </div>
 
-          {/* Win Rate */}
-          <div className="bg-white rounded-xl p-3 shadow-sm border border-blue-100 relative overflow-hidden group hover:shadow-md transition-all">
-            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500"></div>
-            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1 px-1">Win Rate</div>
-            <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent px-1">
-              {influencer?.win_percentage
-                ? `${Math.round(influencer.win_percentage)}%`
-                : '--'}
-            </div>
-          </div>
+          {/* AI Scoring Section */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold text-gray-800 flex items-center gap-2 px-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600"></span>
+              AI Scoring
+            </h4>
+            {yearsAIData.length > 0 ? yearsAIData.map(({ year, data }) => (
+              <div key={year} className="bg-white/60 rounded-lg p-2 border border-blue-100/50 overflow-visible">
+                {/* Year Badge */}
+                <div className="flex items-center justify-center mb-2">
+                  <span className="text-xs font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    {year}
+                  </span>
+                </div>
 
-          {/* Total Posts */}
-          <div className="bg-white rounded-xl p-3 shadow-sm border border-blue-100 relative overflow-hidden group hover:shadow-md transition-all">
-            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500"></div>
-            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1 px-1">Total Posts</div>
-            <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent px-1">
-              {influencer?.price_counts
-                ? influencer.price_counts.toLocaleString()
-                : '--'}
-            </div>
-          </div>
-
-          {/* AI Score */}
-          <div className="bg-white rounded-xl p-3 shadow-sm border border-blue-100 relative overflow-hidden group hover:shadow-md transition-all">
-            <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-500"></div>
-            <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1 px-1">AI Score</div>
-            <div className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent px-1">
-              {influencer?.ai_overall_score
-                ? influencer.ai_overall_score.toFixed(1)
-                : '--'}
-            </div>
+                {/* Metrics Grid */}
+                <div className="grid grid-cols-2 gap-1.5 overflow-visible">
+                  {metrics.map((metric) => {
+                    const value = data?.[metric.field];
+                    const isCentered = metric.key === 'overall_score' || metric.key === 'risk_management';
+                    return (
+                      <div
+                        key={metric.key}
+                        className="bg-white rounded-md p-1.5 border border-blue-100/50 hover:shadow-sm transition-shadow overflow-visible"
+                      >
+                        <div className="text-[8px] font-semibold uppercase mb-0.5 text-gray-800 flex items-center justify-between gap-1">
+                          <span>{metric.label}</span>
+                          <div className="relative group/tooltip">
+                            <FaEye className="w-2.5 h-2.5 text-gray-400 hover:text-blue-500 cursor-pointer transition-colors" />
+                            <div className={`absolute bottom-full mb-1 hidden group-hover/tooltip:block w-40 bg-gray-800 text-white text-[9px] rounded px-2 py-1 shadow-lg ${
+                              isCentered ? 'left-1/2 -translate-x-1/2' : 'right-0'
+                            }`} style={{ zIndex: 9999 }}>
+                              {metric.definition}
+                              <div className={`absolute top-full -mt-1 border-4 border-transparent border-t-gray-800 ${
+                                isCentered ? 'left-1/2 -translate-x-1/2' : 'right-2'
+                              }`}></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-sm font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+                          {value !== undefined && value !== null ? value.toFixed(1) : '--'}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )) : (
+              <div className="text-center text-gray-400 text-xs py-4">No AI scoring data</div>
+            )}
           </div>
         </div>
       </div>
@@ -242,88 +321,138 @@ const MiddlePanel = ({ influencer }) => {
   );
 };
 
-// Right Panel Component - Summary
+// Right Panel Component - ROI & Win Rate Analysis (All Years)
 const RightPanel = ({ influencer }) => {
-  const [expandedSummary, setExpandedSummary] = useState(false);
+  // Get all available years from score_yearly_timeframes
+  const getAllYearsData = () => {
+    if (!influencer?.score_yearly_timeframes) return [];
 
-  const getSummaryText = () => {
-    if (!influencer.gemini_summary || influencer.gemini_summary === '') {
-      return null;
-    }
-    if (Array.isArray(influencer.gemini_summary)) {
-      return influencer.gemini_summary.join(', ');
-    }
-    if (typeof influencer.gemini_summary === 'object') {
-      return Object.values(influencer.gemini_summary).join(', ');
-    }
-    return influencer.gemini_summary;
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth(); // 0-11 (Jan=0, Dec=11)
+
+    // Determine if current year should be shown
+    // Only show current year data if at least Q1 is complete (i.e., we're in Q2 or later)
+    // Q1: Jan-Mar (months 0-2), show after Mar 31 (i.e., month >= 3)
+    const shouldShowCurrentYear = currentMonth >= 3; // April or later
+
+    const years = Object.keys(influencer.score_yearly_timeframes)
+      .map(y => parseInt(y))
+      .filter(y => {
+        if (y < 2022) return false;
+        if (y > currentYear) return false;
+        if (y === currentYear && !shouldShowCurrentYear) return false;
+        return true;
+      })
+      .sort((a, b) => b - a); // Sort descending (newest first)
+
+    return years.map(year => ({
+      year,
+      data: influencer.score_yearly_timeframes[year]
+    }));
   };
 
-  const summaryText = getSummaryText();
-  const MAX_LENGTH = 500;
-  const shouldTruncate = summaryText && summaryText.length > MAX_LENGTH;
-  const displayText = summaryText
-    ? (shouldTruncate && !expandedSummary)
-      ? summaryText.substring(0, MAX_LENGTH) + '...'
-      : summaryText
-    : null;
+  const yearsData = getAllYearsData();
+
+  // Timeframes to display: 1hr, 7days, 60days, 180days
+  const timeframes = [
+    { key: '1_hour', label: '1hr' },
+    { key: '7_days', label: '7d' },
+    { key: '60_days', label: '60d' },
+    { key: '180_days', label: '180d' },
+  ];
+
+  const formatROI = (value) => {
+    if (value === undefined || value === null || value === 0) return '--';
+    const formatted = value.toFixed(1);
+    return value > 0 ? `+${formatted}` : `${formatted}`;
+  };
+
+  const formatWinRate = (value) => {
+    if (value === undefined || value === null || value === 0) return '--';
+    return `${Math.round(value)}%`;
+  };
+
+  const getROIColor = (value) => {
+    if (value === undefined || value === null || value === 0) return 'text-gray-400';
+    return value > 0 ? 'text-green-600' : 'text-red-500';
+  };
+
+  const getWinRateColor = (value) => {
+    if (value === undefined || value === null || value === 0) return 'text-gray-400';
+    if (value >= 60) return 'text-green-600';
+    if (value >= 50) return 'text-blue-600';
+    return 'text-orange-500';
+  };
 
   return (
-    <div className="h-full w-full bg-gradient-to-br from-purple-50 via-blue-50 to-white flex flex-col p-6 relative overflow-hidden">
+    <div className="h-full w-full bg-gradient-to-br from-purple-50 via-blue-50 to-white flex flex-col p-3 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0 bg-[linear-gradient(45deg,#8b5cf6_25%,transparent_25%,transparent_75%,#8b5cf6_75%,#8b5cf6),linear-gradient(45deg,#8b5cf6_25%,transparent_25%,transparent_75%,#8b5cf6_75%,#8b5cf6)] bg-[length:20px_20px] bg-[0_0,10px_10px]"></div>
       </div>
 
-      {/* Content */}
-      <div className="relative flex-1 flex flex-col overflow-hidden">
+      {/* Content - Scrollable */}
+      <div className="relative flex-1 flex flex-col overflow-hidden min-h-0">
         {/* Header */}
-        <div className="mb-4">
+        <div className="flex-shrink-0 mb-3">
           <h3 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-1">
-            AI Summary
+            ROI & Win Rate Analysis
           </h3>
           <div className="w-12 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
         </div>
 
-        {/* Summary Card */}
-        <div className="bg-white/80 rounded-xl p-4 shadow-sm border border-purple-200/50 flex-1 overflow-y-auto">
-          {displayText ? (
-            <div className="flex flex-col h-full">
-              <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-line flex-1">
-                {displayText}
+        {/* Scrollable Years Container */}
+        <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar min-h-0">
+          {yearsData.length > 0 ? yearsData.map(({ year, data }) => (
+            <div key={year} className="bg-white/60 rounded-lg p-2 border border-purple-100/50">
+              {/* Year Badge */}
+              <div className="flex items-center justify-center mb-2">
+                <span className="text-xs font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+                  {year}
+                </span>
               </div>
-              {shouldTruncate && (
-                <button
-                  onClick={() => setExpandedSummary(!expandedSummary)}
-                  className="text-purple-600 hover:text-purple-800 text-xs font-semibold mt-3 inline-flex items-center gap-1 hover:underline"
-                >
-                  {expandedSummary ? (
-                    <>
-                      <span>Show Less</span>
-                      <FaChevronUp className="w-3 h-3" />
-                    </>
-                  ) : (
-                    <>
-                      <span>Read More</span>
-                      <FaChevronDown className="w-3 h-3" />
-                    </>
-                  )}
-                </button>
-              )}
+
+              {/* ROI Section */}
+              <div className="mb-2">
+                <div className="text-[9px] text-gray-500 font-semibold uppercase mb-1 px-1">ROI</div>
+                <div className="grid grid-cols-4 gap-1">
+                  {timeframes.map((tf) => {
+                    const roi = data?.[tf.key]?.prob_weighted_returns;
+                    return (
+                      <div key={`roi-${year}-${tf.key}`} className="bg-white rounded-md p-1 border border-purple-100/50">
+                        <div className="text-[8px] text-gray-400 font-medium">{tf.label}</div>
+                        <div className={`text-[10px] font-bold ${getROIColor(roi)}`}>
+                          {formatROI(roi)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Win Rate Section */}
+              <div>
+                <div className="text-[9px] text-gray-500 font-semibold uppercase mb-1 px-1">Win Rate</div>
+                <div className="grid grid-cols-4 gap-1">
+                  {timeframes.map((tf) => {
+                    const winRate = data?.[tf.key]?.win_percentage;
+                    return (
+                      <div key={`win-${year}-${tf.key}`} className="bg-white rounded-md p-1 border border-blue-100/50">
+                        <div className="text-[8px] text-gray-400 font-medium">{tf.label}</div>
+                        <div className={`text-[10px] font-bold ${getWinRateColor(winRate)}`}>
+                          {formatWinRate(winRate)}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="text-center text-gray-400 text-sm py-8 flex items-center justify-center h-full">
-              No summary available
-            </div>
+          )) : (
+            <div className="text-center text-gray-400 text-xs py-10">No data available</div>
           )}
         </div>
-
-
-      </div>
-
-      {/* Decorative Bottom Line */}
-      <div className="mt-auto text-center pt-2">
-        <div className="w-16 h-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mx-auto opacity-50"></div>
       </div>
     </div>
   );
@@ -332,40 +461,51 @@ const RightPanel = ({ influencer }) => {
 // Table of Contents - Left Panel
 const TOCLeftPanel = ({ influencers, selectedIndex, onSelect }) => {
   return (
-    <div className="h-full w-full bg-white/95 backdrop-blur-sm flex flex-col p-6 md:p-8 relative overflow-hidden border-r border-gray-100">
+    <div className="h-full w-full bg-white/95 backdrop-blur-sm flex flex-col p-4 md:p-6 relative border-r border-gray-100">
       {/* Background Decoration */}
       <div className="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none">
         <div className="absolute -top-[100px] -left-[100px] w-[300px] h-[300px] bg-blue-100/50 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="relative flex-1 flex flex-col z-10">
-        <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-          Table of Contents
-        </h2>
-        <p className="text-gray-500 text-xs md:text-sm mb-6 font-medium">Click to view metrics</p>
+      <div className="relative flex flex-col z-10 h-full min-h-0">
+        <div className="flex-shrink-0 mb-4">
+          <h2 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
+            Influencers
+          </h2>
+          <div className="w-12 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+        </div>
 
-        <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto pr-1 space-y-2 custom-scrollbar min-h-0">
           {influencers.length > 0 ? influencers.map((inf, idx) => (
             <div
               key={inf.id}
               onClick={() => onSelect(idx)}
-              className={`group flex items-center gap-3 p-3 rounded-xl hover:bg-white hover:shadow-md border transition-all cursor-pointer ${selectedIndex === idx
+              className={`group flex items-center gap-2 p-2 rounded-xl hover:bg-white hover:shadow-md border transition-all cursor-pointer ${selectedIndex === idx
                 ? 'bg-white shadow-md border-blue-200 ring-1 ring-blue-100'
                 : 'bg-slate-50/50 border-transparent hover:border-blue-100'
                 }`}
             >
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-md transition-transform flex-shrink-0 ${selectedIndex === idx
-                ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white scale-110'
-                : 'bg-gradient-to-br from-blue-400 to-purple-400 text-white group-hover:scale-110'
-                }`}>
-                #{inf.rank}
+              <div className={`w-8 h-8 rounded-full overflow-hidden flex items-center justify-center font-bold text-sm shadow-md transition-transform flex-shrink-0 ${selectedIndex === idx ? 'scale-110 ring-2 ring-blue-400' : 'group-hover:scale-110'}`}>
+                {inf.platform === "YouTube" && inf.channel_thumbnails?.high?.url ? (
+                  <Image
+                    src={inf.channel_thumbnails.high.url}
+                    alt={inf.name || ""}
+                    width={32}
+                    height={32}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
+                    {inf.name?.charAt(0)?.toUpperCase() || "?"}
+                  </div>
+                )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className={`font-bold text-sm truncate transition-colors ${selectedIndex === idx ? 'text-blue-700' : 'text-gray-800 group-hover:text-blue-600'
+                <div className={`font-bold text-xs truncate transition-colors ${selectedIndex === idx ? 'text-blue-700' : 'text-gray-800 group-hover:text-blue-600'
                   }`}>
                   {inf.name}
                 </div>
-                <div className="text-[10px] md:text-xs text-gray-500 truncate">
+                <div className="text-[9px] text-gray-500 truncate">
                   {inf.platform} • <span className="text-blue-500 font-medium">{formatNumber(inf.subs)} subs</span>
                 </div>
               </div>
@@ -378,87 +518,28 @@ const TOCLeftPanel = ({ influencers, selectedIndex, onSelect }) => {
           )}
         </div>
 
-        <div className="mt-4 flex flex-col items-center">
-          <FaChevronDown className="text-gray-300 animate-bounce w-4 h-4" />
-          <span className="text-[10px] text-gray-400 mt-1">Total: {influencers.length} influencers</span>
+        <div className="mt-2 flex flex-col items-center flex-shrink-0">
+          <span className="text-[9px] text-gray-400">Total: {influencers.length} influencers</span>
         </div>
       </div>
     </div>
   );
 };
 
-// Table of Contents - Right Panel
-const TOCRightPanel = ({ influencer }) => {
-  const selectedInf = influencer || {};
-
-  return (
-    <div className="h-full w-full bg-slate-50/90 backdrop-blur-sm flex flex-col p-6 md:p-8 relative overflow-hidden">
-      {/* Background Decoration */}
-      <div className="absolute top-0 right-0 w-full h-full opacity-30 pointer-events-none">
-        <div className="absolute -bottom-[100px] -right-[100px] w-[300px] h-[300px] bg-purple-100/50 rounded-full blur-3xl"></div>
-      </div>
-
-      <div className="relative flex-1 flex flex-col z-10 transition-all duration-300 transform key={selectedInf.id}">
-        <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2 text-center">
-          Key Metrics
-        </h2>
-        <div className="w-16 h-1 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mx-auto mb-8 opacity-70"></div>
-
-        <div className="text-center mb-6">
-          <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Selected: <span className="text-gray-700 text-lg block mt-1">{selectedInf.name || "N/A"}</span></div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4 mb-auto">
-          <div className="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-blue-500 hover:shadow-md transition-shadow group">
-            <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">ROI</div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent group-hover:scale-105 transition-transform origin-left">
-              {selectedInf.prob_weighted_returns ? selectedInf.prob_weighted_returns.toFixed(1) : '--'}
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-blue-500 hover:shadow-md transition-shadow group">
-            <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">Win Rate</div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent group-hover:scale-105 transition-transform origin-left">
-              {selectedInf.win_percentage ? Math.round(selectedInf.win_percentage) + '%' : '--'}
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-purple-500 hover:shadow-md transition-shadow group">
-            <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">Total Posts</div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent group-hover:scale-105 transition-transform origin-left">
-              {selectedInf.price_counts ? selectedInf.price_counts.toLocaleString() : '--'}
-            </div>
-          </div>
-
-          <div className="bg-white p-4 rounded-2xl shadow-sm border-l-4 border-purple-500 hover:shadow-md transition-shadow group">
-            <div className="text-[10px] font-bold text-gray-500 uppercase mb-1">AI Score</div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent group-hover:scale-105 transition-transform origin-left">
-              {selectedInf.ai_overall_score ? selectedInf.ai_overall_score.toFixed(1) : '--'}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Tri-Fold Flipbook Component
-const TriFoldFlipbook = ({ influencers, onInfluencerClick }) => {
-  const [currentIndex, setCurrentIndex] = useState(0); // 0 = TOC, 1...N = Influencers
-  const [tocSelectedIndex, setTocSelectedIndex] = useState(0); // For TOC view selection
+// Four-Fold Flipbook Component
+const FourFoldFlipbook = ({ influencers }) => {
+  const [selectedIndex, setSelectedIndex] = useState(0); // Selected influencer index
   const [isFlipping, setIsFlipping] = useState(false);
   const [flipDirection, setFlipDirection] = useState(null); // 'next' or 'prev'
 
-  const totalPages = influencers.length + 1; // TOC + Influencers
-  const isTOC = currentIndex === 0;
-  const currentInfluencer = isTOC ? null : influencers[currentIndex - 1];
+  const currentInfluencer = influencers[selectedIndex] || null;
 
   const goNext = () => {
-    if (currentIndex < totalPages - 1 && !isFlipping) {
+    if (selectedIndex < influencers.length - 1 && !isFlipping) {
       setFlipDirection('next');
       setIsFlipping(true);
       setTimeout(() => {
-        setCurrentIndex(prev => prev + 1);
+        setSelectedIndex(prev => prev + 1);
         setIsFlipping(false);
         setFlipDirection(null);
       }, 600);
@@ -466,23 +547,23 @@ const TriFoldFlipbook = ({ influencers, onInfluencerClick }) => {
   };
 
   const goPrev = () => {
-    if (currentIndex > 0 && !isFlipping) {
+    if (selectedIndex > 0 && !isFlipping) {
       setFlipDirection('prev');
       setIsFlipping(true);
       setTimeout(() => {
-        setCurrentIndex(prev => prev - 1);
+        setSelectedIndex(prev => prev - 1);
         setIsFlipping(false);
         setFlipDirection(null);
       }, 600);
     }
   };
 
-  const goToPage = (index) => {
-    if (index !== currentIndex && !isFlipping) {
-      setFlipDirection(index > currentIndex ? 'next' : 'prev');
+  const handleSelect = (index) => {
+    if (index !== selectedIndex && !isFlipping) {
+      setFlipDirection(index > selectedIndex ? 'next' : 'prev');
       setIsFlipping(true);
       setTimeout(() => {
-        setCurrentIndex(index);
+        setSelectedIndex(index);
         setIsFlipping(false);
         setFlipDirection(null);
       }, 600);
@@ -500,86 +581,53 @@ const TriFoldFlipbook = ({ influencers, onInfluencerClick }) => {
 
   return (
     <div className="flex flex-col items-center gap-6">
-      {/* Book Container */}
+      {/* Book Container - Four-Fold Layout */}
       <div className="relative" style={{ perspective: '2000px' }}>
         <div className="flex gap-1 md:gap-2 justify-center" style={{ transformStyle: 'preserve-3d' }}>
 
-          {isTOC ? (
-            /* TOC View - 2 Pages */
-            <>
-              {/* TOC Left Panel */}
-              <div
-                className={`w-[280px] md:w-[320px] h-[480px] md:h-[550px] rounded-l-2xl overflow-hidden shadow-2xl transition-all duration-600 ease-in-out bg-white
-                                ${isFlipping && flipDirection === 'prev' ? 'animate-flip-in-left' : ''} 
-                                ${isFlipping && flipDirection === 'next' ? 'animate-flip-out-left' : ''}`}
-                style={{
-                  transformOrigin: 'right center',
-                  boxShadow: '-8px 0 30px rgba(0,0,0,0.15), 0 10px 40px rgba(0,0,0,0.2)'
-                }}
-              >
-                <TOCLeftPanel
-                  influencers={influencers}
-                  selectedIndex={tocSelectedIndex}
-                  onSelect={setTocSelectedIndex}
-                />
-              </div>
+          {/* Panel 1: Influencers List */}
+          <div
+            className="w-[220px] md:w-[260px] h-[480px] md:h-[550px] rounded-l-2xl overflow-hidden shadow-2xl bg-white"
+            style={{
+              boxShadow: '-8px 0 30px rgba(0,0,0,0.15), 0 10px 40px rgba(0,0,0,0.2)'
+            }}
+          >
+            <TOCLeftPanel
+              influencers={influencers}
+              selectedIndex={selectedIndex}
+              onSelect={handleSelect}
+            />
+          </div>
 
-              {/* TOC Right Panel */}
-              <div
-                className={`w-[280px] md:w-[320px] h-[480px] md:h-[550px] rounded-r-2xl overflow-hidden shadow-2xl transition-all duration-600 ease-in-out bg-white
-                                ${isFlipping && flipDirection === 'next' ? 'animate-flip-in-right' : ''} 
-                                ${isFlipping && flipDirection === 'prev' ? 'animate-flip-out-right' : ''}`}
-                style={{
-                  transformOrigin: 'left center',
-                  boxShadow: '8px 0 30px rgba(0,0,0,0.15), 0 10px 40px rgba(0,0,0,0.2)'
-                }}
-              >
-                <TOCRightPanel influencer={influencers[tocSelectedIndex]} />
-              </div>
+          {/* Panel 2: Left Panel (Profile) */}
+          <div
+            className={`w-[220px] md:w-[260px] h-[480px] md:h-[550px] overflow-hidden shadow-2xl transition-all duration-600 ease-in-out ${isFlipping ? 'opacity-80 scale-[0.98]' : 'opacity-100 scale-100'}`}
+            style={{
+              boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+            }}
+          >
+            <LeftPanel influencer={currentInfluencer} />
+          </div>
 
-              {/* Spine filler for TOC (optional) */}
-              <div className="absolute top-0 left-1/2 w-1 h-full bg-gradient-to-b from-gray-400 via-gray-300 to-gray-400 opacity-20 -ml-0.5 z-20"></div>
-            </>
-          ) : (
-            /* Influencer View - 3 Panels (Tri-Fold) */
-            <>
-              {/* Left Panel */}
-              <div
-                className={`w-[280px] md:w-[320px] h-[480px] md:h-[550px] rounded-l-2xl overflow-hidden shadow-2xl transition-transform duration-600 ease-in-out ${isFlipping && flipDirection === 'prev' ? 'animate-flip-in-left' : ''
-                  } ${isFlipping && flipDirection === 'next' ? 'animate-flip-out-left' : ''}`}
-                style={{
-                  transformOrigin: 'right center',
-                  boxShadow: '-8px 0 30px rgba(0,0,0,0.15), 0 10px 40px rgba(0,0,0,0.2)'
-                }}
-              >
-                <LeftPanel influencer={currentInfluencer} />
-              </div>
+          {/* Panel 3: Middle Panel (Performance) */}
+          <div
+            className={`w-[220px] md:w-[260px] h-[480px] md:h-[550px] overflow-hidden shadow-2xl transition-all duration-600 ease-in-out ${isFlipping ? 'opacity-80 scale-[0.98]' : 'opacity-100 scale-100'}`}
+            style={{
+              boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+            }}
+          >
+            <MiddlePanel influencer={currentInfluencer} />
+          </div>
 
-              {/* Middle Panel */}
-              <div
-                className={`w-[280px] md:w-[320px] h-[480px] md:h-[550px] overflow-hidden shadow-2xl transition-all duration-600 ease-in-out ${isFlipping ? 'opacity-80 scale-95' : 'opacity-100 scale-100'
-                  }`}
-                style={{
-                  boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
-                }}
-              >
-                <MiddlePanel influencer={currentInfluencer} />
-              </div>
-
-              {/* Right Panel */}
-              <div
-                className={`w-[280px] md:w-[320px] h-[480px] md:h-[550px] rounded-r-2xl overflow-hidden shadow-2xl transition-transform duration-600 ease-in-out ${isFlipping && flipDirection === 'next' ? 'animate-flip-in-right' : ''
-                  } ${isFlipping && flipDirection === 'prev' ? 'animate-flip-out-right' : ''}`}
-                style={{
-                  transformOrigin: 'left center',
-                  boxShadow: '8px 0 30px rgba(0,0,0,0.15), 0 10px 40px rgba(0,0,0,0.2)'
-                }}
-              >
-                <RightPanel influencer={currentInfluencer} />
-              </div>
-
-            </>
-          )}
+          {/* Panel 4: Right Panel (ROI & Win Rate Analysis) */}
+          <div
+            className={`w-[220px] md:w-[260px] h-[480px] md:h-[550px] rounded-r-2xl overflow-hidden shadow-2xl transition-all duration-600 ease-in-out ${isFlipping ? 'opacity-80 scale-[0.98]' : 'opacity-100 scale-100'}`}
+            style={{
+              boxShadow: '8px 0 30px rgba(0,0,0,0.15), 0 10px 40px rgba(0,0,0,0.2)'
+            }}
+          >
+            <RightPanel influencer={currentInfluencer} />
+          </div>
 
         </div>
       </div>
@@ -588,8 +636,8 @@ const TriFoldFlipbook = ({ influencers, onInfluencerClick }) => {
       <div className="flex items-center gap-6 bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-xl border border-gray-200">
         <button
           onClick={goPrev}
-          disabled={currentIndex === 0 || isFlipping}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold transition-all ${currentIndex === 0 || isFlipping
+          disabled={selectedIndex === 0 || isFlipping}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold transition-all ${selectedIndex === 0 || isFlipping
             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
             : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 hover:shadow-lg transform hover:scale-105'
             }`}
@@ -600,17 +648,17 @@ const TriFoldFlipbook = ({ influencers, onInfluencerClick }) => {
 
         <div className="text-center px-4">
           <div className="text-sm font-semibold text-gray-800">
-            {isTOC ? "Table of Contents" : `${currentIndex} / ${influencers.length}`}
+            {selectedIndex + 1} / {influencers.length}
           </div>
-          <div className="text-xs text-gray-500">
-            {isTOC ? "Overview" : `Rank #${currentInfluencer?.rank}`}
-          </div>
+          {/* <div className="text-xs text-gray-500">
+            Rank #{currentInfluencer?.rank}
+          </div> */}
         </div>
 
         <button
           onClick={goNext}
-          disabled={currentIndex >= totalPages - 1 || isFlipping}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold transition-all ${currentIndex >= totalPages - 1 || isFlipping
+          disabled={selectedIndex >= influencers.length - 1 || isFlipping}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold transition-all ${selectedIndex >= influencers.length - 1 || isFlipping
             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
             : 'bg-gradient-to-r from-blue-500 to-purple-500 text-white hover:from-blue-600 hover:to-purple-600 hover:shadow-lg transform hover:scale-105'
             }`}
@@ -622,24 +670,6 @@ const TriFoldFlipbook = ({ influencers, onInfluencerClick }) => {
 
       {/* Quick Navigation - Influencer Thumbnails */}
       <div className="flex items-center gap-2 overflow-x-auto max-w-full px-4 py-2 custom-scrollbar">
-        {/* TOC Thumbnail */}
-        <button
-          onClick={() => goToPage(0)}
-          className={`flex-shrink-0 w-10 h-10 rounded-lg overflow-hidden border-2 transition-all flex items-center justify-center bg-gray-100 ${currentIndex === 0
-            ? 'border-blue-500 ring-2 ring-blue-300 scale-110'
-            : 'border-gray-300 hover:border-blue-400'
-            }`}
-          title="Table of Contents"
-        >
-          <div className="flex flex-col gap-0.5">
-            <div className="w-4 h-0.5 bg-gray-500"></div>
-            <div className="w-4 h-0.5 bg-gray-500"></div>
-            <div className="w-4 h-0.5 bg-gray-500"></div>
-          </div>
-        </button>
-
-        <div className="w-px h-8 bg-gray-300 mx-1"></div>
-
         {/* Scrollable Container with Buttons */}
         <div className="flex items-center gap-2">
           <button
@@ -654,20 +684,20 @@ const TriFoldFlipbook = ({ influencers, onInfluencerClick }) => {
 
           <div
             id="thumbnail-container"
-            className="flex items-center gap-2 overflow-x-auto max-w-[200px] sm:max-w-[300px] md:max-w-[400px] scrollbar-hide scroll-smooth"
+            className="flex items-center gap-2 overflow-x-auto max-w-[300px] sm:max-w-[400px] md:max-w-[600px] scrollbar-hide scroll-smooth"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {influencers.map((inf, idx) => (
               <button
                 key={inf.id}
-                onClick={() => goToPage(idx + 1)}
-                className={`flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 transition-all ${idx + 1 === currentIndex
+                onClick={() => handleSelect(idx)}
+                className={`flex-shrink-0 w-10 h-10 rounded-full overflow-hidden border-2 transition-all ${idx === selectedIndex
                   ? 'border-blue-500 ring-2 ring-blue-300 scale-110'
                   : 'border-gray-300 hover:border-blue-400'
                   }`}
                 title={inf.name}
               >
-                {inf.channel_thumbnails?.high?.url ? (
+                {inf.platform === "YouTube" && inf.channel_thumbnails?.high?.url ? (
                   <Image
                     src={inf.channel_thumbnails.high.url}
                     alt={inf.name || ""}
@@ -677,7 +707,7 @@ const TriFoldFlipbook = ({ influencers, onInfluencerClick }) => {
                   />
                 ) : (
                   <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold">
-                    {inf.name?.charAt(0) || "?"}
+                    {inf.name?.charAt(0)?.toUpperCase() || "?"}
                   </div>
                 )}
               </button>
@@ -800,6 +830,11 @@ export default function InfluencerSearchFlipPage() {
         current_rating: ch.current_rating || 0,
         gemini_summary: ch.gemini_summary || '',
         star_rating_yearly: ch.star_rating_yearly || {},
+        score_yearly_timeframes: ch.score_yearly_timeframes || {},
+        ai_scoring_yearly: ch.ai_scoring_yearly || {},
+        last_post_date: ch.last_post_date || '',
+        last_post_date_string: ch.last_post_date_string || '',
+        last_post_time: ch.last_post_time || '',
       }));
     } else if (selectedPlatform === "telegram") {
       influencers = telegramInfluencers.map((tg) => ({
@@ -817,6 +852,11 @@ export default function InfluencerSearchFlipPage() {
         current_rating: tg.current_rating || 0,
         gemini_summary: tg.gemini_summary || '',
         star_rating_yearly: tg.star_rating_yearly || {},
+        score_yearly_timeframes: tg.score_yearly_timeframes || {},
+        ai_scoring_yearly: tg.ai_scoring_yearly || {},
+        last_post_date: tg.last_post_date || '',
+        last_post_date_string: tg.last_post_date_string || '',
+        last_post_time: tg.last_post_time || '',
       }));
     } else {
       influencers = [];
@@ -888,6 +928,26 @@ export default function InfluencerSearchFlipPage() {
         .animate-flip-in-right { animation: flip-in-right 0.6s ease-in-out; }
         .animate-flip-out-right { animation: flip-out-right 0.6s ease-in-out; }
         .duration-600 { transition-duration: 600ms; }
+
+        /* Custom Scrollbar for Influencers List */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f5f9;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #cbd5e1;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #94a3b8;
+        }
+        .custom-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #cbd5e1 #f1f5f9;
+        }
       `}</style>
 
       {/* Header Section */}
@@ -897,7 +957,7 @@ export default function InfluencerSearchFlipPage() {
           <div className="mb-6">
             <h2 className="text-4xl md:text-5xl font-bold flex items-start gap-3 drop-shadow-sm">
               <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
-                Influencer Tri-Fold
+                Influencers
               </span>
             </h2>
             <div className="w-24 h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-fuchsia-500 rounded-full mt-3 shadow-lg shadow-indigo-500/50"></div>
@@ -974,7 +1034,7 @@ export default function InfluencerSearchFlipPage() {
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 border-t-4 border-t-purple-500"></div>
           </div>
         ) : (
-          <TriFoldFlipbook
+          <FourFoldFlipbook
             influencers={filteredInfluencers}
           />
         )}
