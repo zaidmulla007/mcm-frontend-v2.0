@@ -66,7 +66,7 @@ function AuthButtons() {
               router.push('/login?signup=true');
             }
           } else {
-            // If not on login page, go to login
+            // If not on login page, go to sign in
             router.push('/login');
           }
         }}
@@ -74,11 +74,11 @@ function AuthButtons() {
       >
         <FaGlobe className="text-base" />
         <span className="text-sm">
-          {pathname === '/login' && searchParams.get('signup') === 'true' ? 'Sign In' : 'Sign Up'}
+          {pathname === '/login' && searchParams.get('signup') === 'true' ? 'Sign Up' : 'Sign In'}
         </span>
       </button>
       <Link
-        href="/login?signup=true"
+        href="/login"
         className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 hover:from-cyan-700 hover:via-indigo-700 hover:to-fuchsia-700 text-white px-6 py-2.5 rounded-lg font-semibold text-sm shadow-md shadow-indigo-500/30 hover:shadow-lg hover:scale-105 transition"
       >
         Start Free Trial
@@ -394,14 +394,14 @@ export default function ClientHeader() {
             <Suspense fallback={
               <>
                 <Link
-                  href="/login"
+                  href="/login?signup=true"
                   className="flex items-center gap-2 text-gray-700 hover:text-blue-600 transition font-medium"
                 >
                   <FaGlobe className="text-base" />
                   <span className="text-sm">Sign Up</span>
                 </Link>
                 <Link
-                  href="/login?signup=true"
+                  href="/login"
                   className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 hover:from-cyan-700 hover:via-indigo-700 hover:to-fuchsia-700 text-white px-6 py-2.5 rounded-lg font-semibold text-sm shadow-md shadow-indigo-500/30 hover:shadow-lg hover:scale-105 transition"
                 >
                   Start Free Trial
