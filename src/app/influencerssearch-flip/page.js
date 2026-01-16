@@ -214,7 +214,7 @@ const MiddlePanel = ({ influencer }) => {
         {/* Header */}
         <div className="flex-shrink-0 mb-3">
           <h3 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
-            Performance Overview
+            Influencer Overview
           </h3>
           <div className="w-12 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
         </div>
@@ -270,50 +270,40 @@ const MiddlePanel = ({ influencer }) => {
               <span className="w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-600 to-purple-600"></span>
               AI Scoring
             </h4>
-            {yearsAIData.length > 0 ? yearsAIData.map(({ year, data }) => (
-              <div key={year} className="bg-white/60 rounded-lg p-2 border border-blue-100/50 overflow-visible">
-                {/* Year Badge */}
-                <div className="flex items-center justify-center mb-2">
-                  <span className="text-xs font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    {year}
-                  </span>
+            {metrics.map((metric) => (
+              <div key={metric.key} className="bg-white/60 rounded-lg p-2 border border-blue-100/50 overflow-visible mb-2 last:mb-0">
+                {/* Metric Header */}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase text-gray-800">{metric.label}</span>
+                  <div className="relative group/tooltip">
+                    <FaEye className="w-2.5 h-2.5 text-gray-400 hover:text-blue-500 cursor-pointer transition-colors" />
+                    <div className="absolute bottom-full mb-1 right-0 hidden group-hover/tooltip:block w-40 bg-gray-800 text-white text-[9px] rounded px-2 py-1 shadow-lg" style={{ zIndex: 9999 }}>
+                      {metric.definition}
+                      <div className="absolute top-full -mt-1 right-0 border-4 border-transparent border-t-gray-800"></div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Metrics Grid */}
-                <div className="grid grid-cols-2 gap-1.5 overflow-visible">
-                  {metrics.map((metric) => {
-                    const value = data?.[metric.field];
-                    const isCentered = metric.key === 'overall_score' || metric.key === 'risk_management';
-                    return (
-                      <div
-                        key={metric.key}
-                        className="bg-white rounded-md p-1.5 border border-blue-100/50 hover:shadow-sm transition-shadow overflow-visible"
-                      >
-                        <div className="text-[8px] font-semibold uppercase mb-0.5 text-gray-800 flex items-center justify-between gap-1">
-                          <span>{metric.label}</span>
-                          <div className="relative group/tooltip">
-                            <FaEye className="w-2.5 h-2.5 text-gray-400 hover:text-blue-500 cursor-pointer transition-colors" />
-                            <div className={`absolute bottom-full mb-1 hidden group-hover/tooltip:block w-40 bg-gray-800 text-white text-[9px] rounded px-2 py-1 shadow-lg ${
-                              isCentered ? 'left-1/2 -translate-x-1/2' : 'right-0'
-                            }`} style={{ zIndex: 9999 }}>
-                              {metric.definition}
-                              <div className={`absolute top-full -mt-1 border-4 border-transparent border-t-gray-800 ${
-                                isCentered ? 'left-1/2 -translate-x-1/2' : 'right-2'
-                              }`}></div>
-                            </div>
+                {/* Years Grid for this Metric */}
+                {yearsAIData.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {yearsAIData.map(({ year, data }) => {
+                      const value = data?.[metric.field];
+                      return (
+                        <div key={year} className="bg-white rounded-md p-1 border border-blue-50 text-center shadow-sm">
+                          <div className="text-[8px] text-black-500 font-medium mb-0.5">{year}</div>
+                          <div className="text-sm font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+                            {value !== undefined && value !== null ? value.toFixed(1) : '--'}
                           </div>
                         </div>
-                        <div className="text-sm font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-                          {value !== undefined && value !== null ? value.toFixed(1) : '--'}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-400 text-[9px] py-2">No data</div>
+                )}
               </div>
-            )) : (
-              <div className="text-center text-gray-400 text-xs py-4">No AI scoring data</div>
-            )}
+            ))}
           </div>
         </div>
       </div>
@@ -321,7 +311,7 @@ const MiddlePanel = ({ influencer }) => {
   );
 };
 
-// Right Panel Component - ROI & Win Rate Analysis (All Years)
+// RightPanel Component - ROI & Win Rate Analysis (All Years)
 const RightPanel = ({ influencer }) => {
   // Get all available years from score_yearly_timeframes
   const getAllYearsData = () => {
@@ -354,12 +344,13 @@ const RightPanel = ({ influencer }) => {
 
   const yearsData = getAllYearsData();
 
-  // Timeframes to display: 1hr, 7days, 60days, 180days
+  // Timeframes to display: 1hr, 7days, 60days, 180days, 1year
   const timeframes = [
     { key: '1_hour', label: '1hr' },
     { key: '7_days', label: '7d' },
     { key: '60_days', label: '60d' },
     { key: '180_days', label: '180d' },
+    { key: '1_year', label: '1y' },
   ];
 
   const formatROI = (value) => {
@@ -397,61 +388,84 @@ const RightPanel = ({ influencer }) => {
         {/* Header */}
         <div className="flex-shrink-0 mb-3">
           <h3 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-1">
-            ROI & Win Rate Analysis
+            Performance Overview
           </h3>
           <div className="w-12 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
         </div>
 
-        {/* Scrollable Years Container */}
-        <div className="flex-1 overflow-y-auto pr-1 space-y-3 custom-scrollbar min-h-0">
-          {yearsData.length > 0 ? yearsData.map(({ year, data }) => (
-            <div key={year} className="bg-white/60 rounded-lg p-2 border border-purple-100/50">
-              {/* Year Badge */}
-              <div className="flex items-center justify-center mb-2">
-                <span className="text-xs font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                  {year}
-                </span>
-              </div>
+        {/* Scrollable Metrics Container */}
+        <div className="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar min-h-0">
 
-              {/* ROI Section */}
-              <div className="mb-2">
-                <div className="text-[9px] text-gray-500 font-semibold uppercase mb-1 px-1">ROI</div>
-                <div className="grid grid-cols-4 gap-1">
-                  {timeframes.map((tf) => {
-                    const roi = data?.[tf.key]?.prob_weighted_returns;
-                    return (
-                      <div key={`roi-${year}-${tf.key}`} className="bg-white rounded-md p-1 border border-purple-100/50">
-                        <div className="text-[8px] text-gray-400 font-medium">{tf.label}</div>
-                        <div className={`text-[10px] font-bold ${getROIColor(roi)}`}>
-                          {formatROI(roi)}
-                        </div>
-                      </div>
-                    );
-                  })}
+          {/* ROI Section */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold text-gray-800 flex items-center gap-2 px-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+              ROI Performance
+            </h4>
+            {timeframes.map((tf) => (
+              <div key={`roi-${tf.key}`} className="bg-white/60 rounded-lg p-2 border border-purple-100/50 overflow-visible">
+                {/* Metric Header */}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase text-gray-600">{tf.label} ROI</span>
                 </div>
-              </div>
 
-              {/* Win Rate Section */}
-              <div>
-                <div className="text-[9px] text-gray-500 font-semibold uppercase mb-1 px-1">Win Rate</div>
-                <div className="grid grid-cols-4 gap-1">
-                  {timeframes.map((tf) => {
-                    const winRate = data?.[tf.key]?.win_percentage;
-                    return (
-                      <div key={`win-${year}-${tf.key}`} className="bg-white rounded-md p-1 border border-blue-100/50">
-                        <div className="text-[8px] text-gray-400 font-medium">{tf.label}</div>
-                        <div className={`text-[10px] font-bold ${getWinRateColor(winRate)}`}>
-                          {formatWinRate(winRate)}
+                {/* Years Grid */}
+                {yearsData.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {yearsData.map(({ year, data }) => {
+                      const roi = data?.[tf.key]?.prob_weighted_returns;
+                      return (
+                        <div key={`${year}-roi`} className="bg-white rounded-md p-1 border border-purple-50 text-center shadow-sm">
+                          <div className="text-[8px] text-black-500 font-medium mb-0.5">{year}</div>
+                          <div className={`text-sm font-bold ${getROIColor(roi)}`}>
+                            {formatROI(roi)}
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-400 text-[9px] py-1">No data</div>
+                )}
               </div>
-            </div>
-          )) : (
-            <div className="text-center text-gray-400 text-xs py-10">No data available</div>
-          )}
+            ))}
+          </div>
+
+          {/* Win Rate Section */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold text-gray-800 flex items-center gap-2 px-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+              Win Rates
+            </h4>
+            {timeframes.map((tf) => (
+              <div key={`win-${tf.key}`} className="bg-white/60 rounded-lg p-2 border border-blue-100/50 overflow-visible">
+                {/* Metric Header */}
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[10px] font-bold uppercase text-gray-600">{tf.label} Win Rate</span>
+                </div>
+
+                {/* Years Grid */}
+                {yearsData.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {yearsData.map(({ year, data }) => {
+                      const winRate = data?.[tf.key]?.win_percentage;
+                      return (
+                        <div key={`${year}-win`} className="bg-white rounded-md p-1 border border-blue-50 text-center shadow-sm">
+                          <div className="text-[8px] text-gray-400 font-medium mb-0.5">{year}</div>
+                          <div className={`text-sm font-bold ${getWinRateColor(winRate)}`}>
+                            {formatWinRate(winRate)}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-400 text-[9px] py-1">No data</div>
+                )}
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
     </div>
