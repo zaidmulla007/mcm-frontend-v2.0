@@ -1,7 +1,8 @@
 "use client";
 import Image from "next/image";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { FaStar, FaStarHalfAlt, FaChevronLeft, FaChevronRight, FaEye } from "react-icons/fa";
+import { FaStar, FaStarHalfAlt, FaChevronLeft, FaChevronRight, FaEye, FaYoutube, FaTelegramPlane } from "react-icons/fa";
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from "recharts";
 import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
 // Helper function to format numbers
@@ -35,17 +36,17 @@ const LeftPanel = ({ influencer }) => {
       {/* Content */}
       <div className="relative flex-1 flex flex-col items-center justify-center">
         {/* Large Influencer Image */}
-        <div className="relative mb-4 group cursor-pointer" onClick={handleNavigate}>
+        <div className="relative mb-2 group cursor-pointer" onClick={handleNavigate}>
           {/* Gradient Ring on Hover */}
           <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-          <div className="relative w-40 h-40 md:w-48 md:h-48 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-white/80 transition-all group-hover:ring-0">
+          <div className="relative w-32 h-32 md:w-36 md:h-36 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-white/80 transition-all group-hover:ring-0">
             {influencer.channel_thumbnails?.high?.url ? (
               <Image
                 src={influencer.channel_thumbnails.high.url}
                 alt={influencer.name || "Influencer"}
-                width={192}
-                height={192}
+                width={144}
+                height={144}
                 className="w-full h-full object-cover"
                 onError={(e) => {
                   e.target.style.display = 'none';
@@ -59,7 +60,7 @@ const LeftPanel = ({ influencer }) => {
               className="w-full h-full bg-gradient-to-br from-blue-400 via-purple-400 to-indigo-500 flex items-center justify-center"
               style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
             >
-              <span className="text-white text-5xl font-bold">
+              <span className="text-white text-4xl font-bold">
                 {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
               </span>
             </div>
@@ -68,32 +69,58 @@ const LeftPanel = ({ influencer }) => {
         </div>
 
         {/* Influencer Name */}
-        <h2 className="text-xl md:text-2xl font-bold text-gray-800 text-center mb-2 px-2 line-clamp-2">
+        <h2 className="text-lg md:text-xl font-bold text-gray-800 text-center mb-1 px-2 line-clamp-2">
           {influencer.name?.replace(/_/g, " ") || "Unknown"}
         </h2>
 
         {/* Platform Badge */}
-        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-1.5 rounded-full shadow-lg mb-4">
-          <span className="font-semibold text-sm">{influencer.platform}</span>
+        <div className="inline-flex items-center gap-2 bg-white border border-gray-100 px-4 py-1.5 rounded-full shadow-md mb-3">
+          {influencer.platform === "YouTube" ? (
+            <FaYoutube className="text-red-600 text-sm" />
+          ) : (
+            <FaTelegramPlane className="text-blue-500 text-sm" />
+          )}
+          <span className="font-bold text-xs text-gray-700">{influencer.platform}</span>
         </div>
 
         {/* Last Post Date and Time Card */}
-        <div className="w-full max-w-[200px] bg-white rounded-xl p-3 shadow-md border border-blue-100 mb-3">
+        <div className="w-full max-w-[200px] bg-white rounded-xl p-2 shadow-md border border-blue-100 mb-2">
           <div className="flex flex-col gap-1">
-            <span className="text-xs text-gray-600 font-medium">Last Post</span>
+            <span className="text-[10px] text-gray-600 font-medium">Last Post</span>
             <div className="flex items-center justify-between">
-              <span className="text-sm font-bold text-gray-800">
+              <span className="text-xs font-bold text-gray-800">
                 {influencer.last_post_date_string || '--'}
               </span>
-              <span className="text-sm font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              <span className="text-xs font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 {influencer.last_post_time || '--'}
               </span>
             </div>
           </div>
         </div>
 
-        {/* Subscribers Card */}
-        <div className="w-full max-w-[200px] bg-white rounded-xl p-3 shadow-md border border-blue-100">
+        {/* Posts History (Hardcoded) */}
+        <div className="w-full max-w-[200px] bg-white/60 rounded-xl p-2 shadow-md border border-blue-100 mb-2">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-bold uppercase text-gray-600 px-1">Posts History</span>
+          </div>
+          <div className="grid grid-cols-3 gap-1">
+            <div className="bg-white rounded-md p-1 border border-blue-50 text-center shadow-sm">
+              <div className="text-[8px] text-gray-500 font-medium mb-0">2025</div>
+              <div className="text-xs font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">142</div>
+            </div>
+            <div className="bg-white rounded-md p-1 border border-blue-50 text-center shadow-sm">
+              <div className="text-[8px] text-gray-500 font-medium mb-0">2024</div>
+              <div className="text-xs font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">385</div>
+            </div>
+            <div className="bg-white rounded-md p-1 border border-blue-50 text-center shadow-sm">
+              <div className="text-[8px] text-gray-500 font-medium mb-0">2023</div>
+              <div className="text-xs font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">210</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Subscribers Card - Lifted Layout */}
+        <div className="w-full max-w-[200px] bg-white rounded-xl p-3 shadow-md border border-blue-100 mb-2">
           <div className="flex items-center justify-between">
             <span className="text-xs text-gray-600 font-medium">Subscribers</span>
             <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -273,7 +300,7 @@ const MiddlePanel = ({ influencer }) => {
             {metrics.map((metric) => (
               <div key={metric.key} className="bg-white/60 rounded-lg p-2 border border-blue-100/50 overflow-visible mb-2 last:mb-0">
                 {/* Metric Header */}
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-1">
                   <span className="text-[10px] font-bold uppercase text-gray-800">{metric.label}</span>
                   <div className="relative group/tooltip">
                     <FaEye className="w-2.5 h-2.5 text-gray-400 hover:text-blue-500 cursor-pointer transition-colors" />
@@ -284,23 +311,48 @@ const MiddlePanel = ({ influencer }) => {
                   </div>
                 </div>
 
-                {/* Years Grid for this Metric */}
+                {/* Graph for this Metric */}
                 {yearsAIData.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {yearsAIData.map(({ year, data }) => {
-                      const value = data?.[metric.field];
-                      return (
-                        <div key={year} className="bg-white rounded-md p-1 border border-blue-50 text-center shadow-sm">
-                          <div className="text-[8px] text-black-500 font-medium mb-0.5">{year}</div>
-                          <div className="text-sm font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-                            {value !== undefined && value !== null ? value.toFixed(1) : '--'}
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <div className="h-24 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={[...yearsAIData].reverse().map(item => ({
+                        year: item.year,
+                        value: item.data?.[metric.field] || 0
+                      }))} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+                        <XAxis
+                          dataKey="year"
+                          hide={false}
+                          axisLine={false}
+                          tickLine={false}
+                          tick={{ fontSize: 9, fill: '#64748b', fontWeight: 500 }}
+                          interval={0}
+                          dy={5}
+                        />
+                        <YAxis hide={false} domain={[0, 10]} tick={{ fontSize: 8, fill: '#cbd5e1' }} axisLine={false} tickLine={false} width={20} />
+                        <RechartsTooltip
+                          cursor={{ fill: 'rgba(0,0,0,0.03)' }}
+                          contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', fontSize: '10px', padding: '6px 10px' }}
+                          itemStyle={{ color: metric.color, fontWeight: 'bold' }}
+                          formatter={(value) => [value.toFixed(1), metric.label]}
+                          labelStyle={{ color: '#64748b', marginBottom: '2px', fontWeight: 600 }}
+                        />
+                        <Bar
+                          dataKey="value"
+                          radius={[4, 4, 0, 0]}
+                          maxBarSize={40}
+                          animationDuration={1500}
+                        >
+                          {
+                            [...yearsAIData].reverse().map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={metric.color} fillOpacity={0.8} />
+                            ))
+                          }
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
                 ) : (
-                  <div className="text-center text-gray-400 text-[9px] py-2">No data</div>
+                  <div className="text-center text-gray-400 text-[9px] py-4">No data available</div>
                 )}
               </div>
             ))}
@@ -377,7 +429,7 @@ const RightPanel = ({ influencer }) => {
   };
 
   return (
-    <div className="h-full w-full bg-gradient-to-br from-purple-50 via-blue-50 to-white flex flex-col p-3 relative overflow-hidden">
+    <div className="h-full w-full bg-white flex flex-col p-3 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute inset-0 bg-[linear-gradient(45deg,#8b5cf6_25%,transparent_25%,transparent_75%,#8b5cf6_75%,#8b5cf6),linear-gradient(45deg,#8b5cf6_25%,transparent_25%,transparent_75%,#8b5cf6_75%,#8b5cf6)] bg-[length:20px_20px] bg-[0_0,10px_10px]"></div>
@@ -388,82 +440,104 @@ const RightPanel = ({ influencer }) => {
         {/* Header */}
         <div className="flex-shrink-0 mb-3">
           <h3 className="text-lg font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-1">
-            Performance Overview
+            Performance
           </h3>
           <div className="w-12 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
         </div>
 
-        {/* Scrollable Metrics Container */}
-        <div className="flex-1 overflow-y-auto pr-1 space-y-4 custom-scrollbar min-h-0">
+        {/* Tables Container */}
+        <div className="flex-1 overflow-y-auto overflow-x-auto pr-1 space-y-6 custom-scrollbar min-h-0 py-2">
 
-          {/* ROI Section */}
-          <div className="space-y-2">
-            <h4 className="text-xs font-bold text-gray-800 flex items-center gap-2 px-1">
+          {/* ROI Table */}
+          <div className="bg-white/60 rounded-lg border border-purple-100/50 overflow-hidden shadow-sm">
+            <div className="bg-purple-50/50 px-2 py-2 border-b border-purple-100 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-              ROI Performance
-            </h4>
-            {timeframes.map((tf) => (
-              <div key={`roi-${tf.key}`} className="bg-white/60 rounded-lg p-2 border border-purple-100/50 overflow-visible">
-                {/* Metric Header */}
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold uppercase text-gray-600">{tf.label} ROI</span>
-                </div>
+              <h4 className="text-xs font-bold text-gray-800">ROI Performance</h4>
+            </div>
 
-                {/* Years Grid */}
-                {yearsData.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {yearsData.map(({ year, data }) => {
-                      const roi = data?.[tf.key]?.prob_weighted_returns;
-                      return (
-                        <div key={`${year}-roi`} className="bg-white rounded-md p-1 border border-purple-50 text-center shadow-sm">
-                          <div className="text-[8px] text-black-500 font-medium mb-0.5">{year}</div>
-                          <div className={`text-sm font-bold ${getROIColor(roi)}`}>
-                            {formatROI(roi)}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center text-gray-400 text-[9px] py-1">No data</div>
-                )}
-              </div>
-            ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-center border-collapse min-w-[200px]">
+                <thead>
+                  <tr className="bg-gray-50/50">
+                    <th className="py-3 px-1.5 text-[9px] font-bold text-gray-500 border-b border-gray-100 text-left pl-2">Year</th>
+                    {timeframes.map((tf) => (
+                      <th key={tf.key} className="py-3 px-1.5 text-[9px] font-bold text-gray-500 border-b border-gray-100 whitespace-nowrap">
+                        {tf.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {yearsData.length > 0 ? (
+                    yearsData.map(({ year, data }) => (
+                      <tr key={`${year}-roi`} className="border-b border-gray-50 last:border-0 hover:bg-purple-50/30 transition-colors">
+                        <td className="py-3 px-1.5 text-[9px] font-bold text-gray-600 text-left pl-2">{year}</td>
+                        {timeframes.map((tf) => {
+                          const roi = data?.[tf.key]?.prob_weighted_returns;
+                          return (
+                            <td key={tf.key} className={`py-3 px-1.5 text-[9px] font-bold whitespace-nowrap ${getROIColor(roi)}`}>
+                              {formatROI(roi)}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={timeframes.length + 1} className="p-4 text-center text-[9px] text-gray-400">
+                        No ROI data available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          {/* Win Rate Section */}
-          <div className="space-y-2">
-            <h4 className="text-xs font-bold text-gray-800 flex items-center gap-2 px-1">
+          {/* Win Rate Table */}
+          <div className="bg-white/60 rounded-lg border border-blue-100/50 overflow-hidden shadow-sm">
+            <div className="bg-blue-50/50 px-2 py-2 border-b border-blue-100 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
-              Win Rates
-            </h4>
-            {timeframes.map((tf) => (
-              <div key={`win-${tf.key}`} className="bg-white/60 rounded-lg p-2 border border-blue-100/50 overflow-visible">
-                {/* Metric Header */}
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold uppercase text-gray-600">{tf.label} Win Rate</span>
-                </div>
+              <h4 className="text-xs font-bold text-gray-800">Win Rates</h4>
+            </div>
 
-                {/* Years Grid */}
-                {yearsData.length > 0 ? (
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {yearsData.map(({ year, data }) => {
-                      const winRate = data?.[tf.key]?.win_percentage;
-                      return (
-                        <div key={`${year}-win`} className="bg-white rounded-md p-1 border border-blue-50 text-center shadow-sm">
-                          <div className="text-[8px] text-gray-400 font-medium mb-0.5">{year}</div>
-                          <div className={`text-sm font-bold ${getWinRateColor(winRate)}`}>
-                            {formatWinRate(winRate)}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center text-gray-400 text-[9px] py-1">No data</div>
-                )}
-              </div>
-            ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-center border-collapse min-w-[200px]">
+                <thead>
+                  <tr className="bg-gray-50/50">
+                    <th className="py-3 px-1.5 text-[9px] font-bold text-gray-500 border-b border-gray-100 text-left pl-2">Year</th>
+                    {timeframes.map((tf) => (
+                      <th key={tf.key} className="py-3 px-1.5 text-[9px] font-bold text-gray-500 border-b border-gray-100 whitespace-nowrap">
+                        {tf.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {yearsData.length > 0 ? (
+                    yearsData.map(({ year, data }) => (
+                      <tr key={`${year}-win`} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+                        <td className="py-3 px-1.5 text-[9px] font-bold text-gray-600 text-left pl-2">{year}</td>
+                        {timeframes.map((tf) => {
+                          const winRate = data?.[tf.key]?.win_percentage;
+                          return (
+                            <td key={tf.key} className={`py-3 px-1.5 text-[9px] font-bold whitespace-nowrap ${getWinRateColor(winRate)}`}>
+                              {formatWinRate(winRate)}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={timeframes.length + 1} className="p-4 text-center text-[9px] text-gray-400">
+                        No Win Rate data available
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
 
         </div>
