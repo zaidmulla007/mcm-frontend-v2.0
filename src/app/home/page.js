@@ -4,6 +4,7 @@ import YoutubeTelegramDataTableGuage from "../components/YoutubeTelegramDataTabl
 import InfluencerFlashCard from "../components/InfluencerFlashCard";
 import TestimonialsSection from "../components/TestimonialsSection";
 import YouTubeTelegramDataTable from "../components/YouTubeTelegramDataTable";
+import InfluencerFlipbook from "../components/InfluencerFlipbook";
 import YouTubeTelegramDataTableStack from "../components/YoutubeTelegramDataTableStack";
 import YouTubeTelegramDataTableMatrix from "../components/YoutubeTelegramDataTableMatrix";
 import YouTubeTelegramDataTableChips from "../components/YoutubeTelegramDataTableChips";
@@ -430,7 +431,7 @@ export default function HomePage() {
         </motion.div>
 
         {/* Section Title and Description */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
@@ -464,10 +465,10 @@ export default function HomePage() {
             <strong className="text-indigo-700">Trust is the real Alpha.</strong> Track ROI, win rate, and trust scores with our
             comprehensive analytics and Influencer dashboard.
           </p>
-        </motion.div>
+        </motion.div> */}
 
         {/* Influencer Flash Cards */}
-        {loading ? (
+        {/* {loading ? (
           <div className="text-center py-12">
             <div className="text-gray-600">Loading influencer data...</div>
           </div>
@@ -475,7 +476,6 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mx-auto">
             {influencerData.length > 0 ? (
               influencerData.map((influencer, index) => {
-                // Define rank labels for each card
                 const rankLabels = ['Rank #1hr', 'Rank #24hrs', 'Rank #7days'];
                 const channelId = influencer?.id || influencer?.channel_id || influencer?.channelId || `influencer-${index}`;
                 return (
@@ -493,8 +493,32 @@ export default function HomePage() {
               <div className="col-span-3 text-center text-gray-600">No influencer data available</div>
             )}
           </div>
-        )}
+        )} */}
 
+
+      </div>
+
+      {/* Influencer Flipbook Section - Full Width */}
+      <div className="mt-16 w-full">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.9 }}
+          className="text-center mb-8 px-4"
+        >
+          <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
+            <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
+              Influencer Flipbook
+            </span>
+          </h2>
+          <p className="text-base text-gray-600 max-w-2xl mx-auto">
+            Browse through our curated list of influencers with detailed analytics
+          </p>
+        </motion.div>
+        <InfluencerFlipbook />
+      </div>
+
+      <div className="mx-auto px-4 py-16">
         {/* YouTube Telegram Data Table Guage Component */}
         <div className="mt-16">
           <YouTubeTelegramDataTable useLocalTime={useLocalTime} />

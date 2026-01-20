@@ -374,3 +374,430 @@ td.hover\:text-to-purple:hover,
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
 }
+
+/* PDF Rendering Styles - Fix gradient text and lab() colors for html2canvas */
+.pdf-rendering .bg-clip-text {
+  background: transparent !important;
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: #7c3aed !important;
+  color: #7c3aed !important; /* Purple color as fallback */
+}
+
+.pdf-rendering .text-transparent {
+  color: #7c3aed !important;
+  -webkit-text-fill-color: #7c3aed !important;
+}
+
+/* Specific override for gradient text elements */
+.pdf-rendering h1.bg-gradient-to-r,
+.pdf-rendering h2.bg-gradient-to-r,
+.pdf-rendering h3.bg-gradient-to-r,
+.pdf-rendering span.bg-gradient-to-r {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Ensure proper background colors in PDF */
+.pdf-rendering {
+  background-color: #ffffff !important;
+  background: #ffffff !important;
+}
+
+.pdf-rendering * {
+  print-color-adjust: exact !important;
+  -webkit-print-color-adjust: exact !important;
+}
+
+/* Override Tailwind v4 lab() colors with hex equivalents for PDF rendering */
+.pdf-rendering .bg-white {
+  background-color: #ffffff !important;
+}
+
+.pdf-rendering .bg-gray-50 {
+  background-color: #f9fafb !important;
+}
+
+.pdf-rendering .bg-gray-100 {
+  background-color: #f3f4f6 !important;
+}
+
+.pdf-rendering .bg-green-50 {
+  background-color: #f0fdf4 !important;
+}
+
+.pdf-rendering .bg-red-50 {
+  background-color: #fef2f2 !important;
+}
+
+.pdf-rendering .bg-yellow-50 {
+  background-color: #fefce8 !important;
+}
+
+.pdf-rendering .bg-pink-50 {
+  background-color: #fdf2f8 !important;
+}
+
+.pdf-rendering .bg-amber-50 {
+  background-color: #fffbeb !important;
+}
+
+.pdf-rendering .bg-blue-50 {
+  background-color: #eff6ff !important;
+}
+
+.pdf-rendering .bg-purple-50 {
+  background-color: #faf5ff !important;
+}
+
+.pdf-rendering .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+.pdf-rendering .text-gray-500 {
+  color: #6b7280 !important;
+}
+
+.pdf-rendering .text-gray-600 {
+  color: #4b5563 !important;
+}
+
+.pdf-rendering .text-gray-700 {
+  color: #374151 !important;
+}
+
+.pdf-rendering .text-gray-800 {
+  color: #1f2937 !important;
+}
+
+.pdf-rendering .text-green-600 {
+  color: #16a34a !important;
+}
+
+.pdf-rendering .text-green-700 {
+  color: #15803d !important;
+}
+
+.pdf-rendering .text-red-500 {
+  color: #ef4444 !important;
+}
+
+.pdf-rendering .text-red-600 {
+  color: #dc2626 !important;
+}
+
+.pdf-rendering .text-purple-600 {
+  color: #9333ea !important;
+}
+
+.pdf-rendering .text-purple-700 {
+  color: #7e22ce !important;
+}
+
+.pdf-rendering .text-blue-500 {
+  color: #3b82f6 !important;
+}
+
+.pdf-rendering .border-gray-100 {
+  border-color: #f3f4f6 !important;
+}
+
+.pdf-rendering .border-gray-200 {
+  border-color: #e5e7eb !important;
+}
+
+.pdf-rendering .border-green-100 {
+  border-color: #dcfce7 !important;
+}
+
+.pdf-rendering .border-red-100 {
+  border-color: #fee2e2 !important;
+}
+
+.pdf-rendering .border-amber-200 {
+  border-color: #fde68a !important;
+}
+
+.pdf-rendering .border-purple-200 {
+  border-color: #e9d5ff !important;
+}
+
+.pdf-rendering .border-purple-500 {
+  border-color: #a855f7 !important;
+}
+
+/* Gradient backgrounds - Default fallback */
+.pdf-rendering .bg-gradient-to-r,
+.pdf-rendering .bg-gradient-to-br {
+  background-image: none !important;
+}
+
+/* Headers and section titles with gradient - make transparent/white */
+.pdf-rendering h1.bg-gradient-to-r,
+.pdf-rendering h2.bg-gradient-to-r,
+.pdf-rendering h3.bg-gradient-to-r {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Span elements with gradient text (like footer) - transparent background */
+.pdf-rendering span.bg-gradient-to-r {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+/* Light gradient backgrounds */
+.pdf-rendering .bg-gradient-to-r.from-blue-50.to-purple-50,
+.pdf-rendering .from-blue-50.to-purple-50 {
+  background: #f5f3ff !important; /* Light purple tint */
+  background-image: none !important;
+}
+
+.pdf-rendering .bg-gradient-to-r.from-blue-100.to-purple-100,
+.pdf-rendering .from-blue-100.to-purple-100 {
+  background: #ede9fe !important; /* Slightly darker purple tint */
+  background-image: none !important;
+}
+
+/* Full-width gradient backgrounds - keep for sections but lighter */
+.pdf-rendering section.bg-gradient-to-r,
+.pdf-rendering .bg-gradient-to-br.from-blue-50 {
+  background: #fafafa !important; /* Very light gray instead of gradient */
+  background-image: none !important;
+}
+
+/* Icon container backgrounds - solid colors for PDF */
+.pdf-rendering .bg-gradient-to-br.from-blue-500.to-purple-500 {
+  background: #7c3aed !important; /* Solid purple */
+  background-image: none !important;
+}
+
+/* Full-width sections with dark purple gradient backgrounds - make them light */
+.pdf-rendering section.bg-gradient-to-r.from-purple-500.to-purple-600,
+.pdf-rendering .bg-gradient-to-r.from-purple-500,
+.pdf-rendering .bg-purple-500,
+.pdf-rendering .bg-purple-600 {
+  background: #ffffff !important; /* White background instead of dark purple */
+  background-image: none !important;
+}
+
+/* Section backgrounds with light gradients */
+.pdf-rendering section.bg-gradient-to-r {
+  background: #fafafa !important; /* Very light gray */
+  background-image: none !important;
+}
+
+/* Div with icon in section header - keep the purple but solid */
+.pdf-rendering div.bg-gradient-to-br {
+  background: #7c3aed !important; /* Solid purple for icons */
+  background-image: none !important;
+}
+
+/* Nested white backgrounds should stay white */
+.pdf-rendering .bg-white,
+.pdf-rendering .bg-white\/80 {
+  background: #ffffff !important;
+  background-image: none !important;
+}
+
+/* Table headers with gradient backgrounds - keep solid purple */
+.pdf-rendering thead tr.bg-gradient-to-r {
+  background: #7c3aed !important; /* Solid purple */
+  background-image: none !important;
+}
+
+/* Table header text must be white and visible */
+.pdf-rendering thead th {
+  color: #ffffff !important;
+}
+
+/* 52 Weeks and Price Movement table headers */
+.pdf-rendering .bg-gradient-to-r.from-blue-500.to-purple-500.text-white {
+  background: #7c3aed !important; /* Solid purple */
+  background-image: none !important;
+  color: #ffffff !important;
+}
+
+.pdf-rendering .rounded-xl .bg-gradient-to-r {
+  background: #7c3aed !important;
+  background-image: none !important;
+}
+
+/* Main page header with gradient background - keep solid gradient equivalent */
+.pdf-rendering .bg-gradient-to-r.from-blue-500.to-purple-500.rounded-2xl {
+  background: linear-gradient(to right, #3b82f6, #a855f7) !important;
+}
+
+/* Ensure white text stays white in PDF */
+.pdf-rendering .text-white {
+  color: #ffffff !important;
+}
+
+/* Score badges and similar small elements with light gradients */
+.pdf-rendering .inline-flex.bg-gradient-to-r.from-blue-50.to-purple-50 {
+  background: #f5f3ff !important; /* Light purple tint */
+  background-image: none !important;
+  display: inline-flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.pdf-rendering .inline-flex.rounded-lg {
+  display: inline-flex !important;
+  visibility: visible !important;
+}
+
+/* Ensure score badge text is visible */
+.pdf-rendering .text-purple-600 {
+  color: #9333ea !important;
+}
+
+.pdf-rendering .text-gray-700 {
+  color: #374151 !important;
+}
+
+/* Subsection score badges with rounded-full */
+.pdf-rendering span.rounded-full {
+  background: #ede9fe !important; /* Light purple background */
+  background-image: none !important;
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  border-radius: 9999px !important;
+  padding: 0.4rem 0.75rem !important;
+  color: #9333ea !important;
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  vertical-align: baseline !important;
+  text-align: center !important;
+}
+
+.pdf-rendering span.rounded-full.bg-gradient-to-r {
+  background: #ede9fe !important;
+  background-image: none !important;
+}
+
+.pdf-rendering .rounded-full.from-blue-100.to-purple-100 {
+  background: #ede9fe !important;
+  background-image: none !important;
+}
+
+.pdf-rendering .px-3 {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+}
+
+.pdf-rendering .py-1 {
+  padding-top: 0.25rem !important;
+  padding-bottom: 0.25rem !important;
+}
+
+/* Hide images (coin logos) in PDF to avoid rendering issues */
+.pdf-rendering img {
+  display: none !important;
+}
+
+/* Text colors in gradient header should stay white */
+.pdf-rendering .text-purple-100 {
+  color: #ffffff !important;
+}
+
+/* Fix alignment issues in section headers for PDF */
+.pdf-rendering .flex.items-start {
+  align-items: flex-start !important;
+  display: flex !important;
+}
+
+.pdf-rendering .flex.items-center {
+  align-items: center !important;
+  display: flex !important;
+}
+
+.pdf-rendering h2 {
+  margin: 0 !important;
+  padding-top: 0.5rem !important;
+  padding-bottom: 0 !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  display: block !important;
+  line-height: normal !important;
+  height: auto !important;
+}
+
+/* Icon boxes should align properly */
+.pdf-rendering .flex-shrink-0 {
+  flex-shrink: 0 !important;
+}
+
+.pdf-rendering .w-10 {
+  width: 2.5rem !important;
+  min-width: 2.5rem !important;
+}
+
+.pdf-rendering .h-10 {
+  height: 2.5rem !important;
+  min-height: 2.5rem !important;
+}
+
+/* Two-column layout for PDF */
+.pdf-rendering .columns-1 {
+  column-count: 1 !important;
+}
+
+@media (min-width: 1024px) {
+  .pdf-rendering .columns-2,
+  .pdf-rendering .lg\:columns-2 {
+    column-count: 2 !important;
+    column-gap: 2rem !important;
+  }
+}
+
+/* Prevent sections from breaking across columns */
+.pdf-rendering .break-inside-avoid {
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+}
+
+/* Remove margins and max-width for PDF to use full page width */
+.pdf-rendering .max-w-5xl {
+  max-width: none !important;
+}
+
+.pdf-rendering .mx-auto {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Ensure chart images are visible in PDF */
+.pdf-rendering img:not([alt*="logo"]) {
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Keep only coin logos hidden */
+.pdf-rendering img[alt*="logo"],
+.pdf-rendering img.rounded-full {
+  display: none !important;
+}
+
+/* Ensure footer is visible and has bottom padding */
+.pdf-rendering .text-center {
+  text-align: center !important;
+}
+
+.pdf-rendering .text-gray-500 {
+  color: #6b7280 !important;
+}
+
+/* Add bottom padding to prevent footer cutoff */
+.pdf-rendering > div {
+  padding-bottom: 2rem !important;
+}
+
+/* Column span full for footer in multi-column layout */
+.pdf-rendering .col-span-full {
+  column-span: all !important;
+}

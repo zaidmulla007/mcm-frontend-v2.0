@@ -2,7 +2,6 @@
 import Image from "next/image";
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { FaStar, FaStarHalfAlt, FaChevronLeft, FaChevronRight, FaEye, FaYoutube, FaTelegramPlane } from "react-icons/fa";
-import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell } from "recharts";
 import { getYearOptions, getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
 // Helper function to format numbers
@@ -311,45 +310,51 @@ const MiddlePanel = ({ influencer }) => {
                   </div>
                 </div>
 
-                {/* Graph for this Metric */}
+                {/* Segmented Bars for All Years */}
                 {yearsAIData.length > 0 ? (
-                  <div className="h-24 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={[...yearsAIData].reverse().map(item => ({
-                        year: item.year,
-                        value: item.data?.[metric.field] || 0
-                      }))} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                        <XAxis
-                          dataKey="year"
-                          hide={false}
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fontSize: 9, fill: '#64748b', fontWeight: 500 }}
-                          interval={0}
-                          dy={5}
-                        />
-                        <YAxis hide={false} domain={[0, 10]} tick={{ fontSize: 8, fill: '#cbd5e1' }} axisLine={false} tickLine={false} width={20} />
-                        <RechartsTooltip
-                          cursor={{ fill: 'rgba(0,0,0,0.03)' }}
-                          contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', fontSize: '10px', padding: '6px 10px' }}
-                          itemStyle={{ color: metric.color, fontWeight: 'bold' }}
-                          formatter={(value) => [value.toFixed(1), metric.label]}
-                          labelStyle={{ color: '#64748b', marginBottom: '2px', fontWeight: 600 }}
-                        />
-                        <Bar
-                          dataKey="value"
-                          radius={[4, 4, 0, 0]}
-                          maxBarSize={40}
-                          animationDuration={1500}
-                        >
-                          {
-                            [...yearsAIData].reverse().map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={metric.color} fillOpacity={0.8} />
-                            ))
-                          }
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
+                  <div className="space-y-1.5">
+                    {[...yearsAIData].reverse().map((yearData) => {
+                      const scoreValue = yearData.data?.[metric.field] || 0;
+                      const ballPosition = (scoreValue / 10) * 100;
+                      const isGoodScore = scoreValue >= 5;
+
+                      return (
+                        <div key={yearData.year} className="flex items-center gap-2">
+                          <span className="text-[9px] font-bold text-gray-600 w-10">{yearData.year}</span>
+                          <div className="flex-1 flex items-center gap-2">
+                            <div className="segmented-bar-container flex-1" style={{ height: '8px', position: 'relative' }}>
+                              <div className="segmented-bar-background" style={{
+                                display: 'flex',
+                                width: '100%',
+                                height: '100%',
+                                borderRadius: '4px',
+                                overflow: 'hidden',
+                                background: 'linear-gradient(to right, #FF2121, #FF8C00, #FFD700, #ADFF2F, #00FF15)'
+                              }}>
+                              </div>
+                              <div
+                                className="percentage-ball"
+                                style={{
+                                  position: 'absolute',
+                                  left: `${Math.min(Math.max(ballPosition, 5), 95)}%`,
+                                  top: '50%',
+                                  transform: 'translateY(-50%)',
+                                  width: '12px',
+                                  height: '12px',
+                                  borderRadius: '50%',
+                                  backgroundColor: isGoodScore ? '#00ff15' : '#ff2121',
+                                  border: `2px solid ${isGoodScore ? '#00cc11' : '#cc1a1a'}`,
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+                                }}
+                              />
+                            </div>
+                            <span className={`text-[10px] font-bold w-10 text-right ${isGoodScore ? 'text-green-700' : 'text-red-700'}`}>
+                              {scoreValue.toFixed(1)}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center text-gray-400 text-[9px] py-4">No data available</div>
