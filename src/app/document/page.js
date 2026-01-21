@@ -164,24 +164,60 @@ function extractCoinData(coinData) {
 // Components
 function SectionHeader({ number, title, icon: Icon }) {
   return (
-    <div className="flex items-start gap-3 mb-6 pb-3 border-b-2 border-gradient">
-      <div className="flex items-center justify-center w-10 h-10 flex-shrink-0 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 text-white shadow-lg">
-        <Icon className="text-lg" />
-      </div>
-      <h2 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent" style={{paddingTop: '0.5rem'}}>
-        {number}. {title}
-      </h2>
+    <div style={{ marginBottom: '24px', paddingBottom: '12px', borderBottom: '2px solid #e5e7eb' }}>
+      <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+        <tbody>
+          <tr>
+            <td style={{ width: '40px', padding: '0', verticalAlign: 'middle' }}>
+              <div
+                className="rounded-xl text-white shadow-lg"
+                style={{
+                  background: 'linear-gradient(to bottom right, #3b82f6, #a855f7)',
+                  width: '40px',
+                  height: '40px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <Icon className="text-lg" />
+              </div>
+            </td>
+            <td style={{ paddingLeft: '12px', verticalAlign: 'middle' }}>
+              <span
+                style={{
+                  color: '#7c3aed',
+                  fontSize: '1.25rem',
+                  fontWeight: '700'
+                }}
+              >
+                {number}. {title}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 }
 
 function SubsectionHeader({ title, score = null }) {
   return (
-    <div className="flex items-center justify-between mt-6 mb-3">
-      <h3 className="text-lg font-semibold text-gray-800">{title}</h3>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '24px', marginBottom: '12px' }}>
+      <h3 style={{ fontSize: '1.125rem', fontWeight: '600', color: '#1f2937', margin: 0 }}>{title}</h3>
       {score !== null && (
-        <span className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 text-sm font-bold text-purple-600">
-          {score}/10
+        <span
+          style={{
+            padding: '6px 14px',
+            borderRadius: '9999px',
+            background: 'linear-gradient(to right, #dbeafe, #f3e8ff)',
+            display: 'inline-block',
+            fontSize: '14px',
+            fontWeight: '700',
+            color: '#7c3aed'
+          }}
+        >
+          Score: {score}/10
         </span>
       )}
     </div>
@@ -214,14 +250,18 @@ function BulletList({ items, parseText = false }) {
   if (listItems.length === 0) return null;
 
   return (
-    <ul className="space-y-2 ml-4">
+    <div style={{ marginLeft: '16px' }}>
       {listItems.map((item, idx) => (
-        <li key={idx} className="flex items-start gap-2 text-gray-700">
-          <span className="mt-2 w-1.5 h-1.5 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex-shrink-0" />
-          <span>{item}</span>
-        </li>
+        <div key={idx} style={{ display: 'flex', width: '100%', marginBottom: '12px', breakInside: 'avoid' }}>
+          <div style={{ width: '20px', flexShrink: 0, paddingTop: '10px' }}>
+            <span style={{ display: 'block', width: '6px', height: '6px', borderRadius: '50%', background: 'linear-gradient(to right, #3b82f6, #a855f7)' }} />
+          </div>
+          <div style={{ flex: 1, color: '#374151', textAlign: 'justify', lineHeight: '1.6' }}>
+            {item}
+          </div>
+        </div>
       ))}
-    </ul>
+    </div>
   );
 }
 
@@ -233,7 +273,7 @@ function TextContent({ text }) {
     return <BulletList items={parsed.map(p => p.content)} />;
   }
 
-  return <p className="text-gray-700 leading-relaxed">{text}</p>;
+  return <p style={{ color: '#374151', lineHeight: '1.75', textAlign: 'justify' }}>{text}</p>;
 }
 
 function TrendTable({ trend1h, trend1d, trend1w }) {
@@ -246,19 +286,19 @@ function TrendTable({ trend1h, trend1d, trend1w }) {
   ].filter(t => hasContent(t.value));
 
   return (
-    <div className="mt-4 overflow-hidden rounded-xl border border-gray-200">
-      <table className="w-full">
+    <div style={{ marginTop: '16px', overflow: 'hidden', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
-          <tr className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-            <th className="px-4 py-3 text-left text-sm font-semibold">Timeframe</th>
-            <th className="px-4 py-3 text-left text-sm font-semibold">Trend</th>
+          <tr style={{ background: 'linear-gradient(to right, #3b82f6, #a855f7)' }}>
+            <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'white' }}>Timeframe</th>
+            <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '14px', fontWeight: '600', color: 'white' }}>Trend</th>
           </tr>
         </thead>
         <tbody>
           {trends.map((trend, idx) => (
-            <tr key={idx} className={idx % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-              <td className="px-4 py-3 font-medium text-gray-800">{trend.label}</td>
-              <td className="px-4 py-3 text-gray-600">{trend.value}</td>
+            <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? '#f9fafb' : 'white' }}>
+              <td style={{ padding: '12px 16px', fontWeight: '500', color: '#1f2937' }}>{trend.label}</td>
+              <td style={{ padding: '12px 16px', color: '#4b5563' }}>{trend.value}</td>
             </tr>
           ))}
         </tbody>
@@ -273,21 +313,21 @@ function KeyLevelsTable({ support = [], resistance = [] }) {
   const maxRows = Math.max(support?.length || 0, resistance?.length || 0);
 
   return (
-    <div className="mt-4 overflow-hidden rounded-xl border border-gray-200">
-      <table className="w-full">
+    <div style={{ marginTop: '16px', overflow: 'hidden', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
-          <tr className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-            <th className="px-4 py-3 text-center text-sm font-semibold">Support</th>
-            <th className="px-4 py-3 text-center text-sm font-semibold">Resistance</th>
+          <tr style={{ background: 'linear-gradient(to right, #3b82f6, #a855f7)' }}>
+            <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: 'white' }}>Support</th>
+            <th style={{ padding: '12px 16px', textAlign: 'center', fontSize: '14px', fontWeight: '600', color: 'white' }}>Resistance</th>
           </tr>
         </thead>
         <tbody>
           {Array.from({ length: maxRows }).map((_, idx) => (
-            <tr key={idx} className={idx % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-              <td className="px-4 py-3 text-center text-green-600 font-medium">
+            <tr key={idx} style={{ backgroundColor: idx % 2 === 0 ? '#f9fafb' : 'white' }}>
+              <td style={{ padding: '12px 16px', textAlign: 'center', color: '#16a34a', fontWeight: '500' }}>
                 {support?.[idx] !== undefined ? `$${support[idx]}` : "-"}
               </td>
-              <td className="px-4 py-3 text-center text-red-500 font-medium">
+              <td style={{ padding: '12px 16px', textAlign: 'center', color: '#ef4444', fontWeight: '500' }}>
                 {resistance?.[idx] !== undefined ? `$${resistance[idx]}` : "-"}
               </td>
             </tr>
@@ -300,8 +340,8 @@ function KeyLevelsTable({ support = [], resistance = [] }) {
 
 function PriceMovementTable({ data }) {
   const formatChange = (val) => {
-    if (val === null || val === undefined) return { text: "N/A", color: "text-gray-400" };
-    const color = val >= 0 ? "text-green-600" : "text-red-500";
+    if (val === null || val === undefined) return { text: "N/A", color: '#9ca3af' };
+    const color = val >= 0 ? '#16a34a' : '#ef4444';
     const sign = val >= 0 ? "+" : "";
     return { text: `${sign}${val}%`, color };
   };
@@ -311,22 +351,22 @@ function PriceMovementTable({ data }) {
   const change1y = formatChange(data.change1y);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', marginTop: '24px' }}>
       {/* 52 Weeks */}
-      <div className="overflow-hidden rounded-xl border border-gray-200">
-        <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-2 text-center text-sm font-semibold">
+      <div style={{ overflow: 'hidden', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+        <div style={{ background: 'linear-gradient(to right, #3b82f6, #a855f7)', color: 'white', padding: '8px', textAlign: 'center', fontSize: '14px', fontWeight: '600' }}>
           52 WEEKS
         </div>
-        <div className="grid grid-cols-2">
-          <div className="bg-green-50 px-2 py-2 text-center border-r border-gray-200">
-            <div className="text-xs text-gray-500 font-medium">HIGH</div>
-            <div className="text-base font-bold text-green-600 break-words">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)' }}>
+          <div style={{ backgroundColor: '#f0fdf4', padding: '8px', textAlign: 'center', borderRight: '1px solid #e5e7eb' }}>
+            <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>HIGH</div>
+            <div style={{ fontSize: '16px', fontWeight: '700', color: '#16a34a', wordBreak: 'break-word' }}>
               {data.high52w ? `$${data.high52w}` : "N/A"}
             </div>
           </div>
-          <div className="bg-red-50 px-2 py-2 text-center">
-            <div className="text-xs text-gray-500 font-medium">LOW</div>
-            <div className="text-base font-bold text-red-500 break-words">
+          <div style={{ backgroundColor: '#fef2f2', padding: '8px', textAlign: 'center' }}>
+            <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>LOW</div>
+            <div style={{ fontSize: '16px', fontWeight: '700', color: '#ef4444', wordBreak: 'break-word' }}>
               {data.low52w ? `$${data.low52w}` : "N/A"}
             </div>
           </div>
@@ -334,22 +374,22 @@ function PriceMovementTable({ data }) {
       </div>
 
       {/* Price Movement */}
-      <div className="overflow-hidden rounded-xl border border-gray-200">
-        <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-2 py-2 text-center text-sm font-semibold">
+      <div style={{ overflow: 'hidden', borderRadius: '12px', border: '1px solid #e5e7eb' }}>
+        <div style={{ background: 'linear-gradient(to right, #3b82f6, #a855f7)', color: 'white', padding: '8px', textAlign: 'center', fontSize: '14px', fontWeight: '600' }}>
           PRICE MOVEMENT
         </div>
-        <div className="grid grid-cols-3">
-          <div className="bg-yellow-50 px-2 py-2 text-center border-r border-gray-200">
-            <div className="text-xs text-gray-500 font-medium">1 Day</div>
-            <div className={`text-sm font-bold ${change1d.color} break-words`}>{change1d.text}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)' }}>
+          <div style={{ backgroundColor: '#fefce8', padding: '8px', textAlign: 'center', borderRight: '1px solid #e5e7eb' }}>
+            <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>1 Day</div>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: change1d.color, wordBreak: 'break-word' }}>{change1d.text}</div>
           </div>
-          <div className="bg-green-50 px-2 py-2 text-center border-r border-gray-200">
-            <div className="text-xs text-gray-500 font-medium">1 Week</div>
-            <div className={`text-sm font-bold ${change1w.color} break-words`}>{change1w.text}</div>
+          <div style={{ backgroundColor: '#f0fdf4', padding: '8px', textAlign: 'center', borderRight: '1px solid #e5e7eb' }}>
+            <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>1 Week</div>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: change1w.color, wordBreak: 'break-word' }}>{change1w.text}</div>
           </div>
-          <div className="bg-pink-50 px-2 py-2 text-center">
-            <div className="text-xs text-gray-500 font-medium">1 Year</div>
-            <div className={`text-sm font-bold ${change1y.color} break-words`}>{change1y.text}</div>
+          <div style={{ backgroundColor: '#fdf2f8', padding: '8px', textAlign: 'center' }}>
+            <div style={{ fontSize: '12px', color: '#6b7280', fontWeight: '500' }}>1 Year</div>
+            <div style={{ fontSize: '14px', fontWeight: '700', color: change1y.color, wordBreak: 'break-word' }}>{change1y.text}</div>
           </div>
         </div>
       </div>
@@ -364,20 +404,18 @@ function CoinSelector({ coins, selectedCoin, onSelect }) {
         <button
           key={coin.sourceId}
           onClick={() => onSelect(coin)}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all duration-200 ${
-            selectedCoin?.sourceId === coin.sourceId
-              ? "border-purple-500 bg-gradient-to-r from-blue-50 to-purple-50 shadow-md"
-              : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
-          }`}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all duration-200 ${selectedCoin?.sourceId === coin.sourceId
+            ? "border-purple-500 bg-gradient-to-r from-blue-50 to-purple-50 shadow-md"
+            : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+            }`}
         >
           {coin.imageUrl && (
             <Image src={coin.imageUrl} alt={coin.symbol} width={24} height={24} className="rounded-full" />
           )}
-          <span className={`font-semibold ${
-            selectedCoin?.sourceId === coin.sourceId
-              ? "bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent"
-              : "text-gray-700"
-          }`}>
+          <span className={`font-semibold ${selectedCoin?.sourceId === coin.sourceId
+            ? "bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent"
+            : "text-gray-700"
+            }`}>
             {coin.symbol}
           </span>
         </button>
@@ -407,33 +445,86 @@ function CoinReport({ data }) {
   return (
     <div className="max-w-5xl mx-auto print:max-w-none print:mx-0">
       {/* Report Header */}
-      <div className="text-center mb-10 pb-8 border-b-2 border-gradient">
+      <div className="mb-10 pb-8 border-b-2 border-gradient">
         {/* Header with gradient background */}
-        <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl p-6 mb-6 shadow-lg">
-          <div className="flex items-center justify-center gap-4 mb-4">
-            {data.imageUrl && (
-              <Image src={data.imageUrl} alt={data.name} width={48} height={48} className="rounded-full shadow-lg" />
-            )}
-            <h1 className="text-3xl md:text-4xl font-bold text-white">
-              {data.name} - Market Analysis Report
-            </h1>
+        <div
+          className="p-6 shadow-lg rounded-2xl pdf-no-rounded"
+          style={{
+            background: 'linear-gradient(to right, #3b82f6, #a855f7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '16px'
+          }}
+        >
+          {/* Left side - Title and Date */}
+          <div style={{ flex: '1', minWidth: '250px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+              {data.imageUrl && (
+                <Image src={data.imageUrl} alt={data.name} width={48} height={48} className="rounded-full shadow-lg" />
+              )}
+              <h1 style={{ fontSize: '1.75rem', fontWeight: '700', color: 'white', margin: 0 }}>
+                {data.name} - Market Analysis Report
+              </h1>
+            </div>
+            <p style={{ color: 'white', fontStyle: 'italic', margin: 0 }}>
+              Analysis Date: {data.analysisDate} - Analysis Time: {data.analysisTime} UTC
+            </p>
           </div>
-          <p className="text-white italic">
-            Analysis Date: {data.analysisDate} - Analysis Time: {data.analysisTime} UTC
-          </p>
-        </div>
 
-        {/* Base Price Box */}
-        {hasContent(data.basePrice) && (
-          <div className="inline-block mt-6 border-2 border-purple-500 rounded-xl overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-2 text-sm font-medium text-purple-700">
-              Price at the time of publishing this report
+          {/* Right side - Price Box */}
+          {hasContent(data.basePrice) && (
+            <div
+              className="rounded-xl"
+              style={{
+                backgroundColor: 'white',
+                overflow: 'hidden',
+                textAlign: 'center',
+                minWidth: '180px',
+                maxWidth: '200px',
+                borderRadius: '12px'
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#f5f3ff',
+                  padding: '6px 8px',
+                  fontSize: '0.65rem',
+                  fontWeight: '500'
+                }}
+              >
+                <svg width="100%" height="14" style={{ display: 'block' }}>
+                  <defs>
+                    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#3b82f6" />
+                      <stop offset="100%" stopColor="#a855f7" />
+                    </linearGradient>
+                  </defs>
+                  <text
+                    x="50%"
+                    y="10"
+                    textAnchor="middle"
+                    fill="url(#textGradient)"
+                    style={{ fontSize: '0.65rem', fontWeight: '500' }}
+                  >
+                    Price at the time of publishing this report
+                  </text>
+                </svg>
+              </div>
+              <div
+                style={{
+                  padding: '6px 10px',
+                  fontSize: '0.95rem',
+                  fontWeight: '700',
+                  color: '#1f2937'
+                }}
+              >
+                ${data.basePrice}
+              </div>
             </div>
-            <div className="bg-white px-6 py-3 text-2xl font-bold text-gray-800">
-              ${data.basePrice}
-            </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Two Column Flowing Layout */}
@@ -450,13 +541,12 @@ function CoinReport({ data }) {
             {hasContent(data.socialAnalysis.sentiment) && (
               <p className="mt-4 text-gray-700">
                 <span className="font-semibold">Sentiment:</span>{" "}
-                <span className={`font-medium ${
-                  data.socialAnalysis.sentiment.toLowerCase().includes('bullish')
-                    ? 'text-green-600'
-                    : data.socialAnalysis.sentiment.toLowerCase().includes('bearish')
-                      ? 'text-red-500'
-                      : 'text-gray-700'
-                }`}>
+                <span className={`font-medium ${data.socialAnalysis.sentiment.toLowerCase().includes('bullish')
+                  ? 'text-green-600'
+                  : data.socialAnalysis.sentiment.toLowerCase().includes('bearish')
+                    ? 'text-red-500'
+                    : 'text-gray-700'
+                  }`}>
                   {data.socialAnalysis.sentiment}
                 </span>
               </p>
@@ -472,7 +562,7 @@ function CoinReport({ data }) {
             {hasContent(data.socialAnalysis.bullishFactors) && (
               <>
                 <SubsectionHeader title="Bullish Factors" />
-                <div className="bg-green-50 p-4 border border-green-100">
+                <div className="bg-green-50 p-4 border border-green-100" style={{ borderRadius: '12px' }}>
                   <TextContent text={data.socialAnalysis.bullishFactors} />
                 </div>
               </>
@@ -481,7 +571,7 @@ function CoinReport({ data }) {
             {hasContent(data.socialAnalysis.bearishConcerns) && (
               <>
                 <SubsectionHeader title="Bearish Concerns" />
-                <div className="bg-red-50 p-4 border border-red-100">
+                <div className="bg-red-50 p-4 border border-red-100" style={{ borderRadius: '12px' }}>
                   <TextContent text={data.socialAnalysis.bearishConcerns} />
                 </div>
               </>
@@ -504,7 +594,7 @@ function CoinReport({ data }) {
             {hasContent(data.socialAnalysis.importantAlerts) && (
               <>
                 <SubsectionHeader title="Important Alerts" />
-                <div className="bg-amber-50 p-4 border border-amber-200">
+                <div className="bg-amber-50 p-4 border border-amber-200" style={{ borderRadius: '12px' }}>
                   <TextContent text={data.socialAnalysis.importantAlerts} />
                 </div>
               </>
@@ -522,10 +612,19 @@ function CoinReport({ data }) {
             )}
 
             {hasContent(data.fundamentalAnalysis.score) && (
-              <div className="mt-4 inline-flex items-center gap-2">
-                <span className="font-medium text-gray-700">Score:</span>
-                <span className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 text-sm font-bold text-purple-600">
-                  {data.fundamentalAnalysis.score}/10
+              <div style={{ marginTop: '16px' }}>
+                <span
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '9999px',
+                    background: 'linear-gradient(to right, #dbeafe, #f3e8ff)',
+                    display: 'inline-block',
+                    fontSize: '14px',
+                    fontWeight: '700',
+                    color: '#7c3aed'
+                  }}
+                >
+                  Score: {data.fundamentalAnalysis.score}/10
                 </span>
               </div>
             )}
@@ -533,7 +632,7 @@ function CoinReport({ data }) {
             {hasContent(data.fundamentalAnalysis.strengths) && (
               <>
                 <SubsectionHeader title="Strengths" />
-                <div className="bg-green-50 p-4 border border-green-100">
+                <div className="bg-green-50 p-4 border border-green-100" style={{ borderRadius: '12px' }}>
                   <BulletList items={data.fundamentalAnalysis.strengths} />
                 </div>
               </>
@@ -542,7 +641,7 @@ function CoinReport({ data }) {
             {hasContent(data.fundamentalAnalysis.weaknesses) && (
               <>
                 <SubsectionHeader title="Weaknesses" />
-                <div className="bg-red-50 p-4 border border-red-100">
+                <div className="bg-red-50 p-4 border border-red-100" style={{ borderRadius: '12px' }}>
                   <BulletList items={data.fundamentalAnalysis.weaknesses} />
                 </div>
               </>
@@ -649,88 +748,95 @@ function CoinReport({ data }) {
               </>
             )}
 
-            {(hasContent(data.technicalAnalysis.buyingRange) || hasContent(data.technicalAnalysis.sellingRange)) && (
+            {/* Price Chart - Now part of Technical Analysis */}
+            {(chartImageSrc || hasContent(data.priceChart.chartSummary)) && (
               <>
-                <SubsectionHeader title="Trading Outlook" />
-                <div className="space-y-3">
-                  {hasContent(data.technicalAnalysis.buyingRange) && (
-                    <div className="bg-green-50 p-4 border border-green-100">
-                      <span className="font-semibold text-green-700">Buying Range:</span>
-                      <p className="mt-1 text-gray-700">{data.technicalAnalysis.buyingRange}</p>
-                    </div>
-                  )}
-                  {hasContent(data.technicalAnalysis.sellingRange) && (
-                    <div className="bg-red-50 p-4 border border-red-100">
-                      <span className="font-semibold text-red-600">Selling Range:</span>
-                      <p className="mt-1 text-gray-700">{data.technicalAnalysis.sellingRange}</p>
-                    </div>
-                  )}
-                </div>
+                <SubsectionHeader title="Price Chart" />
+
+                {chartImageSrc && (
+                  <div className="flex justify-center mb-6">
+                    <img
+                      src={chartImageSrc}
+                      alt={`${data.name} Price Chart`}
+                      className="max-w-full h-auto border border-gray-200"
+                    />
+                  </div>
+                )}
+
+                <PriceMovementTable data={data.priceChart} />
+
+                {/* Date Ranges */}
+                {hasContent(data.priceChart.dateRanges) && (
+                  <div className="mt-4 text-center text-sm text-gray-500 font-medium">
+                    {data.priceChart.dateRanges["1_day"] && (
+                      <span className="mr-4">
+                        1 day: {data.priceChart.dateRanges["1_day"].from} → {data.priceChart.dateRanges["1_day"].to}
+                      </span>
+                    )}
+                    {data.priceChart.dateRanges["1_week"] && (
+                      <span className="mr-4">
+                        | 1 week: {data.priceChart.dateRanges["1_week"].from} → {data.priceChart.dateRanges["1_week"].to}
+                      </span>
+                    )}
+                    {data.priceChart.dateRanges["1_year"] && (
+                      <span>
+                        | 1 year: {data.priceChart.dateRanges["1_year"].from} → {data.priceChart.dateRanges["1_year"].to}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {hasContent(data.priceChart.chartSummary) && (
+                  <>
+                    <SubsectionHeader title="Chart Analysis" />
+                    <TextContent text={data.priceChart.chartSummary} />
+                  </>
+                )}
               </>
             )}
           </div>
         )}
 
-        {/* 4. Price Chart */}
-        {(chartImageSrc || hasContent(data.priceChart.chartSummary)) && (
-          <div className="mb-8 pb-8 border-b border-gray-200">
-            <SectionHeader number={4} title="Price Chart" icon={FaChartArea} />
-
-            {chartImageSrc && (
-              <div className="flex justify-center mb-6">
-                <img
-                  src={chartImageSrc}
-                  alt={`${data.name} Price Chart`}
-                  className="max-w-full h-auto border border-gray-200"
-                />
-              </div>
-            )}
-
-            <PriceMovementTable data={data.priceChart} />
-
-            {/* Date Ranges */}
-            {hasContent(data.priceChart.dateRanges) && (
-              <div className="mt-4 text-center text-sm text-gray-500 font-medium">
-                {data.priceChart.dateRanges["1_day"] && (
-                  <span className="mr-4">
-                    1 day: {data.priceChart.dateRanges["1_day"].from} → {data.priceChart.dateRanges["1_day"].to}
-                  </span>
-                )}
-                {data.priceChart.dateRanges["1_week"] && (
-                  <span className="mr-4">
-                    | 1 week: {data.priceChart.dateRanges["1_week"].from} → {data.priceChart.dateRanges["1_week"].to}
-                  </span>
-                )}
-                {data.priceChart.dateRanges["1_year"] && (
-                  <span>
-                    | 1 year: {data.priceChart.dateRanges["1_year"].from} → {data.priceChart.dateRanges["1_year"].to}
-                  </span>
-                )}
-              </div>
-            )}
-
-            {hasContent(data.priceChart.chartSummary) && (
-              <>
-                <SubsectionHeader title="Chart Analysis" />
-                <TextContent text={data.priceChart.chartSummary} />
-              </>
-            )}
-          </div>
-        )}
-
-        {/* 5. Conclusion */}
+        {/* 4. Conclusion */}
         {hasContent(data.conclusion) && (
           <div className="mb-8 pb-8 break-inside-avoid">
-            <SectionHeader number={5} title="Conclusion" icon={FaFileAlt} />
+            <SectionHeader number={4} title="Conclusion" icon={FaFileAlt} />
             <TextContent text={data.conclusion} />
           </div>
         )}
 
         {/* Footer - Inside column container with borders */}
-        <div className="text-center py-6 border-t border-b border-gray-200 break-inside-avoid col-span-full">
-          <p className="text-sm text-gray-500">
-            Generated by <span className="font-semibold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">MyCryptoMonitor</span>
+        <div style={{ textAlign: 'center', padding: '24px 0', borderTop: '1px solid #e5e7eb', borderBottom: '1px solid #e5e7eb', breakInside: 'avoid' }}>
+          <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
+            Generated by <span style={{ fontWeight: '600', color: '#7c3aed' }}>MyCryptoMonitor</span>
           </p>
+        </div>
+
+        {/* Disclaimer */}
+        <div style={{ marginTop: '24px', padding: '20px', background: 'linear-gradient(to right, #3b82f6, #a855f7)', borderRadius: '12px', breakInside: 'avoid' }}>
+          <h4 style={{ fontSize: '1rem', fontWeight: '700', color: 'white', marginTop: 0, marginBottom: '12px' }}>
+            Important Disclaimer
+          </h4>
+          <div style={{ fontSize: '0.85rem', color: 'white', lineHeight: '1.75' }}>
+            <p style={{ margin: '0 0 12px 0', textAlign: 'justify' }}>
+              This report is generated for informational and educational purposes only and does not constitute financial, investment, trading, or legal advice.
+            </p>
+            <p style={{ margin: '0 0 12px 0', textAlign: 'justify' }}>
+              The analysis presented is produced using artificial intelligence based on historical market data, publicly available information, and predefined analytical frameworks. It is descriptive in nature, not predictive, and should not be interpreted as a recommendation to buy, sell, or hold any digital asset.
+            </p>
+            <p style={{ margin: '0 0 12px 0', textAlign: 'justify' }}>
+              Cryptocurrencies are volatile and involve significant risk. Market conditions can change rapidly, and outcomes may differ materially from historical patterns or analytical observations.
+            </p>
+            <p style={{ margin: '0 0 12px 0', textAlign: 'justify' }}>
+              The creators of this report do not guarantee the accuracy, completeness, or reliability of the information contained herein and accept no liability for any losses arising from reliance on this report.
+            </p>
+            <p style={{ margin: '0 0 12px 0', textAlign: 'justify' }}>
+              Users are encouraged to conduct independent research and seek professional advice before making financial decisions.
+            </p>
+            <p style={{ margin: 0, textAlign: 'justify' }}>
+              This report provides analytical context only and should not be used as the sole basis for financial decisions.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -784,7 +890,7 @@ export default function DocumentPage() {
           allImages.forEach(img => {
             // Hide logos (they have rounded-full class or logo in alt text)
             if (img.classList.contains('rounded-full') ||
-                (img.alt && img.alt.toLowerCase().includes('logo'))) {
+              (img.alt && img.alt.toLowerCase().includes('logo'))) {
               img.style.display = 'none';
             } else {
               // Make sure chart images are visible
@@ -792,6 +898,12 @@ export default function DocumentPage() {
               img.style.visibility = 'visible';
               img.style.opacity = '1';
             }
+          });
+
+          // Remove rounded corners for PDF
+          const noRoundedElements = clonedDoc.querySelectorAll('.pdf-no-rounded');
+          noRoundedElements.forEach(el => {
+            el.style.setProperty('border-radius', '0', 'important');
           });
 
           // Ensure score badges are visible (inline-flex with rounded-lg)

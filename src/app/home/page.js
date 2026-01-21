@@ -499,7 +499,7 @@ export default function HomePage() {
       </div>
 
       {/* Influencer Flipbook Section - Full Width */}
-      <div className="mt-16 w-full">
+      <div className="mt-16 w-full bg-white py-8 overflow-hidden">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -515,7 +515,18 @@ export default function HomePage() {
             Browse through our curated list of influencers with detailed analytics
           </p>
         </motion.div>
-        <InfluencerFlipbook />
+        <div className="w-full overflow-x-auto scrollbar-hide">
+          <InfluencerFlipbook />
+        </div>
+        <style jsx>{`
+          .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+          }
+          .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+          }
+        `}</style>
       </div>
 
       <div className="mx-auto px-4 py-16">

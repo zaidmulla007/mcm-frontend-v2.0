@@ -39,14 +39,26 @@ const LeftPanel = ({ influencer, selectedPlatform, setSelectedPlatform, selected
                     {/* Source Filter */}
                     <div>
                         <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1 text-center">Source</label>
-                        <select
-                            value={selectedPlatform}
-                            onChange={(e) => setSelectedPlatform(e.target.value)}
-                            className="w-full bg-white border-2 border-blue-200 hover:border-blue-400 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all cursor-pointer shadow-sm"
-                        >
-                            <option value="youtube">YouTube</option>
-                            <option value="telegram">Telegram</option>
-                        </select>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setSelectedPlatform('youtube')}
+                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all shadow-sm ${selectedPlatform === 'youtube'
+                                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                                    : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-blue-300'
+                                    }`}
+                            >
+                                YouTube
+                            </button>
+                            <button
+                                onClick={() => setSelectedPlatform('telegram')}
+                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all shadow-sm ${selectedPlatform === 'telegram'
+                                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
+                                    : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-blue-300'
+                                    }`}
+                            >
+                                Telegram
+                            </button>
+                        </div>
                     </div>
 
                     {/* Holding Period Filter */}
@@ -66,18 +78,19 @@ const LeftPanel = ({ influencer, selectedPlatform, setSelectedPlatform, selected
                     </div>
                 </div>
 
+
                 {/* Profile Image */}
                 <div className="relative mb-2 group cursor-pointer" onClick={handleNavigate}>
                     {/* Gradient Ring on Hover */}
                     <div className="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
 
-                    <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-white/80 transition-all group-hover:ring-0">
+                    <div className="relative w-32 h-32 md:w-40 md:h-40 lg:w-48 lg:h-48 rounded-2xl overflow-hidden shadow-2xl ring-4 ring-white/80 transition-all group-hover:ring-0">
                         {influencer.channel_thumbnails?.high?.url ? (
                             <Image
                                 src={influencer.channel_thumbnails.high.url}
                                 alt={influencer.name || "Influencer"}
-                                width={112}
-                                height={112}
+                                width={192}
+                                height={192}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
                                     e.target.style.display = 'none';
@@ -91,27 +104,20 @@ const LeftPanel = ({ influencer, selectedPlatform, setSelectedPlatform, selected
                             className="w-full h-full bg-gradient-to-br from-blue-400 via-purple-400 to-indigo-500 flex items-center justify-center"
                             style={{ display: influencer.channel_thumbnails?.high?.url ? 'none' : 'flex' }}
                         >
-                            <span className="text-white text-3xl font-bold">
+                            <span className="text-white text-4xl md:text-5xl lg:text-6xl font-bold">
                                 {influencer.name?.match(/\b\w/g)?.join("").toUpperCase() || "?"}
                             </span>
                         </div>
                     </div>
                 </div>
 
+
                 {/* Influencer Name */}
                 <h2 className="text-sm md:text-base font-bold text-gray-800 text-center mb-1 px-2 line-clamp-2">
                     {influencer.name?.replace(/_/g, " ") || "Unknown"}
                 </h2>
 
-                {/* Platform Badge */}
-                <div className="inline-flex items-center gap-2 bg-white border border-gray-100 px-3 py-1 rounded-full shadow-md mb-2">
-                    {influencer.platform === "YouTube" ? (
-                        <FaYoutube className="text-red-600 text-xs" />
-                    ) : (
-                        <FaTelegramPlane className="text-blue-500 text-xs" />
-                    )}
-                    <span className="font-bold text-[10px] text-gray-700">{influencer.platform}</span>
-                </div>
+
 
                 {/* Last Post Card */}
                 <div className="w-full max-w-[180px] bg-white rounded-lg p-2 shadow-md border border-blue-100 mb-2">
@@ -124,27 +130,6 @@ const LeftPanel = ({ influencer, selectedPlatform, setSelectedPlatform, selected
                             <span className="text-[10px] font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                                 {influencer.last_post_time || '--'}
                             </span>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Posts History */}
-                <div className="w-full max-w-[180px] bg-white/60 rounded-lg p-2 shadow-md border border-blue-100 mb-2">
-                    <div className="flex items-center justify-between mb-1">
-                        <span className="text-[9px] font-bold uppercase text-gray-600 px-1">Posts History</span>
-                    </div>
-                    <div className="grid grid-cols-3 gap-1">
-                        <div className="bg-white rounded-md p-1 border border-blue-50 text-center shadow-sm">
-                            <div className="text-[7px] text-gray-500 font-medium mb-0">2025</div>
-                            <div className="text-[10px] font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">142</div>
-                        </div>
-                        <div className="bg-white rounded-md p-1 border border-blue-50 text-center shadow-sm">
-                            <div className="text-[7px] text-gray-500 font-medium mb-0">2024</div>
-                            <div className="text-[10px] font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">385</div>
-                        </div>
-                        <div className="bg-white rounded-md p-1 border border-blue-50 text-center shadow-sm">
-                            <div className="text-[7px] text-gray-500 font-medium mb-0">2023</div>
-                            <div className="text-[10px] font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">210</div>
                         </div>
                     </div>
                 </div>
@@ -170,33 +155,6 @@ const LeftPanel = ({ influencer, selectedPlatform, setSelectedPlatform, selected
 
 // Middle Panel Component - MCM Ranking & Key Metrics
 const MiddlePanel = ({ influencer }) => {
-    const starRatingYearly = influencer.star_rating_yearly || {};
-    const currentDate = new Date();
-    const currentRealYear = currentDate.getFullYear();
-    const currentRealMonth = currentDate.getMonth();
-
-    const years = Object.keys(starRatingYearly)
-        .map(year => parseInt(year))
-        .filter(year => {
-            if (year < 2022) return false;
-            if (year > currentRealYear) return false;
-            if (year === currentRealYear && currentRealMonth < 3) return false;
-            return true;
-        })
-        .sort((a, b) => a - b);
-
-    const scatterData = [];
-    years.forEach((year) => {
-        const yearData = starRatingYearly[year];
-        if (yearData && yearData.current_rating) {
-            scatterData.push({
-                year: year,
-                yearLabel: year,
-                rating: yearData.current_rating,
-                finalScore: yearData.current_final_score
-            });
-        }
-    });
 
     // Get AI scoring data for all years
     const getAllYearsAIScoring = () => {
@@ -269,51 +227,34 @@ const MiddlePanel = ({ influencer }) => {
                 </div>
 
                 <div className="flex-1 overflow-y-auto pr-1 space-y-2 custom-scrollbar min-h-0">
-                    {/* MCM Ranking Section */}
-                    <div className="bg-gradient-to-br from-blue-50 to-purple-50/50 rounded-lg p-2 shadow-sm border border-blue-100/50">
-                        <h4 className="text-[10px] font-bold text-gray-800 mb-1 flex items-center gap-1">
-                            <span className="w-1 h-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600"></span>
-                            MCM Ranking
-                        </h4>
-                        {scatterData.length > 0 ? (
-                            <div className="flex justify-center items-end gap-3 h-24">
-                                {scatterData.map((point, idx) => {
-                                    const fullStars = Math.floor(point.rating);
-                                    const hasHalfStar = point.rating % 1 >= 0.5;
-                                    const totalStars = 5;
-                                    const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
-
-                                    return (
-                                        <div
-                                            key={idx}
-                                            className="flex flex-col items-center gap-1 group"
-                                            title={`Year: ${point.yearLabel}, Rating: ${point.rating.toFixed(1)}`}
-                                        >
-                                            <div className="flex flex-col-reverse gap-0.5 transition-transform group-hover:-translate-y-1 duration-300">
-                                                {[...Array(fullStars)].map((_, i) => (
-                                                    <FaStar key={`full-${i}`} className="text-yellow-500 w-2.5 h-2.5 drop-shadow-sm" />
-                                                ))}
-                                                {hasHalfStar && (
-                                                    <FaStarHalfAlt key="half" className="text-yellow-500 w-2.5 h-2.5 drop-shadow-sm" />
-                                                )}
-                                                {[...Array(emptyStars)].map((_, i) => (
-                                                    <FaStar key={`empty-${i}`} className="text-gray-200 w-2.5 h-2.5" />
-                                                ))}
-                                            </div>
-                                            <span className="text-[9px] font-bold text-gray-600 group-hover:text-blue-600 transition-colors">{point.yearLabel}</span>
-                                        </div>
-                                    );
-                                })}
+                    {/* Posts History */}
+                    <div className="bg-white/60 rounded-lg p-2 shadow-md border border-blue-100">
+                        <div className="flex items-center justify-between mb-1.5">
+                            <span className="text-[9px] font-bold uppercase text-gray-600 px-1">Posts Analytics</span>
+                        </div>
+                        <div className="grid grid-cols-4 gap-1.5">
+                            <div className="bg-white rounded-md p-1.5 border border-blue-50 text-center shadow-sm">
+                                <div className="text-[7px] text-gray-500 font-medium mb-0.5">2022</div>
+                                <div className="text-[11px] font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">178</div>
                             </div>
-                        ) : (
-                            <div className="flex items-center justify-center h-24 text-gray-400 text-[10px]">No rating data</div>
-                        )}
+                            <div className="bg-white rounded-md p-1.5 border border-blue-50 text-center shadow-sm">
+                                <div className="text-[7px] text-gray-500 font-medium mb-0.5">2023</div>
+                                <div className="text-[11px] font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">210</div>
+                            </div>
+                            <div className="bg-white rounded-md p-1.5 border border-blue-50 text-center shadow-sm">
+                                <div className="text-[7px] text-gray-500 font-medium mb-0.5">2024</div>
+                                <div className="text-[11px] font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">385</div>
+                            </div>
+                            <div className="bg-white rounded-md p-1.5 border border-blue-50 text-center shadow-sm">
+                                <div className="text-[7px] text-gray-500 font-medium mb-0.5">2025</div>
+                                <div className="text-[11px] font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">142</div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* AI Scoring Section */}
                     <div className="space-y-1.5">
-                        <h4 className="text-[10px] font-bold text-gray-800 flex items-center gap-1 px-1">
-                            <span className="w-1 h-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600"></span>
+                        <h4 className="text-[10px] font-bold text-gray-800 px-1">
                             AI Scoring
                         </h4>
                         {metrics.map((metric) => (
@@ -334,40 +275,20 @@ const MiddlePanel = ({ influencer }) => {
                                         {/* Segmented Bars for All Years */}
                                         {[...yearsAIData].reverse().map((yearData) => {
                                             const scoreValue = yearData.data?.[metric.field] || 0;
-                                            const ballPosition = (scoreValue / 10) * 100;
-                                            const isGoodScore = scoreValue >= 5;
+                                            const scorePercentage = (scoreValue / 10) * 100;
 
                                             return (
                                                 <div key={yearData.year} className="flex items-center gap-1">
                                                     <span className="text-[8px] font-bold text-gray-600 w-8">{yearData.year}</span>
                                                     <div className="flex-1 flex items-center gap-1">
-                                                        <div className="segmented-bar-container flex-1" style={{ height: '6px', position: 'relative' }}>
-                                                            <div className="segmented-bar-background" style={{
-                                                                display: 'flex',
-                                                                width: '100%',
-                                                                height: '100%',
-                                                                borderRadius: '3px',
-                                                                overflow: 'hidden',
-                                                                background: 'linear-gradient(to right, #FF2121, #FF8C00, #FFD700, #ADFF2F, #00FF15)'
-                                                            }}>
-                                                            </div>
+                                                        <div className="flex-1 h-[8px] bg-gray-200 rounded-full overflow-hidden relative">
+                                                            {/* Gradient filled portion */}
                                                             <div
-                                                                className="percentage-ball"
-                                                                style={{
-                                                                    position: 'absolute',
-                                                                    left: `${Math.min(Math.max(ballPosition, 6), 94)}%`,
-                                                                    top: '50%',
-                                                                    transform: 'translateY(-50%)',
-                                                                    width: '10px',
-                                                                    height: '10px',
-                                                                    borderRadius: '50%',
-                                                                    backgroundColor: isGoodScore ? '#00ff15' : '#ff2121',
-                                                                    border: `2px solid ${isGoodScore ? '#00cc11' : '#cc1a1a'}`,
-                                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.3)'
-                                                                }}
-                                                            />
+                                                                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                                                                style={{ width: `${scorePercentage}%` }}
+                                                            ></div>
                                                         </div>
-                                                        <span className={`text-[8px] font-bold w-8 text-right ${isGoodScore ? 'text-green-700' : 'text-red-700'}`}>
+                                                        <span className="text-[8px] font-bold text-gray-700 w-8 text-right">
                                                             {scoreValue.toFixed(1)}
                                                         </span>
                                                     </div>
@@ -389,15 +310,44 @@ const MiddlePanel = ({ influencer }) => {
 
 // Right Panel Component - ROI & Win Rate Analysis
 const RightPanel = ({ influencer }) => {
+    // MCM Ranking data preparation
+    const starRatingYearly = influencer.star_rating_yearly || {};
+    const currentDate = new Date();
+    const currentRealYear = currentDate.getFullYear();
+    const currentRealMonth = currentDate.getMonth();
+
+    const years = Object.keys(starRatingYearly)
+        .map(year => parseInt(year))
+        .filter(year => {
+            if (year < 2022) return false;
+            if (year > currentRealYear) return false;
+            if (year === currentRealYear && currentRealMonth < 3) return false;
+            return true;
+        })
+        .sort((a, b) => a - b);
+
+    const scatterData = [];
+    years.forEach((year) => {
+        const yearData = starRatingYearly[year];
+        if (yearData && yearData.current_rating) {
+            scatterData.push({
+                year: year,
+                yearLabel: year,
+                rating: yearData.current_rating,
+                finalScore: yearData.current_final_score
+            });
+        }
+    });
+
+    // Performance data preparation
     const getAllYearsData = () => {
         if (!influencer?.score_yearly_timeframes) return [];
 
-        const currentDate = new Date();
         const currentYear = currentDate.getFullYear();
         const currentMonth = currentDate.getMonth();
         const shouldShowCurrentYear = currentMonth >= 3;
 
-        const years = Object.keys(influencer.score_yearly_timeframes)
+        const performanceYears = Object.keys(influencer.score_yearly_timeframes)
             .map(y => parseInt(y))
             .filter(y => {
                 if (y < 2022) return false;
@@ -405,9 +355,9 @@ const RightPanel = ({ influencer }) => {
                 if (y === currentYear && !shouldShowCurrentYear) return false;
                 return true;
             })
-            .sort((a, b) => b - a);
+            .sort((a, b) => a - b);
 
-        return years.map(year => ({
+        return performanceYears.map(year => ({
             year,
             data: influencer.score_yearly_timeframes[year]
         }));
@@ -417,8 +367,11 @@ const RightPanel = ({ influencer }) => {
 
     const timeframes = [
         { key: '1_hour', label: '1hr' },
+        { key: '24_hours', label: '24h' },
         { key: '7_days', label: '7d' },
+        { key: '30_days', label: '30d' },
         { key: '60_days', label: '60d' },
+        { key: '90_days', label: '90d' },
         { key: '180_days', label: '180d' },
         { key: '1_year', label: '1y' },
     ];
@@ -426,7 +379,7 @@ const RightPanel = ({ influencer }) => {
     const formatROI = (value) => {
         if (value === undefined || value === null || value === 0) return '--';
         const formatted = value.toFixed(1);
-        return value > 0 ? `+${formatted}` : `${formatted}`;
+        return value > 0 ? `+${formatted}%` : `${formatted}%`;
     };
 
     const formatWinRate = (value) => {
@@ -460,21 +413,60 @@ const RightPanel = ({ influencer }) => {
                     <div className="w-10 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto overflow-x-auto pr-1 space-y-4 custom-scrollbar min-h-0 py-1">
+                <div className="flex-1 overflow-y-auto overflow-x-auto pr-1 space-y-3 custom-scrollbar min-h-0 py-1">
+                    {/* MCM Ranking Section */}
+                    <div className="bg-gradient-to-br from-purple-50 to-blue-50/50 rounded-lg p-2 shadow-sm border border-purple-100/50">
+                        <h4 className="text-[10px] font-bold text-gray-800 mb-1">
+                            MCM Rating
+                        </h4>
+                        {scatterData.length > 0 ? (
+                            <div className="flex justify-center items-end gap-3 h-20">
+                                {scatterData.map((point, idx) => {
+                                    const fullStars = Math.floor(point.rating);
+                                    const hasHalfStar = point.rating % 1 >= 0.5;
+                                    const totalStars = 5;
+                                    const emptyStars = totalStars - fullStars - (hasHalfStar ? 1 : 0);
+
+                                    return (
+                                        <div
+                                            key={idx}
+                                            className="flex flex-col items-center gap-1 group"
+                                            title={`Year: ${point.yearLabel}, Rating: ${point.rating.toFixed(1)}`}
+                                        >
+                                            <div className="flex flex-col-reverse gap-0.5 transition-transform group-hover:-translate-y-1 duration-300">
+                                                {[...Array(fullStars)].map((_, i) => (
+                                                    <FaStar key={`full-${i}`} className="text-yellow-500 w-2.5 h-2.5 drop-shadow-sm" />
+                                                ))}
+                                                {hasHalfStar && (
+                                                    <FaStarHalfAlt key="half" className="text-yellow-500 w-2.5 h-2.5 drop-shadow-sm" />
+                                                )}
+                                                {[...Array(emptyStars)].map((_, i) => (
+                                                    <FaStar key={`empty-${i}`} className="text-gray-200 w-2.5 h-2.5" />
+                                                ))}
+                                            </div>
+                                            <span className="text-[9px] font-bold text-gray-600 group-hover:text-purple-600 transition-colors">{point.yearLabel}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center h-20 text-gray-400 text-[10px]">No rating data</div>
+                        )}
+                    </div>
+
                     {/* ROI Table */}
                     <div className="bg-white/60 rounded-lg border border-purple-100/50 overflow-hidden shadow-sm">
-                        <div className="bg-purple-50/50 px-2 py-1.5 border-b border-purple-100 flex items-center gap-1">
-                            <span className="w-1 h-1 rounded-full bg-green-500"></span>
-                            <h4 className="text-[10px] font-bold text-gray-800">ROI Performance</h4>
+                        <div className="bg-purple-50/50 px-2 py-1.5 border-b border-purple-100">
+                            <h4 className="text-[10px] font-bold text-gray-800">ROI %</h4>
                         </div>
 
                         <div className="overflow-x-auto">
-                            <table className="w-full text-center border-collapse min-w-[180px]">
+                            <table className="w-full text-center border-collapse">
                                 <thead>
                                     <tr className="bg-gray-50/50">
-                                        <th className="py-2 px-1 text-[8px] font-bold text-gray-500 border-b border-gray-100 text-left pl-2">Year</th>
+                                        <th className="py-1.5 px-0.5 text-[7px] font-bold text-gray-500 border-b border-gray-100 text-left pl-1">Yr</th>
                                         {timeframes.map((tf) => (
-                                            <th key={tf.key} className="py-2 px-1 text-[8px] font-bold text-gray-500 border-b border-gray-100 whitespace-nowrap">
+                                            <th key={tf.key} className="py-1.5 px-0.5 text-[7px] font-bold text-gray-500 border-b border-gray-100 whitespace-nowrap">
                                                 {tf.label}
                                             </th>
                                         ))}
@@ -484,11 +476,11 @@ const RightPanel = ({ influencer }) => {
                                     {yearsData.length > 0 ? (
                                         yearsData.map(({ year, data }) => (
                                             <tr key={`${year}-roi`} className="border-b border-gray-50 last:border-0 hover:bg-purple-50/30 transition-colors">
-                                                <td className="py-2 px-1 text-[8px] font-bold text-gray-600 text-left pl-2">{year}</td>
+                                                <td className="py-1.5 px-0.5 text-[7px] font-bold text-gray-600 text-left pl-1">{year}</td>
                                                 {timeframes.map((tf) => {
                                                     const roi = data?.[tf.key]?.prob_weighted_returns;
                                                     return (
-                                                        <td key={tf.key} className={`py-2 px-1 text-[8px] font-bold whitespace-nowrap ${getROIColor(roi)}`}>
+                                                        <td key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold whitespace-nowrap ${getROIColor(roi)}`}>
                                                             {formatROI(roi)}
                                                         </td>
                                                     );
@@ -497,7 +489,7 @@ const RightPanel = ({ influencer }) => {
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={timeframes.length + 1} className="p-3 text-center text-[8px] text-gray-400">
+                                            <td colSpan={timeframes.length + 1} className="p-2 text-center text-[7px] text-gray-400">
                                                 No ROI data available
                                             </td>
                                         </tr>
@@ -509,18 +501,17 @@ const RightPanel = ({ influencer }) => {
 
                     {/* Win Rate Table */}
                     <div className="bg-white/60 rounded-lg border border-blue-100/50 overflow-hidden shadow-sm">
-                        <div className="bg-blue-50/50 px-2 py-1.5 border-b border-blue-100 flex items-center gap-1">
-                            <span className="w-1 h-1 rounded-full bg-blue-500"></span>
-                            <h4 className="text-[10px] font-bold text-gray-800">Win Rates</h4>
+                        <div className="bg-blue-50/50 px-2 py-1.5 border-b border-blue-100">
+                            <h4 className="text-[10px] font-bold text-gray-800">Win %</h4>
                         </div>
 
                         <div className="overflow-x-auto">
-                            <table className="w-full text-center border-collapse min-w-[180px]">
+                            <table className="w-full text-center border-collapse">
                                 <thead>
                                     <tr className="bg-gray-50/50">
-                                        <th className="py-2 px-1 text-[8px] font-bold text-gray-500 border-b border-gray-100 text-left pl-2">Year</th>
+                                        <th className="py-1.5 px-0.5 text-[7px] font-bold text-gray-500 border-b border-gray-100 text-left pl-1">Yr</th>
                                         {timeframes.map((tf) => (
-                                            <th key={tf.key} className="py-2 px-1 text-[8px] font-bold text-gray-500 border-b border-gray-100 whitespace-nowrap">
+                                            <th key={tf.key} className="py-1.5 px-0.5 text-[7px] font-bold text-gray-500 border-b border-gray-100 whitespace-nowrap">
                                                 {tf.label}
                                             </th>
                                         ))}
@@ -530,11 +521,11 @@ const RightPanel = ({ influencer }) => {
                                     {yearsData.length > 0 ? (
                                         yearsData.map(({ year, data }) => (
                                             <tr key={`${year}-win`} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
-                                                <td className="py-2 px-1 text-[8px] font-bold text-gray-600 text-left pl-2">{year}</td>
+                                                <td className="py-1.5 px-0.5 text-[7px] font-bold text-gray-600 text-left pl-1">{year}</td>
                                                 {timeframes.map((tf) => {
                                                     const winRate = data?.[tf.key]?.win_percentage;
                                                     return (
-                                                        <td key={tf.key} className={`py-2 px-1 text-[8px] font-bold whitespace-nowrap ${getWinRateColor(winRate)}`}>
+                                                        <td key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold whitespace-nowrap ${getWinRateColor(winRate)}`}>
                                                             {formatWinRate(winRate)}
                                                         </td>
                                                     );
@@ -543,7 +534,7 @@ const RightPanel = ({ influencer }) => {
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={timeframes.length + 1} className="p-3 text-center text-[8px] text-gray-400">
+                                            <td colSpan={timeframes.length + 1} className="p-2 text-center text-[7px] text-gray-400">
                                                 No Win Rate data available
                                             </td>
                                         </tr>
@@ -608,9 +599,6 @@ const TOCLeftPanel = ({ influencers, selectedIndex, onSelect }) => {
                                     {inf.platform} • <span className="text-blue-500 font-medium">{formatNumber(inf.subs)} subs</span>
                                 </div>
                             </div>
-                            {selectedIndex === idx && (
-                                <div className="w-1 h-1 rounded-full bg-blue-500 mr-1"></div>
-                            )}
                         </div>
                     )) : (
                         <div className="text-center text-gray-400 text-xs py-8">No influencers</div>
@@ -691,7 +679,7 @@ const FourFoldFlipbook = ({ influencers, selectedPlatform, setSelectedPlatform, 
 
                     {/* Panel 1: Influencers List */}
                     <div
-                        className="w-[180px] md:w-[220px] h-[420px] md:h-[480px] rounded-l-xl overflow-hidden shadow-2xl bg-white"
+                        className="w-[220px] md:w-[280px] lg:w-[300px] h-[420px] md:h-[480px] lg:h-[520px] rounded-l-xl overflow-hidden shadow-2xl bg-white"
                         style={{
                             boxShadow: '-6px 0 25px rgba(0,0,0,0.12), 0 8px 30px rgba(0,0,0,0.15)'
                         }}
@@ -705,7 +693,7 @@ const FourFoldFlipbook = ({ influencers, selectedPlatform, setSelectedPlatform, 
 
                     {/* Panel 2: Left Panel (Filters + Profile) */}
                     <div
-                        className={`w-[180px] md:w-[220px] h-[420px] md:h-[480px] overflow-hidden shadow-2xl transition-all duration-600 ease-in-out ${isFlipping ? 'opacity-80 scale-[0.98]' : 'opacity-100 scale-100'}`}
+                        className={`w-[220px] md:w-[280px] lg:w-[320px] h-[420px] md:h-[480px] lg:h-[520px] overflow-hidden shadow-2xl transition-all duration-600 ease-in-out ${isFlipping ? 'opacity-80 scale-[0.98]' : 'opacity-100 scale-100'}`}
                         style={{
                             boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
                         }}
@@ -722,7 +710,7 @@ const FourFoldFlipbook = ({ influencers, selectedPlatform, setSelectedPlatform, 
 
                     {/* Panel 3: Middle Panel (Performance) */}
                     <div
-                        className={`w-[180px] md:w-[220px] h-[420px] md:h-[480px] overflow-hidden shadow-2xl transition-all duration-600 ease-in-out ${isFlipping ? 'opacity-80 scale-[0.98]' : 'opacity-100 scale-100'}`}
+                        className={`w-[220px] md:w-[280px] lg:w-[320px] h-[420px] md:h-[480px] lg:h-[520px] overflow-hidden shadow-2xl transition-all duration-600 ease-in-out ${isFlipping ? 'opacity-80 scale-[0.98]' : 'opacity-100 scale-100'}`}
                         style={{
                             boxShadow: '0 8px 30px rgba(0,0,0,0.15)'
                         }}
@@ -732,7 +720,7 @@ const FourFoldFlipbook = ({ influencers, selectedPlatform, setSelectedPlatform, 
 
                     {/* Panel 4: Right Panel (ROI & Win Rate Analysis) */}
                     <div
-                        className={`w-[180px] md:w-[220px] h-[420px] md:h-[480px] rounded-r-xl overflow-hidden shadow-2xl transition-all duration-600 ease-in-out ${isFlipping ? 'opacity-80 scale-[0.98]' : 'opacity-100 scale-100'}`}
+                        className={`w-[220px] md:w-[280px] lg:w-[320px] h-[420px] md:h-[480px] lg:h-[520px] rounded-r-xl overflow-hidden shadow-2xl transition-all duration-600 ease-in-out ${isFlipping ? 'opacity-80 scale-[0.98]' : 'opacity-100 scale-100'}`}
                         style={{
                             boxShadow: '6px 0 25px rgba(0,0,0,0.12), 0 8px 30px rgba(0,0,0,0.15)'
                         }}
@@ -978,7 +966,7 @@ export default function InfluencerFlipbook() {
     const timeframeOptions = getDynamicTimeframeOptions(selectedYear);
 
     return (
-        <div className="py-6">
+        <div className="w-full">
             {/* Custom Animations */}
             <style jsx global>{`
         @keyframes flip-in-left {
@@ -1025,7 +1013,7 @@ export default function InfluencerFlipbook() {
       `}</style>
 
             {/* Flipbook Container */}
-            <div className="w-full flex justify-center">
+            <div className="w-full flex justify-center px-4">
                 {loading ? (
                     <div className="flex justify-center items-center h-[500px]">
                         <div className="animate-spin rounded-full h-14 w-14 border-b-4 border-blue-500 border-t-4 border-t-purple-500"></div>
