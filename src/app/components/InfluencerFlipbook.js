@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState, useCallback, useMemo } from "react";
+import { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { FaStar, FaStarHalfAlt, FaChevronLeft, FaChevronRight, FaEye, FaYoutube, FaTelegramPlane } from "react-icons/fa";
 import { getDynamicTimeframeOptions } from "../../../utils/dateFilterUtils";
 
@@ -17,7 +17,7 @@ const formatNumber = (num) => {
 };
 
 // Left Panel Component - Filters, Profile Image, Rank, Name, Subscribers
-const LeftPanel = ({ influencer, selectedPlatform, setSelectedPlatform, selectedTimeframe, setSelectedTimeframe, timeframeOptions }) => {
+const LeftPanel = ({ influencer }) => {
     const handleNavigate = () => {
         const url = influencer.platform === "YouTube"
             ? `/influencers/${influencer.id}`
@@ -33,51 +33,7 @@ const LeftPanel = ({ influencer, selectedPlatform, setSelectedPlatform, selected
             </div>
 
             {/* Content */}
-            <div className="relative flex-1 flex flex-col items-center overflow-y-auto custom-scrollbar min-h-0">
-                {/* Filters Section - Above Profile Image */}
-                <div className="w-full mb-3 space-y-2">
-                    {/* Source Filter */}
-                    <div>
-                        <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1 text-center">Source</label>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setSelectedPlatform('youtube')}
-                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all shadow-sm ${selectedPlatform === 'youtube'
-                                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                                    : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-blue-300'
-                                    }`}
-                            >
-                                YouTube
-                            </button>
-                            <button
-                                onClick={() => setSelectedPlatform('telegram')}
-                                className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all shadow-sm ${selectedPlatform === 'telegram'
-                                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white'
-                                    : 'bg-white border-2 border-gray-200 text-gray-600 hover:border-blue-300'
-                                    }`}
-                            >
-                                Telegram
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Holding Period Filter */}
-                    <div>
-                        <label className="block text-[10px] font-bold text-gray-600 uppercase mb-1 text-center">Holding Period</label>
-                        <select
-                            value={selectedTimeframe}
-                            onChange={(e) => setSelectedTimeframe(e.target.value)}
-                            className="w-full bg-white border-2 border-blue-200 hover:border-blue-400 rounded-lg px-3 py-1.5 text-xs font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition-all cursor-pointer shadow-sm"
-                        >
-                            {timeframeOptions.map((option) => (
-                                <option key={option.value} value={option.value}>
-                                    {option.label}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
+            <div className="relative flex-1 flex flex-col items-center justify-center overflow-y-auto custom-scrollbar min-h-0">
 
                 {/* Profile Image */}
                 <div className="relative mb-2 group cursor-pointer" onClick={handleNavigate}>
@@ -230,7 +186,7 @@ const MiddlePanel = ({ influencer }) => {
                     {/* Posts History */}
                     <div className="bg-white/60 rounded-lg p-2 shadow-md border border-blue-100">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-[9px] font-bold uppercase text-gray-600 px-1">Posts Analytics</span>
+                            <span className="text-[9px] font-bold text-gray-600 px-1">Posts Analytics</span>
                         </div>
                         <div className="grid grid-cols-4 gap-1.5">
                             <div className="bg-white rounded-md p-1.5 border border-blue-50 text-center shadow-sm">
@@ -255,12 +211,12 @@ const MiddlePanel = ({ influencer }) => {
                     {/* AI Scoring Section */}
                     <div className="space-y-1.5">
                         <h4 className="text-[10px] font-bold text-gray-800 px-1">
-                            AI Scoring
+                            Scoring
                         </h4>
                         {metrics.map((metric) => (
                             <div key={metric.key} className="bg-white/60 rounded-lg p-1.5 border border-blue-100/50 overflow-visible mb-1.5 last:mb-0">
                                 <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[9px] font-bold uppercase text-gray-800">{metric.label}</span>
+                                    <span className="text-[9px] font-bold text-gray-800">{metric.label}</span>
                                     <div className="relative group/tooltip">
                                         <FaEye className="w-2 h-2 text-gray-400 hover:text-blue-500 cursor-pointer transition-colors" />
                                         <div className="absolute bottom-full mb-1 right-0 hidden group-hover/tooltip:block w-36 bg-gray-800 text-white text-[8px] rounded px-2 py-1 shadow-lg" style={{ zIndex: 9999 }}>
@@ -309,7 +265,7 @@ const MiddlePanel = ({ influencer }) => {
 };
 
 // Right Panel Component - ROI & Win Rate Analysis
-const RightPanel = ({ influencer }) => {
+const RightPanel = ({ influencer, selectedTimeframe, setSelectedTimeframe, timeframeOptions }) => {
     // MCM Ranking data preparation
     const starRatingYearly = influencer.star_rating_yearly || {};
     const currentDate = new Date();
@@ -326,15 +282,35 @@ const RightPanel = ({ influencer }) => {
         })
         .sort((a, b) => a - b);
 
+    // Convert selectedTimeframe format (e.g., "180_days") to API key format (e.g., "180_days")
+    const getTimeframeKey = (timeframe) => {
+        // Map the dropdown values to the star_rating_yearly keys
+        const keyMap = {
+            '1_hour': '1_hour',
+            '24_hours': '24_hours',
+            '7_days': '7_days',
+            '30_days': '30_days',
+            '60_days': '60_days',
+            '90_days': '90_days',
+            '180_days': '180_days',
+            '1_year': '1_year'
+        };
+        return keyMap[timeframe] || '180_days';
+    };
+
+    const timeframeKey = getTimeframeKey(selectedTimeframe);
+
     const scatterData = [];
     years.forEach((year) => {
         const yearData = starRatingYearly[year];
-        if (yearData && yearData.current_rating) {
+        // Get the rating for the selected timeframe
+        const timeframeData = yearData?.[timeframeKey];
+        if (timeframeData && timeframeData.current_rating) {
             scatterData.push({
                 year: year,
                 yearLabel: year,
-                rating: yearData.current_rating,
-                finalScore: yearData.current_final_score
+                rating: timeframeData.current_rating,
+                finalScore: timeframeData.current_final_score
             });
         }
     });
@@ -407,18 +383,31 @@ const RightPanel = ({ influencer }) => {
 
             <div className="relative flex-1 flex flex-col overflow-hidden min-h-0">
                 <div className="flex-shrink-0 mb-2">
-                    <h3 className="text-base font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-1">
+                    <h3 className="text-base font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
                         Performance
                     </h3>
-                    <div className="w-10 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"></div>
+                    <div className="w-10 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mt-1"></div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto overflow-x-auto pr-1 space-y-3 custom-scrollbar min-h-0 py-1">
                     {/* MCM Ranking Section */}
                     <div className="bg-gradient-to-br from-purple-50 to-blue-50/50 rounded-lg p-2 shadow-sm border border-purple-100/50">
-                        <h4 className="text-[10px] font-bold text-gray-800 mb-1">
-                            MCM Rating
-                        </h4>
+                        <div className="flex items-center justify-between mb-1">
+                            <h4 className="text-[10px] font-bold text-gray-800">
+                                MCM Rating
+                            </h4>
+                            <select
+                                value={selectedTimeframe}
+                                onChange={(e) => setSelectedTimeframe(e.target.value)}
+                                className="bg-white border border-purple-200 hover:border-purple-400 rounded-md px-1.5 py-0.5 text-[8px] font-semibold text-gray-700 focus:outline-none focus:ring-1 focus:ring-purple-400 transition-all cursor-pointer shadow-sm"
+                            >
+                                {timeframeOptions.map((option) => (
+                                    <option key={option.value} value={option.value}>
+                                        {option.label}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                         {scatterData.length > 0 ? (
                             <div className="flex justify-center items-end gap-3 h-20">
                                 {scatterData.map((point, idx) => {
@@ -464,9 +453,9 @@ const RightPanel = ({ influencer }) => {
                             <table className="w-full text-center border-collapse">
                                 <thead>
                                     <tr className="bg-gray-50/50">
-                                        <th className="py-1.5 px-0.5 text-[7px] font-bold text-gray-500 border-b border-gray-100 text-left pl-1">Yr</th>
-                                        {timeframes.map((tf) => (
-                                            <th key={tf.key} className="py-1.5 px-0.5 text-[7px] font-bold text-gray-500 border-b border-gray-100 whitespace-nowrap">
+                                        <th className="py-1.5 px-0.5 text-[7px] font-bold text-gray-900 border-b border-r border-gray-200 text-left pl-1">Yr</th>
+                                        {timeframes.map((tf, idx) => (
+                                            <th key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold text-gray-900 border-b border-gray-200 whitespace-nowrap ${idx < timeframes.length - 1 ? 'border-r border-gray-100' : ''}`}>
                                                 {tf.label}
                                             </th>
                                         ))}
@@ -475,12 +464,12 @@ const RightPanel = ({ influencer }) => {
                                 <tbody>
                                     {yearsData.length > 0 ? (
                                         yearsData.map(({ year, data }) => (
-                                            <tr key={`${year}-roi`} className="border-b border-gray-50 last:border-0 hover:bg-purple-50/30 transition-colors">
-                                                <td className="py-1.5 px-0.5 text-[7px] font-bold text-gray-600 text-left pl-1">{year}</td>
-                                                {timeframes.map((tf) => {
+                                            <tr key={`${year}-roi`} className="border-b border-gray-100 last:border-b-0 hover:bg-purple-50/30 transition-colors">
+                                                <td className="py-1.5 px-0.5 text-[7px] font-bold text-gray-900 text-left pl-1 border-r border-gray-200">{year}</td>
+                                                {timeframes.map((tf, idx) => {
                                                     const roi = data?.[tf.key]?.prob_weighted_returns;
                                                     return (
-                                                        <td key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold whitespace-nowrap ${getROIColor(roi)}`}>
+                                                        <td key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold whitespace-nowrap ${idx < timeframes.length - 1 ? 'border-r border-gray-100' : ''} ${getROIColor(roi)}`}>
                                                             {formatROI(roi)}
                                                         </td>
                                                     );
@@ -509,9 +498,9 @@ const RightPanel = ({ influencer }) => {
                             <table className="w-full text-center border-collapse">
                                 <thead>
                                     <tr className="bg-gray-50/50">
-                                        <th className="py-1.5 px-0.5 text-[7px] font-bold text-gray-500 border-b border-gray-100 text-left pl-1">Yr</th>
-                                        {timeframes.map((tf) => (
-                                            <th key={tf.key} className="py-1.5 px-0.5 text-[7px] font-bold text-gray-500 border-b border-gray-100 whitespace-nowrap">
+                                        <th className="py-1.5 px-0.5 text-[7px] font-bold text-gray-900 border-b border-r border-gray-200 text-left pl-1">Yr</th>
+                                        {timeframes.map((tf, idx) => (
+                                            <th key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold text-gray-900 border-b border-gray-200 whitespace-nowrap ${idx < timeframes.length - 1 ? 'border-r border-gray-100' : ''}`}>
                                                 {tf.label}
                                             </th>
                                         ))}
@@ -520,12 +509,12 @@ const RightPanel = ({ influencer }) => {
                                 <tbody>
                                     {yearsData.length > 0 ? (
                                         yearsData.map(({ year, data }) => (
-                                            <tr key={`${year}-win`} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
-                                                <td className="py-1.5 px-0.5 text-[7px] font-bold text-gray-600 text-left pl-1">{year}</td>
-                                                {timeframes.map((tf) => {
+                                            <tr key={`${year}-win`} className="border-b border-gray-100 last:border-b-0 hover:bg-blue-50/30 transition-colors">
+                                                <td className="py-1.5 px-0.5 text-[7px] font-bold text-gray-900 text-left pl-1 border-r border-gray-200">{year}</td>
+                                                {timeframes.map((tf, idx) => {
                                                     const winRate = data?.[tf.key]?.win_percentage;
                                                     return (
-                                                        <td key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold whitespace-nowrap ${getWinRateColor(winRate)}`}>
+                                                        <td key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold whitespace-nowrap ${idx < timeframes.length - 1 ? 'border-r border-gray-100' : ''} ${getWinRateColor(winRate)}`}>
                                                             {formatWinRate(winRate)}
                                                         </td>
                                                     );
@@ -550,7 +539,7 @@ const RightPanel = ({ influencer }) => {
 };
 
 // Table of Contents - Left Panel
-const TOCLeftPanel = ({ influencers, selectedIndex, onSelect }) => {
+const TOCLeftPanel = ({ influencers, selectedIndex, onSelect, onHoverSelect, selectedPlatform, setSelectedPlatform }) => {
     return (
         <div className="h-full w-full bg-white/95 backdrop-blur-sm flex flex-col p-3 md:p-4 relative border-r border-gray-100">
             <div className="absolute top-0 left-0 w-full h-full opacity-30 pointer-events-none">
@@ -559,16 +548,41 @@ const TOCLeftPanel = ({ influencers, selectedIndex, onSelect }) => {
 
             <div className="relative flex flex-col z-10 h-full min-h-0">
                 <div className="flex-shrink-0 mb-3">
-                    <h2 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
-                        Influencers
-                    </h2>
-                    <div className="w-10 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-lg md:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                            Influencers
+                        </h2>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setSelectedPlatform('youtube')}
+                                className={`p-1.5 rounded-lg transition-all ${selectedPlatform === 'youtube'
+                                    ? 'bg-red-100 ring-2 ring-red-400 scale-110'
+                                    : 'bg-gray-100 hover:bg-red-50'
+                                    }`}
+                                title="YouTube"
+                            >
+                                <FaYoutube className={`w-4 h-4 ${selectedPlatform === 'youtube' ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`} />
+                            </button>
+                            <button
+                                onClick={() => setSelectedPlatform('telegram')}
+                                className={`p-1.5 rounded-lg transition-all ${selectedPlatform === 'telegram'
+                                    ? 'bg-blue-100 ring-2 ring-blue-400 scale-110'
+                                    : 'bg-gray-100 hover:bg-blue-50'
+                                    }`}
+                                title="Telegram"
+                            >
+                                <FaTelegramPlane className={`w-4 h-4 ${selectedPlatform === 'telegram' ? 'text-blue-500' : 'text-gray-400 hover:text-blue-500'}`} />
+                            </button>
+                        </div>
+                    </div>
+                    <div className="w-10 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full mt-1"></div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto pr-1 space-y-1.5 custom-scrollbar min-h-0">
                     {influencers.length > 0 ? influencers.map((inf, idx) => (
                         <div
                             key={inf.id}
+                            onMouseEnter={() => onHoverSelect(idx)}
                             onClick={() => onSelect(idx)}
                             className={`group flex items-center gap-2 p-1.5 rounded-lg hover:bg-white hover:shadow-md border transition-all cursor-pointer ${selectedIndex === idx
                                 ? 'bg-white shadow-md border-blue-200 ring-1 ring-blue-100'
@@ -618,6 +632,7 @@ const FourFoldFlipbook = ({ influencers, selectedPlatform, setSelectedPlatform, 
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [isFlipping, setIsFlipping] = useState(false);
     const [flipDirection, setFlipDirection] = useState(null);
+    const hoverTimeoutRef = useRef(null);
 
     const currentInfluencer = influencers[selectedIndex] || null;
 
@@ -657,10 +672,29 @@ const FourFoldFlipbook = ({ influencers, selectedPlatform, setSelectedPlatform, 
         }
     };
 
-    // Reset selected index when influencers change
+    // Hover-based selection - directly set index without complex checks
+    const handleHoverSelect = useCallback((index) => {
+        if (hoverTimeoutRef.current) {
+            clearTimeout(hoverTimeoutRef.current);
+        }
+        hoverTimeoutRef.current = setTimeout(() => {
+            setSelectedIndex(index);
+        }, 100); // 100ms debounce delay
+    }, []);
+
+    // Cleanup timeout on unmount
+    useEffect(() => {
+        return () => {
+            if (hoverTimeoutRef.current) {
+                clearTimeout(hoverTimeoutRef.current);
+            }
+        };
+    }, []);
+
+    // Reset selected index when influencers list changes (platform switch)
     useEffect(() => {
         setSelectedIndex(0);
-    }, [influencers]);
+    }, [influencers.length, selectedPlatform]);
 
     if (!influencers || influencers.length === 0) {
         return (
@@ -688,6 +722,9 @@ const FourFoldFlipbook = ({ influencers, selectedPlatform, setSelectedPlatform, 
                             influencers={influencers}
                             selectedIndex={selectedIndex}
                             onSelect={handleSelect}
+                            onHoverSelect={handleHoverSelect}
+                            selectedPlatform={selectedPlatform}
+                            setSelectedPlatform={setSelectedPlatform}
                         />
                     </div>
 
@@ -700,11 +737,6 @@ const FourFoldFlipbook = ({ influencers, selectedPlatform, setSelectedPlatform, 
                     >
                         <LeftPanel
                             influencer={currentInfluencer}
-                            selectedPlatform={selectedPlatform}
-                            setSelectedPlatform={setSelectedPlatform}
-                            selectedTimeframe={selectedTimeframe}
-                            setSelectedTimeframe={setSelectedTimeframe}
-                            timeframeOptions={timeframeOptions}
                         />
                     </div>
 
@@ -725,7 +757,12 @@ const FourFoldFlipbook = ({ influencers, selectedPlatform, setSelectedPlatform, 
                             boxShadow: '6px 0 25px rgba(0,0,0,0.12), 0 8px 30px rgba(0,0,0,0.15)'
                         }}
                     >
-                        <RightPanel influencer={currentInfluencer} />
+                        <RightPanel
+                            influencer={currentInfluencer}
+                            selectedTimeframe={selectedTimeframe}
+                            setSelectedTimeframe={setSelectedTimeframe}
+                            timeframeOptions={timeframeOptions}
+                        />
                     </div>
 
                 </div>
@@ -785,6 +822,7 @@ const FourFoldFlipbook = ({ influencers, selectedPlatform, setSelectedPlatform, 
                         {influencers.map((inf, idx) => (
                             <button
                                 key={inf.id}
+                                onMouseEnter={() => handleHoverSelect(idx)}
                                 onClick={() => handleSelect(idx)}
                                 className={`flex-shrink-0 w-8 h-8 rounded-full overflow-hidden border-2 transition-all ${idx === selectedIndex
                                     ? 'border-blue-500 ring-2 ring-blue-300 scale-110'
@@ -843,12 +881,12 @@ export default function InfluencerFlipbook() {
         return d.getFullYear().toString();
     }, []);
 
-    // API parameters
+    // API parameters - ALWAYS use 180_days for ranking, filter only affects star rating display
     const apiParams = useMemo(() => ({
         rating: "3",
-        timeframe: selectedTimeframe,
+        timeframe: "180_days",
         year: selectedYear
-    }), [selectedTimeframe, selectedYear]);
+    }), [selectedYear]);
 
     // Fetch data functions
     const fetchYouTubeData = useCallback(async () => {
