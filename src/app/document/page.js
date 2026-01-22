@@ -472,58 +472,6 @@ function CoinReport({ data }) {
               Analysis Date: {data.analysisDate} - Analysis Time: {data.analysisTime} UTC
             </p>
           </div>
-
-          {/* Right side - Price Box */}
-          {hasContent(data.basePrice) && (
-            <div
-              className="rounded-xl"
-              style={{
-                backgroundColor: 'white',
-                overflow: 'hidden',
-                textAlign: 'center',
-                minWidth: '180px',
-                maxWidth: '200px',
-                borderRadius: '12px'
-              }}
-            >
-              <div
-                style={{
-                  backgroundColor: '#f5f3ff',
-                  padding: '6px 8px',
-                  fontSize: '0.65rem',
-                  fontWeight: '500'
-                }}
-              >
-                <svg width="100%" height="14" style={{ display: 'block' }}>
-                  <defs>
-                    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                      <stop offset="0%" stopColor="#3b82f6" />
-                      <stop offset="100%" stopColor="#a855f7" />
-                    </linearGradient>
-                  </defs>
-                  <text
-                    x="50%"
-                    y="10"
-                    textAnchor="middle"
-                    fill="url(#textGradient)"
-                    style={{ fontSize: '0.65rem', fontWeight: '500' }}
-                  >
-                    Price at the time of publishing this report
-                  </text>
-                </svg>
-              </div>
-              <div
-                style={{
-                  padding: '6px 10px',
-                  fontSize: '0.95rem',
-                  fontWeight: '700',
-                  color: '#1f2937'
-                }}
-              >
-                ${data.basePrice}
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
@@ -752,6 +700,54 @@ function CoinReport({ data }) {
             {(chartImageSrc || hasContent(data.priceChart.chartSummary)) && (
               <>
                 <SubsectionHeader title="Price Chart" />
+
+                {/* Price Box - Above Chart */}
+                {hasContent(data.basePrice) && (
+                  <div
+                    className="rounded-xl mb-4"
+                    style={{
+                      backgroundColor: 'white',
+                      overflow: 'hidden',
+                      textAlign: 'center',
+                      maxWidth: '205px',
+                      borderRadius: '12px',
+                      border: '2px solid #e5e7eb',
+                      margin: '0 auto 16px auto'
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: 'linear-gradient(to right, rgb(59, 130, 246), rgb(168, 85, 247))',
+                        padding: '6px 8px',
+                        fontSize: '0.65rem',
+                        fontWeight: '500'
+                      }}
+                    >
+                      <svg width="100%" height="14" style={{ display: 'block' }}>
+                        <text
+                          x="50%"
+                          y="10"
+                          textAnchor="middle"
+                          fill="white"
+                          style={{ fontSize: '0.65rem', fontWeight: '500' }}
+                        >
+                          Price at the time of publishing this report
+                        </text>
+                      </svg>
+                    </div>
+                    <div
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: '1.1rem',
+                        fontWeight: '700',
+                        color: '#1f2937'
+                      }}
+                    >
+                      ${Number(data.basePrice).toLocaleString()}
+                    </div>
+                  </div>
+                )}
+
 
                 {chartImageSrc && (
                   <div className="flex justify-center mb-6">
