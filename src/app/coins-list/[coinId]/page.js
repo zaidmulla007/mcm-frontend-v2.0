@@ -238,8 +238,8 @@ function AISummaryCard({ title, data }) {
   );
 }
 
-/* Fundamental Analysis Display Component with Markdown Support */
-function FundamentalAnalysisCard({ data }) {
+/* Whitepaper Analysis Display Component */
+function WhitepaperAnalysisCard({ data, coinName, coinSymbol }) {
   if (!data) {
     return (
       <div style={{
@@ -251,47 +251,116 @@ function FundamentalAnalysisCard({ data }) {
         border: "1px solid rgba(255, 255, 255, 0.6)",
         marginTop: 16
       }}>
-        <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 16 }}>🔍 Deep Fundamental Analysis</div>
+        <div style={{ fontWeight: 800, marginBottom: 12, fontSize: 16 }}>Deep Fundamental Analysis</div>
         <div style={{ fontSize: 13, color: "#6b7280" }}>No fundamental analysis available</div>
       </div>
     );
   }
 
-  // Extract first line as header and rest as content
-  const lines = data.split('\n');
-  const header = lines[0] || '🔍 Deep Fundamental Analysis';
-  const content = lines.slice(1).join('\n').trim();
+  // Format label from snake_case to Title Case
+  const formatLabel = (key) => {
+    return key
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
 
-  // Function to parse markdown-style bold text (**text**)
-  const parseMarkdown = (text) => {
-    if (!text || typeof text !== 'string') return text;
+  // Render a score badge
+  const ScoreBadge = ({ score, maxScore = 10 }) => {
+    if (score === null || score === undefined) return null;
+    const percentage = (score / maxScore) * 100;
+    let bgColor = "#ef4444"; // red
+    if (percentage >= 80) bgColor = "#16a34a"; // green
+    else if (percentage >= 60) bgColor = "#eab308"; // yellow
+    else if (percentage >= 40) bgColor = "#f97316"; // orange
 
-    const parts = [];
-    let lastIndex = 0;
-    const boldRegex = /\*\*(.+?)\*\*/g;
-    let match;
-    let key = 0;
+    return (
+      <span style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+        padding: "4px 10px",
+        borderRadius: 20,
+        background: bgColor,
+        color: "#fff",
+        fontSize: 12,
+        fontWeight: 700
+      }}>
+        {score}/{maxScore}
+      </span>
+    );
+  };
 
-    while ((match = boldRegex.exec(text)) !== null) {
-      // Add text before the bold part
-      if (match.index > lastIndex) {
-        parts.push(text.substring(lastIndex, match.index));
-      }
-      // Add the bold part
-      parts.push(
-        <strong key={`bold-${key++}`} style={{ fontWeight: 800, color: "#111" }}>
-          {match[1]}
-        </strong>
-      );
-      lastIndex = match.index + match[0].length;
-    }
+  // Render a section with nested object
+  const renderNestedSection = (title, obj, icon) => {
+    if (!obj || typeof obj !== 'object') return null;
 
-    // Add remaining text
-    if (lastIndex < text.length) {
-      parts.push(text.substring(lastIndex));
-    }
+    return (
+      <div style={{
+        background: "rgba(249, 250, 251, 0.7)",
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        border: "1px solid rgba(229, 231, 235, 0.5)"
+      }}>
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 12,
+          paddingBottom: 8,
+          borderBottom: "1px solid #e5e7eb"
+        }}>
+          <div style={{ fontWeight: 700, fontSize: 14, color: "#111" }}>
+            {icon} {title}
+          </div>
+          {obj.score !== undefined && <ScoreBadge score={obj.score} />}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {Object.entries(obj).map(([key, value]) => {
+            if (key === 'score' || value === null || value === undefined || value === '') return null;
+            return (
+              <div key={key} style={{ fontSize: 13 }}>
+                <span style={{ color: "#6b7280", fontWeight: 500 }}>{formatLabel(key)}: </span>
+                <span style={{ color: "#374151" }}>{String(value)}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
 
-    return parts.length > 0 ? parts : text;
+  // Render simple key-value field
+  const renderField = (label, value, highlight = false) => {
+    if (value === null || value === undefined || value === '') return null;
+    return (
+      <div style={{
+        marginBottom: 12,
+        padding: highlight ? "12px 16px" : "8px 0",
+        background: highlight ? "rgba(59, 130, 246, 0.05)" : "transparent",
+        borderRadius: highlight ? 8 : 0,
+        borderLeft: highlight ? "3px solid #3b82f6" : "none"
+      }}>
+        <div style={{
+          fontWeight: 600,
+          fontSize: 12,
+          color: "#6b7280",
+          marginBottom: 4,
+          textTransform: "uppercase",
+          letterSpacing: "0.5px"
+        }}>
+          {label}
+        </div>
+        <div style={{
+          fontSize: 13,
+          color: "#374151",
+          lineHeight: 1.6
+        }}>
+          {String(value)}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -304,25 +373,150 @@ function FundamentalAnalysisCard({ data }) {
       border: "1px solid rgba(255, 255, 255, 0.6)",
       marginTop: 16
     }}>
+      {/* Header with Final Score */}
       <div style={{
-        fontWeight: 800,
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
         marginBottom: 20,
-        fontSize: 16,
-        paddingBottom: 12,
-        borderBottom: "2px solid #e5e7eb",
-        color: "#111"
+        paddingBottom: 16,
+        borderBottom: "2px solid #e5e7eb"
       }}>
-        {header}
+        <div style={{ fontWeight: 800, fontSize: 18, color: "#111" }}>
+          Deep Fundamental Analysis: {coinName} ({coinSymbol?.toUpperCase()})
+        </div>
+        {data.final_score !== undefined && (
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 8,
+            flexShrink: 0
+          }}>
+            <span style={{ fontSize: 13, color: "#6b7280", fontWeight: 500 }}>Final Score</span>
+            <span style={{
+              fontSize: 24,
+              fontWeight: 900,
+              color: data.final_score >= 8 ? "#16a34a" : data.final_score >= 6 ? "#eab308" : "#ef4444"
+            }}>
+              {data.final_score}/10
+            </span>
+          </div>
+        )}
       </div>
+
+      {/* Core Concept & Architecture */}
+      <div style={{ marginBottom: 20 }}>
+        {renderField("Core Concept", data.core_concept, true)}
+        {renderField("Primary Architecture", data.primary_architecture)}
+        {renderField("Products & Features", data.products_features)}
+        {renderField("Technical Highlights", data.technical_highlights)}
+      </div>
+
+      {/* Scored Sections Grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+        {renderNestedSection("Technology", data.technology, "⚙️")}
+        {renderNestedSection("Team", data.team, "👥")}
+        {renderNestedSection("Market Fit", data.market_fit, "📈")}
+        {renderNestedSection("Tokenomics & Unlock Risk", data.tokenomics_unlock_risk, "🔓")}
+      </div>
+
+      {/* Additional Analysis Sections */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+        {renderNestedSection("Allocation & Incentives", data.allocation_incentive_structure, "💰")}
+        {renderNestedSection("Use Case & Utility", data.use_case_onchain_utility, "🎯")}
+        {renderNestedSection("Recent Controversies", data.recent_controversies, "⚠️")}
+        {renderNestedSection("Adoption & Backing", data.adoption_backing, "🤝")}
+      </div>
+
+      {/* Risks & Threats */}
+      {data.risks_threats && (
+        <div style={{
+          background: "rgba(254, 242, 242, 0.7)",
+          borderRadius: 12,
+          padding: 16,
+          marginBottom: 16,
+          border: "1px solid rgba(254, 202, 202, 0.5)"
+        }}>
+          <div style={{ fontWeight: 700, fontSize: 14, color: "#dc2626", marginBottom: 12 }}>
+            ⚠️ Risks & Threats
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {Object.entries(data.risks_threats).map(([key, value]) => {
+              if (value === null || value === undefined || value === '') return null;
+              return (
+                <div key={key} style={{ fontSize: 13 }}>
+                  <span style={{ color: "#991b1b", fontWeight: 500 }}>{formatLabel(key)}: </span>
+                  <span style={{ color: "#7f1d1d" }}>{String(value)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Overall Evaluation */}
       <div style={{
-        fontSize: 13.5,
-        color: "#374151",
-        lineHeight: 1.8,
-        whiteSpace: "pre-wrap",
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        background: "rgba(240, 253, 244, 0.7)",
+        borderRadius: 12,
+        padding: 16,
+        marginBottom: 16,
+        border: "1px solid rgba(187, 247, 208, 0.5)"
       }}>
-        {parseMarkdown(content)}
+        <div style={{ fontWeight: 700, fontSize: 14, color: "#16a34a", marginBottom: 12 }}>
+          Overall Evaluation
+        </div>
+        {renderField("Summary", data.overall_evaluation)}
+        {renderField("Key Strengths", data.key_strengths)}
+        {renderField("Key Weaknesses", data.key_weaknesses)}
       </div>
+
+      {/* Verdict & Actionable Insights */}
+      {data.verdict_actionable_insights && (
+        <div style={{
+          background: "rgba(238, 242, 255, 0.7)",
+          borderRadius: 12,
+          padding: 16,
+          marginBottom: 16,
+          border: "1px solid rgba(199, 210, 254, 0.5)"
+        }}>
+          <div style={{ fontWeight: 700, fontSize: 14, color: "#4f46e5", marginBottom: 12 }}>
+            Verdict & Actionable Insights
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            {Object.entries(data.verdict_actionable_insights).map(([key, value]) => {
+              if (value === null || value === undefined || value === '') return null;
+              return (
+                <div key={key} style={{ fontSize: 13 }}>
+                  <span style={{ color: "#4338ca", fontWeight: 500 }}>{formatLabel(key)}: </span>
+                  <span style={{ color: "#3730a3" }}>{String(value)}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Final Notes & Score Rationale */}
+      {(data.final_notes || data.final_score_rationale) && (
+        <div style={{
+          background: "rgba(249, 250, 251, 0.7)",
+          borderRadius: 12,
+          padding: 16,
+          border: "1px solid rgba(229, 231, 235, 0.5)"
+        }}>
+          {data.final_notes && (
+            <div style={{ fontSize: 13, color: "#374151", marginBottom: data.final_score_rationale ? 12 : 0, fontStyle: "italic" }}>
+              {data.final_notes}
+            </div>
+          )}
+          {data.final_score_rationale && (
+            <div style={{ fontSize: 13, color: "#6b7280" }}>
+              <span style={{ fontWeight: 600 }}>Score Rationale: </span>
+              {data.final_score_rationale}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -702,7 +896,7 @@ export default function CoinDetail() {
   const ai7 = aiSummary?.["7_days"] ?? aiSummary?.["7days"] ?? null;
   const ai24 = aiSummary?.["24_hours"] ?? aiSummary?.["24hours"] ?? null;
   const ai6 = aiSummary?.["6_hours"] ?? aiSummary?.["6hours"] ?? null;
-  const fundamentalAnalysis = coin?.fundamental_analysis ?? coin?.coin_summary ?? null;
+  const whitepaperAnalysis = coin?.whitepaper_analysis ?? null;
 
   const priceChangeColor = binanceLive?.priceChangePercent >= 0 ? "#16a34a" : "#ef4444";
 
@@ -999,8 +1193,8 @@ export default function CoinDetail() {
           </>
         )}
 
-        {/* Fundamental Analysis - Right after Technical Analysis */}
-        <FundamentalAnalysisCard data={fundamentalAnalysis} />
+        {/* Whitepaper Analysis - Right after Technical Analysis */}
+        <WhitepaperAnalysisCard data={whitepaperAnalysis} coinName={coin.name} coinSymbol={coin.symbol} />
 
         {/* Live Market Data Section */}
         {coin?.symbol && hasUsdtPair && (

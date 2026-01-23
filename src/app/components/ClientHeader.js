@@ -10,30 +10,15 @@ import styles from "./ClientHeader.module.css";
 
 const navLinks = [
   { name: "Home", href: "/home", icon: FaHome },
-  {
-    name: "Trending",
-    icon: FaChartLine,
-    subLinks: [
-      { name: "Trending Coins", href: "/coins", icon: FaCoins },
-      { name: "Trending Coins 2", href: "/coins-new", icon: FaCoins },
-      { name: "Latest Posts", href: "/influencer-search", icon: FaBullhorn },
-      { name: "Top News", href: "/top-news", icon: FaNewspaper },
-    ]
-  },
+  { name: "Trending Coins", href: "/coins-new", icon: FaCoins },
+  { name: "Influencer Stats", href: "/influencerssearch", icon: FaChartBar },
+  { name: "Latest Posts", href: "/influencer-search", icon: FaBullhorn },
   {
     name: "Coins",
     icon: FaCoins,
     subLinks: [
       { name: "All Coins", href: "/coins-list", icon: FaCoins },
       { name: "Coin Info", href: "/market-overview", icon: FaChartPie },
-    ]
-  },
-  {
-    name: "Influencer",
-    icon: FaChartBar,
-    subLinks: [
-      { name: "Influencer Stats", href: "/influencerssearch", icon: FaChartBar },
-      { name: "Influencers Flipbook", href: "/influencerssearch-flip", icon: FaChartBar },
     ]
   },
   { name: "Favorites", href: "/favorites", icon: FaStar },
@@ -186,7 +171,7 @@ export default function ClientHeader() {
         </Link>
 
         {/* Navigation */}
-        <nav className="hidden md:flex flex-1 justify-center gap-8">
+        <nav className="hidden md:flex flex-1 justify-center gap-5">
           {navLinks.map((link) => {
             // Dynamic logic for Home/Landing Page based on login status
             let actualHref = link.href;
@@ -218,17 +203,17 @@ export default function ClientHeader() {
               return (
                 <div key={link.name} className="relative group flex items-center">
                   <button
-                    className={`flex items-center gap-2 text-sm font-medium transition py-2 relative ${isAnySubActive
+                    className={`flex items-center gap-1.5 text-xs font-medium transition py-2 relative ${isAnySubActive
                       ? 'bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent'
                       : 'text-gray-700 hover:text-indigo-600'
                       }`}
                   >
                     {isAnySubActive ? (
                       <span className={styles.gradientIcon}>
-                        <link.icon className="text-base" />
+                        <link.icon className="text-sm" />
                       </span>
                     ) : (
-                      <link.icon className="text-base" />
+                      <link.icon className="text-sm" />
                     )}
                     {link.name}
                     {isAnySubActive ? (
@@ -283,17 +268,17 @@ export default function ClientHeader() {
               <Link
                 key={link.name}
                 href={actualHref}
-                className={`flex items-center gap-2 text-sm font-medium transition py-2 relative ${isActive
+                className={`flex items-center gap-1.5 text-xs font-medium transition py-2 relative ${isActive
                   ? 'bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent'
                   : 'text-gray-700 hover:text-indigo-600'
                   }`}
               >
                 {isActive ? (
                   <span className={styles.gradientIcon}>
-                    <link.icon className="text-base" />
+                    <link.icon className="text-sm" />
                   </span>
                 ) : (
-                  <link.icon className="text-base" />
+                  <link.icon className="text-sm" />
                 )}
                 {displayName}
                 {isActive && (

@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import {
   FaChartLine, FaBalanceScale, FaChartBar, FaChartArea,
@@ -841,16 +842,21 @@ function CoinReport({ data }) {
 
 // Main Page Component
 export default function DocumentPage() {
+  const searchParams = useSearchParams();
+  const coinParam = searchParams.get('coin'); // Get coin symbol from URL query
+  const autoDownload = searchParams.get('download') === 'true'; // Check if auto-download requested
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [coins, setCoins] = useState([]);
   const [selectedCoin, setSelectedCoin] = useState(null);
   const [analysisDate, setAnalysisDate] = useState("");
   const [downloading, setDownloading] = useState(false);
+  const [hasAutoDownloaded, setHasAutoDownloaded] = useState(false);
   const reportRef = useRef(null);
 
   // PDF Download function
-  const handleDownloadPDF = async () => {
+  const handleDownloadPDF = useCallback(async () => {
     if (!reportRef.current || !selectedCoin) return;
 
     setDownloading(true);
@@ -981,7 +987,7 @@ export default function DocumentPage() {
     } finally {
       setDownloading(false);
     }
-  };
+  }, [selectedCoin]);
 
   useEffect(() => {
     async function fetchData() {
@@ -998,7 +1004,20 @@ export default function DocumentPage() {
 
         setCoins(extractedCoins);
         setAnalysisDate(data.analysisDate || "");
-        if (extractedCoins.length > 0) {
+
+        // If coin parameter is provided, find and select that coin
+        if (coinParam && extractedCoins.length > 0) {
+          const matchedCoin = extractedCoins.find(
+            c => c.symbol.toLowerCase() === coinParam.toLowerCase() ||
+                 c.sourceId.toLowerCase() === coinParam.toLowerCase()
+          );
+          if (matchedCoin) {
+            setSelectedCoin(matchedCoin);
+          } else {
+            // Fallback to first coin if no match found
+            setSelectedCoin(extractedCoins[0]);
+          }
+        } else if (extractedCoins.length > 0) {
           setSelectedCoin(extractedCoins[0]);
         }
       } catch (err) {
@@ -1009,7 +1028,19 @@ export default function DocumentPage() {
     }
 
     fetchData();
-  }, []);
+  }, [coinParam]);
+
+  // Auto-download PDF when coin is selected and autoDownload is true
+  useEffect(() => {
+    if (autoDownload && selectedCoin && !loading && !hasAutoDownloaded && reportRef.current) {
+      // Small delay to ensure the report is fully rendered
+      const timer = setTimeout(() => {
+        setHasAutoDownloaded(true);
+        handleDownloadPDF();
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [autoDownload, selectedCoin, loading, hasAutoDownloaded, handleDownloadPDF]);
 
   if (loading) {
     return (

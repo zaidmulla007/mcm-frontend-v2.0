@@ -1,10 +1,9 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { FaBell, FaYoutube, FaTelegramPlane, FaCertificate, FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { FaYoutube, FaTelegramPlane, FaCertificate, FaBell, FaFileAlt } from "react-icons/fa";
 import { useCoinsLivePrice } from "@/hooks/useCoinsLivePrice";
 import { useTimezone } from "../contexts/TimezoneContext";
-import ReactMarkdown from "react-markdown";
 import SimpleTAGauge from "@/components/SimpleTAGauge";
 import GaugeComponent from "react-gauge-component";
 
@@ -15,10 +14,7 @@ export default function CoinsNewPage() {
   const [error, setError] = useState(null);
   const [coinSymbols, setCoinSymbols] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
-  const [expandedSummaries, setExpandedSummaries] = useState({}); // Track expanded state for each coin and timeframe
-  const [selectedSummaryTimeframe, setSelectedSummaryTimeframe] = useState("6hrs"); // 6hrs, 24hrs, or 7days
-  const [influencerModal, setInfluencerModal] = useState({ isOpen: false, type: '', influencers: {}, coinName: '', position: { x: 0, y: 0 } });
-  const [isMouseOverModal, setIsMouseOverModal] = useState(false);
+  const [coinsWithReports, setCoinsWithReports] = useState(new Set());
 
   // Use timezone context for local/UTC time switching
   const { formatDate, useLocalTime, toggleTimezone, userTimezone } = useTimezone();
@@ -26,47 +22,23 @@ export default function CoinsNewPage() {
   // Get city name from timezone
   const userCity = userTimezone ? userTimezone.split('/').pop().replace(/_/g, ' ') : 'Local Time';
 
-  // ========================================
-  // DYNAMIC COLUMN WIDTH CONFIGURATION
-  // ========================================
-  const NUM_COLUMNS = 9; // Coins, Social Media Sentiment, Posts, Fundamental Score, Technical Analysis, MCM Signal, Live Price, MCM Knowledge Center, Top Social Media Influencers
-  const COLUMN_WIDTH = 100 / NUM_COLUMNS; // Equal distribution for all columns
-  // ========================================
+  // Use live price hook
+  const { prices, priceChanges, isConnected } = useCoinsLivePrice(coinSymbols);
 
-  // Threshold constants for bell alerts
-  const THRESHOLD_50_PERCENT = 30;
-  const THRESHOLD_TOP15_PERCENT = 15;
-  const TOP_COINS_RANK_LIMIT = 15;
-
-  // Threshold constants for meme coins
-  const MEME_THRESHOLD_TOP15_PERCENT = 20;
-  const MEME_THRESHOLD_50_PERCENT = 50;
-
-  // Use live price hook (EXACT same pattern as influencer-search)
-  const { prices, priceChanges, isConnected, bidAskData, volumeData } = useCoinsLivePrice(coinSymbols);
-
-  console.log('📱 [Coins] Component received prices:', Object.keys(prices).length);
-  console.log('📱 [Coins] isConnected:', isConnected);
-
-  // Create a live prices map that updates when prices change (EXACT same pattern as influencer-search)
+  // Create a live prices map
   const livePricesMap = useMemo(() => {
     const pricesMap = {};
-    console.log('📱 [Coins] Raw prices from hook:', prices);
-    console.log('📱 [Coins] Number of prices:', Object.keys(prices).length);
     Object.entries(prices).forEach(([symbolKey, price]) => {
-      // Remove 'USDT' suffix to get base symbol (e.g., BTCUSDT -> BTC)
       const baseSymbol = symbolKey.replace('USDT', '');
       pricesMap[baseSymbol] = price;
     });
-    console.log('📱 [Coins] livePricesMap created with', Object.keys(pricesMap).length, 'entries:', Object.keys(pricesMap).slice(0, 10));
     return pricesMap;
   }, [prices]);
 
-  // Create a live price changes map (EXACT same pattern as influencer-search)
+  // Create a live price changes map
   const livePriceChangesMap = useMemo(() => {
     const changesMap = {};
     Object.entries(priceChanges).forEach(([symbolKey, change]) => {
-      // Remove 'USDT' suffix to get base symbol (e.g., BTCUSDT -> BTC)
       const baseSymbol = symbolKey.replace('USDT', '');
       changesMap[baseSymbol] = change;
     });
@@ -81,20 +53,15 @@ export default function CoinsNewPage() {
       try {
         const response = await fetch('/api/admin/strategyyoutubedata/ytandtg');
         const data = await response.json();
-
-        // Handle both old and new response formats
-        const resultsByTimeframe = data.resultsByTimeframe || data;
-
-        // Store the entire data object including notifications
         setCoinsData(data);
 
-        // Extract lastUpdated from the 6hrs timeframe (same as YouTubeTelegramDataTable)
+        // Extract lastUpdated from the 6hrs timeframe
+        const resultsByTimeframe = data.resultsByTimeframe || data;
         if (resultsByTimeframe && resultsByTimeframe["6hrs"] && resultsByTimeframe["6hrs"].dateRange) {
           const toTimeStr = resultsByTimeframe["6hrs"].dateRange.to;
           const [datePart, timePart] = toTimeStr.split(' ');
           const [year, month, day] = datePart.split('-').map(Number);
           const [hours, minutes, seconds] = timePart.split(':').map(Number);
-
           const lastUpdatedTime = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
           setLastUpdated(lastUpdatedTime);
         }
@@ -109,35 +76,93 @@ export default function CoinsNewPage() {
     fetchCoinsData();
   }, []);
 
-  // Close modal on scroll only if mouse is not over the modal
+  // Fetch list of coins with reports from /api/document
   useEffect(() => {
-    const handleScroll = () => {
-      if (influencerModal.isOpen && !isMouseOverModal) {
-        setInfluencerModal({ isOpen: false, type: '', influencers: {}, coinName: '', position: { x: 0, y: 0 } });
+    const fetchCoinsWithReports = async () => {
+      try {
+        const response = await fetch('/api/document');
+        if (!response.ok) {
+          console.error("Failed to fetch coins with reports");
+          return;
+        }
+        const data = await response.json();
+        if (data.success && data.results) {
+          // Create a Set of symbols and source_ids that have reports
+          const reportsSet = new Set();
+          data.results.forEach(coin => {
+            // Add both symbol and source_id to the set (case-insensitive)
+            if (coin.symbol) {
+              reportsSet.add(coin.symbol.toUpperCase());
+            }
+            if (coin.source_id) {
+              reportsSet.add(coin.source_id.toUpperCase());
+            }
+          });
+          setCoinsWithReports(reportsSet);
+        }
+      } catch (err) {
+        console.error("Error fetching coins with reports:", err);
       }
     };
 
-    window.addEventListener('scroll', handleScroll, true);
-    return () => {
-      window.removeEventListener('scroll', handleScroll, true);
-    };
-  }, [influencerModal.isOpen, isMouseOverModal]);
+    fetchCoinsWithReports();
+  }, []);
 
-  // Reset mouse over state when modal closes
+  // Get top 10 coins from each timeframe and merge to unique list
+  const uniqueCoins = useMemo(() => {
+    if (!coinsData) return [];
+
+    const resultsByTimeframe = coinsData.resultsByTimeframe || coinsData;
+    const timeframes = ["6hrs", "24hrs", "7days", "30days"];
+    const allCoinsMap = new Map();
+
+    timeframes.forEach(timeframe => {
+      if (!resultsByTimeframe || !resultsByTimeframe[timeframe]) return;
+
+      const allCoins = resultsByTimeframe[timeframe].all_coins || [];
+      const memCoins = resultsByTimeframe[timeframe].mem_coins || [];
+      const combined = [...allCoins, ...memCoins];
+
+      // Sort by total_mentions and take top 10
+      combined.sort((a, b) => (b.total_mentions || 0) - (a.total_mentions || 0));
+      const top10 = combined.slice(0, 10);
+
+      // Add to map with timeframe data
+      top10.forEach(coin => {
+        const symbol = coin.symbol;
+        if (!allCoinsMap.has(symbol)) {
+          allCoinsMap.set(symbol, {
+            ...coin,
+            timeframeData: {}
+          });
+        }
+        // Store data for this timeframe
+        // API returns yt_total_mentions and tg_total_mentions, not yt_mentions and tg_mentions
+        allCoinsMap.get(symbol).timeframeData[timeframe] = {
+          total_mentions: coin.total_mentions || 0,
+          yt_mentions: coin.yt_total_mentions || coin.yt_mentions || 0,
+          tg_mentions: coin.tg_total_mentions || coin.tg_mentions || 0,
+          bullish_percent: coin.bullish_percent || 0,
+          bearish_percent: coin.bearish_percent || 0,
+          yt_tg_bullish_short_term_percent: coin.yt_tg_bullish_short_term_percent || 0,
+          yt_tg_bearish_short_term_percent: coin.yt_tg_bearish_short_term_percent || 0,
+          yt_tg_bullish_long_term_percent: coin.yt_tg_bullish_long_term_percent || 0,
+          yt_tg_bearish_long_term_percent: coin.yt_tg_bearish_long_term_percent || 0,
+          TA_data: coin.TA_data
+        };
+      });
+    });
+
+    return Array.from(allCoinsMap.values());
+  }, [coinsData]);
+
+  // Update coinSymbols when uniqueCoins changes
   useEffect(() => {
-    if (!influencerModal.isOpen) {
-      setIsMouseOverModal(false);
-    }
-  }, [influencerModal.isOpen]);
+    const symbols = uniqueCoins.map(coin => coin.symbol).filter(Boolean);
+    setCoinSymbols(symbols);
+  }, [uniqueCoins]);
 
-  const timeframeOptions = [
-    { value: "6hrs", label: "6 Hours" },
-    { value: "24hrs", label: "24 Hours" },
-    { value: "7days", label: "7 Days" },
-    { value: "30days", label: "30 Days" }
-  ];
-
-  // Helper function to get live price (EXACT same pattern as influencer-search)
+  // Helper function to get live price
   const getLivePrice = useCallback((symbol) => {
     if (!symbol) return "N/A";
     const upperSymbol = symbol.toUpperCase();
@@ -151,8 +176,7 @@ export default function CoinsNewPage() {
   const getLivePriceChange = useCallback((symbol) => {
     if (!symbol) return null;
     const upperSymbol = symbol.toUpperCase();
-    const priceChange = livePriceChangesMap[upperSymbol];
-    return priceChange || null;
+    return livePriceChangesMap[upperSymbol] || null;
   }, [livePriceChangesMap]);
 
   // Check if coin is new in last 6 hours
@@ -160,7 +184,6 @@ export default function CoinsNewPage() {
     if (!coinsData || !coinsData.notifications || !coinsData.notifications.new_coins) {
       return false;
     }
-
     const newCoins = coinsData.notifications.new_coins;
     return newCoins.some(newCoin =>
       newCoin.source_id === coin.source_id ||
@@ -168,246 +191,138 @@ export default function CoinsNewPage() {
     );
   }, [coinsData]);
 
-  // Check if price change exceeds threshold based on 24hr Binance data
-  const hasPriceAlert = useCallback((coin) => {
-    const priceChange = getLivePriceChange(coin?.symbol);
+  // Mini Gauge Component for Bullish/Bearish - Using same style as SimpleTAGauge
+  const MiniGauge = ({ bullishPercent, bearishPercent }) => {
+    const total = bullishPercent + bearishPercent;
 
-    if (priceChange === null) return false;
-
-    const marketCapRank = coin?.market_cap_rank;
-    const isMeme = coin?.mem_coin === true;
-
-    // For meme coins, use different thresholds
-    if (isMeme) {
-      // Show bell when:
-      // 1. Meme coin with rank <= 15 and price change is ±20%
-      // 2. OR meme coin with rank > 15 (or no rank) and price change is ±50%
-      if (marketCapRank && marketCapRank <= TOP_COINS_RANK_LIMIT) {
-        return Math.abs(priceChange) >= MEME_THRESHOLD_TOP15_PERCENT;
-      } else {
-        return Math.abs(priceChange) >= MEME_THRESHOLD_50_PERCENT;
-      }
+    if (total === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center">
+          <div style={{ width: 60, height: 60 }} className="flex items-center justify-center">
+            <span className="text-xs text-gray-400">N/A</span>
+          </div>
+        </div>
+      );
     }
 
-    // For regular coins (not meme coins), use original thresholds
-    // Show bell when:
-    // 1. Price change is ±30% (THRESHOLD_50_PERCENT)
-    // 2. OR if coin's market_cap_rank <= 15 and price change is ±15%
-    if (Math.abs(priceChange) >= THRESHOLD_50_PERCENT) {
-      return true;
+    // Calculate score (0 to 100) similar to SimpleTAGauge
+    // 100 = All Bullish, 50 = Neutral, 0 = All Bearish
+    const score = bullishPercent;
+
+    // Determine sentiment text and color
+    let sentimentText = "Neutral";
+    let sentimentColor = "text-gray-500";
+
+    if (score >= 60) {
+      sentimentText = "Bullish";
+      sentimentColor = "text-green-600 font-semibold";
+    } else if (score <= 40) {
+      sentimentText = "Bearish";
+      sentimentColor = "text-red-600 font-semibold";
     }
 
-    if (marketCapRank && marketCapRank <= TOP_COINS_RANK_LIMIT && Math.abs(priceChange) >= THRESHOLD_TOP15_PERCENT) {
-      return true;
-    }
-
-    return false;
-  }, [getLivePriceChange, THRESHOLD_50_PERCENT, THRESHOLD_TOP15_PERCENT, TOP_COINS_RANK_LIMIT, MEME_THRESHOLD_TOP15_PERCENT, MEME_THRESHOLD_50_PERCENT]);
-
-  // Get alert reason for tooltip
-  const getAlertReason = useCallback((coin) => {
-    const priceChange = getLivePriceChange(coin?.symbol);
-    const isMeme = coin?.mem_coin === true;
-
-    if (priceChange !== null) {
-      const absChange = Math.abs(priceChange);
-
-      // For meme coins, use meme thresholds
-      if (isMeme) {
-        if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= MEME_THRESHOLD_TOP15_PERCENT) {
-          return `24H % Change: ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}%`;
-        }
-        if (absChange >= MEME_THRESHOLD_50_PERCENT) {
-          return `24H % Change: ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}%`;
-        }
-      } else {
-        // For regular coins, use original thresholds
-        if (absChange >= THRESHOLD_50_PERCENT) {
-          return `24H % Change: ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}%`;
-        }
-        if (coin?.market_cap_rank && coin.market_cap_rank <= TOP_COINS_RANK_LIMIT && absChange >= THRESHOLD_TOP15_PERCENT) {
-          return `24H % Change: ${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}%`;
-        }
-      }
-    }
-    return '24H Price Alert';
-  }, [getLivePriceChange, THRESHOLD_50_PERCENT, THRESHOLD_TOP15_PERCENT, TOP_COINS_RANK_LIMIT, MEME_THRESHOLD_TOP15_PERCENT, MEME_THRESHOLD_50_PERCENT]);
-
-  // Helper function to get live bid/ask data from WebSocket (EXACT same pattern as influencer-search)
-  const getLiveBidAsk = useCallback((symbol) => {
-    if (!symbol) return null;
-    const upperSymbol = symbol.toUpperCase();
-    const symbolWithUSDT = `${upperSymbol}USDT`;
-    return bidAskData[symbolWithUSDT] || null;
-  }, [bidAskData]);
-
-  // Helper function to get live volume data from Binance WebSocket (EXACT same pattern as influencer-search)
-  const getLiveVolume = useCallback((symbol) => {
-    if (!symbol) return null;
-    const upperSymbol = symbol.toUpperCase();
-    const symbolWithUSDT = `${upperSymbol}USDT`;
-    return volumeData[symbolWithUSDT] || null;
-  }, [volumeData]);
-
-  // Helper function to get coin data from a specific timeframe
-  const getCoinFromTimeframe = useCallback((symbol, timeframe) => {
-    if (!coinsData) return null;
-
-    // Handle both old and new response formats
-    const resultsByTimeframe = coinsData.resultsByTimeframe || coinsData;
-    if (!resultsByTimeframe || !resultsByTimeframe[timeframe]) return null;
-
-    const allCoins = resultsByTimeframe[timeframe].all_coins || [];
-    const memCoins = resultsByTimeframe[timeframe].mem_coins || [];
-    const combined = [...allCoins, ...memCoins];
-
-    return combined.find(coin => coin.symbol === symbol);
-  }, [coinsData]);
-
-  // Helper function to truncate text to specified word limit
-  const truncateText = (text, wordLimit = 50) => {
-    if (!text) return '';
-    // Ensure text is a string before calling split
-    const textStr = typeof text === 'string' ? text : String(text);
-    const words = textStr.split(' ');
-    if (words.length <= wordLimit) return textStr;
-    return words.slice(0, wordLimit).join(' ');
+    return (
+      <div className="flex flex-col items-center">
+        <GaugeComponent
+          type="radial"
+          style={{ width: 60, height: 60 }}
+          value={score}
+          labels={{
+            valueLabel: { hide: true },
+            tickLabels: {
+              ticks: [
+                { value: 20 },
+                { value: 50 },
+                { value: 80 },
+                { value: 100 }
+              ]
+            }
+          }}
+          arc={{
+            colorArray: ['#CE1F1F', '#00FF15'], // Red to Green like SimpleTAGauge
+            nbSubArcs: 90,
+            padding: 0.01,
+            width: 0.4
+          }}
+          pointer={{
+            animationDelay: 0,
+            strokeWidth: 7
+          }}
+        />
+        {/* Sentiment text below gauge */}
+        <div className={`text-[10px] font-semibold text-center mt-1 ${sentimentColor}`}>
+          {sentimentText}
+        </div>
+      </div>
+    );
   };
 
-  // Toggle expand/collapse for summary
-  const toggleSummaryExpand = (coinSymbol, timeframe) => {
-    const key = `${coinSymbol}-${timeframe}`;
-    setExpandedSummaries(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
-  };
+  // Vertical Bar Component for Posts with Balanced Scaling
+  const PostsBar = ({ ytPosts, tgPosts, maxPosts, timeframe }) => {
+    const total = ytPosts + tgPosts;
+    const maxBarHeight = 60; // Maximum height in pixels
+    const minBarHeight = 20; // Minimum bar height for non-zero values
+    const minSegmentHeight = 3; // Minimum height for individual YT/TG segments
 
-  // Check if summary is expanded
-  const isSummaryExpanded = (coinSymbol, timeframe) => {
-    const key = `${coinSymbol}-${timeframe}`;
-    return expandedSummaries[key] || false;
-  };
+    let barHeight = 0;
 
-  // Parse AI summary to extract sections
-  const parseAISummary = (summary) => {
-    if (!summary) return null;
+    if (total === 0) {
+      barHeight = 0;
+    } else if (maxPosts > 0) {
+      // Balanced scaling: compress the range so all values are visible
+      // Uses a power scale (0.4) to compress differences while maintaining order
+      const ratio = total / maxPosts;
 
-    // Check if summary is already an object (new format)
-    if (typeof summary === 'object' && !Array.isArray(summary)) {
-      const sections = {
-        coinInfo: '',
-        tradingInfo: ''
-      };
+      // Apply power scaling to compress the range
+      // This makes small values more visible while keeping relative order
+      const scaledRatio = Math.pow(ratio, 0.4);
 
-      // Build Coin Info from summary, why_it_matters, market_trends, key_events, important_alerts
-      const coinInfoParts = [];
-      if (summary.summary) coinInfoParts.push(`**Summary:**\n${summary.summary}`);
-      if (summary.why_it_matters) coinInfoParts.push(`**Why It Matters:**\n${summary.why_it_matters}`);
-      if (summary.market_trends) coinInfoParts.push(`**Market Trends:**\n${summary.market_trends}`);
-      if (summary.key_events) coinInfoParts.push(`**Key Events:**\n${summary.key_events}`);
-      if (summary.important_alerts) coinInfoParts.push(`**Important Alerts:**\n${summary.important_alerts}`);
-
-      sections.coinInfo = coinInfoParts.join('\n\n');
-
-      // Build Trading Info from outlook, buying_range, bullish_factors, selling_range, bearish_concerns, recent_price_movement
-      const tradingInfoParts = [];
-      if (summary.outlook) tradingInfoParts.push(`**Outlook:**\n${summary.outlook}`);
-      if (summary.buying_range) tradingInfoParts.push(`**Buying Range:**\n${summary.buying_range}`);
-      if (summary.bullish_factors) tradingInfoParts.push(`**Bullish Factors:**\n${summary.bullish_factors}`);
-      if (summary.selling_range) tradingInfoParts.push(`**Selling Range:**\n${summary.selling_range}`);
-      if (summary.bearish_concerns) tradingInfoParts.push(`**Bearish Concerns:**\n${summary.bearish_concerns}`);
-      if (summary.recent_price_movement) tradingInfoParts.push(`**Recent Price Movement:**\n${summary.recent_price_movement}`);
-
-      sections.tradingInfo = tradingInfoParts.join('\n\n');
-
-      return sections;
+      // Map to bar height range (minBarHeight to maxBarHeight)
+      barHeight = minBarHeight + (scaledRatio * (maxBarHeight - minBarHeight));
     }
 
-    // Handle old string format for backward compatibility
-    const sections = {
-      coinInfo: '',
-      tradingInfo: ''
-    };
+    // Calculate segment heights with minimum visible height
+    const ytPercent = total > 0 ? (ytPosts / total) * 100 : 50;
+    let tgHeight = (barHeight * (100 - ytPercent)) / 100;
+    let ytHeight = (barHeight * ytPercent) / 100;
 
-    // Trading Info sections in the EXACT order they should appear
-    const tradingInfoSectionsOrder = [
-      'Outlook',
-      'Buying Range',
-      'Bullish Factors',
-      'Selling Range',
-      'Bearish Concerns',
-      'Recent Price Movement'
-    ];
+    // Ensure each non-zero segment has minimum visible height
+    if (tgPosts > 0 && tgHeight < minSegmentHeight) {
+      tgHeight = minSegmentHeight;
+    }
+    if (ytPosts > 0 && ytHeight < minSegmentHeight) {
+      ytHeight = minSegmentHeight;
+    }
 
-    // Split summary by ** headers
-    const allSections = summary.split(/(?=\*\*[A-Za-z\s]+:?\*\*)/);
+    // Adjust total bar height if segments were adjusted
+    if (tgHeight + ytHeight > barHeight) {
+      barHeight = tgHeight + ytHeight;
+    }
 
-    let coinInfoParts = [];
-    let tradingInfoMap = {}; // Store trading sections in a map first
-
-    allSections.forEach(section => {
-      const trimmedSection = section.trim();
-      if (!trimmedSection) return;
-
-      // Check if this section matches any Trading Info section
-      let matchedTradingSection = null;
-      for (const tradingSection of tradingInfoSectionsOrder) {
-        const regex = new RegExp(`^\\*\\*${tradingSection}:?\\*\\*`, 'i');
-        if (regex.test(trimmedSection)) {
-          matchedTradingSection = tradingSection;
-          break;
-        }
-      }
-
-      if (matchedTradingSection) {
-        // Store in map to maintain order later
-        tradingInfoMap[matchedTradingSection] = trimmedSection;
-      } else {
-        // All other sections go to Coin Info
-        coinInfoParts.push(trimmedSection);
-      }
-    });
-
-    // Build Trading Info in the specified order
-    let tradingInfoParts = [];
-    tradingInfoSectionsOrder.forEach(sectionName => {
-      if (tradingInfoMap[sectionName]) {
-        tradingInfoParts.push(tradingInfoMap[sectionName]);
-      }
-    });
-
-    sections.coinInfo = coinInfoParts.join('\n\n');
-    sections.tradingInfo = tradingInfoParts.join('\n\n');
-
-    return sections;
+    return (
+      <div className="flex flex-col items-center gap-1">
+        <div className="relative w-8 flex flex-col-reverse" style={{ minHeight: '60px' }}>
+          {/* Stack bars from bottom - Telegram first (bottom), then YouTube on top */}
+          {tgHeight > 0 && (
+            <div
+              className="w-full bg-gradient-to-t from-blue-500 to-blue-400 transition-all duration-300 cursor-pointer rounded-b-sm"
+              style={{ height: `${tgHeight}px` }}
+              title={`Telegram: ${tgPosts} posts`}
+            />
+          )}
+          {ytHeight > 0 && (
+            <div
+              className="w-full bg-gradient-to-t from-red-500 to-red-400 transition-all duration-300 cursor-pointer"
+              style={{ height: `${ytHeight}px` }}
+              title={`YouTube: ${ytPosts} posts`}
+            />
+          )}
+        </div>
+        <span className="text-[9px] font-medium text-gray-600">{timeframe}</span>
+        <span className="text-[8px] text-gray-500">{total}</span>
+      </div>
+    );
   };
-
-  // Get top 10 coins from selected timeframe with memoization
-  // Only depends on coinsData and selectedSummaryTimeframe (not prices) to avoid unnecessary recalculations
-  // The live prices are fetched via getLivePrice callbacks during render
-  const top10Coins = useMemo(() => {
-    if (!coinsData) return [];
-
-    // Handle both old and new response formats
-    const resultsByTimeframe = coinsData.resultsByTimeframe || coinsData;
-    if (!resultsByTimeframe || !resultsByTimeframe[selectedSummaryTimeframe]) return [];
-
-    const allCoins = resultsByTimeframe[selectedSummaryTimeframe].all_coins || [];
-    const memCoins = resultsByTimeframe[selectedSummaryTimeframe].mem_coins || [];
-    const combined = [...allCoins, ...memCoins];
-
-    // Sort by total_mentions in descending order
-    combined.sort((a, b) => (b.total_mentions || 0) - (a.total_mentions || 0));
-
-    return combined.slice(0, 10);
-  }, [coinsData, selectedSummaryTimeframe]);
-
-  // Update coinSymbols when top10Coins changes (only subscribe to visible coins)
-  useEffect(() => {
-    const symbols = top10Coins.map(coin => coin.symbol).filter(Boolean);
-    setCoinSymbols(symbols);
-  }, [top10Coins]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-50 via-indigo-50 to-fuchsia-50 text-gray-900 font-sans overflow-x-hidden relative">
@@ -420,305 +335,96 @@ export default function CoinsNewPage() {
 
       <main className="mx-auto px-4 pb-8 max-w-full overflow-x-hidden relative z-10">
         <div className="min-w-0 overflow-x-hidden">
-          {/* Leaderboard Section */}
+          {/* Main Card */}
           <div className="bg-gradient-to-br from-white/80 via-indigo-50/60 to-fuchsia-50/60 backdrop-blur-md rounded-3xl shadow-2xl shadow-indigo-500/10 border-2 border-white/40">
-            {/* View Mode Toggle Buttons */}
-            <div className="px-4 py-3 border-b border-indigo-200/30 bg-gradient-to-r from-cyan-50/50 to-fuchsia-50/50 backdrop-blur-sm">
-              {/* View Mode Buttons in Center */}
-              {/* <div className="flex justify-center items-center gap-3">
-                <button
-                  onClick={() => router.push("/influencer-search")}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-200 text-gray-700 hover:bg-gray-300"
-                >
-                  Influencers
-                </button>
-                <button
-                  className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-md"
-                >
-                  Coins
-                </button>
-                <button
-                  onClick={() => router.push("/posts")}
-                  className="px-4 py-2 text-sm font-semibold rounded-lg transition-all bg-gray-200 text-gray-700 hover:bg-gray-300"
-                >
-                  Publish Posts
-                </button>
-              </div> */}
-              {/* Header with Title on Left and Timezone Switch on Right */}
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mt-2">
+            {/* Header Section */}
+            <div className="px-6 py-4 border-b border-indigo-200/30 bg-gradient-to-r from-cyan-50/50 to-fuchsia-50/50 backdrop-blur-sm">
+              <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 {/* Left: Header Title */}
                 <div>
                   <h2 className="text-4xl md:text-5xl font-bold flex items-center gap-3 drop-shadow-sm">
                     <span className="bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
-                      Trending Coin&apos;s
+                      Trending Coins
                     </span>
-                    {top10Coins.some(coin => hasPriceAlert(coin)) && (
-                      <div className="w-7 h-7 rounded-full flex items-center justify-center shadow-lg bg-gradient-to-r from-green-500 to-green-600 animate-pulse">
-                        <FaBell className="text-white text-[16px]" />
-                      </div>
-                    )}
                   </h2>
-                  <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex-shrink-0 mt-5 shadow-lg shadow-indigo-500/50"></div>
+                  <p className="text-sm text-gray-600 mt-2">
+                    Unique coins from top 10 across all timeframes ({uniqueCoins.length} coins)
+                  </p>
+                  <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex-shrink-0 mt-3 shadow-lg shadow-indigo-500/50"></div>
                 </div>
 
                 {/* Right: Timezone Switch */}
-                <div className="flex flex-col items-end gap-2 mt-2">
+                <div className="flex flex-col items-end gap-2">
                   <div className="flex items-center gap-2">
                     {!useLocalTime && (
-                      <span className="text-xs font-medium text-black-700">
-                        UTC
-                      </span>
+                      <span className="text-xs font-medium text-gray-700">UTC</span>
                     )}
                     <button
                       onClick={() => toggleTimezone()}
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-lg ${useLocalTime ? 'bg-gradient-to-r from-blue-500 to-purple-500 shadow-indigo-500/50' : 'bg-gray-300'
-                        }`}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-lg ${useLocalTime ? 'bg-gradient-to-r from-blue-500 to-purple-500 shadow-indigo-500/50' : 'bg-gray-300'}`}
                       role="switch"
                       aria-checked={useLocalTime}
                     >
-                      <span
-                        className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${useLocalTime ? 'translate-x-5 shadow-indigo-300' : 'translate-x-0.5'
-                          }`}
-                      />
+                      <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${useLocalTime ? 'translate-x-5 shadow-indigo-300' : 'translate-x-0.5'}`} />
                     </button>
                     {useLocalTime && (
-                      <span className="text-xs font-medium text-black-700">
-                        {userCity || 'Local'}
-                      </span>
+                      <span className="text-xs font-medium text-gray-700">{userCity || 'Local'}</span>
                     )}
                   </div>
-                  <p className="text-xs font-medium text-black-900">
+                  <p className="text-xs font-medium text-gray-900">
                     Update: {lastUpdated ? formatDate(lastUpdated) : "N/A"}
                   </p>
-                  <p className="text-xs font-medium text-black-900">
-                    Next Update: {lastUpdated ? formatDate(new Date(lastUpdated.getTime() + 6 * 60 * 60 * 1000)) : "N/A"}
-                  </p>
                 </div>
               </div>
 
-              {/* Last Updated and Timeframe Buttons */}
-              <div className="flex items-center gap-6 mt-2">
-                {/* Last Updated */}
-                {/* Timeframe Buttons */}
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold text-black-600">
-                    Timeframe
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setSelectedSummaryTimeframe("6hrs")}
-                      className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all duration-200 ${selectedSummaryTimeframe === "6hrs"
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30'
-                        : 'bg-white/80 text-gray-700 hover:bg-white border border-indigo-200/50'
-                        }`}
-                    >
-                      6 Hours
-                    </button>
-                    <button
-                      onClick={() => setSelectedSummaryTimeframe("24hrs")}
-                      className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all duration-200 ${selectedSummaryTimeframe === "24hrs"
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30'
-                        : 'bg-white/80 text-gray-700 hover:bg-white border border-indigo-200/50'
-                        }`}
-                    >
-                      24 Hours
-                    </button>
-                    <button
-                      onClick={() => setSelectedSummaryTimeframe("7days")}
-                      className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all duration-200 ${selectedSummaryTimeframe === "7days"
-                        ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg shadow-indigo-500/30'
-                        : 'bg-white/80 text-gray-700 hover:bg-white border border-indigo-200/50'
-                        }`}
-                    >
-                      7 Days
-                    </button>
-                  </div>
+              {/* Legend */}
+              <div className="flex items-center gap-4 mt-4 text-xs">
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                  <FaYoutube className="text-red-600" />
+                  <span>YouTube</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
+                  <FaTelegramPlane className="text-blue-600" />
+                  <span>Telegram</span>
                 </div>
               </div>
-
             </div>
 
-            {/* Timeframe Selector */}
-            {/* <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
-              <div className="flex items-center gap-4">
-                <label className="text-sm font-semibold text-gray-700">Timeframe:</label>
-                <select
-                  value={selectedTimeframe}
-                  onChange={(e) => setSelectedTimeframe(e.target.value)}
-                  className="border border-gray-300 bg-white rounded-lg px-4 py-2 text-sm font-medium text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
-                >
-                  {timeframeOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div> */}
-
             {/* Table */}
-            <div className="w-full overflow-hidden rounded-b-3xl">
+            <div className="w-full overflow-x-auto rounded-b-3xl">
               <table className="w-full table-fixed border-separate border-spacing-0">
                 <thead>
                   <tr className="bg-gradient-to-r from-blue-500 to-purple-500">
-                    {/* Row 1, Col 1: Coins (Rowspan 2) */}
-                    <th rowSpan="2" className="px-3 py-3 text-center text-[11px] font-bold text-white tracking-wide align-middle w-[8%] border-r border-white/20">
+                    {/* Coins */}
+                    <th className="px-3 py-3 text-center text-xs font-bold text-white tracking-wide align-middle w-[10%] border-r border-white/20">
                       Coins
                     </th>
-
-                    {/* Row 1, Col 2: Group Header for Influencers (Colspan 6) */}
-                    <th colSpan="6" className="px-3 py-3 text-center text-[13px] font-extrabold text-white tracking-wide align-middle border-b border-white/30 border-r border-white/20">
-                      Social Media Sentiment
+                    {/* No. of Posts */}
+                    <th className="px-3 py-3 text-center text-xs font-bold text-white tracking-wide align-middle w-[35%] border-r border-white/20">
+                      <div className="flex flex-col items-center gap-1">
+                        <span>No. of Posts</span>
+                        <span className="text-[10px] font-normal opacity-80">6hrs | 24hrs | 7days | 30days</span>
+                      </div>
                     </th>
-
-                    {/* Row 1, Col 3: Fundamental Score (Rowspan 2) */}
-                    <th rowSpan="2" className="px-2 py-3 text-center text-[10px] font-bold text-white tracking-wide align-middle w-[8%] border-r border-white/20">
+                    {/* Fundamental - HOLD */}
+                    <th className="px-3 py-3 text-center text-xs font-bold text-white tracking-wide align-middle w-[15%] border-r border-white/20">
                       <div className="flex flex-col items-center gap-0.5">
-                        <span className="leading-tight">Fundamental</span>
-                        <div className="flex items-center gap-0.5">
-                          <span className="leading-tight">Score</span>
-                          <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-cyan-200 text-[11px]">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-3 rounded-xl shadow-2xl whitespace-nowrap z-[9999] border border-cyan-400/30">
-                              Score (1-10) based <br /> on deep fundamental analysis
-                            </span>
-                          </span>
-                        </div>
+                        <span>Fundamental</span>
                       </div>
                     </th>
-
-                    {/* Row 1, Col 4: Technical Analysis (Rowspan 2) */}
-                    <th rowSpan="2" className="px-2 py-3 text-center text-[10px] font-bold text-white tracking-wide align-middle w-[10%] border-r border-white/20">
-                      <div className="flex flex-col items-center justify-center gap-0.5">
-                        <span className="leading-tight">Technical</span>
-                        <div className="flex items-center gap-0.5">
-                          <span className="leading-tight">Analysis</span>
-                          <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-cyan-200 text-[11px]">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl z-[99999] text-left w-64 whitespace-normal border border-indigo-400/20">
-                              Based on Moving Averages and oscillators indicators
-                            </span>
-                          </span>
-                        </div>
+                    {/* Technical Analysis */}
+                    <th className="px-3 py-3 text-center text-xs font-bold text-white tracking-wide align-middle w-[25%] border-r border-white/20">
+                      <div className="flex flex-col items-center gap-1">
+                        <span>Technical Analysis</span>
+                        <span className="text-[10px] font-normal opacity-80">Short (1hr) | Medium (1day) | Long (1week)</span>
                       </div>
                     </th>
-
-                    {/* Row 1, Col 5: MCM Signal (Rowspan 2) */}
-                    <th rowSpan="2" className="px-2 py-3 text-center text-[10px] font-bold text-white tracking-wide align-middle w-[7%] border-r border-white/20">
+                    {/* MCM Analysis */}
+                    <th className="px-3 py-3 text-center text-xs font-bold text-white tracking-wide align-middle w-[15%]">
                       <div className="flex flex-col items-center gap-0.5">
-                        <span className="leading-tight">MCM</span>
-                        <div className="flex items-center gap-0.5">
-                          <span className="leading-tight">Signal</span>
-                          <span className="relative group cursor-pointer">
-                            <span className="text-cyan-200 text-[11px]">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
-                              MCM proprietary signal indicator
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </th>
-
-                    {/* Row 1, Col 6: Live Price (Rowspan 2) */}
-                    <th rowSpan="2" className="px-2 py-3 text-center text-[10px] font-bold text-white tracking-wide align-middle w-[9%] border-r border-white/20">
-                      <div className="flex items-center justify-center gap-0.5">
-                        <span className="leading-tight">Live Price</span>
-                        <span className="relative group cursor-pointer">
-                          <span className="text-cyan-200 text-[11px]">ⓘ</span>
-                          <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
-                            Real-time price from Binance
-                          </span>
-                        </span>
-                      </div>
-                    </th>
-
-                    {/* Row 1, Col 7: MCM Knowledge Center (Rowspan 2) */}
-                    <th rowSpan="2" className="px-2 py-3 text-center text-[10px] font-bold text-white tracking-wide align-middle w-[7%]">
-                      <div className="flex flex-col items-center gap-0.5">
-                        <span className="leading-tight">MCM</span>
-                        <span className="leading-tight">Knowledge</span>
-                        <div className="flex items-center gap-0.5">
-                          <span className="leading-tight">Center</span>
-                          <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-cyan-200 text-[11px]">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
-                              Click to view market overview
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </th>
-                  </tr>
-
-                  {/* Row 2: Sub-columns for Influencers Group */}
-                  <tr className="bg-gradient-to-r from-blue-500 to-purple-500 border-b-2 border-white/20">
-                    <th className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300 text-[10px] font-semibold text-white tracking-tight align-middle w-[6%] border-r border-white/20">
-                      <div className="flex flex-col items-center leading-tight">
-                        <span>All</span>
-                        <span>Influencers</span>
-                      </div>
-                    </th>
-                    <th className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300 text-[10px] font-semibold text-white tracking-tight align-middle w-[13%] border-r border-white/20">
-                      <div className="leading-tight">
-                        <div>All Ratings</div>
-                        <div className="flex items-center justify-center gap-0.5">
-                          <span>Influencers</span>
-                          <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-cyan-200 text-[11px]">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
-                              ST : Short Term<br />
-                              LT : Long Term<br />
-                              NA : Not Available
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </th>
-                    <th className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300 text-[10px] font-semibold text-white tracking-tight align-middle w-[5%] border-r border-white/20">
-                      <div className="flex items-center justify-center gap-0.5 leading-tight">
-                        <span>Avg Rating</span>
-                        <span className="relative group cursor-pointer z-[9999]">
-                          <span className="text-cyan-200 text-[11px]">ⓘ</span>
-                          <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
-                            Short Term : 30 Days Overall Rating<br />
-                            Long Term : 180 Days Overall Rating
-                          </span>
-                        </span>
-                      </div>
-                    </th>
-                    <th className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300 text-[10px] font-semibold text-white tracking-tight align-middle w-[6%] border-r border-white/20">
-                      <div className="flex flex-col items-center leading-tight">
-                        <span>Only 3 Star &</span>
-                        <span>Above Influencers</span>
-                      </div>
-                    </th>
-                    <th className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300 text-[10px] font-semibold text-white tracking-tight align-middle w-[10%] border-r border-white/20">
-                      <div className="flex flex-col items-center leading-tight">
-                        <span>Top Rated</span>
-                        <div className="flex items-center gap-0.5">
-                          <span>Influencers</span>
-                          <span className="relative group cursor-pointer z-[9999]">
-                            <span className="text-cyan-200 text-[11px]">ⓘ</span>
-                            <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
-                              Only 3 Star & Above Influencers<br />
-                              Short Term : 30 Days Overall Rating<br />
-                              Long Term : 180 Days Overall Rating
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-                    </th>
-                    <th className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300 text-[10px] font-semibold text-white tracking-tight align-middle w-[5%] border-r border-white/20">
-                      <div className="flex items-center justify-center gap-0.5 leading-tight">
-                        <span>Avg Rating</span>
-                        <span className="relative group cursor-pointer z-[9999]">
-                          <span className="text-cyan-200 text-[11px]">ⓘ</span>
-                          <span className="invisible group-hover:visible absolute top-full mt-2 right-0 bg-gradient-to-r from-gray-900 to-indigo-900 text-white text-xs p-2 rounded-lg shadow-2xl whitespace-nowrap z-[99999] border border-indigo-400/20">
-                            Only 3 Star & Above Influencers<br />
-                            Short Term : 30 Days Overall Rating<br />
-                            Long Term : 180 Days Overall Rating
-                          </span>
-                        </span>
+                        <span>MCM Analysis</span>
                       </div>
                     </th>
                   </tr>
@@ -726,7 +432,7 @@ export default function CoinsNewPage() {
                 <tbody className="bg-gradient-to-br from-white/80 via-indigo-50/40 to-fuchsia-50/40 backdrop-blur-sm divide-y divide-indigo-200/30">
                   {loading ? (
                     <tr>
-                      <td colSpan="9" className="px-6 py-12 text-center">
+                      <td colSpan="5" className="px-6 py-12 text-center">
                         <div className="flex justify-center items-center">
                           <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-indigo-600 border-t-4 border-t-cyan-500"></div>
                         </div>
@@ -734,764 +440,192 @@ export default function CoinsNewPage() {
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan="9" className="px-6 py-12 text-center text-red-600 font-semibold">
+                      <td colSpan="5" className="px-6 py-12 text-center text-red-600 font-semibold">
                         {error}
                       </td>
                     </tr>
-                  ) : top10Coins.length === 0 ? (
+                  ) : uniqueCoins.length === 0 ? (
                     <tr>
-                      <td colSpan="9" className="px-6 py-12 text-center text-gray-500 font-medium">
-                        No coins data available for this timeframe
+                      <td colSpan="5" className="px-6 py-12 text-center text-gray-500 font-medium">
+                        No coins data available
                       </td>
                     </tr>
                   ) : (
-                    top10Coins.map((coin, index) => {
-                      // Use callback functions for live data (similar to influencer-search)
-                      const currentPrice = getLivePrice(coin.symbol);
-                      const priceChangePercent = getLivePriceChange(coin.symbol);
+                    uniqueCoins.map((coin, index) => {
+                      const timeframes = ["6hrs", "24hrs", "7days", "30days"];
+                      const timeframeLabels = ["6hrs", "24hrs", "7days", "30days"];
 
-                      // Calculate absolute price change from percentage
-                      const priceChange = (priceChangePercent !== null && currentPrice !== 'N/A')
-                        ? (currentPrice * priceChangePercent / 100)
-                        : null;
-
-                      // Get coin data from selected timeframe for AI summaries and all data
-                      const coinDataForTimeframe = getCoinFromTimeframe(coin.symbol, selectedSummaryTimeframe);
-
-                      // Check for price alert
-                      const showPriceAlert = hasPriceAlert(coin);
-                      const alertReason = getAlertReason(coin);
+                      // Calculate max posts for scaling bars
+                      let maxPosts = 0;
+                      timeframes.forEach(tf => {
+                        const data = coin.timeframeData[tf];
+                        if (data) {
+                          maxPosts = Math.max(maxPosts, data.total_mentions || 0);
+                        }
+                      });
 
                       return (
-                        <tr key={`${coin.symbol}-${index}`} className="group hover:bg-gradient-to-r hover:from-indigo-50/60 hover:via-purple-50/50 hover:to-fuchsia-50/60 transition-all duration-300 hover:shadow-lg hover:shadow-indigo-200/50 hover:scale-[1.01] hover:z-10 border-b border-indigo-100/30 relative">
-                          {/* Coin - Image and Name only */}
-                          <td className="px-2 py-3 group-hover:bg-white/50 transition-all duration-300">
-                            <div className="flex flex-col items-center gap-1">
+                        <tr key={`${coin.symbol}-${index}`} className="group hover:bg-gradient-to-r hover:from-indigo-50/60 hover:via-purple-50/50 hover:to-fuchsia-50/60 transition-all duration-300">
+                          {/* Coins Column */}
+                          <td className="px-3 py-4 group-hover:bg-white/50 transition-all duration-300">
+                            <div className="flex flex-col items-center gap-2">
                               {coin.image_small && (
-                                <div className="relative group">
+                                <div className="relative">
                                   <img
                                     src={coin.image_small}
                                     alt={coin.symbol}
-                                    className="w-8 h-8 rounded-full cursor-pointer hover:opacity-80 transition-all duration-300 hover:scale-110 hover:shadow-lg hover:shadow-indigo-300/50 hover:rotate-6"
+                                    className="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 transition-all duration-300 hover:scale-110 hover:shadow-lg"
                                     onClick={() => router.push(`/coins-list/${coin.source_id}`)}
                                   />
-                                  {/* MCM Badge - top left outside of coin image */}
                                   {isNewCoin(coin) && (
-                                    <div className="absolute -top-2 -left-4 group/newcoin cursor-pointer z-[9999]">
-                                      <div className="relative inline-flex items-center justify-center h-5 w-5">
+                                    <div className="absolute -top-1 -left-2 group/newcoin cursor-pointer">
+                                      <div className="relative inline-flex items-center justify-center h-4 w-4">
                                         <FaCertificate className="text-blue-500 w-full h-full drop-shadow-sm" />
-                                        <span className="absolute text-[11px] font-bold text-white uppercase tracking-tighter">M</span>
+                                        <span className="absolute text-[8px] font-bold text-white">M</span>
                                       </div>
-                                      <div className="invisible group-hover/newcoin:visible absolute top-0 left-full ml-2 px-2 py-1 bg-gray-900 text-white text-[10px] rounded shadow-lg whitespace-nowrap z-[9999]">
-                                        New Mention in last 6 hours
-                                      </div>
-                                    </div>
-                                  )}
-                                  {/* Bell icon for coins exceeding price change threshold - top right outside of coin */}
-                                  {showPriceAlert && (
-                                    <div className="absolute -top-2 -right-6 group/bell cursor-pointer z-[9999]">
-                                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shadow-lg ${priceChangePercent > 0 ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}>
-                                        <FaBell className="text-white text-[12px]" />
-                                      </div>
-                                      {/* Tooltip on hover - positioned to the right of the bell */}
-                                      <div className="invisible group-hover/bell:visible absolute top-0 left-full ml-2 px-3 py-1.5 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                        {alertReason}
-                                      </div>
-                                    </div>
-                                  )}
-                                  {/* Show live price tooltip when hovering on coin image */}
-                                  {currentPrice !== 'N/A' && (
-                                    <div className="invisible group-hover:visible absolute top-full left-0 mt-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-xl whitespace-nowrap z-[99999]">
-                                      Live Price: ${typeof currentPrice === 'number' ? currentPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 }) : currentPrice}
                                     </div>
                                   )}
                                 </div>
                               )}
                               <div className="text-center">
-                                <div className="flex items-center justify-center gap-1">
-                                  <div className="text-xs font-bold text-balck-900"> {coin.symbol ? coin.symbol.charAt(0).toUpperCase() + coin.symbol.slice(1).toLowerCase() : ''}</div>
-                                  {coin.mem_coin === true && (
-                                    <span className="relative group cursor-pointer z-[9999]">
-                                      <span className="text-blue-600 text-xs">ⓘ</span>
-                                      <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                        Meme Coin
-                                      </span>
-                                    </span>
-                                  )}
+                                <div className="text-xs font-bold text-gray-900">
+                                  {coin.symbol?.toUpperCase()}
                                 </div>
-                                <div className="text-[10px] text-black-500">
-                                  {coin.coin_name.charAt(0).toUpperCase() + coin.coin_name.slice(1)}
+                                <div className="text-[10px] text-gray-500">
+                                  {coin.coin_name?.charAt(0).toUpperCase() + coin.coin_name?.slice(1)}
                                 </div>
                               </div>
                             </div>
                           </td>
 
-                          {/* Posts Column - Total posts + YouTube/Telegram channels */}
-                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
-                            <div className="flex flex-col gap-0.5 items-center">
-                              {/* Total Posts */}
-                              <div
-                                className="text-[10px] font-semibold text-black cursor-pointer hover:text-blue-600 transition-colors"
-                                onClick={() => {
-                                  router.push(`/landing-page?source_id=${coin.source_id}&name=${encodeURIComponent(coin.coin_name)}&symbol=${coin.symbol}`);
-                                }}
-                              >
-                                {coin.total_mentions} posts
-                              </div>
+                          {/* No. of Posts Column - Vertical Bars with Gauges */}
+                          <td className="px-3 py-4 group-hover:bg-white/50 transition-all duration-300">
+                            <div className="flex items-end justify-center gap-7">
+                              {timeframes.map((tf, tfIndex) => {
+                                const data = coin.timeframeData[tf] || {};
+                                const ytPosts = data.yt_mentions || 0;
+                                const tgPosts = data.tg_mentions || 0;
+                                // Use bullish_percent and bearish_percent from the API
+                                const bullish = data.bullish_percent || 0;
+                                const bearish = data.bearish_percent || 0;
 
-                              {/* YouTube Channels */}
-                              {coin.yt_unique_influencers_count > 0 && (
-                                <div
-                                  className="cursor-pointer"
-                                  onClick={(e) => {
-                                    if (coin.yt_unique_inf && coin.yt_unique_inf.length > 0) {
-                                      const rect = e.currentTarget.getBoundingClientRect();
-                                      setInfluencerModal({
-                                        isOpen: true,
-                                        type: 'YouTube',
-                                        influencers: coin.yt_unique_inf,
-                                        position: { x: rect.right + 10, y: rect.top }
-                                      });
-                                    }
-                                  }}
-                                >
-                                  <div className="text-[10px] font-semibold flex items-center justify-center gap-1 whitespace-nowrap">
-                                    <FaYoutube className="text-red-600 text-xs" />
-                                    <span className="text-black">{coin.yt_unique_influencers_count} {coin.yt_unique_influencers_count === 1 ? 'Channel' : 'Channels'}</span>
+                                return (
+                                  <div key={tf} className="flex flex-col items-center">
+                                    {/* Mini Gauge on top */}
+                                    <MiniGauge
+                                      bullishPercent={bullish}
+                                      bearishPercent={bearish}
+                                    />
+                                    {/* Spacer - increased space between gauge and bar */}
+                                    <div className="h-6"></div>
+                                    {/* Vertical Bar */}
+                                    <PostsBar
+                                      ytPosts={ytPosts}
+                                      tgPosts={tgPosts}
+                                      maxPosts={maxPosts || 1}
+                                      timeframe={timeframeLabels[tfIndex]}
+                                    />
                                   </div>
-                                </div>
-                              )}
-
-                              {/* Telegram Channels */}
-                              {coin.tg_unique_influencers_count > 0 && (
-                                <div
-                                  className="cursor-pointer"
-                                  onClick={(e) => {
-                                    if (coin.tg_unique_inf && coin.tg_unique_inf.length > 0) {
-                                      const rect = e.currentTarget.getBoundingClientRect();
-                                      setInfluencerModal({
-                                        isOpen: true,
-                                        type: 'Telegram',
-                                        influencers: coin.tg_unique_inf,
-                                        position: { x: rect.right + 10, y: rect.top }
-                                      });
-                                    }
-                                  }}
-                                >
-                                  <div className="text-[10px] font-semibold flex items-center justify-center gap-1 whitespace-nowrap">
-                                    <FaTelegramPlane className="text-blue-600 text-xs" />
-                                    <span className="text-black">{coin.tg_unique_influencers_count} {coin.tg_unique_influencers_count === 1 ? 'Channel' : 'Channels'}</span>
-                                  </div>
-                                </div>
-                              )}
+                                );
+                              })}
                             </div>
                           </td>
 
-                          {/* Sentiment - Segmented Bar Ladder Style */}
-                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
-                            {(() => {
-                              // Calculate sentiment data for Short Term and Long Term
-                              const shortTermBullish = coin.yt_tg_bullish_short_term_percent || 0;
-                              const shortTermBearish = coin.yt_tg_bearish_short_term_percent || 0;
-                              const shortTermPosts = (coin.yt_tg_bullish_short_term || 0) + (coin.yt_tg_bearish_short_term || 0);
-
-                              const longTermBullish = coin.yt_tg_bullish_long_term_percent || 0;
-                              const longTermBearish = coin.yt_tg_bearish_long_term_percent || 0;
-                              const longTermPosts = (coin.yt_tg_bullish_long_term || 0) + (coin.yt_tg_bearish_long_term || 0);
-
-                              // If no data, show N/A
-                              if (shortTermPosts === 0 && longTermPosts === 0) {
-                                return <span className="text-xs text-gray-400">N/A</span>;
-                              }
-
-                              // Calculate ball positions
-                              const shortTermBallPosition = shortTermBullish >= shortTermBearish ? shortTermBullish : (100 - shortTermBearish);
-                              const longTermBallPosition = longTermBullish >= longTermBearish ? longTermBullish : (100 - longTermBearish);
-
-                              return (
-                                <div className="space-y-4">
-                                  {/* Short Term */}
-                                  <div className="flex flex-col items-center">
-                                    <div className="mb-1 text-[10px] whitespace-nowrap">
-                                      <span className="text-black font-semibold">ST:</span> <span className="text-black">{shortTermPosts} posts</span>
-                                    </div>
-                                    {shortTermPosts === 0 ? (
-                                      <>
-                                        <div className="segmented-bar-container" style={{ width: '80px' }}>
-                                          <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
-                                            <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
-                                            <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
-                                            <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
-                                          </div>
-                                        </div>
-                                        <div className="text-[10px] text-center text-gray-500">N/A</div>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <div className="segmented-bar-container" style={{ width: '80px' }}>
-                                          <div className="segmented-bar-background">
-                                            <div className="segment segment-red" />
-                                            <div className="segment segment-yellow" />
-                                            <div className="segment segment-green" />
-                                          </div>
-                                          <div
-                                            className="percentage-ball"
-                                            style={{
-                                              left: `${Math.min(Math.max(shortTermBallPosition, 6), 94)}%`,
-                                              backgroundColor: shortTermBullish >= shortTermBearish ? '#00ff15' : '#ff2121',
-                                              borderColor: shortTermBullish >= shortTermBearish ? '#00cc11' : '#cc1a1a'
-                                            }}
-                                          />
-                                        </div>
-                                        <div className={`mt-1 text-[10px] text-center font-semibold ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
-                                          {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-
-                                  {/* Long Term */}
-                                  <div className="flex flex-col items-center">
-                                    <div className="mb-1 text-[10px] whitespace-nowrap">
-                                      <span className="text-black font-semibold">LT:</span> <span className="text-black">{longTermPosts} posts</span>
-                                    </div>
-                                    {longTermPosts === 0 ? (
-                                      <>
-                                        <div className="segmented-bar-container" style={{ width: '80px' }}>
-                                          <div style={{ display: 'flex', width: '100%', height: '100%', borderRadius: '4px', overflow: 'hidden' }}>
-                                            <div style={{ backgroundColor: '#9ca3af', flex: 1, height: '100%' }} />
-                                            <div style={{ backgroundColor: '#6b7280', flex: 1, height: '100%' }} />
-                                            <div style={{ backgroundColor: '#4b5563', flex: 1, height: '100%' }} />
-                                          </div>
-                                        </div>
-                                        <div className="text-[10px] text-center text-gray-500">N/A</div>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <div className="segmented-bar-container" style={{ width: '80px' }}>
-                                          <div className="segmented-bar-background">
-                                            <div className="segment segment-red" />
-                                            <div className="segment segment-yellow" />
-                                            <div className="segment segment-green" />
-                                          </div>
-                                          <div
-                                            className="percentage-ball"
-                                            style={{
-                                              left: `${Math.min(Math.max(longTermBallPosition, 6), 94)}%`,
-                                              backgroundColor: longTermBullish >= longTermBearish ? '#00ff15' : '#ff2121',
-                                              borderColor: longTermBullish >= longTermBearish ? '#00cc11' : '#cc1a1a'
-                                            }}
-                                          />
-                                        </div>
-                                        <div className={`mt-1 text-[10px] text-center font-semibold ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
-                                          {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
-                                        </div>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })()}
-                          </td>
-
-                          {/* Avg Rating Column (All Influencers) */}
-                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
-                            {(() => {
-                              const renderStars = (rating) => {
-                                const fullStars = Math.floor(rating);
-                                const hasHalfStar = rating % 1 >= 0.5;
-                                const emptyStars = Math.max(0, 5 - fullStars - (hasHalfStar ? 1 : 0));
-                                return (
-                                  <div className="flex gap-0.5">
-                                    {[...Array(fullStars)].map((_, i) => <FaStar key={`f${i}`} className="text-yellow-400 text-[8px]" />)}
-                                    {hasHalfStar && <FaStarHalfAlt className="text-yellow-400 text-[8px]" />}
-                                    {[...Array(emptyStars)].map((_, i) => <FaRegStar key={`e${i}`} className="text-gray-300 text-[8px]" />)}
-                                  </div>
-                                );
-                              };
-
-                              if (coin.avg_short_term_rating !== undefined || coin.avg_long_term_rating !== undefined) {
-                                return (
-                                  <div className="flex flex-col items-center justify-center gap-1">
-                                    {coin.avg_short_term_rating !== undefined && (
-                                      <div className="flex items-center gap-1 whitespace-nowrap">
-                                        <span className="text-[8px] font-semibold text-gray-600">ST:</span>
-                                        {renderStars(coin.avg_short_term_rating)}
-                                      </div>
-                                    )}
-                                    {coin.avg_long_term_rating !== undefined && (
-                                      <div className="flex items-center gap-1 whitespace-nowrap">
-                                        <span className="text-[8px] font-semibold text-gray-600">LT:</span>
-                                        {renderStars(coin.avg_long_term_rating)}
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              }
-                              return <span className="text-xs text-gray-400">N/A</span>;
-                            })()}
-                          </td>
-
-                          {/* 3★ & Above Influencers Column */}
-                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
-                            {(() => {
-                              const stats = coin['3star_inf_stats'];
-                              const ytInf = coin['3star_yt_inf'] || [];
-                              const tgInf = coin['3star_tg_inf'] || [];
-
-                              // If no 3-star influencers, show N/A
-                              if (!stats || stats.total_3star_influencers === 0) {
-                                return <span className="text-xs text-gray-400">N/A</span>;
-                              }
-
-                              return (
-                                <div className="flex flex-col gap-0.5 items-center">
-                                  {/* Total Posts */}
-                                  <div className="text-[10px] font-semibold text-black">
-                                    {stats.total_posts_yt_tg} {stats.total_posts_yt_tg === 1 ? 'post' : 'posts'}
-                                  </div>
-
-                                  {/* YouTube Channels */}
-                                  {ytInf.length > 0 && (
-                                    <div
-                                      className="cursor-pointer"
-                                      onClick={(e) => {
-                                        const rect = e.currentTarget.getBoundingClientRect();
-                                        setInfluencerModal({
-                                          isOpen: true,
-                                          type: 'YouTube',
-                                          influencers: ytInf,
-                                          position: { x: rect.right + 10, y: rect.top }
-                                        });
-                                      }}
-                                    >
-                                      <div className="text-[10px] font-semibold flex items-center justify-center gap-1 whitespace-nowrap">
-                                        <FaYoutube className="text-red-600 text-xs" />
-                                        <span className="text-black">{ytInf.length} {ytInf.length === 1 ? 'Channel' : 'Channels'}</span>
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* Telegram Channels */}
-                                  {tgInf.length > 0 && (
-                                    <div
-                                      className="cursor-pointer"
-                                      onClick={(e) => {
-                                        const rect = e.currentTarget.getBoundingClientRect();
-                                        setInfluencerModal({
-                                          isOpen: true,
-                                          type: 'Telegram',
-                                          influencers: tgInf,
-                                          position: { x: rect.right + 10, y: rect.top }
-                                        });
-                                      }}
-                                    >
-                                      <div className="text-[10px] font-semibold flex items-center justify-center gap-1 whitespace-nowrap">
-                                        <FaTelegramPlane className="text-blue-600 text-xs" />
-                                        <span className="text-black">{tgInf.length} {tgInf.length === 1 ? 'Channel' : 'Channels'}</span>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                          </td>
-
-                          {/* Top Social Media Influencers Column - Using 3star_inf_stats data */}
-                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
-                            {(() => {
-                              // Get 3star_inf_stats data from coin
-                              const stats = coin['3star_inf_stats'];
-
-                              // If no stats data, show N/A
-                              if (!stats || stats.total_3star_influencers === 0) {
-                                return <span className="text-xs text-gray-400">N/A</span>;
-                              }
-
-                              const shortTermBullish = stats.short_term_bullish_percent || 0;
-                              const shortTermBearish = stats.short_term_bearish_percent || 0;
-                              const shortTermPosts = stats.short_term_bullish + stats.short_term_bearish || 0;
-
-                              const longTermBullish = stats.long_term_bullish_percent || 0;
-                              const longTermBearish = stats.long_term_bearish_percent || 0;
-                              const longTermPosts = stats.long_term_bullish + stats.long_term_bearish || 0;
-
-                              // Calculate ball positions
-                              const shortTermBallPosition = shortTermBullish >= shortTermBearish ? shortTermBullish : (100 - shortTermBearish);
-                              const longTermBallPosition = longTermBullish >= longTermBearish ? longTermBullish : (100 - longTermBearish);
-
-                              return (
-                                <div className="space-y-4">
-                                  {/* Influencer Stats Header */}
-                                  {/* <div className="flex flex-col items-center gap-0.5 mb-1">
-                                    <div className="flex items-center justify-center gap-2 text-[9px]">
-                                      <span className="flex items-center gap-0.5">
-                                        <FaYoutube className="text-red-600 text-[10px]" />
-                                        {stats.total_3star_yt_influencers} {stats.total_3star_yt_influencers === 1 ? 'channel' : 'channels'}
-                                      </span>
-                                      <span className="flex items-center gap-0.5">
-                                        <FaTelegramPlane className="text-blue-600 text-[10px]" />
-                                        {stats.total_3star_tg_influencers} {stats.total_3star_tg_influencers === 1 ? 'channel' : 'channels'}
-                                      </span>
-                                    </div>
-                                    <div className="text-[9px] text-black-600">
-                                      {stats.total_posts_yt_tg} {stats.total_posts_yt_tg === 1 ? 'post' : 'posts'}
-                                    </div>
-                                  </div> */}
-
-                                  {/* Short Term */}
-                                  {shortTermPosts > 0 && (
-                                    <div className="flex flex-col items-center">
-                                      <div className="mb-1 text-[10px] whitespace-nowrap">
-                                        <span className="text-black font-semibold">ST:</span> <span className="text-black">{shortTermPosts} {shortTermPosts === 1 ? 'post' : 'posts'}</span>
-                                      </div>
-                                      <div className="segmented-bar-container" style={{ width: '80px' }}>
-                                        <div className="segmented-bar-background">
-                                          <div className="segment segment-red" />
-                                          <div className="segment segment-yellow" />
-                                          <div className="segment segment-green" />
-                                        </div>
-                                        <div
-                                          className="percentage-ball"
-                                          style={{
-                                            left: `${Math.min(Math.max(shortTermBallPosition, 6), 94)}%`,
-                                            backgroundColor: shortTermBullish >= shortTermBearish ? '#00ff15' : '#ff2121',
-                                            borderColor: shortTermBullish >= shortTermBearish ? '#00cc11' : '#cc1a1a'
-                                          }}
-                                        />
-                                      </div>
-                                      <div className={`mt-1 text-[10px] text-center font-semibold ${shortTermBullish >= shortTermBearish ? 'text-green-700' : 'text-red-700'}`}>
-                                        {(shortTermBullish >= shortTermBearish ? shortTermBullish : shortTermBearish).toFixed(0)}% {shortTermBullish >= shortTermBearish ? 'Bullish' : 'Bearish'}
-                                      </div>
-                                    </div>
-                                  )}
-
-                                  {/* Long Term */}
-                                  {longTermPosts > 0 && (
-                                    <div className="flex flex-col items-center">
-                                      <div className="mb-1 text-[10px] whitespace-nowrap">
-                                        <span className="text-black font-semibold">LT:</span> <span className="text-black">{longTermPosts} {longTermPosts === 1 ? 'post' : 'posts'}</span>
-                                      </div>
-                                      <div className="segmented-bar-container" style={{ width: '80px' }}>
-                                        <div className="segmented-bar-background">
-                                          <div className="segment segment-red" />
-                                          <div className="segment segment-yellow" />
-                                          <div className="segment segment-green" />
-                                        </div>
-                                        <div
-                                          className="percentage-ball"
-                                          style={{
-                                            left: `${Math.min(Math.max(longTermBallPosition, 6), 94)}%`,
-                                            backgroundColor: longTermBullish >= longTermBearish ? '#00ff15' : '#ff2121',
-                                            borderColor: longTermBullish >= longTermBearish ? '#00cc11' : '#cc1a1a'
-                                          }}
-                                        />
-                                      </div>
-                                      <div className={`mt-1 text-[10px] text-center font-semibold ${longTermBullish >= longTermBearish ? 'text-green-700' : 'text-red-700'}`}>
-                                        {(longTermBullish >= longTermBearish ? longTermBullish : longTermBearish).toFixed(0)}% {longTermBullish >= longTermBearish ? 'Bullish' : 'Bearish'}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                          </td>
-
-                          {/* Avg Rating Column (3★ & Above) */}
-                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
-                            {(() => {
-                              const stats = coin['3star_inf_stats'];
-                              if (!stats || (stats.avg_short_term_rating === undefined && stats.avg_long_term_rating === undefined)) {
-                                return <span className="text-xs text-gray-400">N/A</span>;
-                              }
-
-                              const renderStars = (rating) => {
-                                const fullStars = Math.floor(rating);
-                                const hasHalfStar = rating % 1 >= 0.5;
-                                const emptyStars = Math.max(0, 5 - fullStars - (hasHalfStar ? 1 : 0));
-                                return (
-                                  <div className="flex gap-0.5">
-                                    {[...Array(fullStars)].map((_, i) => <FaStar key={`f${i}`} className="text-yellow-400 text-[8px]" />)}
-                                    {hasHalfStar && <FaStarHalfAlt className="text-yellow-400 text-[8px]" />}
-                                    {[...Array(emptyStars)].map((_, i) => <FaRegStar key={`e${i}`} className="text-gray-300 text-[8px]" />)}
-                                  </div>
-                                );
-                              };
-
-                              return (
-                                <div className="flex flex-col items-center justify-center gap-1">
-                                  {stats.avg_short_term_rating !== undefined && (
-                                    <div className="flex items-center gap-1 whitespace-nowrap">
-                                      <span className="text-[8px] font-semibold text-gray-600">ST:</span>
-                                      {renderStars(stats.avg_short_term_rating)}
-                                    </div>
-                                  )}
-                                  {stats.avg_long_term_rating !== undefined && (
-                                    <div className="flex items-center gap-1 whitespace-nowrap">
-                                      <span className="text-[8px] font-semibold text-gray-600">LT:</span>
-                                      {renderStars(stats.avg_long_term_rating)}
-                                    </div>
-                                  )}
-                                </div>
-                              );
-                            })()}
-                          </td>
-
-
-
-                          {/* Publish Price + Price Change % */}
-                          {/* <td className="pl-0.5 pr-2 py-3">
-                            <div className="flex flex-col justify-start">
-                              {coin.avg_base_price ? (
-                                (() => {
-                                  const num = Number(coin.avg_base_price);
-                                  const isThreeDigitsOrLess = Math.floor(num).toString().length <= 3;
-
-                                  return (
-                                    <span className="text-[10px] font-semibold text-gray-900">
-                                      $
-                                      {num.toLocaleString("en-US", {
-                                        minimumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
-                                        maximumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
-                                      })}
-                                    </span>
-                                  );
-                                })()
-                              ) : (
-                                <span className="text-[10px] font-semibold text-gray-900">
-                                  No base price available
-                                </span>
-                              )}
-                            </div>
-                          </td> */}
-                          {/* Current Price */}
-                          {/* <td className="px-2 py-3 text-center">
-                            {currentPrice !== 'N/A' ? (
-                              (() => {
-                                const num = Number(currentPrice);
-                                const isNum = typeof num === "number" && !isNaN(num);
-                                const isThreeDigitsOrLess =
-                                  isNum && Math.floor(num).toString().length <= 3;
-                                return (
-                                  <div className="flex flex-col items-center gap-0.5">
-                                    <span className="text-xs font-semibold text-blue-500">
-                                      $
-                                      {isNum
-                                        ? num.toLocaleString("en-US", {
-                                          minimumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
-                                          maximumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
-                                        })
-                                        : currentPrice}
-                                    </span>
-                                  </div>
-                                );
-                              })()
-                            ) : coin.binance?.last_available_price ? (
-                              (() => {
-                                const num = Number(coin.binance.last_available_price);
-                                const isThreeDigitsOrLess =
-                                  Math.floor(num).toString().length <= 3;
-
-                                return (
-                                  <div className="flex flex-col items-center gap-0.5">
-                                    <div className="flex items-center gap-1">
-                                      <span className="text-xs font-semibold text-gray-600">
-                                        $
-                                        {num.toLocaleString("en-US", {
-                                          minimumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
-                                          maximumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
-                                        })}
-                                      </span>
-                                      <span className="relative group cursor-pointer z-[9999]">
-                                        <span className="text-gray-600 text-xs">ⓘ</span>
-                                        <span className="invisible group-hover:visible absolute top-full mt-1 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white text-xs p-2 rounded-lg shadow-xl whitespace-nowrap z-[9999]">
-                                          MCM DB Last Price<br />
-                                          {coin.binance.last_available_timestamp
-                                            ? formatDate(new Date(coin.binance.last_available_timestamp))
-                                            : "N/A"}
-                                        </span>
-                                      </span>
-                                    </div>
-                                  </div>
-                                );
-                              })()
-                            ) : (
-                              <span className="text-xs text-gray-500">N/A</span>
-                            )}
-                          </td> */}
-                          {/* 24 Hours Price Change - From Binance Live Data */}
-                          {/* <td className="px-2 py-3 text-center">
-                            {(() => {
-                              const livePriceChange = getLivePriceChange(coin.symbol);
-                              if (livePriceChange !== null) {
-                                const isPositive = livePriceChange > 0;
-                                const isNegative = livePriceChange < 0;
-                                return (
-                                  <span
-                                    className={`text-[10px] font-semibold ${isPositive ? "text-green-600" : isNegative ? "text-red-600" : "text-gray-900"
-                                      }`}
-                                  >
-                                    {isPositive ? "+" : ""}
-                                    {livePriceChange.toFixed(2)}%
-                                  </span>
-                                );
-                              }
-                              return <span className="text-[10px] font-semibold text-gray-500">N/A</span>;
-                            })()}
-                          </td> */}
-
-                          {/* Fundamental Score Column */}
-                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
-                            {(() => {
-                              // Pick up fundamental_score from ai_summary for the selected timeframe
-                              let fundamentalScore;
-
-                              if (coinDataForTimeframe?.ai_summary) {
-                                // Check if ai_summary is an object with fundamental_score
-                                if (typeof coinDataForTimeframe.ai_summary === 'object' && !Array.isArray(coinDataForTimeframe.ai_summary)) {
-                                  fundamentalScore = coinDataForTimeframe.ai_summary.fundamental_score;
-                                } else {
-                                  // Fallback to coin.fundamental_score if ai_summary doesn't have it
-                                  fundamentalScore = coin.fundamental_score;
-                                }
-                              } else {
-                                // Fallback to coin.fundamental_score if no ai_summary
-                                fundamentalScore = coin.fundamental_score;
-                              }
-
-                              // If fundamental_score is not present, default to 0
-                              const numScore = parseFloat(fundamentalScore);
-                              const finalScore = (fundamentalScore === undefined || fundamentalScore === null || isNaN(numScore)) ? 0 : numScore;
-
-                              // Calculate position percentage (0-10 scale to 0-100%)
-                              // For score 0, position at start (2%), otherwise clamp between 6% and 94%
-                              const position = (finalScore / 10) * 100;
-                              const clampedPosition = finalScore === 0 ? 2 : Math.min(Math.max(position, 6), 94);
-
-                              // Determine color based on score (>= 5 is green, < 5 is red)
-                              const isHigh = finalScore >= 5;
-
-                              return (
-                                <div className="flex flex-col items-center justify-center gap-1">
-                                  <div className="segmented-bar-container" style={{ width: '80px' }}>
-                                    <div className="segmented-bar-background">
-                                      <div className="segment segment-red" />
-                                      <div className="segment segment-yellow" />
-                                      <div className="segment segment-green" />
-                                    </div>
+                          {/* Fundamental Column - Display Fundamental Score */}
+                          <td className="px-3 py-4 text-center group-hover:bg-white/50 transition-all duration-300">
+                            <div className="flex flex-col items-center justify-center gap-2">
+                              {coin.whitepaper_analysis?.fundamental_score !== undefined && coin.whitepaper_analysis?.fundamental_score !== null ? (
+                                <>
+                                  <span className="text-[10px] text-gray-500 font-medium mb-2">Score: {coin.whitepaper_analysis.fundamental_score}/10</span>
+                                  <div className="segmented-bar-container mb-1">
                                     <div
                                       className="percentage-ball"
                                       style={{
-                                        left: `${clampedPosition}%`,
-                                        backgroundColor: isHigh ? '#00ff15' : '#ff2121',
-                                        borderColor: isHigh ? '#00cc11' : '#cc1a1a'
+                                        left: `${Math.min(Math.max((coin.whitepaper_analysis.fundamental_score / 10) * 100, 6), 94)}%`,
+                                        backgroundColor: coin.whitepaper_analysis.fundamental_score >= 7
+                                          ? '#00ff15'
+                                          : coin.whitepaper_analysis.fundamental_score >= 4
+                                            ? '#f59e0b'
+                                            : '#ff2121',
+                                        borderColor: coin.whitepaper_analysis.fundamental_score >= 7
+                                          ? '#00cc11'
+                                          : coin.whitepaper_analysis.fundamental_score >= 4
+                                            ? '#d97706'
+                                            : '#cc1a1a'
                                       }}
                                     />
                                   </div>
-                                  <span className="text-xs font-bold text-black">
-                                    {Number.isInteger(finalScore) ? `${finalScore}/10` : `${finalScore.toFixed(1)}/10`}
-                                  </span>
-                                </div>
-                              );
-                            })()}
-                          </td>
-
-                          {/* TA (Technical Analysis) Column */}
-                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
-                            {(() => {
-                              // Get TA data from coin object
-                              const taData = coin?.TA_data;
-
-                              // Debug logging
-                              {
-                                const mcm = taData?.mcm_signal || coin.mcm_signal;
-                                const rec = taData?.recommendation;
-                                console.log(`[${coin.symbol}] MCM Signal:`, mcm, '| Recommendation:', rec);
-                              }
-
-                              if (taData && taData.total_counts) {
-                                return (
-                                  <div className="w-full flex items-center justify-center">
-                                    <SimpleTAGauge taData={taData} signal={taData.mcm_signal || coin.mcm_signal} />
-                                  </div>
-                                );
-                              }
-
-                              return <span className="text-[10px] font-semibold text-gray-500">N/A</span>;
-                            })()}
-                          </td>
-
-                          {/* MCM Signal Column */}
-                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
-                            {(() => {
-                              // Get signal from coin data
-                              const dummySignals = ["Strong Buy", "Buy", "Neutral", "Sell", "Strong Sell"];
-                              const signal = (coin.mcm_signal && coin.mcm_signal !== 'N/A')
-                                ? coin.mcm_signal
-                                : dummySignals[(coin.symbol.length + index) % dummySignals.length];
-
-                              let colorClass = 'text-gray-600';
-                              if (signal && signal !== 'N/A') {
-                                const sigLower = signal.toLowerCase();
-                                if (sigLower.includes('bullish') || sigLower.includes('buy')) {
-                                  colorClass = 'text-green-600';
-                                } else if (sigLower.includes('bearish') || sigLower.includes('sell')) {
-                                  colorClass = 'text-red-600';
-                                }
-                              }
-
-                              return (
-                                <div className="flex items-center justify-center">
-                                  <span className={`text-xs font-bold ${colorClass}`}>
-                                    {signal}
-                                  </span>
-                                </div>
-                              );
-                            })()}
-                          </td>
-
-                          {/* Live Price Column */}
-                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
-                            {currentPrice !== 'N/A' ? (
-                              (() => {
-                                const num = Number(currentPrice);
-                                const isNum = typeof num === "number" && !isNaN(num);
-                                const isThreeDigitsOrLess =
-                                  isNum && Math.floor(num).toString().length <= 3;
-                                return (
-                                  <div className="flex flex-col items-center gap-0.5">
-                                    <span className={`text-xs font-semibold ${priceChangePercent !== null ? (priceChangePercent > 0 ? 'text-green-600' : priceChangePercent < 0 ? 'text-red-600' : 'text-gray-900') : 'text-blue-500'}`}>
-                                      $
-                                      {isNum
-                                        ? num.toLocaleString("en-US", {
-                                          minimumFractionDigits: isThreeDigitsOrLess ? 2 : 0,
-                                          maximumFractionDigits: isThreeDigitsOrLess ? 8 : 0,
-                                        })
-                                        : currentPrice}
-                                    </span>
-                                    {priceChangePercent !== null && (
-                                      <span className={`text-[10px] font-semibold ${priceChangePercent > 0 ? 'text-green-600' : priceChangePercent < 0 ? 'text-red-600' : 'text-gray-900'}`}>
-                                        {priceChangePercent > 0 ? '+' : ''}{priceChangePercent.toFixed(2)}%
-                                      </span>
-                                    )}
-                                  </div>
-                                );
-                              })()
-                            ) : (
-                              <span className="text-xs text-gray-500">N/A</span>
-                            )}
-                          </td>
-
-                          {/* MCM Knowledge Center Column */}
-                          <td className="px-2 py-3 text-center group-hover:bg-white/50 transition-all duration-300">
-                            <div className="flex items-center justify-center gap-2">
-                              <button
-                                onClick={() => router.push('/market-overview')}
-                                className="text-sm font-semibold text-purple-600 hover:text-purple-800 hover:underline cursor-pointer transition-colors"
-                              >
-                                {(index + 1) * 5}
-                              </button>
+                                </>
+                              ) : (
+                                <>
+                                  <span className="text-xs text-gray-400 italic">Coming Soon</span>
+                                  <div className="w-16 h-2 bg-gray-200 rounded-full animate-pulse"></div>
+                                </>
+                              )}
                             </div>
+                          </td>
+
+                          {/* Technical Analysis Column */}
+                          <td className="px-3 py-4 group-hover:bg-white/50 transition-all duration-300">
+                            <div className="flex items-center justify-center gap-4">
+                              {/* Short Term (1hr) - Use 6hrs data */}
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="text-[9px] font-semibold text-gray-600">Short</span>
+                                <span className="text-[8px] text-gray-400">(1hr)</span>
+                                {coin.timeframeData?.["6hrs"]?.TA_data ? (
+                                  <SimpleTAGauge
+                                    taData={coin.timeframeData["6hrs"].TA_data}
+                                    signal={coin.timeframeData["6hrs"].TA_data.mcm_signal}
+                                    size="small"
+                                  />
+                                ) : (
+                                  <MiniGauge bullishPercent={50} bearishPercent={50} />
+                                )}
+                              </div>
+                              {/* Medium Term (1day) - Use 24hrs data */}
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="text-[9px] font-semibold text-gray-600">Medium</span>
+                                <span className="text-[8px] text-gray-400">(1day)</span>
+                                {coin.timeframeData?.["24hrs"]?.TA_data ? (
+                                  <SimpleTAGauge
+                                    taData={coin.timeframeData["24hrs"].TA_data}
+                                    signal={coin.timeframeData["24hrs"].TA_data.mcm_signal}
+                                    size="small"
+                                  />
+                                ) : (
+                                  <MiniGauge bullishPercent={50} bearishPercent={50} />
+                                )}
+                              </div>
+                              {/* Long Term (1week) - Use 7days data */}
+                              <div className="flex flex-col items-center gap-1">
+                                <span className="text-[9px] font-semibold text-gray-600">Long</span>
+                                <span className="text-[8px] text-gray-400">(1week)</span>
+                                {coin.timeframeData?.["7days"]?.TA_data ? (
+                                  <SimpleTAGauge
+                                    taData={coin.timeframeData["7days"].TA_data}
+                                    signal={coin.timeframeData["7days"].TA_data.mcm_signal}
+                                    size="small"
+                                  />
+                                ) : (
+                                  <MiniGauge bullishPercent={50} bearishPercent={50} />
+                                )}
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* MCM Analysis Column - Download Report */}
+                          <td className="px-3 py-4 text-center group-hover:bg-white/50 transition-all duration-300">
+                            {(coinsWithReports.has(coin.symbol?.toUpperCase()) || coinsWithReports.has(coin.source_id?.toUpperCase())) ? (
+                              <button
+                                onClick={() => router.push(`/document?coin=${coin.source_id || coin.symbol}&download=true`)}
+                                className="flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 mx-auto"
+                              >
+                                <FaFileAlt className="text-sm" />
+                                <span>Download Report</span>
+                              </button>
+                            ) : (
+                              <span className="text-xs text-gray-400 italic">Coming Soon</span>
+                            )}
                           </td>
                         </tr>
                       );
@@ -1504,87 +638,84 @@ export default function CoinsNewPage() {
         </div>
       </main>
 
-      {/* Influencer Popup */}
-      {influencerModal.isOpen && (
-        <>
-          {/* Transparent overlay to close on click */}
-          <div
-            className="fixed inset-0 z-[9999]"
-            onClick={() => setInfluencerModal({ isOpen: false, type: '', influencers: {}, coinName: '', position: { x: 0, y: 0 } })}
-          />
+      {/* Segmented Bar Styles */}
+      <style jsx>{`
+        .segmented-bar-container {
+          position: relative;
+          width: 100px;
+          height: 8px;
+          border-radius: 4px;
+          overflow: visible;
+        }
 
-          {/* Popup positioned near clicked element */}
-          <div
-            className="fixed z-[10000] bg-gray-800 text-white rounded-lg shadow-2xl p-3 w-[250px] max-h-[400px] overflow-hidden flex flex-col"
-            style={{
-              left: `${influencerModal.position.x}px`,
-              top: `${influencerModal.position.y}px`,
-            }}
-            onMouseEnter={() => setIsMouseOverModal(true)}
-            onMouseLeave={() => setIsMouseOverModal(false)}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-600">
-              <h3 className="text-xs font-bold flex items-center gap-1.5">
-                {influencerModal.type === 'YouTube' ? (
-                  <FaYoutube className="text-red-500 text-xs" />
-                ) : (
-                  <FaTelegramPlane className="text-blue-400 text-xs" />
-                )}
-                {influencerModal.type} Influencers
-              </h3>
-              <button
-                onClick={() => setInfluencerModal({ isOpen: false, type: '', influencers: {}, coinName: '', position: { x: 0, y: 0 } })}
-                className="text-gray-400 hover:text-white text-lg leading-none"
-              >
-                ×
-              </button>
-            </div>
+        .segmented-bar-background {
+          display: flex;
+          width: 100%;
+          height: 100%;
+        }
 
-            {/* Coin Name */}
-            <div className="mb-2 text-[10px] text-gray-300">
-              <span className="font-semibold text-white">{influencerModal.coinName}</span>
-            </div>
+        .segmented-bar-background-gray {
+          display: block;
+          width: 100px;
+          height: 8px;
+          background: linear-gradient(to right, #9ca3af 0%, #6b7280 33%, #4b5563 66%, #374151 100%) !important;
+          border-radius: 4px;
+          position: relative;
+        }
 
-            {/* Influencer List */}
-            <div className="overflow-y-auto flex-1 pr-1" style={{ scrollbarWidth: 'thin' }}>
-              <div className="space-y-1">
-                {Array.isArray(influencerModal.influencers) ? (
-                  influencerModal.influencers.map((influencer) => (
-                    <div
-                      key={influencer.channel_id}
-                      className="text-[10px] py-1 text-gray-200 hover:text-white cursor-pointer hover:bg-gray-700 px-1 rounded transition-colors"
-                      onClick={() => {
-                        const route = influencerModal.type === 'YouTube'
-                          ? `/influencers/${influencer.channel_id}?tab=recentActivities`
-                          : `/telegram-influencer/${influencer.channel_id}?tab=recentActivities`;
-                        router.push(route);
-                      }}
-                    >
-                      • {influencer.influencer_name}
-                    </div>
-                  ))
-                ) : (
-                  Object.entries(influencerModal.influencers).map(([channelId, name]) => (
-                    <div
-                      key={channelId}
-                      className="text-[10px] py-1 text-gray-200 hover:text-white cursor-pointer hover:bg-gray-700 px-1 rounded transition-colors"
-                      onClick={() => {
-                        const route = influencerModal.type === 'YouTube'
-                          ? `/influencers/${channelId}?tab=recentActivities`
-                          : `/telegram-influencer/${channelId}?tab=recentActivities`;
-                        router.push(route);
-                      }}
-                    >
-                      • {name}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+        .segment {
+          flex: 1;
+          height: 100%;
+        }
+
+        .segment-red {
+          background-color: #ef4444;
+        }
+
+        .segment-yellow {
+          background-color: #f59e0b;
+        }
+
+        .segment-green {
+          background-color: #10b981;
+        }
+
+        .segment-gray-light {
+          background-color: #9ca3af !important;
+        }
+
+        .segment-gray-medium {
+          background-color: #6b7280 !important;
+        }
+
+        .segment-gray-dark {
+          background-color: #4b5563 !important;
+        }
+
+        .percentage-ball {
+          position: absolute;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+          border-width: 2px;
+          border-style: solid;
+        }
+
+        .percentage-ball-gray {
+          position: absolute;
+          top: -2px;
+          width: 12px;
+          height: 12px;
+          background-color: #e5e7eb;
+          border: 2px solid #9ca3af;
+          border-radius: 50%;
+          transform: translateX(-50%);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+      `}</style>
     </div>
   );
 }
