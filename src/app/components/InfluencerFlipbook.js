@@ -455,7 +455,7 @@ const RightPanel = ({ influencer, selectedTimeframe, setSelectedTimeframe, timef
                                     <tr className="bg-gray-50/50">
                                         <th className="py-1.5 px-0.5 text-[7px] font-bold text-gray-900 border-b border-r border-gray-200 text-left pl-1">Yr</th>
                                         {timeframes.map((tf, idx) => (
-                                            <th key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold text-gray-900 border-b border-gray-200 whitespace-nowrap ${idx < timeframes.length - 1 ? 'border-r border-gray-100' : ''}`}>
+                                            <th key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold text-gray-900 border-b border-gray-200 whitespace-nowrap min-w-[32px] ${idx < timeframes.length - 1 ? 'border-r border-gray-100' : ''}`}>
                                                 {tf.label}
                                             </th>
                                         ))}
@@ -469,7 +469,7 @@ const RightPanel = ({ influencer, selectedTimeframe, setSelectedTimeframe, timef
                                                 {timeframes.map((tf, idx) => {
                                                     const roi = data?.[tf.key]?.prob_weighted_returns;
                                                     return (
-                                                        <td key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold whitespace-nowrap ${idx < timeframes.length - 1 ? 'border-r border-gray-100' : ''} ${getROIColor(roi)}`}>
+                                                        <td key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold whitespace-nowrap min-w-[32px] ${idx < timeframes.length - 1 ? 'border-r border-gray-100' : ''} ${getROIColor(roi)}`}>
                                                             {formatROI(roi)}
                                                         </td>
                                                     );
@@ -489,8 +489,8 @@ const RightPanel = ({ influencer, selectedTimeframe, setSelectedTimeframe, timef
                     </div>
 
                     {/* Win Rate Table */}
-                    <div className="bg-white/60 rounded-lg border border-blue-100/50 overflow-hidden shadow-sm">
-                        <div className="bg-blue-50/50 px-2 py-1.5 border-b border-blue-100">
+                    <div className="bg-white/60 rounded-lg border border-purple-100/50 overflow-hidden shadow-sm">
+                        <div className="bg-purple-50/50 px-2 py-1.5 border-b border-purple-100">
                             <h4 className="text-[10px] font-bold text-gray-800">WIN %</h4>
                         </div>
 
@@ -500,7 +500,7 @@ const RightPanel = ({ influencer, selectedTimeframe, setSelectedTimeframe, timef
                                     <tr className="bg-gray-50/50">
                                         <th className="py-1.5 px-0.5 text-[7px] font-bold text-gray-900 border-b border-r border-gray-200 text-left pl-1">Yr</th>
                                         {timeframes.map((tf, idx) => (
-                                            <th key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold text-gray-900 border-b border-gray-200 whitespace-nowrap ${idx < timeframes.length - 1 ? 'border-r border-gray-100' : ''}`}>
+                                            <th key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold text-gray-900 border-b border-gray-200 whitespace-nowrap min-w-[32px] ${idx < timeframes.length - 1 ? 'border-r border-gray-100' : ''}`}>
                                                 {tf.label}
                                             </th>
                                         ))}
@@ -514,7 +514,7 @@ const RightPanel = ({ influencer, selectedTimeframe, setSelectedTimeframe, timef
                                                 {timeframes.map((tf, idx) => {
                                                     const winRate = data?.[tf.key]?.win_percentage;
                                                     return (
-                                                        <td key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold whitespace-nowrap ${idx < timeframes.length - 1 ? 'border-r border-gray-100' : ''} ${getWinRateColor(winRate)}`}>
+                                                        <td key={tf.key} className={`py-1.5 px-0.5 text-[7px] font-bold whitespace-nowrap min-w-[32px] ${idx < timeframes.length - 1 ? 'border-r border-gray-100' : ''} ${getWinRateColor(winRate)}`}>
                                                             {formatWinRate(winRate)}
                                                         </td>
                                                     );
