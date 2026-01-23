@@ -177,7 +177,7 @@ const MiddlePanel = ({ influencer }) => {
             <div className="relative flex-1 flex flex-col overflow-hidden min-h-0">
                 <div className="flex-shrink-0 mb-2">
                     <h3 className="text-base font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-1">
-                        Influencer Overview
+                        Post Analytics
                     </h3>
                     <div className="w-10 h-0.5 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"></div>
                 </div>
@@ -186,7 +186,7 @@ const MiddlePanel = ({ influencer }) => {
                     {/* Posts History */}
                     <div className="bg-white/60 rounded-lg p-2 shadow-md border border-blue-100">
                         <div className="flex items-center justify-between mb-1.5">
-                            <span className="text-[9px] font-bold text-gray-600 px-1">Posts Analytics</span>
+                            <span className="text-[9px] font-bold text-gray-600 px-1">Number of Posts</span>
                         </div>
                         <div className="grid grid-cols-4 gap-1.5">
                             <div className="bg-white rounded-md p-1.5 border border-blue-50 text-center shadow-sm">
@@ -384,7 +384,7 @@ const RightPanel = ({ influencer, selectedTimeframe, setSelectedTimeframe, timef
             <div className="relative flex-1 flex flex-col overflow-hidden min-h-0">
                 <div className="flex-shrink-0 mb-2">
                     <h3 className="text-base font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
-                        Performance
+                        Historical Risk & Return
                     </h3>
                     <div className="w-10 h-0.5 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full mt-1"></div>
                 </div>
@@ -491,7 +491,7 @@ const RightPanel = ({ influencer, selectedTimeframe, setSelectedTimeframe, timef
                     {/* Win Rate Table */}
                     <div className="bg-white/60 rounded-lg border border-blue-100/50 overflow-hidden shadow-sm">
                         <div className="bg-blue-50/50 px-2 py-1.5 border-b border-blue-100">
-                            <h4 className="text-[10px] font-bold text-gray-800">Win %</h4>
+                            <h4 className="text-[10px] font-bold text-gray-800">WIN %</h4>
                         </div>
 
                         <div className="overflow-x-auto">

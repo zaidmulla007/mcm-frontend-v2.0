@@ -508,7 +508,7 @@ export default function HomePage() {
         >
           <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
             <span className="bg-gradient-to-r from-cyan-600 via-indigo-600 to-fuchsia-600 bg-clip-text text-transparent">
-              Influencer Flipbook
+              Influencer Analytics
             </span>
           </h2>
           <p className="text-base text-gray-600 max-w-2xl mx-auto">
