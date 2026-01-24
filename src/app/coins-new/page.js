@@ -299,21 +299,52 @@ export default function CoinsNewPage() {
       barHeight = tgHeight + ytHeight;
     }
 
+    // Color palettes from client's image - different shade for each timeframe
+    // Using darker shades for YouTube (top) and lighter shades for Telegram (bottom)
+    const colorMap = {
+      '6hrs': {
+        youtube: '#C1D9ED',  // Light blue for YouTube
+        telegram: '#E8F1F8', // Very light blue for Telegram
+      },
+      '24hrs': {
+        youtube: '#92AECF',  // Medium-light blue for YouTube
+        telegram: '#C1D9ED', // Light blue for Telegram
+      },
+      '7days': {
+        youtube: '#6B8CAE',  // Medium-dark blue for YouTube
+        telegram: '#92AECF', // Medium-light blue for Telegram
+      },
+      '30days': {
+        youtube: '#5C7A94',  // Darker blue for YouTube
+        telegram: '#6B8CAE', // Medium-dark blue for Telegram
+      },
+    };
+
+    const colors = colorMap[timeframe] || colorMap['6hrs'];
+
     return (
       <div className="flex flex-col items-center gap-1">
         <div className="relative w-8 flex flex-col-reverse" style={{ minHeight: '60px' }}>
           {/* Stack bars from bottom - Telegram first (bottom), then YouTube on top */}
           {tgHeight > 0 && (
             <div
-              className="w-full bg-gradient-to-t from-blue-500 to-blue-400 transition-all duration-300 cursor-pointer rounded-b-sm"
-              style={{ height: `${tgHeight}px` }}
+              className="w-full transition-all duration-300 cursor-pointer rounded-b-sm"
+              style={{
+                height: `${tgHeight}px`,
+                background: `linear-gradient(to top, ${colors.telegram}, ${colors.telegram})`,
+                boxShadow: '0 1px 4px rgba(0,0,0,0.1)'
+              }}
               title={`Telegram: ${tgPosts} posts`}
             />
           )}
           {ytHeight > 0 && (
             <div
-              className="w-full bg-gradient-to-t from-red-500 to-red-400 transition-all duration-300 cursor-pointer"
-              style={{ height: `${ytHeight}px` }}
+              className="w-full transition-all duration-300 cursor-pointer rounded-t-lg"
+              style={{
+                height: `${ytHeight}px`,
+                background: `linear-gradient(to top, ${colors.youtube}, ${colors.youtube})`,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
               title={`YouTube: ${ytPosts} posts`}
             />
           )}
@@ -380,12 +411,12 @@ export default function CoinsNewPage() {
               {/* Legend */}
               <div className="flex items-center gap-4 mt-4 text-xs">
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-red-500 rounded-sm"></div>
+                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#6B8CAE' }}></div>
                   <FaYoutube className="text-red-600" />
                   <span>YouTube</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-blue-500 rounded-sm"></div>
+                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: '#C1D9ED' }}></div>
                   <FaTelegramPlane className="text-blue-600" />
                   <span>Telegram</span>
                 </div>
@@ -404,27 +435,25 @@ export default function CoinsNewPage() {
                     {/* No. of Posts */}
                     <th className="px-3 py-3 text-center text-xs font-bold text-white tracking-wide align-middle w-[35%] border-r border-white/20">
                       <div className="flex flex-col items-center gap-1">
-                        <span>No. of Posts</span>
-                        <span className="text-[10px] font-normal opacity-80">6hrs | 24hrs | 7days | 30days</span>
+                        <span>Social Media Sentiments</span>
                       </div>
                     </th>
                     {/* Fundamental - HOLD */}
                     <th className="px-3 py-3 text-center text-xs font-bold text-white tracking-wide align-middle w-[15%] border-r border-white/20">
                       <div className="flex flex-col items-center gap-0.5">
-                        <span>Fundamental</span>
+                        <span>Fundamental Score</span>
                       </div>
                     </th>
                     {/* Technical Analysis */}
                     <th className="px-3 py-3 text-center text-xs font-bold text-white tracking-wide align-middle w-[25%] border-r border-white/20">
                       <div className="flex flex-col items-center gap-1">
-                        <span>Technical Analysis</span>
-                        <span className="text-[10px] font-normal opacity-80">Short (1hr) | Medium (1day) | Long (1week)</span>
+                        <span>Technical Indicators</span>
                       </div>
                     </th>
                     {/* MCM Analysis */}
                     <th className="px-3 py-3 text-center text-xs font-bold text-white tracking-wide align-middle w-[15%]">
                       <div className="flex flex-col items-center gap-0.5">
-                        <span>MCM Analysis</span>
+                        <span>MCM Summary</span>
                       </div>
                     </th>
                   </tr>
@@ -533,34 +562,21 @@ export default function CoinsNewPage() {
 
                           {/* Fundamental Column - Display Fundamental Score */}
                           <td className="px-3 py-4 text-center group-hover:bg-white/50 transition-all duration-300">
-                            <div className="flex flex-col items-center justify-center gap-2">
+                            <div className="flex flex-col items-center justify-center gap-1 px-2">
                               {coin.whitepaper_analysis?.fundamental_score !== undefined && coin.whitepaper_analysis?.fundamental_score !== null ? (
                                 <>
-                                  <span className="text-[10px] text-gray-500 font-medium mb-2">Score: {coin.whitepaper_analysis.fundamental_score}/10</span>
-                                  <div className="segmented-bar-container mb-1">
+                                  <div className="w-full h-[8px] bg-gray-200 rounded-full overflow-hidden relative">
                                     <div
-                                      className="percentage-ball"
-                                      style={{
-                                        left: `${Math.min(Math.max((coin.whitepaper_analysis.fundamental_score / 10) * 100, 6), 94)}%`,
-                                        backgroundColor: coin.whitepaper_analysis.fundamental_score >= 7
-                                          ? '#00ff15'
-                                          : coin.whitepaper_analysis.fundamental_score >= 4
-                                            ? '#f59e0b'
-                                            : '#ff2121',
-                                        borderColor: coin.whitepaper_analysis.fundamental_score >= 7
-                                          ? '#00cc11'
-                                          : coin.whitepaper_analysis.fundamental_score >= 4
-                                            ? '#d97706'
-                                            : '#cc1a1a'
-                                      }}
+                                      className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                                      style={{ width: `${(coin.whitepaper_analysis.fundamental_score / 10) * 100}%` }}
                                     />
                                   </div>
+                                  <span className="text-[10px] font-bold text-gray-700">
+                                    {coin.whitepaper_analysis.fundamental_score}
+                                  </span>
                                 </>
                               ) : (
-                                <>
-                                  <span className="text-xs text-gray-400 italic">Coming Soon</span>
-                                  <div className="w-16 h-2 bg-gray-200 rounded-full animate-pulse"></div>
-                                </>
+                                <span className="text-xs text-gray-400">N/A</span>
                               )}
                             </div>
                           </td>
@@ -570,8 +586,6 @@ export default function CoinsNewPage() {
                             <div className="flex items-center justify-center gap-4">
                               {/* Short Term (1hr) - Use 6hrs data */}
                               <div className="flex flex-col items-center gap-1">
-                                <span className="text-[9px] font-semibold text-gray-600">Short</span>
-                                <span className="text-[8px] text-gray-400">(1hr)</span>
                                 {coin.timeframeData?.["6hrs"]?.TA_data ? (
                                   <SimpleTAGauge
                                     taData={coin.timeframeData["6hrs"].TA_data}
@@ -581,11 +595,11 @@ export default function CoinsNewPage() {
                                 ) : (
                                   <MiniGauge bullishPercent={50} bearishPercent={50} />
                                 )}
+                                <span className="text-[9px] font-semibold text-gray-600">Short</span>
+                                <span className="text-[8px] font-semibold text-gray-600">Term</span>
                               </div>
                               {/* Medium Term (1day) - Use 24hrs data */}
                               <div className="flex flex-col items-center gap-1">
-                                <span className="text-[9px] font-semibold text-gray-600">Medium</span>
-                                <span className="text-[8px] text-gray-400">(1day)</span>
                                 {coin.timeframeData?.["24hrs"]?.TA_data ? (
                                   <SimpleTAGauge
                                     taData={coin.timeframeData["24hrs"].TA_data}
@@ -595,11 +609,11 @@ export default function CoinsNewPage() {
                                 ) : (
                                   <MiniGauge bullishPercent={50} bearishPercent={50} />
                                 )}
+                                <span className="text-[9px] font-semibold text-gray-600">Mid</span>
+                                <span className="text-[8px] font-semibold text-gray-600">Term</span>
                               </div>
                               {/* Long Term (1week) - Use 7days data */}
                               <div className="flex flex-col items-center gap-1">
-                                <span className="text-[9px] font-semibold text-gray-600">Long</span>
-                                <span className="text-[8px] text-gray-400">(1week)</span>
                                 {coin.timeframeData?.["7days"]?.TA_data ? (
                                   <SimpleTAGauge
                                     taData={coin.timeframeData["7days"].TA_data}
@@ -609,6 +623,8 @@ export default function CoinsNewPage() {
                                 ) : (
                                   <MiniGauge bullishPercent={50} bearishPercent={50} />
                                 )}
+                                <span className="text-[9px] font-semibold text-gray-600">Long</span>
+                                <span className="text-[8px] font-semibold text-gray-600">Term</span>
                               </div>
                             </div>
                           </td>
@@ -624,7 +640,7 @@ export default function CoinsNewPage() {
                                 <span>Download Report</span>
                               </button>
                             ) : (
-                              <span className="text-xs text-gray-400 italic">Coming Soon</span>
+                              <span className="text-xs text-gray-400">N/A</span>
                             )}
                           </td>
                         </tr>
