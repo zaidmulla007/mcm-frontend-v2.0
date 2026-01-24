@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import {
@@ -840,8 +840,8 @@ function CoinReport({ data }) {
   );
 }
 
-// Main Page Component
-export default function DocumentPage() {
+// Main Page Component with Search Params
+function DocumentPageContent() {
   const searchParams = useSearchParams();
   const coinParam = searchParams.get('coin'); // Get coin symbol from URL query
   const autoDownload = searchParams.get('download') === 'true'; // Check if auto-download requested
@@ -1125,5 +1125,21 @@ export default function DocumentPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+// Export wrapped in Suspense
+export default function DocumentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
+        <div className="text-center">
+          <FaSpinner className="text-5xl text-purple-500 animate-spin mx-auto mb-4" />
+          <p className="text-lg text-gray-600">Loading market analysis reports...</p>
+        </div>
+      </div>
+    }>
+      <DocumentPageContent />
+    </Suspense>
   );
 }
