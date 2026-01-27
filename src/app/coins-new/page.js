@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { FaYoutube, FaTelegramPlane, FaCertificate, FaBell, FaFileAlt } from "react-icons/fa";
+import { FaYoutube, FaTelegramPlane, FaCertificate, FaBell, FaFileAlt, FaEye } from "react-icons/fa";
 import { useCoinsLivePrice } from "@/hooks/useCoinsLivePrice";
 import { useTimezone } from "../contexts/TimezoneContext";
 import SimpleTAGauge from "@/components/SimpleTAGauge";
@@ -324,33 +324,57 @@ export default function CoinsNewPage() {
 
     return (
       <div className="flex flex-col items-center gap-1">
-        <div className="relative w-8 flex flex-col-reverse" style={{ minHeight: '60px' }}>
-          {/* Stack bars from bottom - Telegram first (bottom), then YouTube on top */}
-          {tgHeight > 0 && (
-            <div
-              className="w-full transition-all duration-300 cursor-pointer rounded-b-sm"
-              style={{
-                height: `${tgHeight}px`,
-                background: `linear-gradient(to top, ${colors.telegram}, ${colors.telegram})`,
-                boxShadow: '0 1px 4px rgba(0,0,0,0.1)'
-              }}
-              title={`Telegram: ${tgPosts} posts`}
-            />
-          )}
-          {ytHeight > 0 && (
-            <div
-              className="w-full transition-all duration-300 cursor-pointer rounded-t-lg"
-              style={{
-                height: `${ytHeight}px`,
-                background: `linear-gradient(to top, ${colors.youtube}, ${colors.youtube})`,
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}
-              title={`YouTube: ${ytPosts} posts`}
-            />
-          )}
+        <div className="flex items-end gap-1">
+          {/* Icons positioned to align with bar segments */}
+          <div className="relative flex flex-col-reverse" style={{ minHeight: '60px' }}>
+            {/* YouTube icon - aligned with YouTube bar at bottom */}
+            {ytHeight > 0 && (
+              <div
+                className="flex items-center justify-center"
+                style={{ height: `${ytHeight}px` }}
+              >
+                <FaYoutube className="text-red-500 text-[10px]" title="YouTube" />
+              </div>
+            )}
+            {/* Telegram icon - aligned with Telegram bar on top */}
+            {tgHeight > 0 && (
+              <div
+                className="flex items-center justify-center"
+                style={{ height: `${tgHeight}px` }}
+              >
+                <FaTelegramPlane className="text-blue-500 text-[10px]" title="Telegram" />
+              </div>
+            )}
+          </div>
+          {/* Bars */}
+          <div className="relative w-8 flex flex-col-reverse" style={{ minHeight: '60px' }}>
+            {/* Stack bars from bottom - YouTube first (bottom), then Telegram on top */}
+            {ytHeight > 0 && (
+              <div
+                className="w-full transition-all duration-300 cursor-pointer rounded-b-sm"
+                style={{
+                  height: `${ytHeight}px`,
+                  background: `linear-gradient(to top, ${colors.youtube}, ${colors.youtube})`,
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.1)'
+                }}
+                title={`YouTube: ${ytPosts} posts`}
+              />
+            )}
+            {tgHeight > 0 && (
+              <div
+                className="w-full transition-all duration-300 cursor-pointer rounded-t-lg"
+                style={{
+                  height: `${tgHeight}px`,
+                  background: `linear-gradient(to top, ${colors.telegram}, ${colors.telegram})`,
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+                title={`Telegram: ${tgPosts} posts`}
+              />
+            )}
+          </div>
         </div>
         <span className="text-[9px] font-medium text-gray-600">{timeframe}</span>
-        <span className="text-[8px] text-gray-500">{total}</span>
+        <span className="text-[9px] font-medium text-gray-600">{total}</span>
       </div>
     );
   };
@@ -424,7 +448,7 @@ export default function CoinsNewPage() {
             </div>
 
             {/* Table */}
-            <div className="w-full overflow-x-auto rounded-b-3xl">
+            <div className="w-full rounded-b-3xl">
               <table className="w-full table-fixed border-separate border-spacing-0">
                 <thead>
                   <tr className="bg-gradient-to-r from-blue-500 to-purple-500">
@@ -540,19 +564,20 @@ export default function CoinsNewPage() {
 
                                 return (
                                   <div key={tf} className="flex flex-col items-center">
-                                    {/* Mini Gauge on top */}
+                                    {/* Vertical Bar first */}
+                                    <PostsBar
+                                      tgPosts={tgPosts}
+                                      ytPosts={ytPosts}
+
+                                      maxPosts={maxPosts || 1}
+                                      timeframe={timeframeLabels[tfIndex]}
+                                    />
+                                    {/* Spacer between bar and gauge */}
+                                    <div className="h-4"></div>
+                                    {/* Mini Gauge below */}
                                     <MiniGauge
                                       bullishPercent={bullish}
                                       bearishPercent={bearish}
-                                    />
-                                    {/* Spacer - increased space between gauge and bar */}
-                                    <div className="h-6"></div>
-                                    {/* Vertical Bar */}
-                                    <PostsBar
-                                      ytPosts={ytPosts}
-                                      tgPosts={tgPosts}
-                                      maxPosts={maxPosts || 1}
-                                      timeframe={timeframeLabels[tfIndex]}
                                     />
                                   </div>
                                 );
@@ -567,12 +592,12 @@ export default function CoinsNewPage() {
                                 <>
                                   <div className="w-full h-[8px] bg-gray-200 rounded-full overflow-hidden relative">
                                     <div
-                                      className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                                      className="h-full bg-gradient-to-r from-blue-500 to-purple-300 transition-all duration-300"
                                       style={{ width: `${(coin.whitepaper_analysis.fundamental_score / 10) * 100}%` }}
                                     />
                                   </div>
                                   <span className="text-[10px] font-bold text-gray-700">
-                                    {coin.whitepaper_analysis.fundamental_score}
+                                    {coin.whitepaper_analysis.fundamental_score}/10
                                   </span>
                                 </>
                               ) : (
@@ -629,16 +654,25 @@ export default function CoinsNewPage() {
                             </div>
                           </td>
 
-                          {/* MCM Analysis Column - Download Report */}
+                          {/* MCM Analysis Column - View and Download Report */}
                           <td className="px-3 py-4 text-center group-hover:bg-white/50 transition-all duration-300">
                             {(coinsWithReports.has(coin.symbol?.toUpperCase()) || coinsWithReports.has(coin.source_id?.toUpperCase())) ? (
-                              <button
-                                onClick={() => router.push(`/document?coin=${coin.source_id || coin.symbol}&download=true`)}
-                                className="flex items-center justify-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300 mx-auto"
-                              >
-                                <FaFileAlt className="text-sm" />
-                                <span>Download Report</span>
-                              </button>
+                              <div className="flex flex-col items-center gap-2">
+                                <button
+                                  onClick={() => router.push(`/document?coin=${coin.source_id || coin.symbol}`)}
+                                  className="flex items-center justify-center gap-2 min-w-[140px] px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
+                                >
+                                  <FaEye className="text-sm" />
+                                  <span>View Report</span>
+                                </button>
+                                <button
+                                  onClick={() => router.push(`/document?coin=${coin.source_id || coin.symbol}&download=true`)}
+                                  className="flex items-center justify-center gap-2 min-w-[140px] px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
+                                >
+                                  <FaFileAlt className="text-sm" />
+                                  <span>Download Report</span>
+                                </button>
+                              </div>
                             ) : (
                               <span className="text-xs text-gray-400">N/A</span>
                             )}
