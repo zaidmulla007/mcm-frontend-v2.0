@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { FaYoutube, FaTelegramPlane, FaCertificate, FaBell, FaFileAlt, FaEye } from "react-icons/fa";
+import { FaYoutube, FaTelegramPlane, FaCertificate, FaBell, FaFileAlt, FaEye, FaFire } from "react-icons/fa";
 import { useCoinsLivePrice } from "@/hooks/useCoinsLivePrice";
 import { useTimezone } from "../contexts/TimezoneContext";
 import SimpleTAGauge from "@/components/SimpleTAGauge";
@@ -117,7 +117,9 @@ export default function CoinsNewPage() {
     const resultsByTimeframe = coinsData.resultsByTimeframe || coinsData;
     const timeframes = ["6hrs", "24hrs", "7days", "30days"];
     const allCoinsMap = new Map();
+    const selectedSymbols = new Set();
 
+    // First pass: Identify all unique coins that appear in top 10 of any timeframe
     timeframes.forEach(timeframe => {
       if (!resultsByTimeframe || !resultsByTimeframe[timeframe]) return;
 
@@ -129,29 +131,46 @@ export default function CoinsNewPage() {
       combined.sort((a, b) => (b.total_mentions || 0) - (a.total_mentions || 0));
       const top10 = combined.slice(0, 10);
 
-      // Add to map with timeframe data
+      // Collect symbols and initialize coins in map
       top10.forEach(coin => {
         const symbol = coin.symbol;
+        selectedSymbols.add(symbol);
         if (!allCoinsMap.has(symbol)) {
           allCoinsMap.set(symbol, {
             ...coin,
             timeframeData: {}
           });
         }
-        // Store data for this timeframe
-        // API returns yt_total_mentions and tg_total_mentions, not yt_mentions and tg_mentions
-        allCoinsMap.get(symbol).timeframeData[timeframe] = {
-          total_mentions: coin.total_mentions || 0,
-          yt_mentions: coin.yt_total_mentions || coin.yt_mentions || 0,
-          tg_mentions: coin.tg_total_mentions || coin.tg_mentions || 0,
-          bullish_percent: coin.bullish_percent || 0,
-          bearish_percent: coin.bearish_percent || 0,
-          yt_tg_bullish_short_term_percent: coin.yt_tg_bullish_short_term_percent || 0,
-          yt_tg_bearish_short_term_percent: coin.yt_tg_bearish_short_term_percent || 0,
-          yt_tg_bullish_long_term_percent: coin.yt_tg_bullish_long_term_percent || 0,
-          yt_tg_bearish_long_term_percent: coin.yt_tg_bearish_long_term_percent || 0,
-          TA_data: coin.TA_data
-        };
+      });
+    });
+
+    // Second pass: For each selected coin, get ALL timeframe data (not just top 10)
+    timeframes.forEach(timeframe => {
+      if (!resultsByTimeframe || !resultsByTimeframe[timeframe]) return;
+
+      const allCoins = resultsByTimeframe[timeframe].all_coins || [];
+      const memCoins = resultsByTimeframe[timeframe].mem_coins || [];
+      const combined = [...allCoins, ...memCoins];
+
+      // For each selected coin, find its data in this timeframe
+      selectedSymbols.forEach(symbol => {
+        const coinData = combined.find(c => c.symbol === symbol);
+        if (coinData && allCoinsMap.has(symbol)) {
+          // Store data for this timeframe
+          // API returns yt_total_mentions and tg_total_mentions, not yt_mentions and tg_mentions
+          allCoinsMap.get(symbol).timeframeData[timeframe] = {
+            total_mentions: coinData.total_mentions || 0,
+            yt_mentions: coinData.yt_total_mentions || coinData.yt_mentions || 0,
+            tg_mentions: coinData.tg_total_mentions || coinData.tg_mentions || 0,
+            bullish_percent: coinData.bullish_percent || 0,
+            bearish_percent: coinData.bearish_percent || 0,
+            yt_tg_bullish_short_term_percent: coinData.yt_tg_bullish_short_term_percent || 0,
+            yt_tg_bearish_short_term_percent: coinData.yt_tg_bearish_short_term_percent || 0,
+            yt_tg_bullish_long_term_percent: coinData.yt_tg_bullish_long_term_percent || 0,
+            yt_tg_bearish_long_term_percent: coinData.yt_tg_bearish_long_term_percent || 0,
+            TA_data: coinData.TA_data
+          };
+        }
       });
     });
 
@@ -261,7 +280,6 @@ export default function CoinsNewPage() {
 
   // Vertical Bar Component for Posts with Balanced Scaling
   const PostsBar = ({ ytPosts, tgPosts, maxPosts, timeframe }) => {
-    const [isHovered, setIsHovered] = useState(false);
     const total = ytPosts + tgPosts;
     const maxBarHeight = 60; // Maximum height in pixels
     const minBarHeight = 20; // Minimum bar height for non-zero values
@@ -327,17 +345,13 @@ export default function CoinsNewPage() {
 
     return (
       <div className="flex flex-col items-center gap-1">
-        <div
-          className="relative flex items-end justify-center"
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-        >
+        <div className="relative flex items-end justify-center cursor-pointer px-2 py-1 group/tooltip">
           {/* Bars */}
           <div className="relative w-8 flex flex-col-reverse" style={{ minHeight: '60px' }}>
             {/* Stack bars from bottom - YouTube first (bottom), then Telegram on top */}
             {ytHeight > 0 && (
               <div
-                className="w-full transition-all duration-300 cursor-pointer rounded-b-sm"
+                className="w-full transition-all duration-150 rounded-b-sm"
                 style={{
                   height: `${ytHeight}px`,
                   background: `linear-gradient(to top, ${colors.youtube}, ${colors.youtube})`,
@@ -347,7 +361,7 @@ export default function CoinsNewPage() {
             )}
             {tgHeight > 0 && (
               <div
-                className="w-full transition-all duration-300 cursor-pointer rounded-t-lg"
+                className="w-full transition-all duration-150 rounded-t-lg"
                 style={{
                   height: `${tgHeight}px`,
                   background: `linear-gradient(to top, ${colors.telegram}, ${colors.telegram})`,
@@ -357,29 +371,27 @@ export default function CoinsNewPage() {
             )}
           </div>
 
-          {/* Hover Tooltip */}
-          {isHovered && (
-            <div className="absolute bottom-full mb-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl px-3 py-2 z-50 whitespace-nowrap">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <FaYoutube className="text-red-500 text-sm" />
-                  <span className="text-xs font-semibold text-gray-700">YouTube:</span>
-                  <span className="text-xs font-bold" style={{ color: colors.youtube }}>{ytPosts}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <FaTelegramPlane className="text-blue-500 text-sm" />
-                  <span className="text-xs font-semibold text-gray-700">Telegram:</span>
-                  <span className="text-xs font-bold" style={{ color: colors.telegram }}>{tgPosts}</span>
-                </div>
-                <div className="border-t pt-1 mt-1">
-                  <span className="text-xs font-bold text-gray-800">Total: {total}</span>
-                </div>
+          {/* Hover Tooltip - Pure CSS hover */}
+          <div className="absolute bottom-full mb-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl px-3 py-2 z-[100] whitespace-nowrap pointer-events-none opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-opacity duration-100">
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-2">
+                <FaYoutube className="text-red-500 text-sm" />
+                <span className="text-xs font-semibold text-gray-700">YouTube:</span>
+                <span className="text-xs font-bold" style={{ color: colors.youtube }}>{ytPosts}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <FaTelegramPlane className="text-blue-500 text-sm" />
+                <span className="text-xs font-semibold text-gray-700">Telegram:</span>
+                <span className="text-xs font-bold" style={{ color: colors.telegram }}>{tgPosts}</span>
+              </div>
+              <div className="border-t pt-1 mt-1">
+                <span className="text-xs font-bold text-gray-800">Total Posts: {total}</span>
               </div>
             </div>
-          )}
+          </div>
         </div>
         <span className="text-[9px] font-medium text-gray-600">{timeframe}</span>
-        <span className="text-[9px] font-medium text-gray-600">{total}</span>
+        <span className="text-[9px] font-medium text-gray-600">{total} Posts</span>
       </div>
     );
   };
@@ -552,6 +564,11 @@ export default function CoinsNewPage() {
                                 <div className="text-[10px] text-gray-500">
                                   {coin.coin_name?.charAt(0).toUpperCase() + coin.coin_name?.slice(1)}
                                 </div>
+                                {coin.mem_coin && (
+                                  <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-orange-400 to-pink-500 text-white text-[8px] font-bold rounded-full shadow-sm">
+                                    <span>MEME</span>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </td>
