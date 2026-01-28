@@ -15,6 +15,8 @@ export default function CoinsNewPage() {
   const [coinSymbols, setCoinSymbols] = useState([]);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [coinsWithReports, setCoinsWithReports] = useState(new Set());
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [selectedCoinForReport, setSelectedCoinForReport] = useState(null);
 
   // Use timezone context for local/UTC time switching
   const { formatDate, useLocalTime, toggleTimezone, userTimezone } = useTimezone();
@@ -259,6 +261,7 @@ export default function CoinsNewPage() {
 
   // Vertical Bar Component for Posts with Balanced Scaling
   const PostsBar = ({ ytPosts, tgPosts, maxPosts, timeframe }) => {
+    const [isHovered, setIsHovered] = useState(false);
     const total = ytPosts + tgPosts;
     const maxBarHeight = 60; // Maximum height in pixels
     const minBarHeight = 20; // Minimum bar height for non-zero values
@@ -324,28 +327,11 @@ export default function CoinsNewPage() {
 
     return (
       <div className="flex flex-col items-center gap-1">
-        <div className="flex items-end gap-1">
-          {/* Icons positioned to align with bar segments */}
-          <div className="relative flex flex-col-reverse" style={{ minHeight: '60px' }}>
-            {/* YouTube icon - aligned with YouTube bar at bottom */}
-            {ytHeight > 0 && (
-              <div
-                className="flex items-center justify-center"
-                style={{ height: `${ytHeight}px` }}
-              >
-                <FaYoutube className="text-red-500 text-[10px]" title="YouTube" />
-              </div>
-            )}
-            {/* Telegram icon - aligned with Telegram bar on top */}
-            {tgHeight > 0 && (
-              <div
-                className="flex items-center justify-center"
-                style={{ height: `${tgHeight}px` }}
-              >
-                <FaTelegramPlane className="text-blue-500 text-[10px]" title="Telegram" />
-              </div>
-            )}
-          </div>
+        <div
+          className="relative flex items-end justify-center"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
           {/* Bars */}
           <div className="relative w-8 flex flex-col-reverse" style={{ minHeight: '60px' }}>
             {/* Stack bars from bottom - YouTube first (bottom), then Telegram on top */}
@@ -357,7 +343,6 @@ export default function CoinsNewPage() {
                   background: `linear-gradient(to top, ${colors.youtube}, ${colors.youtube})`,
                   boxShadow: '0 1px 4px rgba(0,0,0,0.1)'
                 }}
-                title={`YouTube: ${ytPosts} posts`}
               />
             )}
             {tgHeight > 0 && (
@@ -368,10 +353,30 @@ export default function CoinsNewPage() {
                   background: `linear-gradient(to top, ${colors.telegram}, ${colors.telegram})`,
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                 }}
-                title={`Telegram: ${tgPosts} posts`}
               />
             )}
           </div>
+
+          {/* Hover Tooltip */}
+          {isHovered && (
+            <div className="absolute bottom-full mb-2 bg-white border-2 border-gray-200 rounded-lg shadow-xl px-3 py-2 z-50 whitespace-nowrap">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-2">
+                  <FaYoutube className="text-red-500 text-sm" />
+                  <span className="text-xs font-semibold text-gray-700">YouTube:</span>
+                  <span className="text-xs font-bold" style={{ color: colors.youtube }}>{ytPosts}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <FaTelegramPlane className="text-blue-500 text-sm" />
+                  <span className="text-xs font-semibold text-gray-700">Telegram:</span>
+                  <span className="text-xs font-bold" style={{ color: colors.telegram }}>{tgPosts}</span>
+                </div>
+                <div className="border-t pt-1 mt-1">
+                  <span className="text-xs font-bold text-gray-800">Total: {total}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         <span className="text-[9px] font-medium text-gray-600">{timeframe}</span>
         <span className="text-[9px] font-medium text-gray-600">{total}</span>
@@ -592,7 +597,7 @@ export default function CoinsNewPage() {
                                 <>
                                   <div className="w-full h-[8px] bg-gray-200 rounded-full overflow-hidden relative">
                                     <div
-                                      className="h-full bg-gradient-to-r from-blue-500 to-purple-300 transition-all duration-300"
+                                      className="h-full bg-gradient-to-r from-purple-300 to-blue-500 transition-all duration-300"
                                       style={{ width: `${(coin.whitepaper_analysis.fundamental_score / 10) * 100}%` }}
                                     />
                                   </div>
@@ -659,7 +664,10 @@ export default function CoinsNewPage() {
                             {(coinsWithReports.has(coin.symbol?.toUpperCase()) || coinsWithReports.has(coin.source_id?.toUpperCase())) ? (
                               <div className="flex flex-col items-center gap-2">
                                 <button
-                                  onClick={() => router.push(`/document?coin=${coin.source_id || coin.symbol}`)}
+                                  onClick={() => {
+                                    setSelectedCoinForReport(coin.source_id || coin.symbol);
+                                    setShowReportModal(true);
+                                  }}
                                   className="flex items-center justify-center gap-2 min-w-[140px] px-3 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-semibold rounded-lg hover:shadow-lg hover:scale-105 transition-all duration-300"
                                 >
                                   <FaEye className="text-sm" />
@@ -687,6 +695,40 @@ export default function CoinsNewPage() {
           </div>
         </div>
       </main>
+
+      {/* Report Modal */}
+      {showReportModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="relative w-[95vw] h-[95vh] bg-white rounded-2xl shadow-2xl overflow-hidden">
+            {/* Modal Header */}
+            <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-4 flex items-center justify-between z-10 shadow-lg">
+              <h2 className="text-xl font-bold">Market Analysis Report</h2>
+              <button
+                onClick={() => {
+                  setShowReportModal(false);
+                  setSelectedCoinForReport(null);
+                }}
+                className="text-white hover:bg-white/20 rounded-full p-2 transition-all duration-200"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Modal Content - iframe */}
+            <div className="w-full h-full pt-16">
+              {selectedCoinForReport && (
+                <iframe
+                  src={`/document?coin=${selectedCoinForReport}&modal=true`}
+                  className="w-full h-full border-0"
+                  title="Coin Report"
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Segmented Bar Styles */}
       <style jsx>{`

@@ -845,6 +845,7 @@ function DocumentPageContent() {
   const searchParams = useSearchParams();
   const coinParam = searchParams.get('coin'); // Get coin symbol from URL query
   const autoDownload = searchParams.get('download') === 'true'; // Check if auto-download requested
+  const isModal = searchParams.get('modal') === 'true'; // Check if loaded in modal
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -1042,6 +1043,28 @@ function DocumentPageContent() {
     }
   }, [autoDownload, selectedCoin, loading, hasAutoDownloaded, handleDownloadPDF]);
 
+  // Hide header and footer when in modal mode
+  useEffect(() => {
+    if (isModal) {
+      // Add class to body to identify modal mode
+      document.body.classList.add('modal-view');
+
+      // Hide all headers, navs, and footers
+      const headers = document.querySelectorAll('header, nav');
+      const footers = document.querySelectorAll('footer');
+
+      headers.forEach(el => el.style.display = 'none');
+      footers.forEach(el => el.style.display = 'none');
+
+      return () => {
+        // Cleanup when component unmounts
+        document.body.classList.remove('modal-view');
+        headers.forEach(el => el.style.display = '');
+        footers.forEach(el => el.style.display = '');
+      };
+    }
+  }, [isModal]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -1074,6 +1097,30 @@ function DocumentPageContent() {
           <p className="text-gray-600">No coin analysis reports found for today.</p>
         </div>
       </div>
+    );
+  }
+
+  // If in modal mode, only show the report
+  if (isModal) {
+    return (
+      <>
+        <style jsx global>{`
+          /* Hide header and footer when in modal */
+          body.modal-view header,
+          body.modal-view nav,
+          body.modal-view footer {
+            display: none !important;
+          }
+        `}</style>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+          <div className="container mx-auto px-4 py-8">
+            {/* Report Content Only */}
+            <div ref={reportRef}>
+              {selectedCoin && <CoinReport data={selectedCoin} />}
+            </div>
+          </div>
+        </div>
+      </>
     );
   }
 
